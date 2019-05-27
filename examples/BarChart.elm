@@ -23,18 +23,28 @@ data =
     ]
 
 
+width : Float
+width =
+    600
+
+
+height : Float
+height =
+    400
+
+
 main : Html msg
 main =
     Html.div
         []
         [ Html.div
-            [ Html.Attributes.style "height" "400px"
-            , Html.Attributes.style "width" "600px"
+            [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
+            , Html.Attributes.style "width" (String.fromFloat width ++ "px")
             , Html.Attributes.style "background-color" "red"
             ]
             [ Bar.init data
-                |> Bar.setHeight 400
-                |> Bar.setWidth 600
+                |> Bar.setHeight height
+                |> Bar.setWidth width
                 |> Bar.render
             ]
         ]

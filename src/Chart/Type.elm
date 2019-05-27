@@ -2,6 +2,7 @@ module Chart.Type exposing
     ( Axis(..)
     , Config
     , Data
+    , Datum
     , Direction
     , Domain(..)
     , Layout(..)

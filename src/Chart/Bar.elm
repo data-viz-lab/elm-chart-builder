@@ -15,6 +15,7 @@ import Chart.Type
         ( Axis(..)
         , Config
         , Data
+        , Datum
         , Domain(..)
         , Layout(..)
         , Margin
@@ -114,7 +115,28 @@ renderBand ( data, config ) =
         ]
 
 
+column : BandScale String -> ContinuousScale Float -> ( Datum, Config ) -> Svg msg
+column xScale yScale ( datum, config ) =
+    g [ class [ "column" ] ] []
 
+
+
+-- TODO
+--g [ class [ "column" ] ]
+--    [ rect
+--        [ x <| Scale.convert xScale datum.point
+--        , y <| Scale.convert yScale datum.point
+--        , width <| Scale.bandwidth xScale
+--        , height <| h - Scale.convert yScale datum.pooint
+--        ]
+--        []
+--    , text_
+--        [ x <| Scale.convert (Scale.toRenderable dateFormat scale) date
+--        , y <| Scale.convert yScale value - 5
+--        , textAnchor AnchorMiddle
+--        ]
+--        [ text <| String.fromFloat value ]
+--    ]
 -- EXPOSED SETTERS
 
 
