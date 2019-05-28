@@ -13,13 +13,22 @@ import Svg.Attributes exposing (..)
 
 data : Data
 data =
-    [ [ { point = PointBand ( "a", 10 )
-        , group = Nothing
-        }
-      , { point = PointBand ( "b", 13 )
-        , group = Nothing
-        }
-      ]
+    [ { groupLabel = Just "A"
+      , points =
+            [ { point = PointBand ( "a", 10 )
+              }
+            , { point = PointBand ( "b", 13 )
+              }
+            ]
+      }
+    , { groupLabel = Just "B"
+      , points =
+            [ { point = PointBand ( "a", 11 )
+              }
+            , { point = PointBand ( "b", 23 )
+              }
+            ]
+      }
     ]
 
 

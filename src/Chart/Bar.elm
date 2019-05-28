@@ -15,6 +15,7 @@ import Chart.Type
         ( Axis(..)
         , Config
         , Data
+        , DataGroup
         , Datum
         , Domain(..)
         , Layout(..)
@@ -27,9 +28,13 @@ import Chart.Type
         , defaultOrientation
         , defaultWidth
         , fromConfig
+        , fromDomainBand
+        , fromDomainLinear
         , fromMargin
         , getDataPointStructure
+        , getDomain
         , getDomainFromData
+        , getDomainX1
         , getHeight
         , getMargin
         , getWidth
@@ -60,7 +65,8 @@ initConfig =
         , margin = defaultMargin
         , orientation = defaultOrientation
         , width = defaultWidth
-        , xDomain = NoDomain
+        , xDomain0 = NoDomain
+        , xDomain1 = NoDomain
         , yDomain = NoDomain
         }
 
@@ -90,17 +96,32 @@ renderBand ( data, config ) =
         m =
             getMargin config
 
-        xRange =
+        x0Domain =
+            getDomain X config |> fromDomainBand
+
+        x1Domain =
+            getDomainX1 config |> fromDomainBand
+
+        yDomain =
+            getDomain Y config |> fromDomainLinear
+
+        x0Range =
             ( 0, w )
 
         yRange =
             ( h, 0 )
 
-        xScale =
-            Scale.band defaultBandConfig xRange
+        x0Scale =
+            Scale.band defaultBandConfig x0Range x0Domain
+
+        x1Range =
+            ( 0, Scale.bandwidth x0Scale )
+
+        x1Scale =
+            Scale.band defaultBandConfig x1Range x1Domain
 
         yScale =
-            Scale.linear yRange
+            Scale.linear yRange yDomain
     in
     svg
         [ viewBox 0 0 w h
@@ -111,32 +132,61 @@ renderBand ( data, config ) =
             [ transform [ Translate m.left m.top ]
             , class [ "series" ]
             ]
-            []
+          <|
+            List.map (columns config x0Scale x1Scale yScale) data
         ]
 
 
-column : BandScale String -> ContinuousScale Float -> ( Datum, Config ) -> Svg msg
-column xScale yScale ( datum, config ) =
-    g [ class [ "column" ] ] []
+columns : Config -> BandScale String -> BandScale String -> ContinuousScale Float -> DataGroup -> Svg msg
+columns config x0Scale x1Scale yScale dataGroup =
+    let
+        left =
+            case dataGroup.groupLabel of
+                Nothing ->
+                    0
+
+                Just l ->
+                    Scale.convert x0Scale l
+    in
+    g
+        -- https://observablehq.com/@d3/grouped-bar-chart
+        -- .attr("transform", d => `translate(${x0(d[groupKey])},0)`)
+        [ transform [ Translate left 0 ]
+        , class [ "data-group" ]
+        ]
+    <|
+        List.map (column config x1Scale yScale) dataGroup.points
+
+
+column : Config -> BandScale String -> ContinuousScale Float -> Datum -> Svg msg
+column config xScale yScale datum =
+    let
+        ( x__, y__ ) =
+            case datum.point of
+                PointBand ( x_, y_ ) ->
+                    ( x_, y_ )
+
+                _ ->
+                    ( "", 0 )
+    in
+    g [ class [ "column" ] ]
+        [ rect
+            [ x <| Scale.convert xScale x__
+            , y <| Scale.convert yScale y__
+            , width <| Scale.bandwidth xScale
+            , height <| getHeight config - Scale.convert yScale y__
+            ]
+            []
+        , text_
+            [ x <| Scale.convert (Scale.toRenderable (\s -> s) xScale) x__
+            , y <| Scale.convert yScale y__
+            , textAnchor AnchorMiddle
+            ]
+            [ text <| x__ ]
+        ]
 
 
 
--- TODO
---g [ class [ "column" ] ]
---    [ rect
---        [ x <| Scale.convert xScale datum.point
---        , y <| Scale.convert yScale datum.point
---        , width <| Scale.bandwidth xScale
---        , height <| h - Scale.convert yScale datum.pooint
---        ]
---        []
---    , text_
---        [ x <| Scale.convert (Scale.toRenderable dateFormat scale) date
---        , y <| Scale.convert yScale value - 5
---        , textAnchor AnchorMiddle
---        ]
---        [ text <| String.fromFloat value ]
---    ]
 -- EXPOSED SETTERS
 
 

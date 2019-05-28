@@ -2,6 +2,7 @@ module Chart.Type exposing
     ( Axis(..)
     , Config
     , Data
+    , DataGroup
     , Datum
     , Direction
     , Domain(..)
@@ -15,9 +16,13 @@ module Chart.Type exposing
     , defaultOrientation
     , defaultWidth
     , fromConfig
+    , fromDomainBand
+    , fromDomainLinear
     , fromMargin
     , getDataPointStructure
+    , getDomain
     , getDomainFromData
+    , getDomainX1
     , getHeight
     , getMargin
     , getWidth
@@ -44,7 +49,6 @@ type Orientation
 type Layout
     = Stacked
     | Grouped
-    | NoLayout
 
 
 type Direction
@@ -72,13 +76,16 @@ type Domain
 
 
 type alias Datum =
-    { group : Maybe String
-    , point : Point
+    { point : Point
     }
 
 
+type alias DataGroup =
+    { groupLabel : Maybe String, points : List Datum }
+
+
 type alias Data =
-    List (List Datum)
+    List DataGroup
 
 
 type alias LinearDomain =
@@ -125,7 +132,8 @@ type alias ConfigStructure =
     , margin : Margin
     , orientation : Orientation
     , width : Float
-    , xDomain : Domain
+    , xDomain0 : Domain
+    , xDomain1 : Domain
     , yDomain : Domain
     }
 
@@ -150,7 +158,7 @@ fromConfig (Config config) =
 
 defaultLayout : Layout
 defaultLayout =
-    NoLayout
+    Grouped
 
 
 defaultOrientation : Orientation
@@ -239,7 +247,7 @@ setXDomain domain ( data, config ) =
         c =
             fromConfig config
     in
-    ( data, toConfig { c | xDomain = domain } )
+    ( data, toConfig { c | xDomain0 = domain } )
 
 
 setYDomain : Domain -> ( Data, Config ) -> ( Data, Config )
@@ -268,6 +276,21 @@ getHeight config =
 getWidth : Config -> Float
 getWidth config =
     fromConfig config |> .width
+
+
+getDomain : Axis -> Config -> Domain
+getDomain axis config =
+    case axis of
+        X ->
+            fromConfig config |> .xDomain0
+
+        Y ->
+            fromConfig config |> .yDomain
+
+
+getDomainX1 : Config -> Domain
+getDomainX1 config =
+    fromConfig config |> .xDomain1
 
 
 getLinearDomain : Maybe LinearDomain -> List Float -> LinearDomain
@@ -311,9 +334,10 @@ getBandDomain domain data =
     case domain of
         Nothing ->
             data
+                |> List.map .groupLabel
                 |> List.indexedMap
                     (\idx g ->
-                        g |> List.head |> Maybe.andThen .group |> Maybe.withDefault (String.fromInt idx)
+                        g |> Maybe.withDefault (String.fromInt idx)
                     )
 
         Just bandDomain ->
@@ -325,6 +349,7 @@ getDomainFromData axis data =
     let
         concatData =
             data
+                |> List.map .points
                 |> List.concat
                 |> List.map .point
 
@@ -378,10 +403,31 @@ getDomainFromData axis data =
             NoDomain
 
 
-getDataPointStructure : List (List Datum) -> Point
+getDataPointStructure : List DataGroup -> Point
 getDataPointStructure data =
     data
         |> List.head
+        |> Maybe.map .points
         |> Maybe.andThen List.head
         |> Maybe.map .point
         |> Maybe.withDefault NoPoint
+
+
+fromDomainBand : Domain -> BandDomain
+fromDomainBand domain =
+    case domain of
+        DomainBand bandDomain ->
+            bandDomain
+
+        _ ->
+            []
+
+
+fromDomainLinear : Domain -> LinearDomain
+fromDomainLinear domain =
+    case domain of
+        DomainLinear linearDomain ->
+            linearDomain
+
+        _ ->
+            ( 0, 0 )
