@@ -14,14 +14,15 @@ import Chart.Type
     exposing
         ( Axis(..)
         , Config
-        , Data
-        , DataGroup
-        , Datum
+        , Data(..)
+        , DataGroupBL
+        , DataGroupLL
         , Domain(..)
         , Layout(..)
         , Margin
         , Orientation(..)
-        , Point(..)
+        , PointBL
+        , PointLL
         , defaultHeight
         , defaultLayout
         , defaultMargin
@@ -31,7 +32,6 @@ import Chart.Type
         , fromDomainBand
         , fromDomainLinear
         , fromMargin
-        , getDataPointStructure
         , getDomain
         , getDomainFromData
         , getDomainX1
@@ -73,14 +73,11 @@ initConfig =
 
 render : ( Data, Config ) -> Html msg
 render ( data, config ) =
-    case getDataPointStructure data of
-        PointBand _ ->
-            renderBand ( data, config )
+    case data of
+        DataBL d ->
+            renderBand ( d, config )
 
-        NoPoint ->
-            Html.text "no point struncture"
-
-        _ ->
+        DataLL _ ->
             Html.text "not yet implemented"
 
 

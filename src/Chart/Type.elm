@@ -1,15 +1,16 @@
 module Chart.Type exposing
     ( Axis(..)
     , Config
-    , Data
-    , DataGroup
-    , Datum
+    , Data(..)
+    , DataGroupBL
+    , DataGroupLL
     , Direction
     , Domain(..)
     , Layout(..)
     , Margin
     , Orientation(..)
-    , Point(..)
+    , PointBL
+    , PointLL
     , defaultHeight
     , defaultLayout
     , defaultMargin
@@ -19,7 +20,6 @@ module Chart.Type exposing
     , fromDomainBand
     , fromDomainLinear
     , fromMargin
-    , getDataPointStructure
     , getDomain
     , getDomainFromData
     , getDomainX1
@@ -61,31 +61,32 @@ type Axis
     | Y
 
 
-type Point
-    = PointLinear ( Float, Float )
-    | PointBand ( String, Float )
-    | PointTime ( Posix, Float )
-    | NoPoint
-
-
 type Domain
     = DomainLinear LinearDomain
-    | DomainBand BandDomain
+    | DomainBand ( BandDomain, BandDomain )
     | DomainTime TimeDomain
     | NoDomain
 
 
-type alias Datum =
-    { point : Point
-    }
+type alias PointLL =
+    ( Float, Float )
 
 
-type alias DataGroup =
-    { groupLabel : Maybe String, points : List Datum }
+type alias PointBL =
+    ( String, Float )
 
 
-type alias Data =
-    List DataGroup
+type alias DataGroupLL =
+    { groupLabel : Maybe String, points : List PointLL }
+
+
+type alias DataGroupBL =
+    { groupLabel : Maybe String, points : List PointBL }
+
+
+type Data
+    = DataLL (List DataGroupLL)
+    | DataBL (List DataGroupBL)
 
 
 type alias LinearDomain =
@@ -309,27 +310,7 @@ getLinearDomain domain data =
             linearDomain
 
 
-getTimeDomain : Maybe TimeDomain -> List Posix -> TimeDomain
-getTimeDomain domain data =
-    case domain of
-        Nothing ->
-            ( data
-                |> List.map Time.posixToMillis
-                |> List.minimum
-                |> Maybe.withDefault 0
-                |> Time.millisToPosix
-            , data
-                |> List.map Time.posixToMillis
-                |> List.maximum
-                |> Maybe.withDefault 0
-                |> Time.millisToPosix
-            )
-
-        Just timeDomain ->
-            timeDomain
-
-
-getBandDomain : Maybe BandDomain -> Data -> BandDomain
+getBandDomain : Maybe BandDomain -> List DataGroupBL -> BandDomain
 getBandDomain domain data =
     case domain of
         Nothing ->
@@ -346,71 +327,35 @@ getBandDomain domain data =
 
 getDomainFromData : Axis -> Data -> Domain
 getDomainFromData axis data =
-    let
-        concatData =
-            data
+    case ( axis, data ) of
+        ( X, DataLL d ) ->
+            d
                 |> List.map .points
                 |> List.concat
-                |> List.map .point
-
-        point =
-            concatData
-                |> List.head
-    in
-    case point of
-        Nothing ->
-            NoDomain
-
-        Just (PointLinear _) ->
-            concatData
-                |> List.map
-                    (\p ->
-                        case p of
-                            PointLinear ( x, y ) ->
-                                case axis of
-                                    X ->
-                                        x
-
-                                    Y ->
-                                        y
-
-                            _ ->
-                                0
-                    )
+                |> List.map Tuple.first
                 |> getLinearDomain Nothing
                 |> DomainLinear
 
-        Just (PointBand _) ->
-            data
+        ( X, DataBL d ) ->
+            d
                 |> getBandDomain Nothing
                 |> DomainBand
 
-        Just (PointTime _) ->
-            concatData
-                |> List.map
-                    (\p ->
-                        case p of
-                            PointTime ( x, _ ) ->
-                                x
+        ( Y, DataLL d ) ->
+            d
+                |> List.map .points
+                |> List.concat
+                |> List.map Tuple.second
+                |> getLinearDomain Nothing
+                |> DomainLinear
 
-                            _ ->
-                                Time.millisToPosix 0
-                    )
-                |> getTimeDomain Nothing
-                |> DomainTime
-
-        Just NoPoint ->
-            NoDomain
-
-
-getDataPointStructure : List DataGroup -> Point
-getDataPointStructure data =
-    data
-        |> List.head
-        |> Maybe.map .points
-        |> Maybe.andThen List.head
-        |> Maybe.map .point
-        |> Maybe.withDefault NoPoint
+        ( Y, DataBL d ) ->
+            d
+                |> List.map .points
+                |> List.concat
+                |> List.map Tuple.second
+                |> getLinearDomain Nothing
+                |> DomainLinear
 
 
 fromDomainBand : Domain -> BandDomain
