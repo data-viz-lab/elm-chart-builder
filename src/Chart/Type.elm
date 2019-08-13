@@ -2,15 +2,11 @@ module Chart.Type exposing
     ( Axis(..)
     , Config
     , Data(..)
-    , DataGroupBL
-    , DataGroupLL
     , Direction
     , Domain(..)
     , Layout(..)
     , Margin
     , Orientation(..)
-    , PointBL
-    , PointLL
     , defaultHeight
     , defaultLayout
     , defaultMargin
@@ -18,11 +14,9 @@ module Chart.Type exposing
     , defaultWidth
     , fromConfig
     , fromDomainBand
-    , fromDomainLinear
     , fromMargin
     , getDomain
     , getDomainFromData
-    , getDomainX1
     , getHeight
     , getMargin
     , getWidth
@@ -31,13 +25,9 @@ module Chart.Type exposing
     , setMargin
     , setOrientation
     , setWidth
-    , setXDomain
-    , setYDomain
     , toConfig
     , toMargin
     )
-
-import Time exposing (Posix)
 
 
 type Orientation
@@ -61,34 +51,6 @@ type Axis
     | Y
 
 
-type Domain
-    = DomainLinear LinearDomain
-    | DomainBand ( BandDomain, BandDomain )
-    | DomainTime TimeDomain
-    | NoDomain
-
-
-type alias PointLL =
-    ( Float, Float )
-
-
-type alias PointBL =
-    ( String, Float )
-
-
-type alias DataGroupLL =
-    { groupLabel : Maybe String, points : List PointLL }
-
-
-type alias DataGroupBL =
-    { groupLabel : Maybe String, points : List PointBL }
-
-
-type Data
-    = DataLL (List DataGroupLL)
-    | DataBL (List DataGroupBL)
-
-
 type alias LinearDomain =
     ( Float, Float )
 
@@ -97,8 +59,24 @@ type alias BandDomain =
     List String
 
 
-type alias TimeDomain =
-    ( Posix, Posix )
+type alias DomainBandStructure =
+    { x0 : BandDomain, x1 : BandDomain, y : LinearDomain }
+
+
+type Domain
+    = DomainBand DomainBandStructure
+
+
+type alias PointBand =
+    ( String, Float )
+
+
+type alias DataGroupBand =
+    { groupLabel : Maybe String, points : List PointBand }
+
+
+type Data
+    = DataBand (List DataGroupBand)
 
 
 type alias Range =
@@ -133,9 +111,7 @@ type alias ConfigStructure =
     , margin : Margin
     , orientation : Orientation
     , width : Float
-    , xDomain0 : Domain
-    , xDomain1 : Domain
-    , yDomain : Domain
+    , domain : Domain
     }
 
 
@@ -164,7 +140,7 @@ defaultLayout =
 
 defaultOrientation : Orientation
 defaultOrientation =
-    NoOrientation
+    Horizontal
 
 
 defaultWidth : Float
@@ -242,22 +218,13 @@ setMargin margin ( data, config ) =
     ( data, toConfig { c | margin = margin } )
 
 
-setXDomain : Domain -> ( Data, Config ) -> ( Data, Config )
-setXDomain domain ( data, config ) =
+setDomain : Domain -> ( Data, Config ) -> ( Data, Config )
+setDomain domain ( data, config ) =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | xDomain0 = domain } )
-
-
-setYDomain : Domain -> ( Data, Config ) -> ( Data, Config )
-setYDomain domain ( data, config ) =
-    let
-        c =
-            fromConfig config
-    in
-    ( data, toConfig { c | yDomain = domain } )
+    ( data, toConfig { c | domain = domain } )
 
 
 
@@ -279,100 +246,18 @@ getWidth config =
     fromConfig config |> .width
 
 
-getDomain : Axis -> Config -> Domain
-getDomain axis config =
-    case axis of
-        X ->
-            fromConfig config |> .xDomain0
-
-        Y ->
-            fromConfig config |> .yDomain
+getDomain : Config -> Domain
+getDomain config =
+    fromConfig config |> .domain
 
 
-getDomainX1 : Config -> Domain
-getDomainX1 config =
-    fromConfig config |> .xDomain1
+getDomainFromData : Data -> Domain
+getDomainFromData data =
+    DomainBand { x0 = [], x1 = [], y = ( 0, 0 ) }
 
 
-getLinearDomain : Maybe LinearDomain -> List Float -> LinearDomain
-getLinearDomain domain data =
-    case domain of
-        Nothing ->
-            ( data
-                |> List.minimum
-                |> Maybe.withDefault 0
-            , data
-                |> List.maximum
-                |> Maybe.withDefault 0
-            )
-
-        Just linearDomain ->
-            linearDomain
-
-
-getBandDomain : Maybe BandDomain -> List DataGroupBL -> BandDomain
-getBandDomain domain data =
-    case domain of
-        Nothing ->
-            data
-                |> List.map .groupLabel
-                |> List.indexedMap
-                    (\idx g ->
-                        g |> Maybe.withDefault (String.fromInt idx)
-                    )
-
-        Just bandDomain ->
-            bandDomain
-
-
-getDomainFromData : Axis -> Data -> Domain
-getDomainFromData axis data =
-    case ( axis, data ) of
-        ( X, DataLL d ) ->
-            d
-                |> List.map .points
-                |> List.concat
-                |> List.map Tuple.first
-                |> getLinearDomain Nothing
-                |> DomainLinear
-
-        ( X, DataBL d ) ->
-            d
-                |> getBandDomain Nothing
-                |> DomainBand
-
-        ( Y, DataLL d ) ->
-            d
-                |> List.map .points
-                |> List.concat
-                |> List.map Tuple.second
-                |> getLinearDomain Nothing
-                |> DomainLinear
-
-        ( Y, DataBL d ) ->
-            d
-                |> List.map .points
-                |> List.concat
-                |> List.map Tuple.second
-                |> getLinearDomain Nothing
-                |> DomainLinear
-
-
-fromDomainBand : Domain -> BandDomain
+fromDomainBand : Domain -> DomainBandStructure
 fromDomainBand domain =
     case domain of
-        DomainBand bandDomain ->
-            bandDomain
-
-        _ ->
-            []
-
-
-fromDomainLinear : Domain -> LinearDomain
-fromDomainLinear domain =
-    case domain of
-        DomainLinear linearDomain ->
-            linearDomain
-
-        _ ->
-            ( 0, 0 )
+        DomainBand d ->
+            d
