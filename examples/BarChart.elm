@@ -13,23 +13,20 @@ import Svg.Attributes exposing (..)
 
 data : Data
 data =
-    [ { groupLabel = Just "A"
-      , points =
-            [ { point = PointBand ( "a", 10 )
-              }
-            , { point = PointBand ( "b", 13 )
-              }
-            ]
-      }
-    , { groupLabel = Just "B"
-      , points =
-            [ { point = PointBand ( "a", 11 )
-              }
-            , { point = PointBand ( "b", 23 )
-              }
-            ]
-      }
-    ]
+    DataBand
+        [ { groupLabel = Just "A"
+          , points =
+                [ ( "a", 10 )
+                , ( "b", 13 )
+                ]
+          }
+        , { groupLabel = Just "B"
+          , points =
+                [ ( "a", 11 )
+                , ( "b", 23 )
+                ]
+          }
+        ]
 
 
 width : Float
@@ -54,6 +51,7 @@ main =
             [ Bar.init data
                 |> Bar.setHeight height
                 |> Bar.setWidth width
+                |> Bar.setMargin (toMargin { top = 20, right = 20, bottom = 20, left = 30 })
                 |> Bar.render
             ]
         ]

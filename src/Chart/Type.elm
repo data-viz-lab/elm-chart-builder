@@ -2,17 +2,21 @@ module Chart.Type exposing
     ( Axis(..)
     , Config
     , Data(..)
+    , DataGroupBand
     , Direction
     , Domain(..)
     , Layout(..)
     , Margin
     , Orientation(..)
+    , PointBand
+    , defaultConfig
     , defaultHeight
     , defaultLayout
     , defaultMargin
     , defaultOrientation
     , defaultWidth
     , fromConfig
+    , fromDataBand
     , fromDomainBand
     , fromMargin
     , getDomain
@@ -20,6 +24,7 @@ module Chart.Type exposing
     , getHeight
     , getMargin
     , getWidth
+    , setDomain
     , setHeight
     , setLayout
     , setMargin
@@ -28,6 +33,8 @@ module Chart.Type exposing
     , toConfig
     , toMargin
     )
+
+import Set
 
 
 type Orientation
@@ -113,6 +120,18 @@ type alias ConfigStructure =
     , width : Float
     , domain : Domain
     }
+
+
+defaultConfig : Config
+defaultConfig =
+    toConfig
+        { height = defaultHeight
+        , layout = defaultLayout
+        , margin = defaultMargin
+        , orientation = defaultOrientation
+        , width = defaultWidth
+        , domain = DomainBand { x0 = [], x1 = [], y = ( 0, 0 ) }
+        }
 
 
 type Config
@@ -253,11 +272,38 @@ getDomain config =
 
 getDomainFromData : Data -> Domain
 getDomainFromData data =
-    DomainBand { x0 = [], x1 = [], y = ( 0, 0 ) }
+    case data of
+        DataBand d ->
+            DomainBand
+                { x0 =
+                    d
+                        |> List.map .groupLabel
+                        |> List.indexedMap (\i g -> g |> Maybe.withDefault (String.fromInt i))
+                , x1 =
+                    d
+                        |> List.map .points
+                        |> List.concat
+                        |> List.map Tuple.first
+                        |> Set.fromList
+                        |> Set.toList
+                , y =
+                    d
+                        |> List.map .points
+                        |> List.concat
+                        |> List.map Tuple.second
+                        |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                }
 
 
 fromDomainBand : Domain -> DomainBandStructure
 fromDomainBand domain =
     case domain of
         DomainBand d ->
+            d
+
+
+fromDataBand : Data -> List DataGroupBand
+fromDataBand data =
+    case data of
+        DataBand d ->
             d

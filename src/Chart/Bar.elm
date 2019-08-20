@@ -1,13 +1,12 @@
 module Chart.Bar exposing
     ( init
     , render
+    , setDomain
     , setHeight
     , setLayout
     , setMargin
     , setOrientation
     , setWidth
-    , setXDomain
-    , setYDomain
     )
 
 import Chart.Type
@@ -15,29 +14,28 @@ import Chart.Type
         ( Axis(..)
         , Config
         , Data(..)
-        , DataGroupBL
-        , DataGroupLL
+        , DataGroupBand
         , Domain(..)
         , Layout(..)
         , Margin
         , Orientation(..)
-        , PointBL
-        , PointLL
+        , PointBand
+        , defaultConfig
         , defaultHeight
         , defaultLayout
         , defaultMargin
         , defaultOrientation
         , defaultWidth
         , fromConfig
+        , fromDataBand
         , fromDomainBand
-        , fromDomainLinear
         , fromMargin
         , getDomain
         , getDomainFromData
-        , getDomainX1
         , getHeight
         , getMargin
         , getWidth
+        , setDomain
         , toConfig
         , toMargin
         )
@@ -52,33 +50,15 @@ import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..))
 
 init : Data -> ( Data, Config )
 init data =
-    ( data, initConfig )
-        |> setXDomain (getDomainFromData X data)
-        |> setYDomain (getDomainFromData Y data)
-
-
-initConfig : Config
-initConfig =
-    toConfig
-        { height = defaultHeight
-        , layout = defaultLayout
-        , margin = defaultMargin
-        , orientation = defaultOrientation
-        , width = defaultWidth
-        , xDomain0 = NoDomain
-        , xDomain1 = NoDomain
-        , yDomain = NoDomain
-        }
+    ( data, defaultConfig )
+        |> setDomain (getDomainFromData data)
 
 
 render : ( Data, Config ) -> Html msg
 render ( data, config ) =
     case data of
-        DataBL d ->
-            renderBand ( d, config )
-
-        DataLL _ ->
-            Html.text "not yet implemented"
+        DataBand d ->
+            renderBand ( data, config )
 
 
 renderBand : ( Data, Config ) -> Html msg
@@ -93,32 +73,26 @@ renderBand ( data, config ) =
         m =
             getMargin config
 
-        x0Domain =
-            getDomain X config |> fromDomainBand
-
-        x1Domain =
-            getDomainX1 config |> fromDomainBand
-
-        yDomain =
-            getDomain Y config |> fromDomainLinear
+        domain =
+            getDomain config |> fromDomainBand
 
         x0Range =
             ( 0, w )
+
+        x1Range =
+            ( 0, Scale.bandwidth x0Scale )
 
         yRange =
             ( h, 0 )
 
         x0Scale =
-            Scale.band defaultBandConfig x0Range x0Domain
-
-        x1Range =
-            ( 0, Scale.bandwidth x0Scale )
+            Scale.band defaultBandConfig x0Range domain.x0
 
         x1Scale =
-            Scale.band defaultBandConfig x1Range x1Domain
+            Scale.band defaultBandConfig x1Range domain.x1
 
         yScale =
-            Scale.linear yRange yDomain
+            Scale.linear yRange domain.y
     in
     svg
         [ viewBox 0 0 w h
@@ -130,11 +104,11 @@ renderBand ( data, config ) =
             , class [ "series" ]
             ]
           <|
-            List.map (columns config x0Scale x1Scale yScale) data
+            List.map (columns config x0Scale x1Scale yScale) (fromDataBand data)
         ]
 
 
-columns : Config -> BandScale String -> BandScale String -> ContinuousScale Float -> DataGroup -> Svg msg
+columns : Config -> BandScale String -> BandScale String -> ContinuousScale Float -> DataGroupBand -> Svg msg
 columns config x0Scale x1Scale yScale dataGroup =
     let
         left =
@@ -155,27 +129,22 @@ columns config x0Scale x1Scale yScale dataGroup =
         List.map (column config x1Scale yScale) dataGroup.points
 
 
-column : Config -> BandScale String -> ContinuousScale Float -> Datum -> Svg msg
-column config xScale yScale datum =
+column : Config -> BandScale String -> ContinuousScale Float -> PointBand -> Svg msg
+column config x1Scale yScale point =
     let
         ( x__, y__ ) =
-            case datum.point of
-                PointBand ( x_, y_ ) ->
-                    ( x_, y_ )
-
-                _ ->
-                    ( "", 0 )
+            point
     in
     g [ class [ "column" ] ]
         [ rect
-            [ x <| Scale.convert xScale x__
+            [ x <| Scale.convert x1Scale x__
             , y <| Scale.convert yScale y__
-            , width <| Scale.bandwidth xScale
+            , width <| Scale.bandwidth x1Scale
             , height <| getHeight config - Scale.convert yScale y__
             ]
             []
         , text_
-            [ x <| Scale.convert (Scale.toRenderable (\s -> s) xScale) x__
+            [ x <| Scale.convert (Scale.toRenderable (\s -> s) x1Scale) x__
             , y <| Scale.convert yScale y__
             , textAnchor AnchorMiddle
             ]
@@ -212,11 +181,6 @@ setMargin =
     Chart.Type.setMargin
 
 
-setXDomain : Domain -> ( Data, Config ) -> ( Data, Config )
-setXDomain =
-    Chart.Type.setXDomain
-
-
-setYDomain : Domain -> ( Data, Config ) -> ( Data, Config )
-setYDomain =
-    Chart.Type.setYDomain
+setDomain : Domain -> ( Data, Config ) -> ( Data, Config )
+setDomain =
+    Chart.Type.setDomain
