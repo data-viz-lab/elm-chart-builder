@@ -64,14 +64,14 @@ render ( data, config ) =
 renderBand : ( Data, Config ) -> Html msg
 renderBand ( data, config ) =
     let
-        w =
-            getWidth config
-
-        h =
-            getHeight config
-
         m =
             getMargin config
+
+        w =
+            getWidth config - m.left - m.right
+
+        h =
+            getHeight config - m.top - m.bottom
 
         domain =
             getDomain config |> fromDomainBand
@@ -86,18 +86,18 @@ renderBand ( data, config ) =
             ( h, 0 )
 
         x0Scale =
-            Scale.band defaultBandConfig x0Range domain.x0
+            Scale.band { defaultBandConfig | paddingInner = 0.1 } x0Range domain.x0
 
         x1Scale =
-            Scale.band defaultBandConfig x1Range domain.x1
+            Scale.band { defaultBandConfig | paddingInner = 0.05 } x1Range domain.x1
 
         yScale =
             Scale.linear yRange domain.y
     in
     svg
-        [ viewBox 0 0 w h
-        , width w
-        , height h
+        [ viewBox 0 0 (w + m.left + m.right) (h + m.top + m.bottom)
+        , width (w + m.left + m.right)
+        , height (h + m.top + m.bottom)
         ]
         [ g
             [ transform [ Translate m.left m.top ]
