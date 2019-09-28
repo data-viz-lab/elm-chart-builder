@@ -18,7 +18,6 @@ module Chart.Type exposing
     , fromConfig
     , fromDataBand
     , fromDomainBand
-    , fromMargin
     , getDomain
     , getDomainFromData
     , getHeight
@@ -33,7 +32,6 @@ module Chart.Type exposing
     , setShowColumnLabels
     , setWidth
     , toConfig
-    , toMargin
     )
 
 import Set
@@ -92,26 +90,12 @@ type alias Range =
     ( Float, Float )
 
 
-type alias MarginStructure =
+type alias Margin =
     { top : Float
     , right : Float
     , bottom : Float
     , left : Float
     }
-
-
-type Margin
-    = Margin MarginStructure
-
-
-toMargin : MarginStructure -> Margin
-toMargin margin =
-    Margin margin
-
-
-fromMargin : Margin -> MarginStructure
-fromMargin (Margin margin) =
-    margin
 
 
 type alias ConfigStructure =
@@ -178,12 +162,11 @@ defaultHeight =
 
 defaultMargin : Margin
 defaultMargin =
-    Margin
-        { top = 1
-        , right = 20
-        , bottom = 20
-        , left = 30
-        }
+    { top = 1
+    , right = 20
+    , bottom = 20
+    , left = 30
+    }
 
 
 
@@ -197,7 +180,7 @@ setHeight height ( data, config ) =
             fromConfig config
 
         m =
-            c.margin |> fromMargin
+            c.margin
     in
     ( data, toConfig { c | height = height - m.top - m.bottom } )
 
@@ -227,7 +210,7 @@ setWidth width ( data, config ) =
             fromConfig config
 
         m =
-            c.margin |> fromMargin
+            c.margin
     in
     ( data, toConfig { c | width = width - m.left - m.right } )
 
@@ -248,7 +231,7 @@ setDimensions { margin, width, height } ( data, config ) =
             fromConfig config
 
         m =
-            margin |> fromMargin
+            margin
     in
     ( data
     , toConfig
@@ -282,9 +265,9 @@ setShowColumnLabels bool ( data, config ) =
 -- GETTERS
 
 
-getMargin : Config -> MarginStructure
+getMargin : Config -> Margin
 getMargin config =
-    fromConfig config |> .margin |> fromMargin
+    fromConfig config |> .margin
 
 
 getHeight : Config -> Float

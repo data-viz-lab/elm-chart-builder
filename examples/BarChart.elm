@@ -51,7 +51,7 @@ main =
             [ Bar.init data
                 |> Bar.setShowColumnLabels True
                 |> Bar.setDimensions
-                    { margin = toMargin { top = 20, right = 20, bottom = 20, left = 30 }
+                    { margin = { top = 20, right = 20, bottom = 20, left = 30 }
                     , width = width
                     , height = height
                     }

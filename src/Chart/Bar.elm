@@ -31,7 +31,6 @@ import Chart.Type
         , fromConfig
         , fromDataBand
         , fromDomainBand
-        , fromMargin
         , getDomain
         , getDomainFromData
         , getHeight
@@ -41,7 +40,6 @@ import Chart.Type
         , setDomain
         , setShowColumnLabels
         , toConfig
-        , toMargin
         )
 import Html exposing (Html)
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
