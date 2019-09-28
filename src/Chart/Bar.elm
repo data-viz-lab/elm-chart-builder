@@ -31,9 +31,12 @@ import Chart.Type
         , fromConfig
         , fromDataBand
         , fromDomainBand
+        , getBandGroupRange
+        , getBandSingleRange
         , getDomain
         , getDomainFromData
         , getHeight
+        , getLinearRange
         , getMargin
         , getWidth
         , setDimensions
@@ -44,10 +47,10 @@ import Chart.Type
 import Html exposing (Html)
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import TypedSvg exposing (g, rect, style, svg, text_)
-import TypedSvg.Attributes exposing (class, textAnchor, transform, viewBox)
+import TypedSvg.Attributes exposing (alignmentBaseline, class, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..))
+import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Transform(..))
 
 
 renderBand : ( Data, Config ) -> Html msg
@@ -69,25 +72,26 @@ renderBand ( data, config ) =
             h + m.top + m.bottom
 
         domain =
-            getDomain config |> fromDomainBand
+            getDomain config
+                |> fromDomainBand
 
-        x0Range =
-            ( 0, w )
+        bandGroupRange =
+            getBandGroupRange config w h
 
-        x1Range =
-            ( 0, Scale.bandwidth x0Scale )
+        bandSingleRange =
+            getBandSingleRange config (Scale.bandwidth bandGroupScale)
 
-        yRange =
-            ( h, 0 )
+        linearRange =
+            getLinearRange config w h
 
-        x0Scale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1 } x0Range domain.x0
+        bandGroupScale =
+            Scale.band { defaultBandConfig | paddingInner = 0.1 } bandGroupRange domain.bandGroup
 
-        x1Scale =
-            Scale.band { defaultBandConfig | paddingInner = 0.05 } x1Range domain.x1
+        bandSingleScale =
+            Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange domain.bandSingle
 
-        yScale =
-            Scale.linear yRange domain.y
+        linearScale =
+            Scale.linear linearRange domain.linear
     in
     svg
         [ viewBox 0 0 outerW outerH
@@ -99,33 +103,36 @@ renderBand ( data, config ) =
             , class [ "series" ]
             ]
           <|
-            List.map (columns config x0Scale x1Scale yScale) (fromDataBand data)
+            List.map (columns config bandGroupScale bandSingleScale linearScale) (fromDataBand data)
         ]
 
 
 columns : Config -> BandScale String -> BandScale String -> ContinuousScale Float -> DataGroupBand -> Svg msg
-columns config x0Scale x1Scale yScale dataGroup =
+columns config bandGroupScale bandSingleScale linearScale dataGroup =
     let
-        left =
-            case dataGroup.groupLabel of
-                Nothing ->
-                    0
+        c =
+            fromConfig config
 
-                Just l ->
-                    Scale.convert x0Scale l
+        tr =
+            case c.orientation of
+                Vertical ->
+                    -- https://observablehq.com/@d3/grouped-bar-chart
+                    -- .attr("transform", d => `translate(${x0(d[groupKey])},0)`)
+                    Translate (dataGroupTranslation bandGroupScale dataGroup |> floor |> toFloat) 0
+
+                Horizontal ->
+                    Translate 0 (dataGroupTranslation bandGroupScale dataGroup |> floor |> toFloat)
     in
     g
-        -- https://observablehq.com/@d3/grouped-bar-chart
-        -- .attr("transform", d => `translate(${x0(d[groupKey])},0)`)
-        [ transform [ Translate left 0 ]
+        [ transform [ tr ]
         , class [ "data-group" ]
         ]
     <|
-        List.indexedMap (column config x1Scale yScale) dataGroup.points
+        List.indexedMap (column config bandSingleScale linearScale) dataGroup.points
 
 
 column : Config -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> Svg msg
-column config x1Scale yScale idx point =
+column config bandSingleScale linearScale idx point =
     let
         ( x__, y__ ) =
             point
@@ -134,29 +141,111 @@ column config x1Scale yScale idx point =
             fromConfig config
 
         label =
-            if c.showColumnLabels then
-                [ text_
-                    [ x <| Scale.convert (Scale.toRenderable (\s -> s) x1Scale) x__
-                    , y <| Scale.convert yScale y__ - 2
-                    , textAnchor AnchorMiddle
-                    ]
-                    [ text <| x__ ]
-                ]
+            case c.orientation of
+                Horizontal ->
+                    horizontalLabel config bandSingleScale linearScale point
 
-            else
-                []
+                Vertical ->
+                    verticalLabel config bandSingleScale linearScale point
+
+        rectangle =
+            case c.orientation of
+                Vertical ->
+                    verticalRect config label bandSingleScale linearScale point
+
+                Horizontal ->
+                    horizontalRect config label bandSingleScale linearScale point
     in
-    g [ class [ "column", "column-" ++ String.fromInt idx ] ]
-        ([ rect
-            [ x <| Scale.convert x1Scale x__
-            , y <| Scale.convert yScale y__
-            , width <| Scale.bandwidth x1Scale
-            , height <| getHeight config - Scale.convert yScale y__
+    g [ class [ "column", "column-" ++ String.fromInt idx ] ] rectangle
+
+
+verticalRect : Config -> List (Svg msg) -> BandScale String -> ContinuousScale Float -> PointBand -> List (Svg msg)
+verticalRect config label bandSingleScale linearScale point =
+    let
+        ( x__, y__ ) =
+            point
+    in
+    [ rect
+        [ x <| toFloat <| floor <| Scale.convert bandSingleScale x__
+        , y <| toFloat <| floor <| Scale.convert linearScale y__
+        , width <| toFloat <| floor <| Scale.bandwidth bandSingleScale
+        , height <| toFloat <| floor <| getHeight config - Scale.convert linearScale y__
+        ]
+        []
+    ]
+        ++ label
+
+
+horizontalRect : Config -> List (Svg msg) -> BandScale String -> ContinuousScale Float -> PointBand -> List (Svg msg)
+horizontalRect config label bandSingleScale linearScale point =
+    let
+        ( x__, y__ ) =
+            point
+    in
+    [ rect
+        [ x <| 0
+        , y <| toFloat <| floor <| Scale.convert bandSingleScale x__
+        , width <| toFloat <| floor <| Scale.convert linearScale y__
+        , height <| toFloat <| floor <| Scale.bandwidth bandSingleScale
+        ]
+        []
+    ]
+        ++ label
+
+
+dataGroupTranslation : BandScale String -> DataGroupBand -> Float
+dataGroupTranslation bandGroupScale dataGroup =
+    case dataGroup.groupLabel of
+        Nothing ->
+            0
+
+        Just l ->
+            Scale.convert bandGroupScale l
+
+
+verticalLabel : Config -> BandScale String -> ContinuousScale Float -> PointBand -> List (Svg msg)
+verticalLabel config bandSingleScale linearScale point =
+    let
+        ( x__, y__ ) =
+            point
+
+        c =
+            fromConfig config
+    in
+    if c.showColumnLabels then
+        [ text_
+            [ x <| Scale.convert (Scale.toRenderable (\s -> s) bandSingleScale) x__
+            , y <| Scale.convert linearScale y__ - 2
+            , textAnchor AnchorMiddle
             ]
-            []
-         ]
-            ++ label
-        )
+            [ text <| x__ ]
+        ]
+
+    else
+        []
+
+
+horizontalLabel : Config -> BandScale String -> ContinuousScale Float -> PointBand -> List (Svg msg)
+horizontalLabel config bandSingleScale linearScale point =
+    let
+        ( x__, y__ ) =
+            point
+
+        c =
+            fromConfig config
+    in
+    if c.showColumnLabels then
+        [ text_
+            [ y <| Scale.convert (Scale.toRenderable (\s -> s) bandSingleScale) x__
+            , x <| Scale.convert linearScale y__ + 2
+            , textAnchor AnchorStart
+            , alignmentBaseline AlignmentMiddle
+            ]
+            [ text <| x__ ]
+        ]
+
+    else
+        []
 
 
 
@@ -202,6 +291,14 @@ setLayout =
     Chart.Type.setLayout
 
 
+{-| Sets the orientation value in the config
+Default value: Vertical
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setOrientation Horizontal
+        |> Bar.render
+
+-}
 setOrientation : Orientation -> ( Data, Config ) -> ( Data, Config )
 setOrientation =
     Chart.Type.setOrientation
@@ -217,11 +314,28 @@ setDimensions =
     Chart.Type.setDimensions
 
 
+{-| Sets the domain value in the config
+If not set, the domain is calculated from the data
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setDomain { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) }
+        |> Bar.render
+
+-}
 setDomain : Domain -> ( Data, Config ) -> ( Data, Config )
 setDomain =
     Chart.Type.setDomain
 
 
+{-| Sets the showColumnLabels boolean value in the config
+Default value: False
+This shows the bar's ordinal value at the end of the rect, not the linear value
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setShowColumnLabels True
+        |> Bar.render
+
+-}
 setShowColumnLabels : Bool -> ( Data, Config ) -> ( Data, Config )
 setShowColumnLabels =
     Chart.Type.setShowColumnLabels

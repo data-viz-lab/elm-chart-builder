@@ -18,9 +18,12 @@ module Chart.Type exposing
     , fromConfig
     , fromDataBand
     , fromDomainBand
+    , getBandGroupRange
+    , getBandSingleRange
     , getDomain
     , getDomainFromData
     , getHeight
+    , getLinearRange
     , getMargin
     , getWidth
     , setDimensions
@@ -40,7 +43,6 @@ import Set
 type Orientation
     = Vertical
     | Horizontal
-    | NoOrientation
 
 
 type Layout
@@ -66,12 +68,12 @@ type alias BandDomain =
     List String
 
 
-type alias DomainBandStructure =
-    { x0 : BandDomain, x1 : BandDomain, y : LinearDomain }
+type alias DomainBandStruct =
+    { bandGroup : BandDomain, bandSingle : BandDomain, linear : LinearDomain }
 
 
 type Domain
-    = DomainBand DomainBandStructure
+    = DomainBand DomainBandStruct
 
 
 type alias PointBand =
@@ -98,7 +100,7 @@ type alias Margin =
     }
 
 
-type alias ConfigStructure =
+type alias ConfigStruct =
     { domain : Domain
     , height : Float
     , layout : Layout
@@ -112,7 +114,7 @@ type alias ConfigStructure =
 defaultConfig : Config
 defaultConfig =
     toConfig
-        { domain = DomainBand { x0 = [], x1 = [], y = ( 0, 0 ) }
+        { domain = DomainBand { bandGroup = [], bandSingle = [], linear = ( 0, 0 ) }
         , height = defaultHeight
         , layout = defaultLayout
         , margin = defaultMargin
@@ -123,15 +125,15 @@ defaultConfig =
 
 
 type Config
-    = Config ConfigStructure
+    = Config ConfigStruct
 
 
-toConfig : ConfigStructure -> Config
+toConfig : ConfigStruct -> Config
 toConfig config =
     Config config
 
 
-fromConfig : Config -> ConfigStructure
+fromConfig : Config -> ConfigStruct
 fromConfig (Config config) =
     config
 
@@ -147,7 +149,7 @@ defaultLayout =
 
 defaultOrientation : Orientation
 defaultOrientation =
-    Horizontal
+    Vertical
 
 
 defaultWidth : Float
@@ -290,18 +292,18 @@ getDomainFromData data =
     case data of
         DataBand d ->
             DomainBand
-                { x0 =
+                { bandGroup =
                     d
                         |> List.map .groupLabel
                         |> List.indexedMap (\i g -> g |> Maybe.withDefault (String.fromInt i))
-                , x1 =
+                , bandSingle =
                     d
                         |> List.map .points
                         |> List.concat
                         |> List.map Tuple.first
                         |> Set.fromList
                         |> Set.toList
-                , y =
+                , linear =
                     d
                         |> List.map .points
                         |> List.concat
@@ -310,7 +312,7 @@ getDomainFromData data =
                 }
 
 
-fromDomainBand : Domain -> DomainBandStructure
+fromDomainBand : Domain -> DomainBandStruct
 fromDomainBand domain =
     case domain of
         DomainBand d ->
@@ -322,3 +324,45 @@ fromDataBand data =
     case data of
         DataBand d ->
             d
+
+
+getBandGroupRange : Config -> Float -> Float -> ( Float, Float )
+getBandGroupRange config width height =
+    let
+        orientation =
+            fromConfig config |> .orientation
+    in
+    case orientation of
+        Horizontal ->
+            ( height, 0 )
+
+        Vertical ->
+            ( 0, width )
+
+
+getBandSingleRange : Config -> Float -> ( Float, Float )
+getBandSingleRange config value =
+    let
+        orientation =
+            fromConfig config |> .orientation
+    in
+    case orientation of
+        Horizontal ->
+            ( floor value |> toFloat, 0 )
+
+        Vertical ->
+            ( 0, floor value |> toFloat )
+
+
+getLinearRange : Config -> Float -> Float -> ( Float, Float )
+getLinearRange config width height =
+    let
+        orientation =
+            fromConfig config |> .orientation
+    in
+    case orientation of
+        Horizontal ->
+            ( 0, width )
+
+        Vertical ->
+            ( height, 0 )
