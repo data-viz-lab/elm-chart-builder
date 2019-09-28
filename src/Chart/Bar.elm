@@ -7,6 +7,7 @@ module Chart.Bar exposing
     , setLayout
     , setMargin
     , setOrientation
+    , setShowColumnLabels
     , setWidth
     )
 
@@ -38,6 +39,7 @@ import Chart.Type
         , getWidth
         , setDimensions
         , setDomain
+        , setShowColumnLabels
         , toConfig
         , toMargin
         )
@@ -50,22 +52,12 @@ import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AnchorAlignment(..), Transform(..))
 
 
-init : Data -> ( Data, Config )
-init data =
-    ( data, defaultConfig )
-        |> setDomain (getDomainFromData data)
-
-
-render : ( Data, Config ) -> Html msg
-render ( data, config ) =
-    case data of
-        DataBand d ->
-            renderBand ( data, config )
-
-
 renderBand : ( Data, Config ) -> Html msg
 renderBand ( data, config ) =
     let
+        m =
+            getMargin config
+
         w =
             getWidth config
 
@@ -77,9 +69,6 @@ renderBand ( data, config ) =
 
         outerH =
             h + m.top + m.bottom
-
-        m =
-            getMargin config
 
         domain =
             getDomain config |> fromDomainBand
@@ -94,10 +83,10 @@ renderBand ( data, config ) =
             ( h, 0 )
 
         x0Scale =
-            Scale.band defaultBandConfig x0Range domain.x0
+            Scale.band { defaultBandConfig | paddingInner = 0.1 } x0Range domain.x0
 
         x1Scale =
-            Scale.band defaultBandConfig x1Range domain.x1
+            Scale.band { defaultBandConfig | paddingInner = 0.05 } x1Range domain.x1
 
         yScale =
             Scale.linear yRange domain.y
@@ -134,34 +123,70 @@ columns config x0Scale x1Scale yScale dataGroup =
         , class [ "data-group" ]
         ]
     <|
-        List.map (column config x1Scale yScale) dataGroup.points
+        List.indexedMap (column config x1Scale yScale) dataGroup.points
 
 
-column : Config -> BandScale String -> ContinuousScale Float -> PointBand -> Svg msg
-column config x1Scale yScale point =
+column : Config -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> Svg msg
+column config x1Scale yScale idx point =
     let
         ( x__, y__ ) =
             point
+
+        c =
+            fromConfig config
+
+        label =
+            if c.showColumnLabels then
+                [ text_
+                    [ x <| Scale.convert (Scale.toRenderable (\s -> s) x1Scale) x__
+                    , y <| Scale.convert yScale y__ - 2
+                    , textAnchor AnchorMiddle
+                    ]
+                    [ text <| x__ ]
+                ]
+
+            else
+                []
     in
-    g [ class [ "column" ] ]
-        [ rect
+    g [ class [ "column", "column-" ++ String.fromInt idx ] ]
+        ([ rect
             [ x <| Scale.convert x1Scale x__
             , y <| Scale.convert yScale y__
             , width <| Scale.bandwidth x1Scale
             , height <| getHeight config - Scale.convert yScale y__
             ]
             []
-        , text_
-            [ x <| Scale.convert (Scale.toRenderable (\s -> s) x1Scale) x__
-            , y <| Scale.convert yScale y__ - 2
-            , textAnchor AnchorMiddle
-            ]
-            [ text <| x__ ]
-        ]
+         ]
+            ++ label
+        )
 
 
 
--- EXPOSED SETTERS
+-- API METHODS
+
+
+{-| Initializes the bar chart
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+
+-}
+init : Data -> ( Data, Config )
+init data =
+    ( data, defaultConfig )
+        |> setDomain (getDomainFromData data)
+
+
+{-| Renders the bar chart, after initialisation and customisation
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.render
+
+-}
+render : ( Data, Config ) -> Html msg
+render ( data, config ) =
+    case data of
+        DataBand d ->
+            renderBand ( data, config )
 
 
 setHeight : Float -> ( Data, Config ) -> ( Data, Config )
@@ -197,3 +222,8 @@ setDimensions =
 setDomain : Domain -> ( Data, Config ) -> ( Data, Config )
 setDomain =
     Chart.Type.setDomain
+
+
+setShowColumnLabels : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowColumnLabels =
+    Chart.Type.setShowColumnLabels

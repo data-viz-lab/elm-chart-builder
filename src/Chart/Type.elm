@@ -30,6 +30,7 @@ module Chart.Type exposing
     , setLayout
     , setMargin
     , setOrientation
+    , setShowColumnLabels
     , setWidth
     , toConfig
     , toMargin
@@ -114,24 +115,26 @@ fromMargin (Margin margin) =
 
 
 type alias ConfigStructure =
-    { height : Float
+    { domain : Domain
+    , height : Float
     , layout : Layout
     , margin : Margin
     , orientation : Orientation
+    , showColumnLabels : Bool
     , width : Float
-    , domain : Domain
     }
 
 
 defaultConfig : Config
 defaultConfig =
     toConfig
-        { height = defaultHeight
+        { domain = DomainBand { x0 = [], x1 = [], y = ( 0, 0 ) }
+        , height = defaultHeight
         , layout = defaultLayout
         , margin = defaultMargin
         , orientation = defaultOrientation
+        , showColumnLabels = False
         , width = defaultWidth
-        , domain = DomainBand { x0 = [], x1 = [], y = ( 0, 0 ) }
         }
 
 
@@ -264,6 +267,15 @@ setDomain domain ( data, config ) =
             fromConfig config
     in
     ( data, toConfig { c | domain = domain } )
+
+
+setShowColumnLabels : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowColumnLabels bool ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | showColumnLabels = bool } )
 
 
 
