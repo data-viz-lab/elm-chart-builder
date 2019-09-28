@@ -24,6 +24,7 @@ module Chart.Type exposing
     , getHeight
     , getMargin
     , getWidth
+    , setDimensions
     , setDomain
     , setHeight
     , setLayout
@@ -235,6 +236,25 @@ setMargin margin ( data, config ) =
             fromConfig config
     in
     ( data, toConfig { c | margin = margin } )
+
+
+setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
+setDimensions { margin, width, height } ( data, config ) =
+    let
+        c =
+            fromConfig config
+
+        m =
+            margin |> fromMargin
+    in
+    ( data
+    , toConfig
+        { c
+            | width = width - m.left - m.right
+            , height = height - m.top - m.bottom
+            , margin = margin
+        }
+    )
 
 
 setDomain : Domain -> ( Data, Config ) -> ( Data, Config )

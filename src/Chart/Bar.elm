@@ -1,6 +1,7 @@
 module Chart.Bar exposing
     ( init
     , render
+    , setDimensions
     , setDomain
     , setHeight
     , setLayout
@@ -35,6 +36,7 @@ import Chart.Type
         , getHeight
         , getMargin
         , getWidth
+        , setDimensions
         , setDomain
         , toConfig
         , toMargin
@@ -70,6 +72,12 @@ renderBand ( data, config ) =
         h =
             getHeight config
 
+        outerW =
+            w + m.left + m.right
+
+        outerH =
+            h + m.top + m.bottom
+
         m =
             getMargin config
 
@@ -95,9 +103,9 @@ renderBand ( data, config ) =
             Scale.linear yRange domain.y
     in
     svg
-        [ viewBox 0 0 w h
-        , width w
-        , height h
+        [ viewBox 0 0 outerW outerH
+        , width outerW
+        , height outerH
         ]
         [ g
             [ transform [ Translate m.left m.top ]
@@ -145,7 +153,7 @@ column config x1Scale yScale point =
             []
         , text_
             [ x <| Scale.convert (Scale.toRenderable (\s -> s) x1Scale) x__
-            , y <| Scale.convert yScale y__
+            , y <| Scale.convert yScale y__ - 2
             , textAnchor AnchorMiddle
             ]
             [ text <| x__ ]
@@ -179,6 +187,11 @@ setOrientation =
 setMargin : Margin -> ( Data, Config ) -> ( Data, Config )
 setMargin =
     Chart.Type.setMargin
+
+
+setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
+setDimensions =
+    Chart.Type.setDimensions
 
 
 setDomain : Domain -> ( Data, Config ) -> ( Data, Config )

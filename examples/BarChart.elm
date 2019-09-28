@@ -49,9 +49,11 @@ main =
             , Html.Attributes.style "background-color" "red"
             ]
             [ Bar.init data
-                |> Bar.setHeight height
-                |> Bar.setWidth width
-                |> Bar.setMargin (toMargin { top = 20, right = 20, bottom = 20, left = 30 })
+                |> Bar.setDimensions
+                    { margin = toMargin { top = 20, right = 20, bottom = 20, left = 30 }
+                    , width = width
+                    , height = height
+                    }
                 |> Bar.render
             ]
         ]
