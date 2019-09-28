@@ -11,6 +11,23 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
 
+css : String
+css =
+    """
+.chart-wrapper {
+    border: 1px solid #666;
+}
+
+.column-0 rect {
+    fill: #70728c;
+}
+
+.column-1 rect {
+    fill: #d8165e;
+}
+"""
+
+
 data : Data
 data =
     DataBand
@@ -24,6 +41,12 @@ data =
           , points =
                 [ ( "a", 11 )
                 , ( "b", 23 )
+                ]
+          }
+        , { groupLabel = Just "C"
+          , points =
+                [ ( "a", 13 )
+                , ( "b", 18 )
                 ]
           }
         ]
@@ -41,20 +64,23 @@ height =
 
 main : Html msg
 main =
-    Html.div
-        []
-        [ Html.div
-            [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
-            , Html.Attributes.style "width" (String.fromFloat width ++ "px")
-            , Html.Attributes.style "background-color" "red"
-            ]
-            [ Bar.init data
-                |> Bar.setShowColumnLabels True
-                |> Bar.setDimensions
-                    { margin = { top = 20, right = 20, bottom = 20, left = 30 }
-                    , width = width
-                    , height = height
-                    }
-                |> Bar.render
+    Html.div []
+        [ Html.node "style" [] [ text css ]
+        , Html.div
+            []
+            [ Html.div
+                [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
+                , Html.Attributes.style "width" (String.fromFloat width ++ "px")
+                , class "chart-wrapper"
+                ]
+                [ Bar.init data
+                    |> Bar.setShowColumnLabels True
+                    |> Bar.setDimensions
+                        { margin = { top = 20, right = 20, bottom = 10, left = 20 }
+                        , width = width
+                        , height = height
+                        }
+                    |> Bar.render
+                ]
             ]
         ]
