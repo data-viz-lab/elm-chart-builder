@@ -11,6 +11,7 @@ module Chart.Bar exposing
     , setWidth
     )
 
+import Chart.Helpers exposing (dataBandToDataStacked)
 import Chart.Type
     exposing
         ( Axis(..)
@@ -46,11 +47,104 @@ import Chart.Type
         )
 import Html exposing (Html)
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
+import Shape exposing (StackConfig, StackResult)
 import TypedSvg exposing (g, rect, style, svg, text_)
 import TypedSvg.Attributes exposing (alignmentBaseline, class, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Transform(..))
+
+
+renderBandStacked : ( Data, Config ) -> Html msg
+renderBandStacked ( data, config ) =
+    -- based on https://code.gampleman.eu/elm-visualization/StackedBarChart/
+    let
+        m =
+            getMargin config
+
+        w =
+            getWidth config
+
+        h =
+            getHeight config
+
+        outerW =
+            w + m.left + m.right
+
+        outerH =
+            h + m.top + m.bottom
+
+        dataStacked : List ( String, List Float )
+        dataStacked =
+            dataBandToDataStacked data
+
+        stackedConfig : StackConfig String
+        stackedConfig =
+            { data = dataStacked
+            , offset = Shape.stackOffsetNone
+            , order =
+                -- stylistic choice: largest (by sum of values)
+                -- category at the bottom
+                List.sortBy (Tuple.second >> List.sum >> negate)
+            }
+
+        { values, labels, extent } =
+            Shape.stack stackedConfig
+
+        domain =
+            getDomain config
+                |> fromDomainBand
+
+        bandGroupDomain =
+            domain
+                |> fromDomainBand
+                |> .bandGroup
+
+        bandGroupRange =
+            getBandGroupRange config w h
+
+        bandGroupScale =
+            Scale.band { defaultBandConfig | paddingInner = 0.1 } bandGroupRange domain.bandGroup
+
+        linearScale : ContinuousScale Float
+        linearScale =
+            Scale.linear ( h, 0 ) extent
+
+        --|> Scale.nice 4
+        scaledValues =
+            List.map (List.map (\( y1, y2 ) -> ( Scale.convert linearScale y1, Scale.convert linearScale y2 ))) yearValues
+    in
+    svg
+        [ viewBox 0 0 outerW outerH
+        , width outerW
+        , height outerH
+        ]
+        [ g
+            [ transform [ Translate m.left m.top ]
+            , class [ "series" ]
+            ]
+          <|
+            List.map (column bandGroupScale)
+                (List.map2 (\a b -> ( a, b )) bandGroupDomain scaledValues)
+                List.map
+                (columns config bandGroupScale bandSingleScale linearScale)
+                (fromDataBand data)
+        ]
+
+
+stackedColumn : BandScale String -> ( String, List ( Float, Float ) ) -> Svg msg
+stackedColumn bandGroupScale ( year, values ) =
+    let
+        block ( upperY, lowerY ) =
+            rect
+                [ x <| Scale.convert bandGroupScale year
+                , y <| lowerY
+                , width <| Scale.bandwidth bandGroupScale
+                , height <| (abs <| upperY - lowerY)
+                ]
+                []
+    in
+    g [ class [ "column" ] ] (List.map block values)
 
 
 renderBand : ( Data, Config ) -> Html msg
