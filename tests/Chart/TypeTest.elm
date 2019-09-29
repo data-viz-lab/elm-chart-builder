@@ -21,7 +21,7 @@ suite =
 
                         expected : Domain
                         expected =
-                            DomainBand { x0 = [ "CA", "TX" ], x1 = [ "a", "b" ], y = ( 0, 21 ) }
+                            DomainBand { bandGroup = [ "CA", "TX" ], bandSingle = [ "a", "b" ], linear = ( 0, 21 ) }
                     in
                     Expect.equal (getDomainFromData data) expected
             ]
