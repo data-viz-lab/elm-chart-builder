@@ -46,6 +46,7 @@ import Chart.Type
         , toConfig
         )
 import Html exposing (Html)
+import List.Extra
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import Shape exposing (StackConfig, StackResult)
 import TypedSvg exposing (g, rect, style, svg, text_)
@@ -90,6 +91,13 @@ renderBandStacked ( data, config ) =
 
         { values, labels, extent } =
             Shape.stack stackedConfig
+                |> Debug.log "stack"
+
+        d =
+            data
+                |> fromDataBand
+                |> List.map .points
+                |> Debug.log "d"
 
         domain =
             getDomain config
@@ -97,22 +105,35 @@ renderBandStacked ( data, config ) =
 
         bandGroupDomain =
             domain
-                |> fromDomainBand
                 |> .bandGroup
 
         bandGroupRange =
             getBandGroupRange config w h
 
+        bandSingleRange =
+            getBandSingleRange config (Scale.bandwidth bandGroupScale)
+
         bandGroupScale =
             Scale.band { defaultBandConfig | paddingInner = 0.1 } bandGroupRange domain.bandGroup
+
+        bandSingleScale =
+            Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange domain.bandSingle
 
         linearScale : ContinuousScale Float
         linearScale =
             Scale.linear ( h, 0 ) extent
 
+        columnValues =
+            List.Extra.transpose values
+
+        columnGroupes =
+            data
+                |> fromDataBand
+                |> List.indexedMap (\idx s -> s.groupLabel |> Maybe.withDefault (String.fromInt idx))
+
         --|> Scale.nice 4
         scaledValues =
-            List.map (List.map (\( y1, y2 ) -> ( Scale.convert linearScale y1, Scale.convert linearScale y2 ))) yearValues
+            List.map (List.map (\( y1, y2 ) -> ( Scale.convert linearScale y1, Scale.convert linearScale y2 ))) columnValues
     in
     svg
         [ viewBox 0 0 outerW outerH
@@ -124,11 +145,7 @@ renderBandStacked ( data, config ) =
             , class [ "series" ]
             ]
           <|
-            List.map (column bandGroupScale)
-                (List.map2 (\a b -> ( a, b )) bandGroupDomain scaledValues)
-                List.map
-                (columns config bandGroupScale bandSingleScale linearScale)
-                (fromDataBand data)
+            List.map stackedColumn (List.map2 (\a b -> ( a, b )) columnGroupes scaledValues)
         ]
 
 
@@ -365,9 +382,18 @@ init data =
 -}
 render : ( Data, Config ) -> Html msg
 render ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
     case data of
         DataBand d ->
-            renderBand ( data, config )
+            case c.layout of
+                Grouped ->
+                    renderBand ( data, config )
+
+                Stacked ->
+                    renderBandStacked ( data, config )
 
 
 setHeight : Float -> ( Data, Config ) -> ( Data, Config )

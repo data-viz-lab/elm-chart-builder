@@ -88,6 +88,7 @@ main =
                 ]
                 [ Bar.init data
                     |> Bar.setShowColumnLabels True
+                    |> Bar.setLayout Stacked
                     |> Bar.setDimensions
                         { margin = { top = 20, right = 20, bottom = 10, left = 20 }
                         , width = width
