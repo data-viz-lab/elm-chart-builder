@@ -83,10 +83,7 @@ renderBandStacked ( data, config ) =
         stackedConfig =
             { data = dataStacked
             , offset = Shape.stackOffsetNone
-            , order =
-                -- stylistic choice: largest (by sum of values)
-                -- category at the bottom
-                List.sortBy (Tuple.second >> List.sum >> negate)
+            , order = identity
             }
 
         { values, labels, extent } =
@@ -129,7 +126,6 @@ renderBandStacked ( data, config ) =
                 |> fromDataBand
                 |> List.indexedMap (\idx s -> s.groupLabel |> Maybe.withDefault (String.fromInt idx))
 
-        --|> Scale.nice 4
         scaledValues =
             List.map (List.map (\( y1, y2 ) -> ( Scale.convert linearScale y1, Scale.convert linearScale y2 ))) columnValues
     in
@@ -161,7 +157,7 @@ stackedColumn bandGroupScale ( year, values ) =
                     []
                 ]
     in
-    g [ class [ "column" ] ] (List.indexedMap block <| List.reverse values)
+    g [ class [ "column" ] ] (List.indexedMap block values)
 
 
 renderBand : ( Data, Config ) -> Html msg
