@@ -67,12 +67,12 @@ dataSmall =
 
 width : Float
 width =
-    600
+    350
 
 
 height : Float
 height =
-    400
+    250
 
 
 main : Html msg
@@ -82,6 +82,20 @@ main =
         , Html.div
             []
             [ Html.div
+                [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
+                , Html.Attributes.style "width" (String.fromFloat width ++ "px")
+                , class "chart-wrapper"
+                ]
+                [ Bar.init data
+                    |> Bar.setShowColumnLabels True
+                    |> Bar.setDimensions
+                        { margin = { top = 20, right = 20, bottom = 10, left = 20 }
+                        , width = width
+                        , height = height
+                        }
+                    |> Bar.render
+                ]
+            , Html.div
                 [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
                 , Html.Attributes.style "width" (String.fromFloat width ++ "px")
                 , class "chart-wrapper"

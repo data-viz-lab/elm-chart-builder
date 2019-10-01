@@ -91,13 +91,11 @@ renderBandStacked ( data, config ) =
 
         { values, labels, extent } =
             Shape.stack stackedConfig
-                |> Debug.log "stack"
 
         d =
             data
                 |> fromDataBand
                 |> List.map .points
-                |> Debug.log "d"
 
         domain =
             getDomain config
@@ -145,23 +143,25 @@ renderBandStacked ( data, config ) =
             , class [ "series" ]
             ]
           <|
-            List.map stackedColumn (List.map2 (\a b -> ( a, b )) columnGroupes scaledValues)
+            List.map (stackedColumn bandGroupScale) (List.map2 (\a b -> ( a, b )) columnGroupes scaledValues)
         ]
 
 
 stackedColumn : BandScale String -> ( String, List ( Float, Float ) ) -> Svg msg
 stackedColumn bandGroupScale ( year, values ) =
     let
-        block ( upperY, lowerY ) =
-            rect
-                [ x <| Scale.convert bandGroupScale year
-                , y <| lowerY
-                , width <| Scale.bandwidth bandGroupScale
-                , height <| (abs <| upperY - lowerY)
+        block idx ( upperY, lowerY ) =
+            g [ class [ "column", "column-" ++ String.fromInt idx ] ]
+                [ rect
+                    [ x <| Scale.convert bandGroupScale year
+                    , y <| lowerY
+                    , width <| Scale.bandwidth bandGroupScale
+                    , height <| (abs <| upperY - lowerY)
+                    ]
+                    []
                 ]
-                []
     in
-    g [ class [ "column" ] ] (List.map block values)
+    g [ class [ "column" ] ] (List.indexedMap block <| List.reverse values)
 
 
 renderBand : ( Data, Config ) -> Html msg
