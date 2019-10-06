@@ -23,6 +23,7 @@ import Chart.Type
         , Margin
         , Orientation(..)
         , PointBand
+        , adjustLinearRange
         , defaultConfig
         , defaultHeight
         , defaultLayout
@@ -34,6 +35,7 @@ import Chart.Type
         , fromDomainBand
         , getBandGroupRange
         , getBandSingleRange
+        , getDataDepth
         , getDomain
         , getDomainFromData
         , getHeight
@@ -54,6 +56,20 @@ import TypedSvg.Attributes exposing (alignmentBaseline, class, textAnchor, trans
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Transform(..))
+
+
+stackedContainerTranslate : Config -> Float -> Float -> Float -> Transform
+stackedContainerTranslate config a b offset =
+    let
+        orientation =
+            fromConfig config |> .orientation
+    in
+    case orientation of
+        Horizontal ->
+            Translate (a - offset) b
+
+        Vertical ->
+            Translate a (b + offset)
 
 
 renderBandStacked : ( Data, Config ) -> Html msg
@@ -89,6 +105,9 @@ renderBandStacked ( data, config ) =
         { values, labels, extent } =
             Shape.stack stackedConfig
 
+        stackDepth =
+            getDataDepth data
+
         d =
             data
                 |> fromDataBand
@@ -116,6 +135,7 @@ renderBandStacked ( data, config ) =
 
         linearRange =
             getLinearRange config w h
+                |> adjustLinearRange config stackDepth
 
         linearScale : ContinuousScale Float
         linearScale =
@@ -138,7 +158,7 @@ renderBandStacked ( data, config ) =
         , height outerH
         ]
         [ g
-            [ transform [ Translate m.left m.top ]
+            [ transform [ stackedContainerTranslate config m.left m.top (toFloat stackDepth) ]
             , class [ "series" ]
             ]
           <|
@@ -170,7 +190,7 @@ verticalRectsStacked config bandGroupScale ( group, values ) =
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
                 [ rect
                     [ x <| Scale.convert bandGroupScale group
-                    , y <| lower
+                    , y <| lower - toFloat idx
                     , width <| Scale.bandwidth bandGroupScale
                     , height <| (abs <| upper - lower)
                     ]
@@ -190,7 +210,7 @@ horizontalRectsStacked config bandGroupScale ( group, values ) =
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
                 [ rect
                     [ y <| Scale.convert bandGroupScale group
-                    , x <| lower
+                    , x <| lower + toFloat idx
                     , height <| Scale.bandwidth bandGroupScale
                     , width <| (abs <| upper - lower)
                     ]

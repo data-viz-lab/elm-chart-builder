@@ -9,6 +9,7 @@ module Chart.Type exposing
     , Margin
     , Orientation(..)
     , PointBand
+    , adjustLinearRange
     , defaultConfig
     , defaultHeight
     , defaultLayout
@@ -20,6 +21,7 @@ module Chart.Type exposing
     , fromDomainBand
     , getBandGroupRange
     , getBandSingleRange
+    , getDataDepth
     , getDomain
     , getDomainFromData
     , getHeight
@@ -326,6 +328,16 @@ fromDataBand data =
             d
 
 
+getDataDepth : Data -> Int
+getDataDepth data =
+    data
+        |> fromDataBand
+        |> List.map .points
+        |> List.head
+        |> Maybe.withDefault []
+        |> List.length
+
+
 getBandGroupRange : Config -> Float -> Float -> ( Float, Float )
 getBandGroupRange config width height =
     let
@@ -377,3 +389,28 @@ getLinearRange config width height =
 
         Vertical ->
             ( height, 0 )
+
+
+adjustLinearRange : Config -> Int -> ( Float, Float ) -> ( Float, Float )
+adjustLinearRange config stackedDepth ( a, b ) =
+    let
+        c =
+            fromConfig config
+
+        orientation =
+            c.orientation
+
+        layout =
+            c.layout
+    in
+    case orientation of
+        Horizontal ->
+            case layout of
+                Grouped ->
+                    ( a, b )
+
+                Stacked ->
+                    ( a + toFloat stackedDepth, b )
+
+        Vertical ->
+            ( a - toFloat stackedDepth, b )

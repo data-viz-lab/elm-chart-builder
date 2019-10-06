@@ -33,6 +33,14 @@ css =
 .column-1 rect {
     fill: #d8165e;
 }
+
+.column-2 rect {
+    fill: #78558c;
+}
+
+.column-3 rect {
+    fill: #610a2a;
+}
 """
 
 
@@ -43,18 +51,24 @@ data =
           , points =
                 [ ( "a", 10 )
                 , ( "b", 13 )
+                , ( "c", 16 )
+                , ( "d", 12 )
                 ]
           }
         , { groupLabel = Just "B"
           , points =
                 [ ( "a", 11 )
                 , ( "b", 23 )
+                , ( "c", 16 )
+                , ( "d", 19 )
                 ]
           }
         , { groupLabel = Just "C"
           , points =
                 [ ( "a", 13 )
                 , ( "b", 18 )
+                , ( "c", 21 )
+                , ( "d", 17 )
                 ]
           }
         ]
@@ -111,7 +125,7 @@ main =
                     --|> Bar.setShowColumnLabels True
                     |> Bar.setLayout Stacked
                     |> Bar.setDimensions
-                        { margin = { top = 20, right = 20, bottom = 10, left = 20 }
+                        { margin = { top = 2, right = 20, bottom = 0, left = 20 }
                         , width = width
                         , height = height
                         }
@@ -142,7 +156,7 @@ main =
                     |> Bar.setLayout Stacked
                     |> Bar.setOrientation Horizontal
                     |> Bar.setDimensions
-                        { margin = { top = 20, right = 20, bottom = 20, left = 20 }
+                        { margin = { top = 0, right = 2, bottom = 0, left = 0 }
                         , width = width
                         , height = height
                         }
