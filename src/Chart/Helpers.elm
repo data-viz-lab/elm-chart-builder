@@ -1,4 +1,8 @@
-module Chart.Helpers exposing (dataBandToDataStacked)
+module Chart.Helpers exposing
+    ( dataBandToDataStacked
+    , invertTuple
+    , stackedValuesInverse
+    )
 
 import Chart.Type
     exposing
@@ -36,3 +40,13 @@ dataBandToDataStacked data =
                     acc
             )
             seed
+
+
+stackedValuesInverse : Float -> List ( Float, Float ) -> List ( Float, Float )
+stackedValuesInverse width values =
+    values |> List.map (\( left, right ) -> ( abs <| left - width, abs <| right - width ))
+
+
+invertTuple : ( a, b ) -> ( b, a )
+invertTuple ( left, right ) =
+    ( right, left )

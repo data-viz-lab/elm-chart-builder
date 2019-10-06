@@ -11,7 +11,7 @@ module Chart.Bar exposing
     , setWidth
     )
 
-import Chart.Helpers exposing (dataBandToDataStacked)
+import Chart.Helpers as Helpers exposing (dataBandToDataStacked)
 import Chart.Type
     exposing
         ( Axis(..)
@@ -114,9 +114,12 @@ renderBandStacked ( data, config ) =
         bandSingleScale =
             Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange domain.bandSingle
 
+        linearRange =
+            getLinearRange config w h
+
         linearScale : ContinuousScale Float
         linearScale =
-            Scale.linear ( h, 0 ) extent
+            Scale.linear linearRange extent
 
         columnValues =
             List.Extra.transpose values
@@ -127,7 +130,7 @@ renderBandStacked ( data, config ) =
                 |> List.indexedMap (\idx s -> s.groupLabel |> Maybe.withDefault (String.fromInt idx))
 
         scaledValues =
-            List.map (List.map (\( y1, y2 ) -> ( Scale.convert linearScale y1, Scale.convert linearScale y2 ))) columnValues
+            List.map (List.map (\( a1, a2 ) -> ( Scale.convert linearScale a1, Scale.convert linearScale a2 ))) columnValues
     in
     svg
         [ viewBox 0 0 outerW outerH
@@ -139,25 +142,64 @@ renderBandStacked ( data, config ) =
             , class [ "series" ]
             ]
           <|
-            List.map (stackedColumn bandGroupScale) (List.map2 (\a b -> ( a, b )) columnGroupes scaledValues)
+            List.map (stackedColumns config bandGroupScale) (List.map2 (\a b -> ( a, b )) columnGroupes scaledValues)
         ]
 
 
-stackedColumn : BandScale String -> ( String, List ( Float, Float ) ) -> Svg msg
-stackedColumn bandGroupScale ( year, values ) =
+stackedColumns : Config -> BandScale String -> ( String, List ( Float, Float ) ) -> Svg msg
+stackedColumns config bandGroupScale payload =
     let
-        block idx ( upperY, lowerY ) =
+        c =
+            fromConfig config
+
+        rects =
+            case c.orientation of
+                Vertical ->
+                    verticalRectsStacked config bandGroupScale payload
+
+                Horizontal ->
+                    horizontalRectsStacked config bandGroupScale payload
+    in
+    g [ class [ "columns" ] ] rects
+
+
+verticalRectsStacked : Config -> BandScale String -> ( String, List ( Float, Float ) ) -> List (Svg msg)
+verticalRectsStacked config bandGroupScale ( group, values ) =
+    let
+        block idx ( upper, lower ) =
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
                 [ rect
-                    [ x <| Scale.convert bandGroupScale year
-                    , y <| lowerY
+                    [ x <| Scale.convert bandGroupScale group
+                    , y <| lower
                     , width <| Scale.bandwidth bandGroupScale
-                    , height <| (abs <| upperY - lowerY)
+                    , height <| (abs <| upper - lower)
                     ]
                     []
                 ]
     in
-    g [ class [ "column" ] ] (List.indexedMap block values)
+    List.indexedMap (\idx -> block idx) values
+
+
+horizontalRectsStacked : Config -> BandScale String -> ( String, List ( Float, Float ) ) -> List (Svg msg)
+horizontalRectsStacked config bandGroupScale ( group, values ) =
+    let
+        c =
+            fromConfig config
+
+        block idx ( lower, upper ) =
+            g [ class [ "column", "column-" ++ String.fromInt idx ] ]
+                [ rect
+                    [ y <| Scale.convert bandGroupScale group
+                    , x <| lower
+                    , height <| Scale.bandwidth bandGroupScale
+                    , width <| (abs <| upper - lower)
+                    ]
+                    []
+                ]
+    in
+    values
+        |> Helpers.stackedValuesInverse c.width
+        |> List.indexedMap (\idx -> block idx)
 
 
 renderBand : ( Data, Config ) -> Html msg

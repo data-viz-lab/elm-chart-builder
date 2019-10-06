@@ -357,12 +357,23 @@ getBandSingleRange config value =
 getLinearRange : Config -> Float -> Float -> ( Float, Float )
 getLinearRange config width height =
     let
+        c =
+            fromConfig config
+
         orientation =
-            fromConfig config |> .orientation
+            c.orientation
+
+        layout =
+            c.layout
     in
     case orientation of
         Horizontal ->
-            ( 0, width )
+            case layout of
+                Grouped ->
+                    ( 0, width )
+
+                Stacked ->
+                    ( width, 0 )
 
         Vertical ->
             ( height, 0 )

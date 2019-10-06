@@ -14,9 +14,16 @@ import Svg.Attributes exposing (..)
 css : String
 css =
     """
+.wrapper {
+  display: grid;
+  grid-template-columns: 350px 350px;
+  grid-gap: 20px;
+  background-color: #fff;
+  color: #444;
+}
+
 .chart-wrapper {
     border: 1px solid #666;
-    margin-top: 10px;
 }
 
 .column-0 rect {
@@ -80,14 +87,14 @@ main =
     Html.div []
         [ Html.node "style" [] [ text css ]
         , Html.div
-            []
+            [ class "wrapper" ]
             [ Html.div
                 [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
                 , Html.Attributes.style "width" (String.fromFloat width ++ "px")
                 , class "chart-wrapper"
                 ]
                 [ Bar.init data
-                    |> Bar.setShowColumnLabels True
+                    --|> Bar.setShowColumnLabels True
                     |> Bar.setDimensions
                         { margin = { top = 20, right = 20, bottom = 10, left = 20 }
                         , width = width
@@ -101,7 +108,7 @@ main =
                 , class "chart-wrapper"
                 ]
                 [ Bar.init data
-                    |> Bar.setShowColumnLabels True
+                    --|> Bar.setShowColumnLabels True
                     |> Bar.setLayout Stacked
                     |> Bar.setDimensions
                         { margin = { top = 20, right = 20, bottom = 10, left = 20 }
@@ -116,10 +123,26 @@ main =
                 , class "chart-wrapper"
                 ]
                 [ Bar.init data
-                    |> Bar.setShowColumnLabels True
+                    --|> Bar.setShowColumnLabels True
                     |> Bar.setOrientation Horizontal
                     |> Bar.setDimensions
-                        { margin = { top = 20, right = 20, bottom = 10, left = 20 }
+                        { margin = { top = 20, right = 20, bottom = 20, left = 20 }
+                        , width = width
+                        , height = height
+                        }
+                    |> Bar.render
+                ]
+            , Html.div
+                [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
+                , Html.Attributes.style "width" (String.fromFloat width ++ "px")
+                , class "chart-wrapper"
+                ]
+                [ Bar.init data
+                    --|> Bar.setShowColumnLabels True
+                    |> Bar.setLayout Stacked
+                    |> Bar.setOrientation Horizontal
+                    |> Bar.setDimensions
+                        { margin = { top = 20, right = 20, bottom = 20, left = 20 }
                         , width = width
                         , height = height
                         }
