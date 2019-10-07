@@ -125,7 +125,7 @@ main =
                     --|> Bar.setShowColumnLabels True
                     |> Bar.setLayout Stacked
                     |> Bar.setDimensions
-                        { margin = { top = 2, right = 20, bottom = 0, left = 20 }
+                        { margin = { top = 10, right = 20, bottom = 10, left = 20 }
                         , width = width
                         , height = height
                         }
@@ -156,7 +156,7 @@ main =
                     |> Bar.setLayout Stacked
                     |> Bar.setOrientation Horizontal
                     |> Bar.setDimensions
-                        { margin = { top = 0, right = 2, bottom = 0, left = 0 }
+                        { margin = { top = 20, right = 10, bottom = 20, left = 10 }
                         , width = width
                         , height = height
                         }

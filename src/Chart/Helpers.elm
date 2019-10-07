@@ -1,5 +1,7 @@
 module Chart.Helpers exposing
     ( dataBandToDataStacked
+    , floorFloat
+    , floorValues
     , stackedValuesInverse
     )
 
@@ -44,3 +46,18 @@ dataBandToDataStacked data =
 stackedValuesInverse : Float -> List ( Float, Float ) -> List ( Float, Float )
 stackedValuesInverse width values =
     values |> List.map (\( left, right ) -> ( abs <| left - width, abs <| right - width ))
+
+
+floorFloat : Float -> Float
+floorFloat f =
+    f |> floor |> toFloat
+
+
+floorValues : List (List ( Float, Float )) -> List (List ( Float, Float ))
+floorValues v =
+    v
+        |> List.map
+            (\d ->
+                d
+                    |> List.map (\( a, b ) -> ( floorFloat a, floorFloat b ))
+            )

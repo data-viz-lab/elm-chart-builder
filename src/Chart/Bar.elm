@@ -52,10 +52,10 @@ import List.Extra
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import Shape exposing (StackConfig, StackResult)
 import TypedSvg exposing (g, rect, style, svg, text_)
-import TypedSvg.Attributes exposing (alignmentBaseline, class, textAnchor, transform, viewBox)
+import TypedSvg.Attributes exposing (alignmentBaseline, class, shapeRendering, textAnchor, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Transform(..))
+import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
 stackedContainerTranslate : Config -> Float -> Float -> Float -> Transform
@@ -151,6 +151,7 @@ renderBandStacked ( data, config ) =
 
         scaledValues =
             List.map (List.map (\( a1, a2 ) -> ( Scale.convert linearScale a1, Scale.convert linearScale a2 ))) columnValues
+                |> Helpers.floorValues
     in
     svg
         [ viewBox 0 0 outerW outerH
@@ -193,6 +194,7 @@ verticalRectsStacked config bandGroupScale ( group, values ) =
                     , y <| lower - toFloat idx
                     , width <| Scale.bandwidth bandGroupScale
                     , height <| (abs <| upper - lower)
+                    , shapeRendering RenderCrispEdges
                     ]
                     []
                 ]
@@ -213,6 +215,7 @@ horizontalRectsStacked config bandGroupScale ( group, values ) =
                     , x <| lower + toFloat idx
                     , height <| Scale.bandwidth bandGroupScale
                     , width <| (abs <| upper - lower)
+                    , shapeRendering RenderCrispEdges
                     ]
                     []
                 ]
@@ -287,10 +290,10 @@ columns config bandGroupScale bandSingleScale linearScale dataGroup =
                 Vertical ->
                     -- https://observablehq.com/@d3/grouped-bar-chart
                     -- .attr("transform", d => `translate(${x0(d[groupKey])},0)`)
-                    Translate (dataGroupTranslation bandGroupScale dataGroup |> floor |> toFloat) 0
+                    Translate (dataGroupTranslation bandGroupScale dataGroup |> Helpers.floorFloat) 0
 
                 Horizontal ->
-                    Translate 0 (dataGroupTranslation bandGroupScale dataGroup |> floor |> toFloat)
+                    Translate 0 (dataGroupTranslation bandGroupScale dataGroup |> Helpers.floorFloat)
     in
     g
         [ transform [ tr ]
@@ -335,10 +338,11 @@ verticalRect config label bandSingleScale linearScale point =
             point
     in
     [ rect
-        [ x <| toFloat <| floor <| Scale.convert bandSingleScale x__
-        , y <| toFloat <| floor <| Scale.convert linearScale y__
-        , width <| toFloat <| floor <| Scale.bandwidth bandSingleScale
-        , height <| toFloat <| floor <| getHeight config - Scale.convert linearScale y__
+        [ x <| Helpers.floorFloat <| Scale.convert bandSingleScale x__
+        , y <| Helpers.floorFloat <| Scale.convert linearScale y__
+        , width <| Helpers.floorFloat <| Scale.bandwidth bandSingleScale
+        , height <| Helpers.floorFloat <| getHeight config - Scale.convert linearScale y__
+        , shapeRendering RenderCrispEdges
         ]
         []
     ]
@@ -353,9 +357,10 @@ horizontalRect config label bandSingleScale linearScale point =
     in
     [ rect
         [ x <| 0
-        , y <| toFloat <| floor <| Scale.convert bandSingleScale x__
-        , width <| toFloat <| floor <| Scale.convert linearScale y__
-        , height <| toFloat <| floor <| Scale.bandwidth bandSingleScale
+        , y <| Helpers.floorFloat <| Scale.convert bandSingleScale x__
+        , width <| Helpers.floorFloat <| Scale.convert linearScale y__
+        , height <| Helpers.floorFloat <| Scale.bandwidth bandSingleScale
+        , shapeRendering RenderCrispEdges
         ]
         []
     ]
