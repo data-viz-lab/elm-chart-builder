@@ -27,19 +27,15 @@ css =
 }
 
 .column-0 rect {
-    fill: #70728c;
+    fill: #66c2a5;
 }
 
 .column-1 rect {
-    fill: #d8165e;
+    fill: #fc8d62;
 }
 
 .column-2 rect {
-    fill: #78558c;
-}
-
-.column-3 rect {
-    fill: #610a2a;
+    fill: #8da0cb;
 }
 """
 
@@ -52,7 +48,6 @@ data =
                 [ ( "a", 10 )
                 , ( "b", 13 )
                 , ( "c", 16 )
-                , ( "d", 12 )
                 ]
           }
         , { groupLabel = Just "B"
@@ -60,7 +55,6 @@ data =
                 [ ( "a", 11 )
                 , ( "b", 23 )
                 , ( "c", 16 )
-                , ( "d", 19 )
                 ]
           }
         , { groupLabel = Just "C"
@@ -68,7 +62,6 @@ data =
                 [ ( "a", 13 )
                 , ( "b", 18 )
                 , ( "c", 21 )
-                , ( "d", 17 )
                 ]
           }
         ]
