@@ -3,7 +3,7 @@ module Chart.Type exposing
     , Config
     , Data(..)
     , DataGroupBand
-    , Direction
+    , Direction(..)
     , Domain(..)
     , Layout(..)
     , Margin
@@ -27,6 +27,7 @@ module Chart.Type exposing
     , getHeight
     , getLinearRange
     , getMargin
+    , getOffset
     , getWidth
     , setDimensions
     , setDomain
@@ -40,6 +41,7 @@ module Chart.Type exposing
     )
 
 import Set
+import Shape exposing (StackConfig, StackResult)
 
 
 type Orientation
@@ -48,7 +50,7 @@ type Orientation
 
 
 type Layout
-    = Stacked
+    = Stacked Direction
     | Grouped
 
 
@@ -384,7 +386,7 @@ getLinearRange config width height =
                 Grouped ->
                     ( 0, width )
 
-                Stacked ->
+                Stacked _ ->
                     ( width, 0 )
 
         Vertical ->
@@ -409,8 +411,23 @@ adjustLinearRange config stackedDepth ( a, b ) =
                 Grouped ->
                     ( a, b )
 
-                Stacked ->
+                Stacked _ ->
                     ( a + toFloat stackedDepth, b )
 
         Vertical ->
             ( a - toFloat stackedDepth, b )
+
+
+getOffset : Config -> List (List ( Float, Float )) -> List (List ( Float, Float ))
+getOffset config =
+    case fromConfig config |> .layout of
+        Stacked direction ->
+            case direction of
+                Diverging ->
+                    Shape.stackOffsetDiverging
+
+                NoDirection ->
+                    Shape.stackOffsetNone
+
+        Grouped ->
+            Shape.stackOffsetNone

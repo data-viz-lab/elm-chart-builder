@@ -41,6 +41,7 @@ import Chart.Type
         , getHeight
         , getLinearRange
         , getMargin
+        , getOffset
         , getWidth
         , setDimensions
         , setDomain
@@ -76,6 +77,9 @@ renderBandStacked : ( Data, Config ) -> Html msg
 renderBandStacked ( data, config ) =
     -- based on https://code.gampleman.eu/elm-visualization/StackedBarChart/
     let
+        c =
+            fromConfig config
+
         m =
             getMargin config
 
@@ -98,7 +102,7 @@ renderBandStacked ( data, config ) =
         stackedConfig : StackConfig String
         stackedConfig =
             { data = dataStacked
-            , offset = Shape.stackOffsetNone
+            , offset = getOffset config
             , order = identity
             }
 
@@ -139,6 +143,8 @@ renderBandStacked ( data, config ) =
 
         linearScale : ContinuousScale Float
         linearScale =
+            -- For stacked scales
+            -- |> Scale.nice 4
             Scale.linear linearRange extent
 
         columnValues =
@@ -455,7 +461,7 @@ render ( data, config ) =
                 Grouped ->
                     renderBand ( data, config )
 
-                Stacked ->
+                Stacked _ ->
                     renderBandStacked ( data, config )
 
 

@@ -67,12 +67,24 @@ data =
         ]
 
 
-dataSmall : Data
-dataSmall =
+dataStacked : Data
+dataStacked =
     DataBand
         [ { groupLabel = Nothing
           , points =
-                [ ( "a", 10 )
+                [ ( "a", -10 )
+                , ( "b", 13 )
+                ]
+          }
+        , { groupLabel = Nothing
+          , points =
+                [ ( "a", -12 )
+                , ( "b", 16 )
+                ]
+          }
+        , { groupLabel = Nothing
+          , points =
+                [ ( "a", -11 )
                 , ( "b", 13 )
                 ]
           }
@@ -116,7 +128,7 @@ main =
                 ]
                 [ Bar.init data
                     --|> Bar.setShowColumnLabels True
-                    |> Bar.setLayout Stacked
+                    |> Bar.setLayout (Stacked NoDirection)
                     |> Bar.setDimensions
                         { margin = { top = 10, right = 20, bottom = 10, left = 20 }
                         , width = width
@@ -146,8 +158,39 @@ main =
                 ]
                 [ Bar.init data
                     --|> Bar.setShowColumnLabels True
-                    |> Bar.setLayout Stacked
+                    |> Bar.setLayout (Stacked NoDirection)
                     |> Bar.setOrientation Horizontal
+                    |> Bar.setDimensions
+                        { margin = { top = 20, right = 10, bottom = 20, left = 10 }
+                        , width = width
+                        , height = height
+                        }
+                    |> Bar.render
+                ]
+            , Html.div
+                [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
+                , Html.Attributes.style "width" (String.fromFloat width ++ "px")
+                , class "chart-wrapper"
+                ]
+                [ Bar.init dataStacked
+                    --|> Bar.setShowColumnLabels True
+                    |> Bar.setLayout (Stacked Diverging)
+                    |> Bar.setOrientation Horizontal
+                    |> Bar.setDimensions
+                        { margin = { top = 20, right = 10, bottom = 20, left = 10 }
+                        , width = width
+                        , height = height
+                        }
+                    |> Bar.render
+                ]
+            , Html.div
+                [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
+                , Html.Attributes.style "width" (String.fromFloat width ++ "px")
+                , class "chart-wrapper"
+                ]
+                [ Bar.init dataStacked
+                    |> Bar.setLayout (Stacked Diverging)
+                    |> Bar.setOrientation Vertical
                     |> Bar.setDimensions
                         { margin = { top = 20, right = 10, bottom = 20, left = 10 }
                         , width = width
