@@ -12,6 +12,7 @@ module Chart.Bar exposing
     )
 
 import Chart.Helpers as Helpers exposing (dataBandToDataStacked)
+import Chart.Symbol exposing (triangle)
 import Chart.Type
     exposing
         ( Axis(..)
@@ -360,15 +361,29 @@ horizontalRect config label bandSingleScale linearScale point =
     let
         ( x__, y__ ) =
             point
+
+        h =
+            Helpers.floorFloat <| Scale.bandwidth bandSingleScale
+
+        w =
+            Helpers.floorFloat <| Scale.convert linearScale y__
+
+        y_ =
+            Helpers.floorFloat <| Scale.convert bandSingleScale x__
     in
     [ rect
         [ x <| 0
-        , y <| Helpers.floorFloat <| Scale.convert bandSingleScale x__
-        , width <| Helpers.floorFloat <| Scale.convert linearScale y__
-        , height <| Helpers.floorFloat <| Scale.bandwidth bandSingleScale
+        , y y_
+        , width w
+        , height h
         , shapeRendering RenderCrispEdges
         ]
         []
+    , g
+        [ transform [ Translate w y_ ]
+        , class [ "series" ]
+        ]
+        [ triangle h ]
     ]
         ++ label
 
