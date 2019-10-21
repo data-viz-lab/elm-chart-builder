@@ -142,10 +142,10 @@ main =
                 , class "chart-wrapper"
                 ]
                 [ Bar.init data
-                    --|> Bar.setShowColumnLabels True
+                    |> Bar.setShowSymbols True
                     |> Bar.setOrientation Horizontal
                     |> Bar.setDimensions
-                        { margin = { top = 20, right = 20, bottom = 20, left = 20 }
+                        { margin = { top = 20, right = 5, bottom = 20, left = 20 }
                         , width = width
                         , height = height
                         }

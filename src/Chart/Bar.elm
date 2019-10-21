@@ -8,6 +8,7 @@ module Chart.Bar exposing
     , setMargin
     , setOrientation
     , setShowColumnLabels
+    , setShowSymbols
     , setWidth
     )
 
@@ -47,6 +48,7 @@ import Chart.Type
         , setDimensions
         , setDomain
         , setShowColumnLabels
+        , setShowSymbols
         , toConfig
         )
 import Html exposing (Html)
@@ -139,7 +141,7 @@ renderBandStacked ( data, config ) =
             Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange domain.bandSingle
 
         linearRange =
-            getLinearRange config w h
+            getLinearRange config w h bandSingleScale
                 |> adjustLinearRange config stackDepth
 
         linearScale : ContinuousScale Float
@@ -261,7 +263,7 @@ renderBand ( data, config ) =
             getBandSingleRange config (Scale.bandwidth bandGroupScale)
 
         linearRange =
-            getLinearRange config w h
+            getLinearRange config w h bandSingleScale
 
         bandGroupScale =
             Scale.band { defaultBandConfig | paddingInner = 0.1 } bandGroupRange domain.bandGroup
@@ -359,6 +361,9 @@ verticalRect config label bandSingleScale linearScale point =
 horizontalRect : Config -> List (Svg msg) -> BandScale String -> ContinuousScale Float -> PointBand -> List (Svg msg)
 horizontalRect config label bandSingleScale linearScale point =
     let
+        c =
+            fromConfig config
+
         ( x__, y__ ) =
             point
 
@@ -370,6 +375,18 @@ horizontalRect config label bandSingleScale linearScale point =
 
         y_ =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
+
+        symbol =
+            if c.showSymbols then
+                [ g
+                    [ transform [ Translate (w + 1) y_ ]
+                    , class [ "series" ]
+                    ]
+                    [ triangle h ]
+                ]
+
+            else
+                []
     in
     [ rect
         [ x <| 0
@@ -379,12 +396,8 @@ horizontalRect config label bandSingleScale linearScale point =
         , shapeRendering RenderCrispEdges
         ]
         []
-    , g
-        [ transform [ Translate w y_ ]
-        , class [ "series" ]
-        ]
-        [ triangle h ]
     ]
+        ++ symbol
         ++ label
 
 
@@ -543,3 +556,17 @@ This shows the bar's ordinal value at the end of the rect, not the linear value
 setShowColumnLabels : Bool -> ( Data, Config ) -> ( Data, Config )
 setShowColumnLabels =
     Chart.Type.setShowColumnLabels
+
+
+{-| Sets the showSymbols boolean value in the config
+Default value: False
+This shows additional symbols at the end of each bar in a group, for facilitating accessibility
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setShowSymbols True
+        |> Bar.render
+
+-}
+setShowSymbols : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowSymbols =
+    Chart.Type.setShowSymbols

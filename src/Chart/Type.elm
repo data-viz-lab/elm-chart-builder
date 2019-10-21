@@ -36,10 +36,12 @@ module Chart.Type exposing
     , setMargin
     , setOrientation
     , setShowColumnLabels
+    , setShowSymbols
     , setWidth
     , toConfig
     )
 
+import Scale exposing (BandScale)
 import Set
 import Shape exposing (StackConfig, StackResult)
 
@@ -111,6 +113,7 @@ type alias ConfigStruct =
     , margin : Margin
     , orientation : Orientation
     , showColumnLabels : Bool
+    , showSymbols : Bool
     , width : Float
     }
 
@@ -124,6 +127,7 @@ defaultConfig =
         , margin = defaultMargin
         , orientation = defaultOrientation
         , showColumnLabels = False
+        , showSymbols = False
         , width = defaultWidth
         }
 
@@ -267,6 +271,15 @@ setShowColumnLabels bool ( data, config ) =
     ( data, toConfig { c | showColumnLabels = bool } )
 
 
+setShowSymbols : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowSymbols bool ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | showSymbols = bool } )
+
+
 
 -- GETTERS
 
@@ -368,8 +381,8 @@ getBandSingleRange config value =
             ( 0, floor value |> toFloat )
 
 
-getLinearRange : Config -> Float -> Float -> ( Float, Float )
-getLinearRange config width height =
+getLinearRange : Config -> Float -> Float -> BandScale String -> ( Float, Float )
+getLinearRange config width height bandScale =
     let
         c =
             fromConfig config
@@ -384,7 +397,11 @@ getLinearRange config width height =
         Horizontal ->
             case layout of
                 Grouped ->
-                    ( 0, width )
+                    if c.showSymbols then
+                        ( 0, width - Scale.bandwidth bandScale - 1 )
+
+                    else
+                        ( 0, width )
 
                 Stacked _ ->
                     ( width, 0 )
