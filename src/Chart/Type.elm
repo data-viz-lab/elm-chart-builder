@@ -41,6 +41,7 @@ module Chart.Type exposing
     , toConfig
     )
 
+import Chart.Symbol exposing (symbolGap)
 import Scale exposing (BandScale)
 import Set
 import Shape exposing (StackConfig, StackResult)
@@ -398,7 +399,7 @@ getLinearRange config width height bandScale =
             case layout of
                 Grouped ->
                     if c.showSymbols then
-                        ( 0, width - Scale.bandwidth bandScale - 1 )
+                        ( 0, width - Scale.bandwidth bandScale - symbolGap )
 
                     else
                         ( 0, width )

@@ -13,7 +13,15 @@ module Chart.Bar exposing
     )
 
 import Chart.Helpers as Helpers exposing (dataBandToDataStacked)
-import Chart.Symbol exposing (triangle)
+import Chart.Symbol
+    exposing
+        ( Symbol(..)
+        , circle_
+        , corner
+        , getSymbolByIndex
+        , symbolGap
+        , triangle
+        )
 import Chart.Type
     exposing
         ( Axis(..)
@@ -332,19 +340,22 @@ column config bandSingleScale linearScale idx point =
         rectangle =
             case c.orientation of
                 Vertical ->
-                    verticalRect config label bandSingleScale linearScale point
+                    verticalRect config bandSingleScale linearScale idx point
 
                 Horizontal ->
-                    horizontalRect config label bandSingleScale linearScale point
+                    horizontalRect config bandSingleScale linearScale idx point
     in
     g [ class [ "column", "column-" ++ String.fromInt idx ] ] rectangle
 
 
-verticalRect : Config -> List (Svg msg) -> BandScale String -> ContinuousScale Float -> PointBand -> List (Svg msg)
-verticalRect config label bandSingleScale linearScale point =
+verticalRect : Config -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> List (Svg msg)
+verticalRect config bandSingleScale linearScale idx point =
     let
         ( x__, y__ ) =
             point
+
+        label =
+            verticalLabel config bandSingleScale linearScale point
     in
     [ rect
         [ x <| Helpers.floorFloat <| Scale.convert bandSingleScale x__
@@ -358,8 +369,8 @@ verticalRect config label bandSingleScale linearScale point =
         ++ label
 
 
-horizontalRect : Config -> List (Svg msg) -> BandScale String -> ContinuousScale Float -> PointBand -> List (Svg msg)
-horizontalRect config label bandSingleScale linearScale point =
+horizontalRect : Config -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> List (Svg msg)
+horizontalRect config bandSingleScale linearScale idx point =
     let
         c =
             fromConfig config
@@ -376,17 +387,11 @@ horizontalRect config label bandSingleScale linearScale point =
         y_ =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
 
-        symbol =
-            if c.showSymbols then
-                [ g
-                    [ transform [ Translate (w + 1) y_ ]
-                    , class [ "series" ]
-                    ]
-                    [ triangle h ]
-                ]
+        label =
+            horizontalLabel config bandSingleScale linearScale point
 
-            else
-                []
+        symbol =
+            horizontalSymbol config { idx = idx, w = w, y_ = y_, h = h }
     in
     [ rect
         [ x <| 0
@@ -428,6 +433,42 @@ verticalLabel config bandSingleScale linearScale point =
             ]
             [ text <| x__ ]
         ]
+
+    else
+        []
+
+
+horizontalSymbol : Config -> { idx : Int, w : Float, y_ : Float, h : Float } -> List (Svg msg)
+horizontalSymbol config { idx, w, y_, h } =
+    let
+        symbol =
+            getSymbolByIndex idx
+    in
+    if fromConfig config |> .showSymbols then
+        case symbol of
+            Triangle ->
+                [ g
+                    [ transform [ Translate (w + symbolGap) y_ ]
+                    , class [ "symbol" ]
+                    ]
+                    [ triangle h ]
+                ]
+
+            Circle ->
+                [ g
+                    [ transform [ Translate (w + h / 2 + symbolGap) (y_ + h / 2) ]
+                    , class [ "symbol" ]
+                    ]
+                    [ circle_ (h / 2) ]
+                ]
+
+            Corner ->
+                [ g
+                    [ transform [ Translate (w + symbolGap) y_ ]
+                    , class [ "symbol" ]
+                    ]
+                    [ corner h ]
+                ]
 
     else
         []

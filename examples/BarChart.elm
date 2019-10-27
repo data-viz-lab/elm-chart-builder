@@ -26,15 +26,18 @@ css =
     border: 1px solid #666;
 }
 
-.column-0 rect {
+.column-0 rect,
+.column-0 .symbol {
     fill: #66c2a5;
 }
 
-.column-1 rect {
+.column-1 rect,
+.column-1 .symbol {
     fill: #fc8d62;
 }
 
-.column-2 rect {
+.column-2 rect,
+.column-2 .symbol {
     fill: #8da0cb;
 }
 """
