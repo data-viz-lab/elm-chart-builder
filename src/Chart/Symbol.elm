@@ -1,21 +1,25 @@
 module Chart.Symbol exposing
     ( Symbol(..)
+    , allSymbols
     , circle_
     , corner
+    , custom
     , getSymbolByIndex
     , symbolGap
     , triangle
     )
 
 import List.Extra
-import TypedSvg exposing (circle, polygon)
-import TypedSvg.Attributes exposing (points, r)
+import TypedSvg exposing (circle, path, polygon)
+import TypedSvg.Attributes exposing (d, points, r, transform, viewBox)
 import TypedSvg.Attributes.InPx exposing (r)
 import TypedSvg.Core exposing (Svg)
+import TypedSvg.Types exposing (Transform(..))
 
 
-type Symbol
+type Symbol msg
     = Circle
+    | Custom String
     | Corner
     | Triangle
 
@@ -54,13 +58,22 @@ corner size =
         []
 
 
-allSymbols : List Symbol
+custom : String -> Svg msg
+custom d_ =
+    path
+        [ d d_
+        , transform [ Scale 0.04 0.04 ]
+        ]
+        []
+
+
+allSymbols : List (Symbol msg)
 allSymbols =
     [ Circle, Corner, Triangle ]
 
 
-getSymbolByIndex : Int -> Symbol
-getSymbolByIndex idx =
-    allSymbols
-        |> List.Extra.getAt (modBy (List.length allSymbols) idx)
+getSymbolByIndex : List (Symbol msg) -> Int -> Symbol msg
+getSymbolByIndex all idx =
+    all
+        |> List.Extra.getAt (modBy (List.length all) idx)
         |> Maybe.withDefault Triangle

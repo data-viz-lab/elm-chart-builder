@@ -9,6 +9,7 @@ module Chart.Bar exposing
     , setOrientation
     , setShowColumnLabels
     , setShowSymbols
+    , setSymbols
     , setWidth
     )
 
@@ -18,6 +19,7 @@ import Chart.Symbol
         ( Symbol(..)
         , circle_
         , corner
+        , custom
         , getSymbolByIndex
         , symbolGap
         , triangle
@@ -441,8 +443,11 @@ verticalLabel config bandSingleScale linearScale point =
 horizontalSymbol : Config -> { idx : Int, w : Float, y_ : Float, h : Float } -> List (Svg msg)
 horizontalSymbol config { idx, w, y_, h } =
     let
+        c =
+            fromConfig config
+
         symbol =
-            getSymbolByIndex idx
+            getSymbolByIndex c.symbols idx
     in
     if fromConfig config |> .showSymbols then
         case symbol of
@@ -468,6 +473,14 @@ horizontalSymbol config { idx, w, y_, h } =
                     , class [ "symbol" ]
                     ]
                     [ corner h ]
+                ]
+
+            Custom str ->
+                [ g
+                    [ transform [ Translate (w + symbolGap) y_ ]
+                    , class [ "symbol" ]
+                    ]
+                    [ custom str ]
                 ]
 
     else
@@ -611,3 +624,17 @@ This shows additional symbols at the end of each bar in a group, for facilitatin
 setShowSymbols : Bool -> ( Data, Config ) -> ( Data, Config )
 setShowSymbols =
     Chart.Type.setShowSymbols
+
+
+{-| Sets the Symbol list in the config
+Default value: [ Circle, Corner, Triangle ]
+These are additional symbols at the end of each bar in a group, for facilitating accessibility
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setSymbols [ Circle, Corner, Triangle ]
+        |> Bar.render
+
+-}
+setSymbols : List (Symbol String) -> ( Data, Config ) -> ( Data, Config )
+setSymbols =
+    Chart.Type.setSymbols

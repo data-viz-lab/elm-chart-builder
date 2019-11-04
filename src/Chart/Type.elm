@@ -37,14 +37,16 @@ module Chart.Type exposing
     , setOrientation
     , setShowColumnLabels
     , setShowSymbols
+    , setSymbols
     , setWidth
     , toConfig
     )
 
-import Chart.Symbol exposing (symbolGap)
+import Chart.Symbol exposing (Symbol, allSymbols, symbolGap)
 import Scale exposing (BandScale)
 import Set
 import Shape exposing (StackConfig, StackResult)
+import TypedSvg.Core exposing (Svg)
 
 
 type Orientation
@@ -115,6 +117,7 @@ type alias ConfigStruct =
     , orientation : Orientation
     , showColumnLabels : Bool
     , showSymbols : Bool
+    , symbols : List (Symbol String)
     , width : Float
     }
 
@@ -129,6 +132,7 @@ defaultConfig =
         , orientation = defaultOrientation
         , showColumnLabels = False
         , showSymbols = False
+        , symbols = allSymbols
         , width = defaultWidth
         }
 
@@ -279,6 +283,15 @@ setShowSymbols bool ( data, config ) =
             fromConfig config
     in
     ( data, toConfig { c | showSymbols = bool } )
+
+
+setSymbols : List (Symbol String) -> ( Data, Config ) -> ( Data, Config )
+setSymbols all ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | symbols = all } )
 
 
 
