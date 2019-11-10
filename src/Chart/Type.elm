@@ -412,7 +412,9 @@ getLinearRange config width height bandScale =
             case layout of
                 Grouped ->
                     if c.showSymbols then
-                        ( 0, width - Scale.bandwidth bandScale - symbolGap )
+                        -- Here we are leaving space for the symbol
+                        -- TODO: Using 2 * symbolGap just in case a symbol is not square
+                        ( 0, width - Scale.bandwidth bandScale - symbolGap * 2 )
 
                     else
                         ( 0, width )

@@ -17,11 +17,13 @@ import Chart.Helpers as Helpers exposing (dataBandToDataStacked)
 import Chart.Symbol
     exposing
         ( Symbol(..)
+        , allSymbols
         , circle_
         , corner
         , custom
         , getSymbolByIndex
         , symbolGap
+        , symbolToId
         , triangle
         )
 import Chart.Type
@@ -62,11 +64,21 @@ import Chart.Type
         , toConfig
         )
 import Html exposing (Html)
+import Html.Attributes
 import List.Extra
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import Shape exposing (StackConfig, StackResult)
 import TypedSvg exposing (g, rect, style, svg, text_)
-import TypedSvg.Attributes exposing (alignmentBaseline, class, shapeRendering, textAnchor, transform, viewBox)
+import TypedSvg.Attributes
+    exposing
+        ( alignmentBaseline
+        , class
+        , shapeRendering
+        , textAnchor
+        , transform
+        , viewBox
+        , xlinkHref
+        )
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
@@ -247,6 +259,9 @@ horizontalRectsStacked config bandGroupScale ( group, values ) =
 renderBand : ( Data, Config ) -> Html msg
 renderBand ( data, config ) =
     let
+        c =
+            fromConfig config
+
         m =
             getMargin config
 
@@ -283,19 +298,32 @@ renderBand ( data, config ) =
 
         linearScale =
             Scale.linear linearRange domain.linear
+
+        -- TODO: get from function, also passing config (layout etc)
+        symbolHeight =
+            Helpers.floorFloat <| Scale.bandwidth bandSingleScale
+
+        symbolElements =
+            if c.showSymbols then
+                symbolsToSymbolElements c.orientation symbolHeight c.symbols
+
+            else
+                []
     in
     svg
         [ viewBox 0 0 outerW outerH
         , width outerW
         , height outerH
         ]
-        [ g
-            [ transform [ Translate m.left m.top ]
-            , class [ "series" ]
-            ]
-          <|
-            List.map (columns config bandGroupScale bandSingleScale linearScale) (fromDataBand data)
-        ]
+    <|
+        symbolElements
+            ++ [ g
+                    [ transform [ Translate m.left m.top ]
+                    , class [ "series" ]
+                    ]
+                 <|
+                    List.map (columns config bandGroupScale bandSingleScale linearScale) (fromDataBand data)
+               ]
 
 
 columns : Config -> BandScale String -> BandScale String -> ContinuousScale Float -> DataGroupBand -> Svg msg
@@ -448,6 +476,9 @@ horizontalSymbol config { idx, w, y_, h } =
 
         symbol =
             getSymbolByIndex c.symbols idx
+
+        symbolRef =
+            [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
     in
     if fromConfig config |> .showSymbols then
         case symbol of
@@ -456,7 +487,7 @@ horizontalSymbol config { idx, w, y_, h } =
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
                     ]
-                    [ triangle h ]
+                    symbolRef
                 ]
 
             Circle ->
@@ -464,7 +495,7 @@ horizontalSymbol config { idx, w, y_, h } =
                     [ transform [ Translate (w + h / 2 + symbolGap) (y_ + h / 2) ]
                     , class [ "symbol" ]
                     ]
-                    [ circle_ (h / 2) ]
+                    symbolRef
                 ]
 
             Corner ->
@@ -472,15 +503,15 @@ horizontalSymbol config { idx, w, y_, h } =
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
                     ]
-                    [ corner h ]
+                    symbolRef
                 ]
 
-            Custom str ->
+            Custom _ ->
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
                     ]
-                    [ custom str ]
+                    symbolRef
                 ]
 
     else
@@ -508,6 +539,40 @@ horizontalLabel config bandSingleScale linearScale point =
 
     else
         []
+
+
+symbolsToSymbolElements : Orientation -> Float -> List (Symbol String) -> List (Svg msg)
+symbolsToSymbolElements orientation localDimension symbols =
+    symbols
+        |> List.map
+            (\symbol ->
+                let
+                    s =
+                        TypedSvg.symbol
+                            [ Html.Attributes.id (symbolToId symbol) ]
+                in
+                case symbol of
+                    Circle ->
+                        s [ circle_ (localDimension / 2) ]
+
+                    Custom conf ->
+                        let
+                            scaleFactor =
+                                case orientation of
+                                    Vertical ->
+                                        localDimension / conf.width
+
+                                    Horizontal ->
+                                        localDimension / conf.height
+                        in
+                        s [ custom scaleFactor conf ]
+
+                    Corner ->
+                        s [ corner localDimension ]
+
+                    Triangle ->
+                        s [ triangle localDimension ]
+            )
 
 
 

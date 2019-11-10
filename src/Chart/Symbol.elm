@@ -6,22 +6,47 @@ module Chart.Symbol exposing
     , custom
     , getSymbolByIndex
     , symbolGap
+    , symbolToId
     , triangle
     )
 
 import List.Extra
-import TypedSvg exposing (circle, path, polygon)
+import TypedSvg exposing (circle, g, path, polygon)
 import TypedSvg.Attributes exposing (d, points, r, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (r)
+import TypedSvg.Attributes.InPx as InPx
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Transform(..))
 
 
+type alias CustomSymbolConf =
+    { identifier : String
+    , width : Float
+    , height : Float
+    , paths : List String
+    }
+
+
 type Symbol msg
     = Circle
-    | Custom String
+    | Custom CustomSymbolConf
     | Corner
     | Triangle
+
+
+symbolToId : Symbol msg -> String
+symbolToId symbol =
+    case symbol of
+        Circle ->
+            "symbol-circle"
+
+        Custom { identifier } ->
+            identifier
+
+        Corner ->
+            "sybol-corner"
+
+        Triangle ->
+            "symbol-triangle"
 
 
 symbolGap : Float
@@ -43,7 +68,7 @@ triangle size =
 
 circle_ : Float -> Svg msg
 circle_ radius =
-    circle [ r radius ] []
+    circle [ InPx.r radius ] []
 
 
 corner : Float -> Svg msg
@@ -58,13 +83,10 @@ corner size =
         []
 
 
-custom : String -> Svg msg
-custom d_ =
-    path
-        [ d d_
-        , transform [ Scale 0.04 0.04 ]
-        ]
-        []
+custom : Float -> CustomSymbolConf -> Svg msg
+custom scaleFactor conf =
+    g [ transform [ Scale scaleFactor scaleFactor ] ] <|
+        List.map (\d_ -> path [ d d_ ] []) conf.paths
 
 
 allSymbols : List (Symbol msg)
