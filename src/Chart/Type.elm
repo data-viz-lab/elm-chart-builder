@@ -42,7 +42,7 @@ module Chart.Type exposing
     , toConfig
     )
 
-import Chart.Symbol exposing (Symbol, allSymbols, symbolGap)
+import Chart.Symbol exposing (Symbol, symbolGap)
 import Scale exposing (BandScale)
 import Set
 import Shape exposing (StackConfig, StackResult)
@@ -132,7 +132,7 @@ defaultConfig =
         , orientation = defaultOrientation
         , showColumnLabels = False
         , showSymbols = False
-        , symbols = allSymbols
+        , symbols = []
         , width = defaultWidth
         }
 

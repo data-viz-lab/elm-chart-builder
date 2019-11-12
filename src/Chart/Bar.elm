@@ -17,7 +17,6 @@ import Chart.Helpers as Helpers exposing (dataBandToDataStacked)
 import Chart.Symbol
     exposing
         ( Symbol(..)
-        , allSymbols
         , circle_
         , corner
         , custom
@@ -84,18 +83,140 @@ import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
-stackedContainerTranslate : Config -> Float -> Float -> Float -> Transform
-stackedContainerTranslate config a b offset =
-    let
-        orientation =
-            fromConfig config |> .orientation
-    in
-    case orientation of
-        Horizontal ->
-            Translate (a - offset) b
 
-        Vertical ->
-            Translate a (b + offset)
+-- API METHODS
+
+
+{-| Initializes the bar chart
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+
+-}
+init : Data -> ( Data, Config )
+init data =
+    ( data, defaultConfig )
+        |> setDomain (getDomainFromData data)
+
+
+{-| Renders the bar chart, after initialisation and customisation
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.render
+
+-}
+render : ( Data, Config ) -> Html msg
+render ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    case data of
+        DataBand d ->
+            case c.layout of
+                Grouped ->
+                    renderBandGrouped ( data, config )
+
+                Stacked _ ->
+                    renderBandStacked ( data, config )
+
+
+setHeight : Float -> ( Data, Config ) -> ( Data, Config )
+setHeight =
+    Chart.Type.setHeight
+
+
+setWidth : Float -> ( Data, Config ) -> ( Data, Config )
+setWidth =
+    Chart.Type.setWidth
+
+
+setLayout : Layout -> ( Data, Config ) -> ( Data, Config )
+setLayout =
+    Chart.Type.setLayout
+
+
+{-| Sets the orientation value in the config
+Default value: Vertical
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setOrientation Horizontal
+        |> Bar.render
+
+-}
+setOrientation : Orientation -> ( Data, Config ) -> ( Data, Config )
+setOrientation =
+    Chart.Type.setOrientation
+
+
+setMargin : Margin -> ( Data, Config ) -> ( Data, Config )
+setMargin =
+    Chart.Type.setMargin
+
+
+setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
+setDimensions =
+    Chart.Type.setDimensions
+
+
+{-| Sets the domain value in the config
+If not set, the domain is calculated from the data
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setDomain { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) }
+        |> Bar.render
+
+-}
+setDomain : Domain -> ( Data, Config ) -> ( Data, Config )
+setDomain =
+    Chart.Type.setDomain
+
+
+{-| Sets the showColumnLabels boolean value in the config
+Default value: False
+This shows the bar's ordinal value at the end of the rect, not the linear value
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setShowColumnLabels True
+        |> Bar.render
+
+-}
+setShowColumnLabels : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowColumnLabels =
+    Chart.Type.setShowColumnLabels
+
+
+{-| Sets the showSymbols boolean value in the config
+Default value: False
+This shows additional symbols at the end of each bar in a group, for facilitating accessibility
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setShowSymbols True
+        |> Bar.render
+
+-}
+setShowSymbols : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowSymbols =
+    Chart.Type.setShowSymbols
+
+
+{-| Sets the Symbol list in the config
+Default value: [ Circle, Corner, Triangle ]
+These are additional symbols at the end of each bar in a group, for facilitating accessibility
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setSymbols [ Circle, Corner, Triangle ]
+        |> Bar.render
+
+-}
+setSymbols : List (Symbol String) -> ( Data, Config ) -> ( Data, Config )
+setSymbols =
+    Chart.Type.setSymbols
+
+
+
+-- INTERNALS
+--
+-- BAND STACKED
 
 
 renderBandStacked : ( Data, Config ) -> Html msg
@@ -198,6 +319,20 @@ renderBandStacked ( data, config ) =
         ]
 
 
+stackedContainerTranslate : Config -> Float -> Float -> Float -> Transform
+stackedContainerTranslate config a b offset =
+    let
+        orientation =
+            fromConfig config |> .orientation
+    in
+    case orientation of
+        Horizontal ->
+            Translate (a - offset) b
+
+        Vertical ->
+            Translate a (b + offset)
+
+
 stackedColumns : Config -> BandScale String -> ( String, List ( Float, Float ) ) -> Svg msg
 stackedColumns config bandGroupScale payload =
     let
@@ -256,8 +391,12 @@ horizontalRectsStacked config bandGroupScale ( group, values ) =
         |> List.indexedMap (\idx -> block idx)
 
 
-renderBand : ( Data, Config ) -> Html msg
-renderBand ( data, config ) =
+
+-- BAND GROUPED
+
+
+renderBandGrouped : ( Data, Config ) -> Html msg
+renderBandGrouped ( data, config ) =
     let
         c =
             fromConfig config
@@ -299,13 +438,12 @@ renderBand ( data, config ) =
         linearScale =
             Scale.linear linearRange domain.linear
 
-        -- TODO: get from function, also passing config (layout etc)
-        symbolHeight =
+        localDimension =
             Helpers.floorFloat <| Scale.bandwidth bandSingleScale
 
         symbolElements =
             if c.showSymbols then
-                symbolsToSymbolElements c.orientation symbolHeight c.symbols
+                symbolsToSymbolElements c.orientation localDimension c.symbols
 
             else
                 []
@@ -381,21 +519,40 @@ column config bandSingleScale linearScale idx point =
 verticalRect : Config -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> List (Svg msg)
 verticalRect config bandSingleScale linearScale idx point =
     let
+        c =
+            fromConfig config
+
         ( x__, y__ ) =
             point
 
         label =
             verticalLabel config bandSingleScale linearScale point
+
+        x_ =
+            Helpers.floorFloat <| Scale.convert bandSingleScale x__
+
+        y_ =
+            Helpers.floorFloat <| Scale.convert linearScale y__
+
+        w =
+            Helpers.floorFloat <| Scale.bandwidth bandSingleScale
+
+        h =
+            Helpers.floorFloat <| getHeight config - Scale.convert linearScale y__
+
+        symbol =
+            horizontalSymbol config { idx = idx, w = x_, y_ = y_ - 25, h = h }
     in
     [ rect
-        [ x <| Helpers.floorFloat <| Scale.convert bandSingleScale x__
-        , y <| Helpers.floorFloat <| Scale.convert linearScale y__
-        , width <| Helpers.floorFloat <| Scale.bandwidth bandSingleScale
-        , height <| Helpers.floorFloat <| getHeight config - Scale.convert linearScale y__
+        [ x <| x_
+        , y <| y_
+        , width <| w
+        , height <| h
         , shapeRendering RenderCrispEdges
         ]
         []
     ]
+        ++ symbol
         ++ label
 
 
@@ -482,7 +639,7 @@ horizontalSymbol config { idx, w, y_, h } =
     in
     if fromConfig config |> .showSymbols then
         case symbol of
-            Triangle ->
+            Triangle _ ->
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
@@ -490,7 +647,7 @@ horizontalSymbol config { idx, w, y_, h } =
                     symbolRef
                 ]
 
-            Circle ->
+            Circle _ ->
                 [ g
                     [ transform [ Translate (w + h / 2 + symbolGap) (y_ + h / 2) ]
                     , class [ "symbol" ]
@@ -498,7 +655,7 @@ horizontalSymbol config { idx, w, y_, h } =
                     symbolRef
                 ]
 
-            Corner ->
+            Corner _ ->
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
@@ -552,7 +709,7 @@ symbolsToSymbolElements orientation localDimension symbols =
                             [ Html.Attributes.id (symbolToId symbol) ]
                 in
                 case symbol of
-                    Circle ->
+                    Circle _ ->
                         s [ circle_ (localDimension / 2) ]
 
                     Custom conf ->
@@ -567,139 +724,9 @@ symbolsToSymbolElements orientation localDimension symbols =
                         in
                         s [ custom scaleFactor conf ]
 
-                    Corner ->
+                    Corner _ ->
                         s [ corner localDimension ]
 
-                    Triangle ->
+                    Triangle _ ->
                         s [ triangle localDimension ]
             )
-
-
-
--- API METHODS
-
-
-{-| Initializes the bar chart
-
-    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-
--}
-init : Data -> ( Data, Config )
-init data =
-    ( data, defaultConfig )
-        |> setDomain (getDomainFromData data)
-
-
-{-| Renders the bar chart, after initialisation and customisation
-
-    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.render
-
--}
-render : ( Data, Config ) -> Html msg
-render ( data, config ) =
-    let
-        c =
-            fromConfig config
-    in
-    case data of
-        DataBand d ->
-            case c.layout of
-                Grouped ->
-                    renderBand ( data, config )
-
-                Stacked _ ->
-                    renderBandStacked ( data, config )
-
-
-setHeight : Float -> ( Data, Config ) -> ( Data, Config )
-setHeight =
-    Chart.Type.setHeight
-
-
-setWidth : Float -> ( Data, Config ) -> ( Data, Config )
-setWidth =
-    Chart.Type.setWidth
-
-
-setLayout : Layout -> ( Data, Config ) -> ( Data, Config )
-setLayout =
-    Chart.Type.setLayout
-
-
-{-| Sets the orientation value in the config
-Default value: Vertical
-
-    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setOrientation Horizontal
-        |> Bar.render
-
--}
-setOrientation : Orientation -> ( Data, Config ) -> ( Data, Config )
-setOrientation =
-    Chart.Type.setOrientation
-
-
-setMargin : Margin -> ( Data, Config ) -> ( Data, Config )
-setMargin =
-    Chart.Type.setMargin
-
-
-setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
-setDimensions =
-    Chart.Type.setDimensions
-
-
-{-| Sets the domain value in the config
-If not set, the domain is calculated from the data
-
-    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setDomain { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) }
-        |> Bar.render
-
--}
-setDomain : Domain -> ( Data, Config ) -> ( Data, Config )
-setDomain =
-    Chart.Type.setDomain
-
-
-{-| Sets the showColumnLabels boolean value in the config
-Default value: False
-This shows the bar's ordinal value at the end of the rect, not the linear value
-
-    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setShowColumnLabels True
-        |> Bar.render
-
--}
-setShowColumnLabels : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowColumnLabels =
-    Chart.Type.setShowColumnLabels
-
-
-{-| Sets the showSymbols boolean value in the config
-Default value: False
-This shows additional symbols at the end of each bar in a group, for facilitating accessibility
-
-    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setShowSymbols True
-        |> Bar.render
-
--}
-setShowSymbols : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowSymbols =
-    Chart.Type.setShowSymbols
-
-
-{-| Sets the Symbol list in the config
-Default value: [ Circle, Corner, Triangle ]
-These are additional symbols at the end of each bar in a group, for facilitating accessibility
-
-    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setSymbols [ Circle, Corner, Triangle ]
-        |> Bar.render
-
--}
-setSymbols : List (Symbol String) -> ( Data, Config ) -> ( Data, Config )
-setSymbols =
-    Chart.Type.setSymbols

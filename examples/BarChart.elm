@@ -44,11 +44,11 @@ css =
 """
 
 
-icons : List (Symbol msg)
-icons =
-    [ Custom { identifier = "bicycle-symbol", width = 640, height = 512, paths = [ bicycleSymbol ] }
-    , Custom { identifier = "car-symbol", width = 640, height = 512, paths = [ carSymbol ] }
-    , Custom { identifier = "plane-symbol", width = 576, height = 512, paths = [ planeSymbol ] }
+icons : String -> List (Symbol msg)
+icons prefix =
+    [ Custom { identifier = prefix ++ "-bicycle-symbol", width = 640, height = 512, paths = [ bicycleSymbol ] }
+    , Custom { identifier = prefix ++ "-car-symbol", width = 640, height = 512, paths = [ carSymbol ] }
+    , Custom { identifier = prefix ++ "-plane-symbol", width = 576, height = 512, paths = [ planeSymbol ] }
     ]
 
 
@@ -140,7 +140,8 @@ main =
                 , class "chart-wrapper"
                 ]
                 [ Bar.init data
-                    --|> Bar.setShowColumnLabels True
+                    |> Bar.setShowSymbols True
+                    |> Bar.setSymbols (icons "chart-a")
                     |> Bar.setDimensions
                         { margin = { top = 20, right = 20, bottom = 10, left = 20 }
                         , width = width
@@ -170,7 +171,7 @@ main =
                 ]
                 [ Bar.init data
                     |> Bar.setShowSymbols True
-                    |> Bar.setSymbols icons
+                    |> Bar.setSymbols (icons "chart-b")
                     |> Bar.setOrientation Horizontal
                     |> Bar.setDimensions
                         { margin = { top = 20, right = 5, bottom = 20, left = 20 }

@@ -1,6 +1,5 @@
 module Chart.Symbol exposing
     ( Symbol(..)
-    , allSymbols
     , circle_
     , corner
     , custom
@@ -27,26 +26,26 @@ type alias CustomSymbolConf =
 
 
 type Symbol msg
-    = Circle
+    = Circle String
     | Custom CustomSymbolConf
-    | Corner
-    | Triangle
+    | Corner String
+    | Triangle String
 
 
 symbolToId : Symbol msg -> String
 symbolToId symbol =
     case symbol of
-        Circle ->
-            "symbol-circle"
+        Circle id ->
+            id
 
         Custom { identifier } ->
             identifier
 
-        Corner ->
-            "sybol-corner"
+        Corner id ->
+            id
 
-        Triangle ->
-            "symbol-triangle"
+        Triangle id ->
+            id
 
 
 symbolGap : Float
@@ -89,13 +88,8 @@ custom scaleFactor conf =
         List.map (\d_ -> path [ d d_ ] []) conf.paths
 
 
-allSymbols : List (Symbol msg)
-allSymbols =
-    [ Circle, Corner, Triangle ]
-
-
 getSymbolByIndex : List (Symbol msg) -> Int -> Symbol msg
 getSymbolByIndex all idx =
     all
         |> List.Extra.getAt (modBy (List.length all) idx)
-        |> Maybe.withDefault Triangle
+        |> Maybe.withDefault (Triangle "default-symbol-identifier")
