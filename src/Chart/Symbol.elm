@@ -1,5 +1,6 @@
 module Chart.Symbol exposing
-    ( Symbol(..)
+    ( CustomSymbolConf
+    , Symbol(..)
     , circle_
     , corner
     , custom
@@ -22,6 +23,7 @@ type alias CustomSymbolConf =
     , width : Float
     , height : Float
     , paths : List String
+    , useGap : Bool
     }
 
 
@@ -50,7 +52,7 @@ symbolToId symbol =
 
 symbolGap : Float
 symbolGap =
-    2.0
+    0.0
 
 
 triangle : Float -> Svg msg

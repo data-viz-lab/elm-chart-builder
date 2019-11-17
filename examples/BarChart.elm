@@ -21,10 +21,11 @@ css =
   grid-gap: 20px;
   background-color: #fff;
   color: #444;
+  margin: 25px;
 }
 
 .chart-wrapper {
-    border: 1px solid #666;
+    border: 1px solid #c4c4c4;
 }
 
 .column-0 rect,
@@ -46,9 +47,13 @@ css =
 
 icons : String -> List (Symbol msg)
 icons prefix =
-    [ Custom { identifier = prefix ++ "-bicycle-symbol", width = 640, height = 512, paths = [ bicycleSymbol ] }
-    , Custom { identifier = prefix ++ "-car-symbol", width = 640, height = 512, paths = [ carSymbol ] }
-    , Custom { identifier = prefix ++ "-plane-symbol", width = 576, height = 512, paths = [ planeSymbol ] }
+    [ Custom { identifier = prefix ++ "-bicycle-symbol", width = 640, height = 512, paths = [ bicycleSymbol ], useGap = False }
+    , Custom { identifier = prefix ++ "-car-symbol", width = 640, height = 512, paths = [ carSymbol ], useGap = False }
+    , Custom { identifier = prefix ++ "-plane-symbol", width = 576, height = 512, paths = [ planeSymbol ], useGap = False }
+
+    --, Triangle (prefix ++ "-triangle-symbol")
+    --, Circle (prefix ++ "-circle-symbol")
+    --, Corner (prefix ++ "-corner-symbol")
     ]
 
 
@@ -143,7 +148,7 @@ main =
                     |> Bar.setShowSymbols True
                     |> Bar.setSymbols (icons "chart-a")
                     |> Bar.setDimensions
-                        { margin = { top = 20, right = 20, bottom = 10, left = 20 }
+                        { margin = { top = 1, right = 1, bottom = 1, left = 1 }
                         , width = width
                         , height = height
                         }
@@ -174,7 +179,7 @@ main =
                     |> Bar.setSymbols (icons "chart-b")
                     |> Bar.setOrientation Horizontal
                     |> Bar.setDimensions
-                        { margin = { top = 20, right = 5, bottom = 20, left = 20 }
+                        { margin = { top = 1, right = 1, bottom = 1, left = 1 }
                         , width = width
                         , height = height
                         }

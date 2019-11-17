@@ -1,6 +1,7 @@
 module Chart.Type exposing
     ( Axis(..)
     , Config
+    , ConfigStruct
     , Data(..)
     , DataGroupBand
     , Direction(..)
@@ -39,10 +40,12 @@ module Chart.Type exposing
     , setShowSymbols
     , setSymbols
     , setWidth
+    , symbolCustomSpace
+    , symbolSpace
     , toConfig
     )
 
-import Chart.Symbol exposing (Symbol, symbolGap)
+import Chart.Symbol exposing (Symbol(..), symbolGap)
 import Scale exposing (BandScale)
 import Set
 import Shape exposing (StackConfig, StackResult)
@@ -413,8 +416,7 @@ getLinearRange config width height bandScale =
                 Grouped ->
                     if c.showSymbols then
                         -- Here we are leaving space for the symbol
-                        -- TODO: Using 2 * symbolGap just in case a symbol is not square
-                        ( 0, width - Scale.bandwidth bandScale - symbolGap * 2 )
+                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale c.symbols )
 
                     else
                         ( 0, width )
@@ -423,7 +425,17 @@ getLinearRange config width height bandScale =
                     ( width, 0 )
 
         Vertical ->
-            ( height, 0 )
+            case layout of
+                Grouped ->
+                    if c.showSymbols then
+                        -- Here we are leaving space for the symbol
+                        ( height - symbolGap - symbolSpace c.orientation bandScale c.symbols, 0 )
+
+                    else
+                        ( height, 0 )
+
+                Stacked _ ->
+                    ( height, 0 )
 
 
 adjustLinearRange : Config -> Int -> ( Float, Float ) -> ( Float, Float )
@@ -464,3 +476,51 @@ getOffset config =
 
         Grouped ->
             Shape.stackOffsetNone
+
+
+symbolSpace : Orientation -> BandScale String -> List (Symbol String) -> Float
+symbolSpace orientation bandSingleScale symbols =
+    let
+        localDimension =
+            Scale.bandwidth bandSingleScale |> floor |> toFloat
+    in
+    symbols
+        |> List.map
+            (\symbol ->
+                case symbol of
+                    Circle _ ->
+                        localDimension / 2
+
+                    Custom conf ->
+                        symbolCustomSpace orientation localDimension conf
+
+                    Corner _ ->
+                        localDimension
+
+                    Triangle _ ->
+                        localDimension
+            )
+        |> List.maximum
+        |> Maybe.withDefault 0
+
+
+symbolCustomSpace : Orientation -> Float -> Chart.Symbol.CustomSymbolConf -> Float
+symbolCustomSpace orientation localDimension conf =
+    let
+        iconRatio =
+            conf.height / conf.width
+    in
+    case orientation of
+        Horizontal ->
+            let
+                scalingFactor =
+                    localDimension / conf.height
+            in
+            scalingFactor * conf.width
+
+        Vertical ->
+            let
+                scalingFactor =
+                    localDimension / conf.width
+            in
+            scalingFactor * conf.height

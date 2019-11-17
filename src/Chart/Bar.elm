@@ -29,6 +29,7 @@ import Chart.Type
     exposing
         ( Axis(..)
         , Config
+        , ConfigStruct
         , Data(..)
         , DataGroupBand
         , Domain(..)
@@ -60,6 +61,8 @@ import Chart.Type
         , setDomain
         , setShowColumnLabels
         , setShowSymbols
+        , symbolCustomSpace
+        , symbolSpace
         , toConfig
         )
 import Html exposing (Html)
@@ -311,19 +314,19 @@ renderBandStacked ( data, config ) =
         , height outerH
         ]
         [ g
-            [ transform [ stackedContainerTranslate config m.left m.top (toFloat stackDepth) ]
+            [ transform [ stackedContainerTranslate c m.left m.top (toFloat stackDepth) ]
             , class [ "series" ]
             ]
           <|
-            List.map (stackedColumns config bandGroupScale) (List.map2 (\a b -> ( a, b )) columnGroupes scaledValues)
+            List.map (stackedColumns c bandGroupScale) (List.map2 (\a b -> ( a, b )) columnGroupes scaledValues)
         ]
 
 
-stackedContainerTranslate : Config -> Float -> Float -> Float -> Transform
+stackedContainerTranslate : ConfigStruct -> Float -> Float -> Float -> Transform
 stackedContainerTranslate config a b offset =
     let
         orientation =
-            fromConfig config |> .orientation
+            config |> .orientation
     in
     case orientation of
         Horizontal ->
@@ -333,14 +336,11 @@ stackedContainerTranslate config a b offset =
             Translate a (b + offset)
 
 
-stackedColumns : Config -> BandScale String -> ( String, List ( Float, Float ) ) -> Svg msg
+stackedColumns : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ) ) -> Svg msg
 stackedColumns config bandGroupScale payload =
     let
-        c =
-            fromConfig config
-
         rects =
-            case c.orientation of
+            case config.orientation of
                 Vertical ->
                     verticalRectsStacked config bandGroupScale payload
 
@@ -350,7 +350,7 @@ stackedColumns config bandGroupScale payload =
     g [ class [ "columns" ] ] rects
 
 
-verticalRectsStacked : Config -> BandScale String -> ( String, List ( Float, Float ) ) -> List (Svg msg)
+verticalRectsStacked : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ) ) -> List (Svg msg)
 verticalRectsStacked config bandGroupScale ( group, values ) =
     let
         block idx ( upper, lower ) =
@@ -368,12 +368,9 @@ verticalRectsStacked config bandGroupScale ( group, values ) =
     List.indexedMap (\idx -> block idx) values
 
 
-horizontalRectsStacked : Config -> BandScale String -> ( String, List ( Float, Float ) ) -> List (Svg msg)
+horizontalRectsStacked : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ) ) -> List (Svg msg)
 horizontalRectsStacked config bandGroupScale ( group, values ) =
     let
-        c =
-            fromConfig config
-
         block idx ( lower, upper ) =
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
                 [ rect
@@ -387,7 +384,7 @@ horizontalRectsStacked config bandGroupScale ( group, values ) =
                 ]
     in
     values
-        |> Helpers.stackedValuesInverse c.width
+        |> Helpers.stackedValuesInverse config.width
         |> List.indexedMap (\idx -> block idx)
 
 
@@ -438,12 +435,9 @@ renderBandGrouped ( data, config ) =
         linearScale =
             Scale.linear linearRange domain.linear
 
-        localDimension =
-            Helpers.floorFloat <| Scale.bandwidth bandSingleScale
-
         symbolElements =
             if c.showSymbols then
-                symbolsToSymbolElements c.orientation localDimension c.symbols
+                symbolsToSymbolElements c.orientation bandSingleScale c.symbols
 
             else
                 []
@@ -460,16 +454,13 @@ renderBandGrouped ( data, config ) =
                     , class [ "series" ]
                     ]
                  <|
-                    List.map (columns config bandGroupScale bandSingleScale linearScale) (fromDataBand data)
+                    List.map (columns c bandGroupScale bandSingleScale linearScale) (fromDataBand data)
                ]
 
 
-columns : Config -> BandScale String -> BandScale String -> ContinuousScale Float -> DataGroupBand -> Svg msg
-columns config bandGroupScale bandSingleScale linearScale dataGroup =
+columns : ConfigStruct -> BandScale String -> BandScale String -> ContinuousScale Float -> DataGroupBand -> Svg msg
+columns c bandGroupScale bandSingleScale linearScale dataGroup =
     let
-        c =
-            fromConfig config
-
         tr =
             case c.orientation of
                 Vertical ->
@@ -485,63 +476,65 @@ columns config bandGroupScale bandSingleScale linearScale dataGroup =
         , class [ "data-group" ]
         ]
     <|
-        List.indexedMap (column config bandSingleScale linearScale) dataGroup.points
+        List.indexedMap (column c bandSingleScale linearScale) dataGroup.points
 
 
-column : Config -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> Svg msg
-column config bandSingleScale linearScale idx point =
+column : ConfigStruct -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> Svg msg
+column c bandSingleScale linearScale idx point =
     let
         ( x__, y__ ) =
             point
 
-        c =
-            fromConfig config
-
         label =
             case c.orientation of
                 Horizontal ->
-                    horizontalLabel config bandSingleScale linearScale point
+                    horizontalLabel c bandSingleScale linearScale point
 
                 Vertical ->
-                    verticalLabel config bandSingleScale linearScale point
+                    verticalLabel c bandSingleScale linearScale point
 
         rectangle =
             case c.orientation of
                 Vertical ->
-                    verticalRect config bandSingleScale linearScale idx point
+                    verticalRect c bandSingleScale linearScale idx point
 
                 Horizontal ->
-                    horizontalRect config bandSingleScale linearScale idx point
+                    horizontalRect c bandSingleScale linearScale idx point
     in
     g [ class [ "column", "column-" ++ String.fromInt idx ] ] rectangle
 
 
-verticalRect : Config -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> List (Svg msg)
-verticalRect config bandSingleScale linearScale idx point =
+verticalRect : ConfigStruct -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> List (Svg msg)
+verticalRect c bandSingleScale linearScale idx point =
     let
-        c =
-            fromConfig config
-
         ( x__, y__ ) =
             point
 
         label =
-            verticalLabel config bandSingleScale linearScale point
+            verticalLabel c bandSingleScale linearScale point
+
+        iconOffset =
+            symbolSpace Vertical bandSingleScale c.symbols + symbolGap
 
         x_ =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
 
         y_ =
-            Helpers.floorFloat <| Scale.convert linearScale y__
+            Scale.convert linearScale y__
+                + iconOffset
+                |> Helpers.floorFloat
 
         w =
             Helpers.floorFloat <| Scale.bandwidth bandSingleScale
 
         h =
-            Helpers.floorFloat <| getHeight config - Scale.convert linearScale y__
+            getHeight (toConfig c)
+                - Scale.convert linearScale y__
+                - iconOffset
+                |> Helpers.floorFloat
 
         symbol =
-            horizontalSymbol config { idx = idx, w = x_, y_ = y_ - 25, h = h }
+            verticalSymbol c { idx = idx, x_ = x_, y_ = y_, w = w }
     in
     [ rect
         [ x <| x_
@@ -556,12 +549,9 @@ verticalRect config bandSingleScale linearScale idx point =
         ++ label
 
 
-horizontalRect : Config -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> List (Svg msg)
-horizontalRect config bandSingleScale linearScale idx point =
+horizontalRect : ConfigStruct -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> List (Svg msg)
+horizontalRect c bandSingleScale linearScale idx point =
     let
-        c =
-            fromConfig config
-
         ( x__, y__ ) =
             point
 
@@ -575,10 +565,10 @@ horizontalRect config bandSingleScale linearScale idx point =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
 
         label =
-            horizontalLabel config bandSingleScale linearScale point
+            horizontalLabel c bandSingleScale linearScale point
 
         symbol =
-            horizontalSymbol config { idx = idx, w = w, y_ = y_, h = h }
+            horizontalSymbol c { idx = idx, w = w, y_ = y_, h = h }
     in
     [ rect
         [ x <| 0
@@ -603,14 +593,11 @@ dataGroupTranslation bandGroupScale dataGroup =
             Scale.convert bandGroupScale l
 
 
-verticalLabel : Config -> BandScale String -> ContinuousScale Float -> PointBand -> List (Svg msg)
-verticalLabel config bandSingleScale linearScale point =
+verticalLabel : ConfigStruct -> BandScale String -> ContinuousScale Float -> PointBand -> List (Svg msg)
+verticalLabel c bandSingleScale linearScale point =
     let
         ( x__, y__ ) =
             point
-
-        c =
-            fromConfig config
     in
     if c.showColumnLabels then
         [ text_
@@ -625,19 +612,16 @@ verticalLabel config bandSingleScale linearScale point =
         []
 
 
-horizontalSymbol : Config -> { idx : Int, w : Float, y_ : Float, h : Float } -> List (Svg msg)
-horizontalSymbol config { idx, w, y_, h } =
+horizontalSymbol : ConfigStruct -> { idx : Int, w : Float, y_ : Float, h : Float } -> List (Svg msg)
+horizontalSymbol c { idx, w, y_, h } =
     let
-        c =
-            fromConfig config
-
         symbol =
             getSymbolByIndex c.symbols idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
     in
-    if fromConfig config |> .showSymbols then
+    if c |> .showSymbols then
         case symbol of
             Triangle _ ->
                 [ g
@@ -648,6 +632,7 @@ horizontalSymbol config { idx, w, y_, h } =
                 ]
 
             Circle _ ->
+                --FIXME
                 [ g
                     [ transform [ Translate (w + h / 2 + symbolGap) (y_ + h / 2) ]
                     , class [ "symbol" ]
@@ -663,9 +648,17 @@ horizontalSymbol config { idx, w, y_, h } =
                     symbolRef
                 ]
 
-            Custom _ ->
+            Custom c_ ->
+                let
+                    gap =
+                        if c_.useGap then
+                            symbolGap
+
+                        else
+                            0
+                in
                 [ g
-                    [ transform [ Translate (w + symbolGap) y_ ]
+                    [ transform [ Translate (w + gap) y_ ]
                     , class [ "symbol" ]
                     ]
                     symbolRef
@@ -675,14 +668,70 @@ horizontalSymbol config { idx, w, y_, h } =
         []
 
 
-horizontalLabel : Config -> BandScale String -> ContinuousScale Float -> PointBand -> List (Svg msg)
-horizontalLabel config bandSingleScale linearScale point =
+verticalSymbol : ConfigStruct -> { idx : Int, w : Float, y_ : Float, x_ : Float } -> List (Svg msg)
+verticalSymbol c { idx, w, y_, x_ } =
+    let
+        symbol =
+            getSymbolByIndex c.symbols idx
+
+        symbolRef =
+            [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
+    in
+    if c |> .showSymbols then
+        case symbol of
+            Triangle _ ->
+                [ g
+                    [ transform [ Translate x_ (y_ - w - symbolGap) ]
+                    , class [ "symbol" ]
+                    ]
+                    symbolRef
+                ]
+
+            Circle _ ->
+                --FIXME
+                [ g
+                    [ transform [ Translate x_ (y_ - w / 2 - symbolGap) ]
+                    , class [ "symbol" ]
+                    ]
+                    symbolRef
+                ]
+
+            Corner _ ->
+                [ g
+                    [ transform [ Translate x_ (y_ - w - symbolGap) ]
+                    , class [ "symbol" ]
+                    ]
+                    symbolRef
+                ]
+
+            Custom c_ ->
+                let
+                    space =
+                        symbolCustomSpace Vertical w c_
+
+                    gap =
+                        if c_.useGap then
+                            symbolGap
+
+                        else
+                            0
+                in
+                [ g
+                    [ transform [ Translate x_ (y_ - space - gap) ]
+                    , class [ "symbol" ]
+                    ]
+                    symbolRef
+                ]
+
+    else
+        []
+
+
+horizontalLabel : ConfigStruct -> BandScale String -> ContinuousScale Float -> PointBand -> List (Svg msg)
+horizontalLabel c bandSingleScale linearScale point =
     let
         ( x__, y__ ) =
             point
-
-        c =
-            fromConfig config
     in
     if c.showColumnLabels then
         [ text_
@@ -698,8 +747,12 @@ horizontalLabel config bandSingleScale linearScale point =
         []
 
 
-symbolsToSymbolElements : Orientation -> Float -> List (Symbol String) -> List (Svg msg)
-symbolsToSymbolElements orientation localDimension symbols =
+symbolsToSymbolElements : Orientation -> BandScale String -> List (Symbol String) -> List (Svg msg)
+symbolsToSymbolElements orientation bandSingleScale symbols =
+    let
+        localDimension =
+            Helpers.floorFloat <| Scale.bandwidth bandSingleScale
+    in
     symbols
         |> List.map
             (\symbol ->
@@ -710,7 +763,11 @@ symbolsToSymbolElements orientation localDimension symbols =
                 in
                 case symbol of
                     Circle _ ->
-                        s [ circle_ (localDimension / 2) ]
+                        --FIXME
+                        TypedSvg.symbol
+                            [ Html.Attributes.id (symbolToId symbol)
+                            ]
+                            [ circle_ (localDimension / 2) ]
 
                     Custom conf ->
                         let

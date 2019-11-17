@@ -1,5 +1,6 @@
 module Chart.TypeTest exposing (suite)
 
+import Chart.Symbol
 import Chart.Type exposing (..)
 import Expect exposing (Expectation)
 import Test exposing (..)
@@ -24,5 +25,111 @@ suite =
                             DomainBand { bandGroup = [ "CA", "TX" ], bandSingle = [ "a", "b" ], linear = ( 0, 21 ) }
                     in
                     Expect.equal (getDomainFromData data) expected
+            ]
+        , describe "symbolCustomSpace"
+            [ test "horizontal, icon ratio < 1" <|
+                \_ ->
+                    let
+                        orientation : Orientation
+                        orientation =
+                            Horizontal
+
+                        localDimension : Float
+                        localDimension =
+                            5.0
+
+                        customSymbolConf : Chart.Symbol.CustomSymbolConf
+                        customSymbolConf =
+                            { identifier = "x"
+                            , width = 110
+                            , height = 100
+                            , paths = []
+                            }
+
+                        expected : Float
+                        expected =
+                            5.5
+                    in
+                    Expect.within (Expect.Absolute 0.001)
+                        (symbolCustomSpace orientation localDimension customSymbolConf)
+                        expected
+            , test "horizontal, icon ratio >= 1" <|
+                \_ ->
+                    let
+                        orientation : Orientation
+                        orientation =
+                            Horizontal
+
+                        localDimension : Float
+                        localDimension =
+                            5.0
+
+                        customSymbolConf : Chart.Symbol.CustomSymbolConf
+                        customSymbolConf =
+                            { identifier = "x"
+                            , width = 100
+                            , height = 110
+                            , paths = []
+                            }
+
+                        expected : Float
+                        expected =
+                            4.5454
+                    in
+                    Expect.within (Expect.Absolute 0.001)
+                        (symbolCustomSpace orientation localDimension customSymbolConf)
+                        expected
+            , test "vertical" <|
+                \_ ->
+                    let
+                        orientation : Orientation
+                        orientation =
+                            Vertical
+
+                        localDimension : Float
+                        localDimension =
+                            5.0
+
+                        customSymbolConf : Chart.Symbol.CustomSymbolConf
+                        customSymbolConf =
+                            { identifier = "x"
+                            , width = 110
+                            , height = 100
+                            , paths = []
+                            }
+
+                        expected : Float
+                        expected =
+                            4.5454
+                    in
+                    Expect.within (Expect.Absolute 0.001)
+                        (symbolCustomSpace orientation localDimension customSymbolConf)
+                        expected
+            , test "vertical 2" <|
+                \_ ->
+                    let
+                        orientation : Orientation
+                        orientation =
+                            Vertical
+
+                        localDimension : Float
+                        localDimension =
+                            5.0
+
+                        customSymbolConf : Chart.Symbol.CustomSymbolConf
+                        customSymbolConf =
+                            { identifier = "x"
+                            , width = 100
+                            , height = 110
+                            , paths = []
+                            }
+
+                        expected : Float
+                        expected =
+                            5.5
+                    in
+                    Expect.within (Expect.Absolute 0.001)
+                        (symbolCustomSpace orientation localDimension customSymbolConf)
+                        expected
             ]
         ]
