@@ -11,6 +11,7 @@ module Chart.Type exposing
     , Orientation(..)
     , PointBand
     , adjustLinearRange
+    , chartHasSymbols
     , defaultConfig
     , defaultHeight
     , defaultLayout
@@ -29,6 +30,7 @@ module Chart.Type exposing
     , getLinearRange
     , getMargin
     , getOffset
+    , getSymbolMoltiplier
     , getWidth
     , setDimensions
     , setDomain
@@ -398,8 +400,10 @@ getBandSingleRange config value =
             ( 0, floor value |> toFloat )
 
 
-getLinearRange : Config -> Float -> Float -> BandScale String -> ( Float, Float )
-getLinearRange config width height bandScale =
+getLinearRange : Config -> Float -> Float -> Int -> BandScale String -> ( Float, Float )
+getLinearRange config width height stackDepth bandScale =
+    --FIXME: space for symbols could be bigger than available space!
+    -- Then stacked layouts invert and all goes wrong!
     let
         c =
             fromConfig config
@@ -409,14 +413,20 @@ getLinearRange config width height bandScale =
 
         layout =
             c.layout
+
+        symbolMoltiplier =
+            getSymbolMoltiplier layout stackDepth
+
+        spaceUsedBySymbol =
+            symbolSpace c.orientation bandScale symbolMoltiplier c.symbols
     in
     case orientation of
         Horizontal ->
             case layout of
                 Grouped ->
-                    if c.showSymbols then
+                    if chartHasSymbols c stackDepth then
                         -- Here we are leaving space for the symbol
-                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale c.symbols )
+                        ( 0, width - symbolGap - spaceUsedBySymbol )
 
                     else
                         ( 0, width )
@@ -427,19 +437,25 @@ getLinearRange config width height bandScale =
         Vertical ->
             case layout of
                 Grouped ->
-                    if c.showSymbols then
+                    if chartHasSymbols c stackDepth then
                         -- Here we are leaving space for the symbol
-                        ( height - symbolGap - symbolSpace c.orientation bandScale c.symbols, 0 )
+                        ( height - symbolGap - spaceUsedBySymbol, 0 )
 
                     else
                         ( height, 0 )
 
                 Stacked _ ->
-                    ( height, 0 )
+                    if chartHasSymbols c stackDepth then
+                        -- Here we are leaving space for the symbol
+                        ( height - symbolGap - spaceUsedBySymbol, 0 + symbolGap + spaceUsedBySymbol )
+
+                    else
+                        ( height, 0 )
 
 
 adjustLinearRange : Config -> Int -> ( Float, Float ) -> ( Float, Float )
 adjustLinearRange config stackedDepth ( a, b ) =
+    -- FIXME: wtf is this?
     let
         c =
             fromConfig config
@@ -478,11 +494,11 @@ getOffset config =
             Shape.stackOffsetNone
 
 
-symbolSpace : Orientation -> BandScale String -> List (Symbol String) -> Float
-symbolSpace orientation bandSingleScale symbols =
+symbolSpace : Orientation -> BandScale String -> Int -> List (Symbol String) -> Float
+symbolSpace orientation bandSingleScale moltiplier symbols =
     let
         localDimension =
-            Scale.bandwidth bandSingleScale |> floor |> toFloat
+            Scale.bandwidth bandSingleScale |> floor |> (*) moltiplier |> toFloat
     in
     symbols
         |> List.map
@@ -506,6 +522,7 @@ symbolSpace orientation bandSingleScale symbols =
 
 symbolCustomSpace : Orientation -> Float -> Chart.Symbol.CustomSymbolConf -> Float
 symbolCustomSpace orientation localDimension conf =
+    -- FIXME: with a stacked layout with symbols all goes bad!
     let
         iconRatio =
             conf.height / conf.width
@@ -524,3 +541,27 @@ symbolCustomSpace orientation localDimension conf =
                     localDimension / conf.width
             in
             scalingFactor * conf.height
+
+
+chartHasSymbols : ConfigStruct -> Int -> Bool
+chartHasSymbols c stackDepth =
+    case c.layout of
+        Grouped ->
+            True
+
+        Stacked _ ->
+            if c.showSymbols && stackDepth < 3 then
+                True
+
+            else
+                False
+
+
+getSymbolMoltiplier : Layout -> Int -> Int
+getSymbolMoltiplier layout stackDepth =
+    case layout of
+        Stacked _ ->
+            stackDepth
+
+        Grouped ->
+            1

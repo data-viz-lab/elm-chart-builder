@@ -62,8 +62,8 @@ data =
     DataBand
         [ { groupLabel = Just "A"
           , points =
-                [ ( "a", 10 )
-                , ( "b", 13 )
+                [ ( "a", 6 )
+                , ( "b", 12 )
                 , ( "c", 16 )
                 ]
           }
@@ -159,11 +159,12 @@ main =
                 , Html.Attributes.style "width" (String.fromFloat width ++ "px")
                 , class "chart-wrapper"
                 ]
-                [ Bar.init data
-                    --|> Bar.setShowColumnLabels True
+                [ Bar.init dataStacked
+                    |> Bar.setShowSymbols True
+                    |> Bar.setSymbols (icons "chart-b")
                     |> Bar.setLayout (Stacked NoDirection)
                     |> Bar.setDimensions
-                        { margin = { top = 10, right = 20, bottom = 10, left = 20 }
+                        { margin = { top = 0, right = 0, bottom = 0, left = 0 }
                         , width = width
                         , height = height
                         }
@@ -185,52 +186,53 @@ main =
                         }
                     |> Bar.render
                 ]
-            , Html.div
-                [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
-                , Html.Attributes.style "width" (String.fromFloat width ++ "px")
-                , class "chart-wrapper"
-                ]
-                [ Bar.init data
-                    --|> Bar.setShowColumnLabels True
-                    |> Bar.setLayout (Stacked NoDirection)
-                    |> Bar.setOrientation Horizontal
-                    |> Bar.setDimensions
-                        { margin = { top = 20, right = 10, bottom = 20, left = 10 }
-                        , width = width
-                        , height = height
-                        }
-                    |> Bar.render
-                ]
-            , Html.div
-                [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
-                , Html.Attributes.style "width" (String.fromFloat width ++ "px")
-                , class "chart-wrapper"
-                ]
-                [ Bar.init dataStacked
-                    --|> Bar.setShowColumnLabels True
-                    |> Bar.setLayout (Stacked Diverging)
-                    |> Bar.setOrientation Horizontal
-                    |> Bar.setDimensions
-                        { margin = { top = 20, right = 10, bottom = 20, left = 10 }
-                        , width = width
-                        , height = height
-                        }
-                    |> Bar.render
-                ]
-            , Html.div
-                [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
-                , Html.Attributes.style "width" (String.fromFloat width ++ "px")
-                , class "chart-wrapper"
-                ]
-                [ Bar.init dataStacked
-                    |> Bar.setLayout (Stacked Diverging)
-                    |> Bar.setOrientation Vertical
-                    |> Bar.setDimensions
-                        { margin = { top = 20, right = 10, bottom = 20, left = 10 }
-                        , width = width
-                        , height = height
-                        }
-                    |> Bar.render
-                ]
+
+            --, Html.div
+            --    [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
+            --    , Html.Attributes.style "width" (String.fromFloat width ++ "px")
+            --    , class "chart-wrapper"
+            --    ]
+            --    [ Bar.init data
+            --        --|> Bar.setShowColumnLabels True
+            --        |> Bar.setLayout (Stacked NoDirection)
+            --        |> Bar.setOrientation Horizontal
+            --        |> Bar.setDimensions
+            --            { margin = { top = 20, right = 10, bottom = 20, left = 10 }
+            --            , width = width
+            --            , height = height
+            --            }
+            --        |> Bar.render
+            --    ]
+            --, Html.div
+            --    [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
+            --    , Html.Attributes.style "width" (String.fromFloat width ++ "px")
+            --    , class "chart-wrapper"
+            --    ]
+            --    [ Bar.init dataStacked
+            --        --|> Bar.setShowColumnLabels True
+            --        |> Bar.setLayout (Stacked Diverging)
+            --        |> Bar.setOrientation Horizontal
+            --        |> Bar.setDimensions
+            --            { margin = { top = 20, right = 10, bottom = 20, left = 10 }
+            --            , width = width
+            --            , height = height
+            --            }
+            --        |> Bar.render
+            --    ]
+            --, Html.div
+            --    [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
+            --    , Html.Attributes.style "width" (String.fromFloat width ++ "px")
+            --    , class "chart-wrapper"
+            --    ]
+            --    [ Bar.init dataStacked
+            --        |> Bar.setLayout (Stacked Diverging)
+            --        |> Bar.setOrientation Vertical
+            --        |> Bar.setDimensions
+            --            { margin = { top = 20, right = 10, bottom = 20, left = 10 }
+            --            , width = width
+            --            , height = height
+            --            }
+            --        |> Bar.render
+            --    ]
             ]
         ]

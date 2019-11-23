@@ -38,6 +38,7 @@ import Chart.Type
         , Orientation(..)
         , PointBand
         , adjustLinearRange
+        , chartHasSymbols
         , defaultConfig
         , defaultHeight
         , defaultLayout
@@ -56,6 +57,7 @@ import Chart.Type
         , getLinearRange
         , getMargin
         , getOffset
+        , getSymbolMoltiplier
         , getWidth
         , setDimensions
         , setDomain
@@ -287,7 +289,7 @@ renderBandStacked ( data, config ) =
             Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange domain.bandSingle
 
         linearRange =
-            getLinearRange config w h bandSingleScale
+            getLinearRange config w h stackDepth bandSingleScale
                 |> adjustLinearRange config stackDepth
 
         linearScale : ContinuousScale Float
@@ -295,6 +297,16 @@ renderBandStacked ( data, config ) =
             -- For stacked scales
             -- |> Scale.nice 4
             Scale.linear linearRange extent
+
+        symbolMoltiplier =
+            getSymbolMoltiplier c.layout stackDepth
+
+        symbolElements =
+            if c.showSymbols && stackDepth < 3 then
+                symbolsToSymbolElements c.orientation bandSingleScale symbolMoltiplier c.symbols
+
+            else
+                []
 
         columnValues =
             List.Extra.transpose values
@@ -313,13 +325,15 @@ renderBandStacked ( data, config ) =
         , width outerW
         , height outerH
         ]
-        [ g
-            [ transform [ stackedContainerTranslate c m.left m.top (toFloat stackDepth) ]
-            , class [ "series" ]
-            ]
-          <|
-            List.map (stackedColumns c bandGroupScale) (List.map2 (\a b -> ( a, b )) columnGroupes scaledValues)
-        ]
+    <|
+        symbolElements
+            ++ [ g
+                    [ transform [ stackedContainerTranslate c m.left m.top (toFloat stackDepth) ]
+                    , class [ "series" ]
+                    ]
+                 <|
+                    List.map (stackedColumns c bandGroupScale stackDepth) (List.map2 (\a b -> ( a, b )) columnGroupes scaledValues)
+               ]
 
 
 stackedContainerTranslate : ConfigStruct -> Float -> Float -> Float -> Transform
@@ -336,40 +350,67 @@ stackedContainerTranslate config a b offset =
             Translate a (b + offset)
 
 
-stackedColumns : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ) ) -> Svg msg
-stackedColumns config bandGroupScale payload =
+stackedColumns : ConfigStruct -> BandScale String -> Int -> ( String, List ( Float, Float ) ) -> Svg msg
+stackedColumns config bandGroupScale stackDepth payload =
     let
         rects =
             case config.orientation of
                 Vertical ->
-                    verticalRectsStacked config bandGroupScale payload
+                    verticalRectsStacked config bandGroupScale stackDepth payload
 
                 Horizontal ->
-                    horizontalRectsStacked config bandGroupScale payload
+                    horizontalRectsStacked config bandGroupScale stackDepth payload
     in
     g [ class [ "columns" ] ] rects
 
 
-verticalRectsStacked : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ) ) -> List (Svg msg)
-verticalRectsStacked config bandGroupScale ( group, values ) =
+verticalRectsStacked : ConfigStruct -> BandScale String -> Int -> ( String, List ( Float, Float ) ) -> List (Svg msg)
+verticalRectsStacked c bandGroupScale stackDepth ( group, values ) =
     let
         block idx ( upper, lower ) =
-            g [ class [ "column", "column-" ++ String.fromInt idx ] ]
-                [ rect
-                    [ x <| Scale.convert bandGroupScale group
-                    , y <| lower - toFloat idx
-                    , width <| Scale.bandwidth bandGroupScale
-                    , height <| (abs <| upper - lower)
-                    , shapeRendering RenderCrispEdges
+            let
+                x_ =
+                    Scale.convert bandGroupScale group
+
+                y_ =
+                    lower - toFloat idx
+
+                ySymbol =
+                    if idx == 0 then
+                        upper
+
+                    else
+                        lower
+
+                w =
+                    Scale.bandwidth bandGroupScale
+
+                symbol : List (Svg msg)
+                symbol =
+                    verticalSymbol c { idx = idx, x_ = x_, y_ = ySymbol, w = w, stackDepth = stackDepth }
+
+                children =
+                    [ rect
+                        [ x x_
+                        , y y_
+                        , width w
+                        , height <| (abs <| upper - lower)
+                        , shapeRendering RenderCrispEdges
+                        ]
+                        []
                     ]
-                    []
-                ]
+                        ++ symbol
+            in
+            g [ class [ "column", "column-" ++ String.fromInt idx ] ] children
     in
-    List.indexedMap (\idx -> block idx) values
+    values
+        --|> List.reverse
+        |> Debug.log "values"
+        |> List.indexedMap (\idx -> block idx)
 
 
-horizontalRectsStacked : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ) ) -> List (Svg msg)
-horizontalRectsStacked config bandGroupScale ( group, values ) =
+horizontalRectsStacked : ConfigStruct -> BandScale String -> Int -> ( String, List ( Float, Float ) ) -> List (Svg msg)
+horizontalRectsStacked c bandGroupScale stackDepth ( group, values ) =
     let
         block idx ( lower, upper ) =
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
@@ -384,7 +425,7 @@ horizontalRectsStacked config bandGroupScale ( group, values ) =
                 ]
     in
     values
-        |> Helpers.stackedValuesInverse config.width
+        |> Helpers.stackedValuesInverse c.width
         |> List.indexedMap (\idx -> block idx)
 
 
@@ -423,8 +464,11 @@ renderBandGrouped ( data, config ) =
         bandSingleRange =
             getBandSingleRange config (Scale.bandwidth bandGroupScale)
 
+        stackDepth =
+            getDataDepth data
+
         linearRange =
-            getLinearRange config w h bandSingleScale
+            getLinearRange config w h stackDepth bandSingleScale
 
         bandGroupScale =
             Scale.band { defaultBandConfig | paddingInner = 0.1 } bandGroupRange domain.bandGroup
@@ -435,9 +479,12 @@ renderBandGrouped ( data, config ) =
         linearScale =
             Scale.linear linearRange domain.linear
 
+        symbolMoltiplier =
+            getSymbolMoltiplier c.layout stackDepth
+
         symbolElements =
             if c.showSymbols then
-                symbolsToSymbolElements c.orientation bandSingleScale c.symbols
+                symbolsToSymbolElements c.orientation bandSingleScale symbolMoltiplier c.symbols
 
             else
                 []
@@ -454,12 +501,12 @@ renderBandGrouped ( data, config ) =
                     , class [ "series" ]
                     ]
                  <|
-                    List.map (columns c bandGroupScale bandSingleScale linearScale) (fromDataBand data)
+                    List.map (columns c bandGroupScale bandSingleScale linearScale stackDepth) (fromDataBand data)
                ]
 
 
-columns : ConfigStruct -> BandScale String -> BandScale String -> ContinuousScale Float -> DataGroupBand -> Svg msg
-columns c bandGroupScale bandSingleScale linearScale dataGroup =
+columns : ConfigStruct -> BandScale String -> BandScale String -> ContinuousScale Float -> Int -> DataGroupBand -> Svg msg
+columns c bandGroupScale bandSingleScale linearScale stackDepth dataGroup =
     let
         tr =
             case c.orientation of
@@ -476,11 +523,11 @@ columns c bandGroupScale bandSingleScale linearScale dataGroup =
         , class [ "data-group" ]
         ]
     <|
-        List.indexedMap (column c bandSingleScale linearScale) dataGroup.points
+        List.indexedMap (column c bandSingleScale linearScale stackDepth) dataGroup.points
 
 
-column : ConfigStruct -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> Svg msg
-column c bandSingleScale linearScale idx point =
+column : ConfigStruct -> BandScale String -> ContinuousScale Float -> Int -> Int -> PointBand -> Svg msg
+column c bandSingleScale linearScale stackDepth idx point =
     let
         ( x__, y__ ) =
             point
@@ -496,16 +543,16 @@ column c bandSingleScale linearScale idx point =
         rectangle =
             case c.orientation of
                 Vertical ->
-                    verticalRect c bandSingleScale linearScale idx point
+                    verticalRect c bandSingleScale linearScale stackDepth idx point
 
                 Horizontal ->
-                    horizontalRect c bandSingleScale linearScale idx point
+                    horizontalRect c bandSingleScale linearScale stackDepth idx point
     in
     g [ class [ "column", "column-" ++ String.fromInt idx ] ] rectangle
 
 
-verticalRect : ConfigStruct -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> List (Svg msg)
-verticalRect c bandSingleScale linearScale idx point =
+verticalRect : ConfigStruct -> BandScale String -> ContinuousScale Float -> Int -> Int -> PointBand -> List (Svg msg)
+verticalRect c bandSingleScale linearScale stackDepth idx point =
     let
         ( x__, y__ ) =
             point
@@ -513,8 +560,11 @@ verticalRect c bandSingleScale linearScale idx point =
         label =
             verticalLabel c bandSingleScale linearScale point
 
+        symbolMoltiplier =
+            getSymbolMoltiplier c.layout stackDepth
+
         iconOffset =
-            symbolSpace Vertical bandSingleScale c.symbols + symbolGap
+            symbolSpace Vertical bandSingleScale symbolMoltiplier c.symbols + symbolGap
 
         x_ =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
@@ -534,7 +584,7 @@ verticalRect c bandSingleScale linearScale idx point =
                 |> Helpers.floorFloat
 
         symbol =
-            verticalSymbol c { idx = idx, x_ = x_, y_ = y_, w = w }
+            verticalSymbol c { idx = idx, x_ = x_, y_ = y_, w = w, stackDepth = stackDepth }
     in
     [ rect
         [ x <| x_
@@ -549,8 +599,8 @@ verticalRect c bandSingleScale linearScale idx point =
         ++ label
 
 
-horizontalRect : ConfigStruct -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> List (Svg msg)
-horizontalRect c bandSingleScale linearScale idx point =
+horizontalRect : ConfigStruct -> BandScale String -> ContinuousScale Float -> Int -> Int -> PointBand -> List (Svg msg)
+horizontalRect c bandSingleScale linearScale idx stackDepth point =
     let
         ( x__, y__ ) =
             point
@@ -568,7 +618,7 @@ horizontalRect c bandSingleScale linearScale idx point =
             horizontalLabel c bandSingleScale linearScale point
 
         symbol =
-            horizontalSymbol c { idx = idx, w = w, y_ = y_, h = h }
+            horizontalSymbol c { idx = idx, w = w, y_ = y_, h = h, stackDepth = stackDepth }
     in
     [ rect
         [ x <| 0
@@ -612,8 +662,8 @@ verticalLabel c bandSingleScale linearScale point =
         []
 
 
-horizontalSymbol : ConfigStruct -> { idx : Int, w : Float, y_ : Float, h : Float } -> List (Svg msg)
-horizontalSymbol c { idx, w, y_, h } =
+horizontalSymbol : ConfigStruct -> { idx : Int, w : Float, y_ : Float, h : Float, stackDepth : Int } -> List (Svg msg)
+horizontalSymbol c { idx, w, y_, h, stackDepth } =
     let
         symbol =
             getSymbolByIndex c.symbols idx
@@ -621,7 +671,7 @@ horizontalSymbol c { idx, w, y_, h } =
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
     in
-    if c |> .showSymbols then
+    if c.showSymbols then
         case symbol of
             Triangle _ ->
                 [ g
@@ -668,20 +718,35 @@ horizontalSymbol c { idx, w, y_, h } =
         []
 
 
-verticalSymbol : ConfigStruct -> { idx : Int, w : Float, y_ : Float, x_ : Float } -> List (Svg msg)
-verticalSymbol c { idx, w, y_, x_ } =
+verticalSymbol : ConfigStruct -> { idx : Int, w : Float, y_ : Float, x_ : Float, stackDepth : Int } -> List (Svg msg)
+verticalSymbol c { idx, w, y_, x_, stackDepth } =
     let
         symbol =
             getSymbolByIndex c.symbols idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
+
+        direction =
+            case c.layout of
+                Stacked _ ->
+                    if idx == 0 then
+                        (+)
+
+                    else
+                        (-)
+
+                Grouped ->
+                    (-)
+
+        _ =
+            Debug.log "idx" idx
     in
-    if c |> .showSymbols then
+    if chartHasSymbols c stackDepth then
         case symbol of
             Triangle _ ->
                 [ g
-                    [ transform [ Translate x_ (y_ - w - symbolGap) ]
+                    [ transform [ Translate x_ (y_ |> direction w |> direction symbolGap) ]
                     , class [ "symbol" ]
                     ]
                     symbolRef
@@ -698,7 +763,7 @@ verticalSymbol c { idx, w, y_, x_ } =
 
             Corner _ ->
                 [ g
-                    [ transform [ Translate x_ (y_ - w - symbolGap) ]
+                    [ transform [ Translate x_ (y_ |> direction w |> direction symbolGap) ]
                     , class [ "symbol" ]
                     ]
                     symbolRef
@@ -708,6 +773,19 @@ verticalSymbol c { idx, w, y_, x_ } =
                 let
                     space =
                         symbolCustomSpace Vertical w c_
+                            |> Debug.log "space"
+
+                    off =
+                        case c.layout of
+                            Stacked _ ->
+                                if idx == 0 then
+                                    0
+
+                                else
+                                    space
+
+                            Grouped ->
+                                space
 
                     gap =
                         if c_.useGap then
@@ -717,7 +795,7 @@ verticalSymbol c { idx, w, y_, x_ } =
                             0
                 in
                 [ g
-                    [ transform [ Translate x_ (y_ - space - gap) ]
+                    [ transform [ Translate x_ (y_ |> direction off |> direction gap) ]
                     , class [ "symbol" ]
                     ]
                     symbolRef
@@ -747,11 +825,13 @@ horizontalLabel c bandSingleScale linearScale point =
         []
 
 
-symbolsToSymbolElements : Orientation -> BandScale String -> List (Symbol String) -> List (Svg msg)
-symbolsToSymbolElements orientation bandSingleScale symbols =
+symbolsToSymbolElements : Orientation -> BandScale String -> Int -> List (Symbol String) -> List (Svg msg)
+symbolsToSymbolElements orientation bandSingleScale moltiplier symbols =
     let
         localDimension =
-            Helpers.floorFloat <| Scale.bandwidth bandSingleScale
+            Scale.bandwidth bandSingleScale |> floor |> (*) moltiplier |> toFloat
+
+        --Helpers.floorFloat <| Scale.bandwidth bandSingleScale
     in
     symbols
         |> List.map
