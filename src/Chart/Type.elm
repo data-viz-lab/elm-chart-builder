@@ -6,12 +6,15 @@ module Chart.Type exposing
     , DataGroupBand
     , Direction(..)
     , Domain(..)
+    , GroupedConfig
+    , GroupedConfigStruct
     , Layout(..)
     , Margin
     , Orientation(..)
     , PointBand
     , adjustLinearRange
     , defaultConfig
+    , defaultGroupedConfig
     , defaultHeight
     , defaultLayout
     , defaultMargin
@@ -26,6 +29,8 @@ module Chart.Type exposing
     , getDomain
     , getDomainFromData
     , getHeight
+    , getIcons
+    , getIconsFromLayout
     , getLinearRange
     , getMargin
     , getOffset
@@ -33,13 +38,14 @@ module Chart.Type exposing
     , setDimensions
     , setDomain
     , setHeight
+    , setIcons
     , setLayout
     , setMargin
     , setOrientation
     , setShowColumnLabels
-    , setShowSymbols
-    , setSymbols
     , setWidth
+    , showIcons
+    , showIconsFromLayout
     , symbolCustomSpace
     , symbolSpace
     , toConfig
@@ -59,7 +65,7 @@ type Orientation
 
 type Layout
     = Stacked Direction
-    | Grouped
+    | Grouped GroupedConfig
 
 
 type Direction
@@ -70,6 +76,80 @@ type Direction
 type Axis
     = X
     | Y
+
+
+type GroupedConfig
+    = GroupedConfig GroupedConfigStruct
+
+
+type alias GroupedConfigStruct =
+    { icons : List (Symbol String)
+    }
+
+
+toGroupedConfig : GroupedConfigStruct -> GroupedConfig
+toGroupedConfig config =
+    GroupedConfig config
+
+
+fromGroupedConfig : GroupedConfig -> GroupedConfigStruct
+fromGroupedConfig (GroupedConfig config) =
+    config
+
+
+defaultGroupedConfig : GroupedConfig
+defaultGroupedConfig =
+    toGroupedConfig
+        { icons = []
+        }
+
+
+showIcons : GroupedConfig -> Bool
+showIcons c =
+    c
+        |> fromGroupedConfig
+        |> .icons
+        |> List.length
+        |> (\l -> l > 0)
+
+
+showIconsFromLayout : Layout -> Bool
+showIconsFromLayout l =
+    case l of
+        Grouped c ->
+            c
+                |> showIcons
+
+        Stacked _ ->
+            False
+
+
+getIcons : GroupedConfig -> List (Symbol String)
+getIcons c =
+    c
+        |> fromGroupedConfig
+        |> .icons
+
+
+getIconsFromLayout : Layout -> List (Symbol String)
+getIconsFromLayout l =
+    case l of
+        Grouped c ->
+            c
+                |> fromGroupedConfig
+                |> .icons
+
+        Stacked _ ->
+            []
+
+
+setIcons : List (Symbol String) -> GroupedConfig -> GroupedConfig
+setIcons all config =
+    let
+        c =
+            fromGroupedConfig config
+    in
+    toGroupedConfig { c | icons = all }
 
 
 type alias LinearDomain =
@@ -119,8 +199,6 @@ type alias ConfigStruct =
     , margin : Margin
     , orientation : Orientation
     , showColumnLabels : Bool
-    , showSymbols : Bool
-    , symbols : List (Symbol String)
     , width : Float
     }
 
@@ -134,8 +212,6 @@ defaultConfig =
         , margin = defaultMargin
         , orientation = defaultOrientation
         , showColumnLabels = False
-        , showSymbols = False
-        , symbols = []
         , width = defaultWidth
         }
 
@@ -160,7 +236,7 @@ fromConfig (Config config) =
 
 defaultLayout : Layout
 defaultLayout =
-    Grouped
+    Grouped defaultGroupedConfig
 
 
 defaultOrientation : Orientation
@@ -279,24 +355,6 @@ setShowColumnLabels bool ( data, config ) =
     ( data, toConfig { c | showColumnLabels = bool } )
 
 
-setShowSymbols : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowSymbols bool ( data, config ) =
-    let
-        c =
-            fromConfig config
-    in
-    ( data, toConfig { c | showSymbols = bool } )
-
-
-setSymbols : List (Symbol String) -> ( Data, Config ) -> ( Data, Config )
-setSymbols all ( data, config ) =
-    let
-        c =
-            fromConfig config
-    in
-    ( data, toConfig { c | symbols = all } )
-
-
 
 -- GETTERS
 
@@ -413,10 +471,10 @@ getLinearRange config width height bandScale =
     case orientation of
         Horizontal ->
             case layout of
-                Grouped ->
-                    if c.showSymbols then
+                Grouped groupedConfig ->
+                    if showIcons groupedConfig then
                         -- Here we are leaving space for the symbol
-                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale c.symbols )
+                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale (getIcons groupedConfig) )
 
                     else
                         ( 0, width )
@@ -426,10 +484,10 @@ getLinearRange config width height bandScale =
 
         Vertical ->
             case layout of
-                Grouped ->
-                    if c.showSymbols then
+                Grouped groupedConfig ->
+                    if showIcons groupedConfig then
                         -- Here we are leaving space for the symbol
-                        ( height - symbolGap - symbolSpace c.orientation bandScale c.symbols, 0 )
+                        ( height - symbolGap - symbolSpace c.orientation bandScale (getIcons groupedConfig), 0 )
 
                     else
                         ( height, 0 )
@@ -440,6 +498,8 @@ getLinearRange config width height bandScale =
 
 adjustLinearRange : Config -> Int -> ( Float, Float ) -> ( Float, Float )
 adjustLinearRange config stackedDepth ( a, b ) =
+    -- TODO: not very clear now!
+    -- small adjustments related to the whitespace between stacked items?
     let
         c =
             fromConfig config
@@ -453,7 +513,7 @@ adjustLinearRange config stackedDepth ( a, b ) =
     case orientation of
         Horizontal ->
             case layout of
-                Grouped ->
+                Grouped _ ->
                     ( a, b )
 
                 Stacked _ ->
@@ -474,7 +534,7 @@ getOffset config =
                 NoDirection ->
                     Shape.stackOffsetNone
 
-        Grouped ->
+        Grouped _ ->
             Shape.stackOffsetNone
 
 
@@ -499,6 +559,9 @@ symbolSpace orientation bandSingleScale symbols =
 
                     Triangle _ ->
                         localDimension
+
+                    NoSymbol ->
+                        0
             )
         |> List.maximum
         |> Maybe.withDefault 0

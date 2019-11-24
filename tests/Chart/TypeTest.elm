@@ -1,6 +1,6 @@
 module Chart.TypeTest exposing (suite)
 
-import Chart.Symbol
+import Chart.Symbol exposing (Symbol(..))
 import Chart.Type exposing (..)
 import Expect exposing (Expectation)
 import Test exposing (..)
@@ -26,6 +26,15 @@ suite =
                     in
                     Expect.equal (getDomainFromData data) expected
             ]
+        , describe "groupedLayoutConfig"
+            [ test "showIcons is False" <|
+                \_ ->
+                    Expect.equal (showIcons defaultGroupedConfig) False
+            , only <|
+                test "showIcons is True" <|
+                    \_ ->
+                        Expect.equal (showIcons (defaultGroupedConfig |> setIcons [ Triangle "id" ])) True
+            ]
         , describe "symbolCustomSpace"
             [ test "horizontal, icon ratio < 1" <|
                 \_ ->
@@ -44,6 +53,7 @@ suite =
                             , width = 110
                             , height = 100
                             , paths = []
+                            , useGap = False
                             }
 
                         expected : Float
@@ -70,6 +80,7 @@ suite =
                             , width = 100
                             , height = 110
                             , paths = []
+                            , useGap = False
                             }
 
                         expected : Float
@@ -96,6 +107,7 @@ suite =
                             , width = 110
                             , height = 100
                             , paths = []
+                            , useGap = False
                             }
 
                         expected : Float
@@ -122,6 +134,7 @@ suite =
                             , width = 100
                             , height = 110
                             , paths = []
+                            , useGap = False
                             }
 
                         expected : Float

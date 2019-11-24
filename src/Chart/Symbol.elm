@@ -32,6 +32,7 @@ type Symbol msg
     | Custom CustomSymbolConf
     | Corner String
     | Triangle String
+    | NoSymbol
 
 
 symbolToId : Symbol msg -> String
@@ -48,6 +49,9 @@ symbolToId symbol =
 
         Triangle id ->
             id
+
+        NoSymbol ->
+            ""
 
 
 symbolGap : Float
@@ -92,6 +96,10 @@ custom scaleFactor conf =
 
 getSymbolByIndex : List (Symbol msg) -> Int -> Symbol msg
 getSymbolByIndex all idx =
-    all
-        |> List.Extra.getAt (modBy (List.length all) idx)
-        |> Maybe.withDefault (Triangle "default-symbol-identifier")
+    if List.length all > 0 then
+        all
+            |> List.Extra.getAt (modBy (List.length all) idx)
+            |> Maybe.withDefault NoSymbol
+
+    else
+        NoSymbol

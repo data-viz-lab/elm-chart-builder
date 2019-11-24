@@ -4,12 +4,11 @@ module Chart.Bar exposing
     , setDimensions
     , setDomain
     , setHeight
+    , setIcons
     , setLayout
     , setMargin
     , setOrientation
     , setShowColumnLabels
-    , setShowSymbols
-    , setSymbols
     , setWidth
     )
 
@@ -33,12 +32,15 @@ import Chart.Type
         , Data(..)
         , DataGroupBand
         , Domain(..)
+        , GroupedConfig
+        , GroupedConfigStruct
         , Layout(..)
         , Margin
         , Orientation(..)
         , PointBand
         , adjustLinearRange
         , defaultConfig
+        , defaultGroupedConfig
         , defaultHeight
         , defaultLayout
         , defaultMargin
@@ -53,6 +55,8 @@ import Chart.Type
         , getDomain
         , getDomainFromData
         , getHeight
+        , getIcons
+        , getIconsFromLayout
         , getLinearRange
         , getMargin
         , getOffset
@@ -60,7 +64,8 @@ import Chart.Type
         , setDimensions
         , setDomain
         , setShowColumnLabels
-        , setShowSymbols
+        , showIcons
+        , showIconsFromLayout
         , symbolCustomSpace
         , symbolSpace
         , toConfig
@@ -116,7 +121,7 @@ render ( data, config ) =
     case data of
         DataBand d ->
             case c.layout of
-                Grouped ->
+                Grouped _ ->
                     renderBandGrouped ( data, config )
 
                 Stacked _ ->
@@ -188,32 +193,17 @@ setShowColumnLabels =
     Chart.Type.setShowColumnLabels
 
 
-{-| Sets the showSymbols boolean value in the config
-Default value: False
-This shows additional symbols at the end of each bar in a group, for facilitating accessibility
-
-    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setShowSymbols True
-        |> Bar.render
-
--}
-setShowSymbols : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowSymbols =
-    Chart.Type.setShowSymbols
-
-
-{-| Sets the Symbol list in the config
-Default value: [ Circle, Corner, Triangle ]
+{-| Sets the Icon Symbol list in the grouped config
+Default value: []
 These are additional symbols at the end of each bar in a group, for facilitating accessibility
 
-    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setSymbols [ Circle, Corner, Triangle ]
-        |> Bar.render
+    defaultGroupedConfig
+        |> setIcons [ Circle, Corner, Triangle ]
 
 -}
-setSymbols : List (Symbol String) -> ( Data, Config ) -> ( Data, Config )
-setSymbols =
-    Chart.Type.setSymbols
+setIcons : List (Symbol String) -> GroupedConfig -> GroupedConfig
+setIcons =
+    Chart.Type.setIcons
 
 
 
@@ -436,11 +426,16 @@ renderBandGrouped ( data, config ) =
             Scale.linear linearRange domain.linear
 
         symbolElements =
-            if c.showSymbols then
-                symbolsToSymbolElements c.orientation bandSingleScale c.symbols
+            case c.layout of
+                Grouped groupedConfig ->
+                    if showIcons groupedConfig then
+                        symbolsToSymbolElements c.orientation bandSingleScale (getIcons groupedConfig)
 
-            else
-                []
+                    else
+                        []
+
+                Stacked _ ->
+                    []
     in
     svg
         [ viewBox 0 0 outerW outerH
@@ -514,7 +509,7 @@ verticalRect c bandSingleScale linearScale idx point =
             verticalLabel c bandSingleScale linearScale point
 
         iconOffset =
-            symbolSpace Vertical bandSingleScale c.symbols + symbolGap
+            symbolSpace Vertical bandSingleScale (getIconsFromLayout c.layout) + symbolGap
 
         x_ =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
@@ -616,12 +611,12 @@ horizontalSymbol : ConfigStruct -> { idx : Int, w : Float, y_ : Float, h : Float
 horizontalSymbol c { idx, w, y_, h } =
     let
         symbol =
-            getSymbolByIndex c.symbols idx
+            getSymbolByIndex (getIconsFromLayout c.layout) idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
     in
-    if c |> .showSymbols then
+    if showIconsFromLayout c.layout then
         case symbol of
             Triangle _ ->
                 [ g
@@ -664,6 +659,9 @@ horizontalSymbol c { idx, w, y_, h } =
                     symbolRef
                 ]
 
+            NoSymbol ->
+                []
+
     else
         []
 
@@ -672,12 +670,12 @@ verticalSymbol : ConfigStruct -> { idx : Int, w : Float, y_ : Float, x_ : Float 
 verticalSymbol c { idx, w, y_, x_ } =
     let
         symbol =
-            getSymbolByIndex c.symbols idx
+            getSymbolByIndex (getIconsFromLayout c.layout) idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
     in
-    if c |> .showSymbols then
+    if showIconsFromLayout c.layout then
         case symbol of
             Triangle _ ->
                 [ g
@@ -722,6 +720,9 @@ verticalSymbol c { idx, w, y_, x_ } =
                     ]
                     symbolRef
                 ]
+
+            NoSymbol ->
+                []
 
     else
         []
@@ -786,4 +787,7 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
 
                     Triangle _ ->
                         s [ triangle localDimension ]
+
+                    NoSymbol ->
+                        s []
             )
