@@ -179,7 +179,7 @@ main =
                     |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-b")))
                     |> Bar.setOrientation Horizontal
                     |> Bar.setDimensions
-                        { margin = { top = 1, right = 1, bottom = 1, left = 1 }
+                        { margin = { top = 1, right = 1, bottom = 20, left = 1 }
                         , width = width
                         , height = height
                         }

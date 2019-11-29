@@ -43,6 +43,8 @@ module Chart.Type exposing
     , setMargin
     , setOrientation
     , setShowColumnLabels
+    , setShowHorizontalAxis
+    , setShowVerticalAxis
     , setWidth
     , showIcons
     , showIconsFromLayout
@@ -76,6 +78,125 @@ type Direction
 type Axis
     = X
     | Y
+
+
+type alias LinearDomain =
+    ( Float, Float )
+
+
+type alias BandDomain =
+    List String
+
+
+type alias DomainBandStruct =
+    { bandGroup : BandDomain, bandSingle : BandDomain, linear : LinearDomain }
+
+
+type Domain
+    = DomainBand DomainBandStruct
+
+
+type alias PointBand =
+    ( String, Float )
+
+
+type alias DataGroupBand =
+    { groupLabel : Maybe String, points : List PointBand }
+
+
+type Data
+    = DataBand (List DataGroupBand)
+
+
+type alias Range =
+    ( Float, Float )
+
+
+type alias Margin =
+    { top : Float
+    , right : Float
+    , bottom : Float
+    , left : Float
+    }
+
+
+type alias ConfigStruct =
+    { domain : Domain
+    , height : Float
+    , layout : Layout
+    , margin : Margin
+    , orientation : Orientation
+    , showColumnLabels : Bool
+    , showHorizontalAxis : Bool
+    , showVerticalAxis : Bool
+    , width : Float
+    }
+
+
+defaultConfig : Config
+defaultConfig =
+    toConfig
+        { domain = DomainBand { bandGroup = [], bandSingle = [], linear = ( 0, 0 ) }
+        , height = defaultHeight
+        , layout = defaultLayout
+        , margin = defaultMargin
+        , orientation = defaultOrientation
+        , showColumnLabels = False
+        , showHorizontalAxis = True
+        , showVerticalAxis = True
+        , width = defaultWidth
+        }
+
+
+type Config
+    = Config ConfigStruct
+
+
+toConfig : ConfigStruct -> Config
+toConfig config =
+    Config config
+
+
+fromConfig : Config -> ConfigStruct
+fromConfig (Config config) =
+    config
+
+
+
+-- DEFAULTS
+
+
+defaultLayout : Layout
+defaultLayout =
+    Grouped defaultGroupedConfig
+
+
+defaultOrientation : Orientation
+defaultOrientation =
+    Vertical
+
+
+defaultWidth : Float
+defaultWidth =
+    600
+
+
+defaultHeight : Float
+defaultHeight =
+    400
+
+
+defaultMargin : Margin
+defaultMargin =
+    { top = 1
+    , right = 20
+    , bottom = 20
+    , left = 30
+    }
+
+
+
+-- GROUPED CONFIG
 
 
 type GroupedConfig
@@ -150,117 +271,6 @@ setIcons all config =
             fromGroupedConfig config
     in
     toGroupedConfig { c | icons = all }
-
-
-type alias LinearDomain =
-    ( Float, Float )
-
-
-type alias BandDomain =
-    List String
-
-
-type alias DomainBandStruct =
-    { bandGroup : BandDomain, bandSingle : BandDomain, linear : LinearDomain }
-
-
-type Domain
-    = DomainBand DomainBandStruct
-
-
-type alias PointBand =
-    ( String, Float )
-
-
-type alias DataGroupBand =
-    { groupLabel : Maybe String, points : List PointBand }
-
-
-type Data
-    = DataBand (List DataGroupBand)
-
-
-type alias Range =
-    ( Float, Float )
-
-
-type alias Margin =
-    { top : Float
-    , right : Float
-    , bottom : Float
-    , left : Float
-    }
-
-
-type alias ConfigStruct =
-    { domain : Domain
-    , height : Float
-    , layout : Layout
-    , margin : Margin
-    , orientation : Orientation
-    , showColumnLabels : Bool
-    , width : Float
-    }
-
-
-defaultConfig : Config
-defaultConfig =
-    toConfig
-        { domain = DomainBand { bandGroup = [], bandSingle = [], linear = ( 0, 0 ) }
-        , height = defaultHeight
-        , layout = defaultLayout
-        , margin = defaultMargin
-        , orientation = defaultOrientation
-        , showColumnLabels = False
-        , width = defaultWidth
-        }
-
-
-type Config
-    = Config ConfigStruct
-
-
-toConfig : ConfigStruct -> Config
-toConfig config =
-    Config config
-
-
-fromConfig : Config -> ConfigStruct
-fromConfig (Config config) =
-    config
-
-
-
--- DEFAULTS
-
-
-defaultLayout : Layout
-defaultLayout =
-    Grouped defaultGroupedConfig
-
-
-defaultOrientation : Orientation
-defaultOrientation =
-    Vertical
-
-
-defaultWidth : Float
-defaultWidth =
-    600
-
-
-defaultHeight : Float
-defaultHeight =
-    400
-
-
-defaultMargin : Margin
-defaultMargin =
-    { top = 1
-    , right = 20
-    , bottom = 20
-    , left = 30
-    }
 
 
 
@@ -353,6 +363,24 @@ setShowColumnLabels bool ( data, config ) =
             fromConfig config
     in
     ( data, toConfig { c | showColumnLabels = bool } )
+
+
+setShowHorizontalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowHorizontalAxis bool ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | showHorizontalAxis = bool } )
+
+
+setShowVerticalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowVerticalAxis bool ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | showVerticalAxis = bool } )
 
 
 

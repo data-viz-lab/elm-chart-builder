@@ -9,9 +9,12 @@ module Chart.Bar exposing
     , setMargin
     , setOrientation
     , setShowColumnLabels
+    , setShowHorizontalAxis
+    , setShowVerticalAxis
     , setWidth
     )
 
+import Axis
 import Chart.Helpers as Helpers exposing (dataBandToDataStacked)
 import Chart.Symbol
     exposing
@@ -64,6 +67,8 @@ import Chart.Type
         , setDimensions
         , setDomain
         , setShowColumnLabels
+        , setShowHorizontalAxis
+        , setShowVerticalAxis
         , showIcons
         , showIconsFromLayout
         , symbolCustomSpace
@@ -191,6 +196,34 @@ This shows the bar's ordinal value at the end of the rect, not the linear value
 setShowColumnLabels : Bool -> ( Data, Config ) -> ( Data, Config )
 setShowColumnLabels =
     Chart.Type.setShowColumnLabels
+
+
+{-| Sets the showHorizontalAxis boolean value in the config
+Default value: True
+This shows the bar's horizontal axis
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setShowHorizontalAxis False
+        |> Bar.render
+
+-}
+setShowHorizontalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowHorizontalAxis =
+    Chart.Type.setShowHorizontalAxis
+
+
+{-| Sets the showVerticalAxis boolean value in the config
+Default value: True
+This shows the bar's vertical axis
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setShowVerticalAxis False
+        |> Bar.render
+
+-}
+setShowVerticalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowVerticalAxis =
+    Chart.Type.setShowVerticalAxis
 
 
 {-| Sets the Icon Symbol list in the grouped config
@@ -416,12 +449,15 @@ renderBandGrouped ( data, config ) =
         linearRange =
             getLinearRange config w h bandSingleScale
 
+        bandGroupScale : BandScale String
         bandGroupScale =
             Scale.band { defaultBandConfig | paddingInner = 0.1 } bandGroupRange domain.bandGroup
 
+        bandSingleScale : BandScale String
         bandSingleScale =
             Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange domain.bandSingle
 
+        linearScale : ContinuousScale Float
         linearScale =
             Scale.linear linearRange domain.linear
 
@@ -436,6 +472,9 @@ renderBandGrouped ( data, config ) =
 
                 Stacked _ ->
                     []
+
+        --horizontalAxis =
+        --    case c.
     in
     svg
         [ viewBox 0 0 outerW outerH
@@ -444,6 +483,7 @@ renderBandGrouped ( data, config ) =
         ]
     <|
         symbolElements
+            ++ bandGroupedHorizontalAxis c data bandGroupScale linearScale
             ++ [ g
                     [ transform [ Translate m.left m.top ]
                     , class [ "series" ]
@@ -791,3 +831,26 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
                     NoSymbol ->
                         s []
             )
+
+
+bandGroupedHorizontalAxis : ConfigStruct -> Data -> BandScale String -> ContinuousScale Float -> List (Svg msg)
+bandGroupedHorizontalAxis c data bandScale linearScale =
+    case c.showHorizontalAxis of
+        True ->
+            case c.orientation of
+                Vertical ->
+                    --let
+                    --    axis Axis.bottom [] (Scale.toRenderable dateFormat (xScale model))
+                    --in
+                    --[ g [ transform [ Translate c.margin.left c.height ] ] [ axis data ] ]
+                    []
+
+                Horizontal ->
+                    let
+                        axis =
+                            Axis.bottom [] linearScale
+                    in
+                    [ g [ transform [ Translate c.margin.left c.height ] ] [ axis ] ]
+
+        False ->
+            []
