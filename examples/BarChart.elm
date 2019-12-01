@@ -178,6 +178,7 @@ main =
                 [ Bar.init data
                     |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-b")))
                     |> Bar.setOrientation Horizontal
+                    |> Bar.setContinousDataTicks (CustomTicks 5)
                     |> Bar.setDimensions
                         { margin = { top = 1, right = 1, bottom = 20, left = 1 }
                         , width = width
@@ -188,7 +189,6 @@ main =
             , Html.div
                 attrs
                 [ Bar.init data
-                    --|> Bar.setShowColumnLabels True
                     |> Bar.setLayout (Stacked NoDirection)
                     |> Bar.setOrientation Horizontal
                     |> Bar.setDimensions

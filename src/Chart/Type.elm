@@ -2,6 +2,8 @@ module Chart.Type exposing
     ( Axis(..)
     , Config
     , ConfigStruct
+    , ContinousDataTickFormat(..)
+    , ContinousDataTicks(..)
     , Data(..)
     , DataGroupBand
     , Direction(..)
@@ -25,6 +27,8 @@ module Chart.Type exposing
     , fromDomainBand
     , getBandGroupRange
     , getBandSingleRange
+    , getContinousDataTickFormat
+    , getContinousDataTicks
     , getDataDepth
     , getDomain
     , getDomainFromData
@@ -35,6 +39,8 @@ module Chart.Type exposing
     , getMargin
     , getOffset
     , getWidth
+    , setContinousDataTickFormat
+    , setContinousDataTicks
     , setDimensions
     , setDomain
     , setHeight
@@ -43,8 +49,8 @@ module Chart.Type exposing
     , setMargin
     , setOrientation
     , setShowColumnLabels
-    , setShowHorizontalAxis
-    , setShowVerticalAxis
+    , setShowContinousAxis
+    , setShowOrdinalAxis
     , setWidth
     , showIcons
     , showIconsFromLayout
@@ -120,15 +126,27 @@ type alias Margin =
     }
 
 
+type ContinousDataTicks
+    = DefaultTicks
+    | CustomTicks Int
+
+
+type ContinousDataTickFormat
+    = DefaultTickFormat
+    | CustomTickFormat (Float -> String)
+
+
 type alias ConfigStruct =
-    { domain : Domain
+    { continousDataTickFormat : ContinousDataTickFormat
+    , continousDataTicks : ContinousDataTicks
+    , domain : Domain
     , height : Float
     , layout : Layout
     , margin : Margin
     , orientation : Orientation
     , showColumnLabels : Bool
-    , showHorizontalAxis : Bool
-    , showVerticalAxis : Bool
+    , showContinousAxis : Bool
+    , showOrdinalAxis : Bool
     , width : Float
     }
 
@@ -136,14 +154,16 @@ type alias ConfigStruct =
 defaultConfig : Config
 defaultConfig =
     toConfig
-        { domain = DomainBand { bandGroup = [], bandSingle = [], linear = ( 0, 0 ) }
+        { continousDataTickFormat = DefaultTickFormat
+        , continousDataTicks = DefaultTicks
+        , domain = DomainBand { bandGroup = [], bandSingle = [], linear = ( 0, 0 ) }
         , height = defaultHeight
         , layout = defaultLayout
         , margin = defaultMargin
         , orientation = defaultOrientation
         , showColumnLabels = False
-        , showHorizontalAxis = True
-        , showVerticalAxis = True
+        , showContinousAxis = True
+        , showOrdinalAxis = True
         , width = defaultWidth
         }
 
@@ -277,6 +297,24 @@ setIcons all config =
 -- SETTERS
 
 
+setContinousDataTickFormat : ContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
+setContinousDataTickFormat format ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | continousDataTickFormat = format } )
+
+
+setContinousDataTicks : ContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
+setContinousDataTicks ticks ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | continousDataTicks = ticks } )
+
+
 setHeight : Float -> ( Data, Config ) -> ( Data, Config )
 setHeight height ( data, config ) =
     let
@@ -365,26 +403,36 @@ setShowColumnLabels bool ( data, config ) =
     ( data, toConfig { c | showColumnLabels = bool } )
 
 
-setShowHorizontalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowHorizontalAxis bool ( data, config ) =
+setShowContinousAxis : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowContinousAxis bool ( data, config ) =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | showHorizontalAxis = bool } )
+    ( data, toConfig { c | showContinousAxis = bool } )
 
 
-setShowVerticalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowVerticalAxis bool ( data, config ) =
+setShowOrdinalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowOrdinalAxis bool ( data, config ) =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | showVerticalAxis = bool } )
+    ( data, toConfig { c | showOrdinalAxis = bool } )
 
 
 
 -- GETTERS
+
+
+getContinousDataTickFormat : Config -> ContinousDataTickFormat
+getContinousDataTickFormat config =
+    fromConfig config |> .continousDataTickFormat
+
+
+getContinousDataTicks : Config -> ContinousDataTicks
+getContinousDataTicks config =
+    fromConfig config |> .continousDataTicks
 
 
 getMargin : Config -> Margin

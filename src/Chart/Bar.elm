@@ -1,6 +1,7 @@
 module Chart.Bar exposing
     ( init
     , render
+    , setContinousDataTicks
     , setDimensions
     , setDomain
     , setHeight
@@ -8,9 +9,8 @@ module Chart.Bar exposing
     , setLayout
     , setMargin
     , setOrientation
-    , setShowColumnLabels
-    , setShowHorizontalAxis
-    , setShowVerticalAxis
+    , setShowContinousAxis
+    , setShowOrdinalAxis
     , setWidth
     )
 
@@ -32,6 +32,8 @@ import Chart.Type
         ( Axis(..)
         , Config
         , ConfigStruct
+        , ContinousDataTickFormat(..)
+        , ContinousDataTicks(..)
         , Data(..)
         , DataGroupBand
         , Domain(..)
@@ -67,8 +69,8 @@ import Chart.Type
         , setDimensions
         , setDomain
         , setShowColumnLabels
-        , setShowHorizontalAxis
-        , setShowVerticalAxis
+        , setShowContinousAxis
+        , setShowOrdinalAxis
         , showIcons
         , showIconsFromLayout
         , symbolCustomSpace
@@ -166,6 +168,41 @@ setMargin =
     Chart.Type.setMargin
 
 
+{-| Sets the approximate number of ticks for a grouped bar chart continous axis
+Defaults to `Scale.ticks`
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setDomain { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) }
+        |> Bar.setContinousDataTicks (CustomTicks 5)
+        |> Bar.render
+
+-}
+setContinousDataTicks : ContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
+setContinousDataTicks =
+    Chart.Type.setContinousDataTicks
+
+
+
+-- TODO: elm-visualization does not seem to support passing a number formatting function here...
+-- it needs more investigation and disabling for now
+-- Ideally we should be able to pass something like:
+-- valueFormatter : Float -> String
+-- valueFormatter =
+--     FormatNumber.format usLocale
+--{-| Sets the formatting for ticks in a grouped bar chart continous axis
+--Defaults to `Scale.tickFormat`
+--
+--    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+--        |> Bar.setDomain { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) }
+--        |> Bar.setContinousDataTicks (CustomTickFormat .... TODO)
+--        |> Bar.render
+--
+---}
+--setContinousDataTickFormat : ContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
+--setContinousDataTickFormat =
+--    Chart.Type.setContinousDataTickFormat
+
+
 setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
 setDimensions =
     Chart.Type.setDimensions
@@ -184,46 +221,48 @@ setDomain =
     Chart.Type.setDomain
 
 
-{-| Sets the showColumnLabels boolean value in the config
-Default value: False
-This shows the bar's ordinal value at the end of the rect, not the linear value
 
-    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setShowColumnLabels True
-        |> Bar.render
+-- TODO:
+--{-| Sets the showColumnLabels boolean value in the config
+--Default value: False
+--This shows the bar's ordinal value at the end of the rect, not the linear value
+--
+--    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+--        |> Bar.setShowColumnLabels True
+--        |> Bar.render
+--
+---}
+--setShowColumnLabels : Bool -> ( Data, Config ) -> ( Data, Config )
+--setShowColumnLabels =
+--    Chart.Type.setShowColumnLabels
 
--}
-setShowColumnLabels : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowColumnLabels =
-    Chart.Type.setShowColumnLabels
 
-
-{-| Sets the showHorizontalAxis boolean value in the config
+{-| Sets the showContinousAxis boolean value in the config
 Default value: True
 This shows the bar's horizontal axis
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setShowHorizontalAxis False
+        |> Bar.setShowContinousAxis False
         |> Bar.render
 
 -}
-setShowHorizontalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowHorizontalAxis =
-    Chart.Type.setShowHorizontalAxis
+setShowContinousAxis : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowContinousAxis =
+    Chart.Type.setShowContinousAxis
 
 
-{-| Sets the showVerticalAxis boolean value in the config
+{-| Sets the showOrdinalAxis boolean value in the config
 Default value: True
 This shows the bar's vertical axis
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setShowVerticalAxis False
+        |> Bar.setShowOrdinalAxis False
         |> Bar.render
 
 -}
-setShowVerticalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowVerticalAxis =
-    Chart.Type.setShowVerticalAxis
+setShowOrdinalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowOrdinalAxis =
+    Chart.Type.setShowOrdinalAxis
 
 
 {-| Sets the Icon Symbol list in the grouped config
@@ -472,9 +511,6 @@ renderBandGrouped ( data, config ) =
 
                 Stacked _ ->
                     []
-
-        --horizontalAxis =
-        --    case c.
     in
     svg
         [ viewBox 0 0 outerW outerH
@@ -483,7 +519,7 @@ renderBandGrouped ( data, config ) =
         ]
     <|
         symbolElements
-            ++ bandGroupedHorizontalAxis c data bandGroupScale linearScale
+            ++ bandGroupedContinousAxis c data linearScale
             ++ [ g
                     [ transform [ Translate m.left m.top ]
                     , class [ "series" ]
@@ -833,10 +869,32 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
             )
 
 
-bandGroupedHorizontalAxis : ConfigStruct -> Data -> BandScale String -> ContinuousScale Float -> List (Svg msg)
-bandGroupedHorizontalAxis c data bandScale linearScale =
-    case c.showHorizontalAxis of
+bandGroupedContinousAxis : ConfigStruct -> Data -> ContinuousScale Float -> List (Svg msg)
+bandGroupedContinousAxis c data linearScale =
+    case c.showContinousAxis of
         True ->
+            let
+                ( ticks, ticksCount ) =
+                    case c.continousDataTicks of
+                        DefaultTicks ->
+                            --TODO
+                            ( [], 10 )
+
+                        CustomTicks count ->
+                            ( [ Axis.ticks <| Scale.ticks linearScale count ], count )
+
+                -- TODO:
+                --tickFormat =
+                --    case c.continousDataTickFormat of
+                --        DefaultTickFormat ->
+                --            []
+                --        CustomTickFormat formatter ->
+                --            [ Axis.tickFormat
+                --                (Scale.tickFormat linearScale ticksCount formatter)
+                --            ]
+                attributes =
+                    ticks
+            in
             case c.orientation of
                 Vertical ->
                     --let
@@ -848,7 +906,7 @@ bandGroupedHorizontalAxis c data bandScale linearScale =
                 Horizontal ->
                     let
                         axis =
-                            Axis.bottom [] linearScale
+                            Axis.bottom attributes linearScale
                     in
                     [ g [ transform [ Translate c.margin.left c.height ] ] [ axis ] ]
 
