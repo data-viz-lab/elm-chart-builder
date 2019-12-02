@@ -1,6 +1,8 @@
 module Chart.Bar exposing
     ( init
     , render
+    , setContinousDataTickCount
+    , setContinousDataTickFormat
     , setContinousDataTicks
     , setDimensions
     , setDomain
@@ -32,6 +34,7 @@ import Chart.Type
         ( Axis(..)
         , Config
         , ConfigStruct
+        , ContinousDataTickCount(..)
         , ContinousDataTickFormat(..)
         , ContinousDataTicks(..)
         , Data(..)
@@ -50,6 +53,7 @@ import Chart.Type
         , defaultLayout
         , defaultMargin
         , defaultOrientation
+        , defaultTicksCount
         , defaultWidth
         , fromConfig
         , fromDataBand
@@ -66,6 +70,7 @@ import Chart.Type
         , getMargin
         , getOffset
         , getWidth
+        , setContinousDataTickCount
         , setDimensions
         , setDomain
         , setShowColumnLabels
@@ -173,7 +178,7 @@ Defaults to `Scale.ticks`
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
         |> Bar.setDomain { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) }
-        |> Bar.setContinousDataTicks (CustomTicks 5)
+        |> Bar.setContinousDataTicks (CustomTicks <| Scale.ticks linearScale 5)
         |> Bar.render
 
 -}
@@ -182,25 +187,32 @@ setContinousDataTicks =
     Chart.Type.setContinousDataTicks
 
 
+{-| Sets the approximate number of ticks for a grouped bar chart continous axis
+Defaults to `Scale.ticks`
 
--- TODO: elm-visualization does not seem to support passing a number formatting function here...
--- it needs more investigation and disabling for now
--- Ideally we should be able to pass something like:
--- valueFormatter : Float -> String
--- valueFormatter =
---     FormatNumber.format usLocale
---{-| Sets the formatting for ticks in a grouped bar chart continous axis
---Defaults to `Scale.tickFormat`
---
---    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
---        |> Bar.setDomain { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) }
---        |> Bar.setContinousDataTicks (CustomTickFormat .... TODO)
---        |> Bar.render
---
----}
---setContinousDataTickFormat : ContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
---setContinousDataTickFormat =
---    Chart.Type.setContinousDataTickFormat
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setDomain { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) }
+        |> Bar.setContinousDataTickCount (CustomTickCount 5)
+        |> Bar.render
+
+-}
+setContinousDataTickCount : ContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
+setContinousDataTickCount =
+    Chart.Type.setContinousDataTickCount
+
+
+{-| Sets the formatting for ticks in a grouped bar chart continous axis
+Defaults to `Scale.tickFormat`
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setDomain { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) }
+        |> Bar.setContinousDataTicks (CustomTickFormat .... TODO)
+        |> Bar.render
+
+-}
+setContinousDataTickFormat : ContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
+setContinousDataTickFormat =
+    Chart.Type.setContinousDataTickFormat
 
 
 setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
@@ -874,26 +886,33 @@ bandGroupedContinousAxis c data linearScale =
     case c.showContinousAxis of
         True ->
             let
-                ( ticks, ticksCount ) =
+                ticks =
                     case c.continousDataTicks of
                         DefaultTicks ->
-                            --TODO
-                            ( [], 10 )
+                            Nothing
 
-                        CustomTicks count ->
-                            ( [ Axis.ticks <| Scale.ticks linearScale count ], count )
+                        CustomTicks t ->
+                            Just (Axis.ticks t)
 
-                -- TODO:
-                --tickFormat =
-                --    case c.continousDataTickFormat of
-                --        DefaultTickFormat ->
-                --            []
-                --        CustomTickFormat formatter ->
-                --            [ Axis.tickFormat
-                --                (Scale.tickFormat linearScale ticksCount formatter)
-                --            ]
+                tickCount =
+                    case c.continousDataTickCount of
+                        DefaultTickCount ->
+                            Nothing
+
+                        CustomTickCount count ->
+                            Just (Axis.tickCount count)
+
+                tickFormat =
+                    case c.continousDataTickFormat of
+                        DefaultTickFormat ->
+                            Nothing
+
+                        CustomTickFormat formatter ->
+                            Just (Axis.tickFormat formatter)
+
                 attributes =
-                    ticks
+                    [ ticks, tickFormat, tickCount ]
+                        |> List.filterMap identity
             in
             case c.orientation of
                 Vertical ->

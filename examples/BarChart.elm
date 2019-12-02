@@ -6,6 +6,8 @@ module Examples.BarChart exposing (data, main)
 import Chart.Bar as Bar
 import Chart.Symbol exposing (Symbol(..))
 import Chart.Type exposing (..)
+import FormatNumber
+import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
 import Html.Attributes
 import Svg exposing (..)
@@ -138,6 +140,11 @@ groupedConfig =
     defaultGroupedConfig
 
 
+valueFormatter : Float -> String
+valueFormatter =
+    FormatNumber.format { usLocale | decimals = 0 }
+
+
 attrs =
     [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
     , Html.Attributes.style "width" (String.fromFloat width ++ "px")
@@ -178,7 +185,8 @@ main =
                 [ Bar.init data
                     |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-b")))
                     |> Bar.setOrientation Horizontal
-                    |> Bar.setContinousDataTicks (CustomTicks 5)
+                    |> Bar.setContinousDataTickCount (CustomTickCount 5)
+                    |> Bar.setContinousDataTickFormat (CustomTickFormat valueFormatter)
                     |> Bar.setDimensions
                         { margin = { top = 1, right = 1, bottom = 20, left = 1 }
                         , width = width

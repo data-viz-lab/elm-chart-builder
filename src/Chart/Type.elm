@@ -2,6 +2,7 @@ module Chart.Type exposing
     ( Axis(..)
     , Config
     , ConfigStruct
+    , ContinousDataTickCount(..)
     , ContinousDataTickFormat(..)
     , ContinousDataTicks(..)
     , Data(..)
@@ -21,12 +22,14 @@ module Chart.Type exposing
     , defaultLayout
     , defaultMargin
     , defaultOrientation
+    , defaultTicksCount
     , defaultWidth
     , fromConfig
     , fromDataBand
     , fromDomainBand
     , getBandGroupRange
     , getBandSingleRange
+    , getContinousDataTickCount
     , getContinousDataTickFormat
     , getContinousDataTicks
     , getDataDepth
@@ -39,6 +42,7 @@ module Chart.Type exposing
     , getMargin
     , getOffset
     , getWidth
+    , setContinousDataTickCount
     , setContinousDataTickFormat
     , setContinousDataTicks
     , setDimensions
@@ -59,6 +63,7 @@ module Chart.Type exposing
     , toConfig
     )
 
+import Axis
 import Chart.Symbol exposing (Symbol(..), symbolGap)
 import Scale exposing (BandScale)
 import Set
@@ -126,9 +131,19 @@ type alias Margin =
     }
 
 
+defaultTicksCount : Int
+defaultTicksCount =
+    10
+
+
 type ContinousDataTicks
     = DefaultTicks
-    | CustomTicks Int
+    | CustomTicks (List Float)
+
+
+type ContinousDataTickCount
+    = DefaultTickCount
+    | CustomTickCount Int
 
 
 type ContinousDataTickFormat
@@ -137,7 +152,8 @@ type ContinousDataTickFormat
 
 
 type alias ConfigStruct =
-    { continousDataTickFormat : ContinousDataTickFormat
+    { continousDataTickCount : ContinousDataTickCount
+    , continousDataTickFormat : ContinousDataTickFormat
     , continousDataTicks : ContinousDataTicks
     , domain : Domain
     , height : Float
@@ -154,7 +170,8 @@ type alias ConfigStruct =
 defaultConfig : Config
 defaultConfig =
     toConfig
-        { continousDataTickFormat = DefaultTickFormat
+        { continousDataTickCount = DefaultTickCount
+        , continousDataTickFormat = DefaultTickFormat
         , continousDataTicks = DefaultTicks
         , domain = DomainBand { bandGroup = [], bandSingle = [], linear = ( 0, 0 ) }
         , height = defaultHeight
@@ -297,6 +314,15 @@ setIcons all config =
 -- SETTERS
 
 
+setContinousDataTickCount : ContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
+setContinousDataTickCount count ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | continousDataTickCount = count } )
+
+
 setContinousDataTickFormat : ContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
 setContinousDataTickFormat format ( data, config ) =
     let
@@ -423,6 +449,11 @@ setShowOrdinalAxis bool ( data, config ) =
 
 
 -- GETTERS
+
+
+getContinousDataTickCount : Config -> ContinousDataTickCount
+getContinousDataTickCount config =
+    fromConfig config |> .continousDataTickCount
 
 
 getContinousDataTickFormat : Config -> ContinousDataTickFormat
