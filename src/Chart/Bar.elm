@@ -512,8 +512,8 @@ renderBandGrouped ( data, config ) =
         linearScale =
             Scale.linear linearRange domain.linear
 
-        verticalIconOffset : Float
-        verticalIconOffset =
+        iconOffset : Float
+        iconOffset =
             symbolSpace Vertical bandSingleScale (getIconsFromLayout c.layout) + symbolGap |> Helpers.floorFloat
 
         symbolElements =
@@ -535,18 +535,18 @@ renderBandGrouped ( data, config ) =
         ]
     <|
         symbolElements
-            ++ bandGroupedContinousAxis c verticalIconOffset data linearScale
+            ++ bandGroupedContinousAxis c iconOffset data linearScale
             ++ [ g
                     [ transform [ Translate m.left m.top ]
                     , class [ "series" ]
                     ]
                  <|
-                    List.map (columns c verticalIconOffset bandGroupScale bandSingleScale linearScale) (fromDataBand data)
+                    List.map (columns c iconOffset bandGroupScale bandSingleScale linearScale) (fromDataBand data)
                ]
 
 
 columns : ConfigStruct -> Float -> BandScale String -> BandScale String -> ContinuousScale Float -> DataGroupBand -> Svg msg
-columns c verticalIconOffset bandGroupScale bandSingleScale linearScale dataGroup =
+columns c iconOffset bandGroupScale bandSingleScale linearScale dataGroup =
     let
         tr =
             case c.orientation of
@@ -563,11 +563,11 @@ columns c verticalIconOffset bandGroupScale bandSingleScale linearScale dataGrou
         , class [ "data-group" ]
         ]
     <|
-        List.indexedMap (column c verticalIconOffset bandSingleScale linearScale) dataGroup.points
+        List.indexedMap (column c iconOffset bandSingleScale linearScale) dataGroup.points
 
 
 column : ConfigStruct -> Float -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> Svg msg
-column c verticalIconOffset bandSingleScale linearScale idx point =
+column c iconOffset bandSingleScale linearScale idx point =
     let
         ( x__, y__ ) =
             point
@@ -583,7 +583,7 @@ column c verticalIconOffset bandSingleScale linearScale idx point =
         rectangle =
             case c.orientation of
                 Vertical ->
-                    verticalRect c verticalIconOffset bandSingleScale linearScale idx point
+                    verticalRect c iconOffset bandSingleScale linearScale idx point
 
                 Horizontal ->
                     horizontalRect c bandSingleScale linearScale idx point
@@ -883,7 +883,7 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
 
 
 bandGroupedContinousAxis : ConfigStruct -> Float -> Data -> ContinuousScale Float -> List (Svg msg)
-bandGroupedContinousAxis c verticalIconOffset data linearScale =
+bandGroupedContinousAxis c iconOffset data linearScale =
     case c.showContinousAxis of
         True ->
             let
@@ -926,7 +926,7 @@ bandGroupedContinousAxis c verticalIconOffset data linearScale =
                             Axis.left attributes linearScale
                     in
                     [ g
-                        [ transform [ Translate (c.margin.left - axisGap |> Helpers.floorFloat) verticalIconOffset ]
+                        [ transform [ Translate (c.margin.left - axisGap |> Helpers.floorFloat) iconOffset ]
                         , class [ "axis", "axis--vertical" ]
                         ]
                         [ axis ]
