@@ -44,6 +44,15 @@ css =
 .column-2 .symbol {
     fill: #8da0cb;
 }
+
+.axis path,
+.axis line {
+    stroke: #b7b7b7;
+}
+
+.axis text {
+    fill: #333;
+}
 """
 
 
@@ -162,8 +171,9 @@ main =
                 attrs
                 [ Bar.init data
                     |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-a")))
+                    |> Bar.setContinousDataTickCount (CustomTickCount 5)
                     |> Bar.setDimensions
-                        { margin = { top = 1, right = 1, bottom = 1, left = 1 }
+                        { margin = { top = 1, right = 1, bottom = 5, left = 35 }
                         , width = width
                         , height = height
                         }
@@ -188,7 +198,7 @@ main =
                     |> Bar.setContinousDataTickCount (CustomTickCount 5)
                     |> Bar.setContinousDataTickFormat (CustomTickFormat valueFormatter)
                     |> Bar.setDimensions
-                        { margin = { top = 1, right = 1, bottom = 20, left = 1 }
+                        { margin = { top = 4, right = 2, bottom = 22, left = 4 }
                         , width = width
                         , height = height
                         }
