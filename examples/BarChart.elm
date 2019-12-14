@@ -85,13 +85,28 @@ data =
                 , ( "c", 16 )
                 ]
           }
-        , { groupLabel = Just "C"
-          , points =
-                [ ( "a", 13 )
-                , ( "b", 18 )
-                , ( "c", 21 )
-                ]
-          }
+
+        --, { groupLabel = Just "C"
+        --  , points =
+        --        [ ( "a", 13 )
+        --        , ( "b", 18 )
+        --        , ( "c", 21 )
+        --        ]
+        --  }
+        --, { groupLabel = Just "D"
+        --  , points =
+        --        [ ( "a", 11 )
+        --        , ( "b", 23 )
+        --        , ( "c", 16 )
+        --        ]
+        --  }
+        --, { groupLabel = Just "E"
+        --  , points =
+        --        [ ( "a", 13 )
+        --        , ( "b", 18 )
+        --        , ( "c", 21 )
+        --        ]
+        --  }
         ]
 
 
@@ -198,7 +213,7 @@ main =
                     |> Bar.setContinousDataTickCount (CustomTickCount 5)
                     |> Bar.setContinousDataTickFormat (CustomTickFormat valueFormatter)
                     |> Bar.setDimensions
-                        { margin = { top = 10, right = 10, bottom = 22, left = 35 }
+                        { margin = { top = 10, right = 10, bottom = 32, left = 35 }
                         , width = width
                         , height = height
                         }

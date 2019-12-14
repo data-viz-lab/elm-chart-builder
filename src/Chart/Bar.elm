@@ -510,9 +510,19 @@ renderBandGrouped ( data, config ) =
         linearRange =
             getLinearRange config w h bandSingleScale
 
+        dataLength =
+            data |> fromDataBand |> List.length
+
+        paddingInnerGroup =
+            if dataLength == 1 then
+                0
+
+            else
+                0.1
+
         bandGroupScale : BandScale String
         bandGroupScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1 } bandGroupRange domain.bandGroup
+            Scale.band { defaultBandConfig | paddingInner = paddingInnerGroup } bandGroupRange domain.bandGroup
 
         bandSingleScale : BandScale String
         bandSingleScale =
@@ -537,6 +547,14 @@ renderBandGrouped ( data, config ) =
 
                 Stacked _ ->
                     []
+
+        axisBandScale : BandScale String
+        axisBandScale =
+            if dataLength == 1 then
+                bandSingleScale
+
+            else
+                bandGroupScale
     in
     svg
         [ viewBox 0 0 outerW outerH
@@ -546,7 +564,7 @@ renderBandGrouped ( data, config ) =
     <|
         symbolElements
             ++ bandGroupedContinousAxis c iconOffset data linearScale
-            ++ bandGroupedOrdinalAxis c iconOffset data bandGroupScale
+            ++ bandGroupedOrdinalAxis c iconOffset data axisBandScale
             ++ [ g
                     [ transform [ Translate m.left m.top ]
                     , class [ "series" ]
