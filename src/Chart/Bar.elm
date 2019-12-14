@@ -466,6 +466,16 @@ horizontalRectsStacked config bandGroupScale ( group, values ) =
 -- BAND GROUPED
 
 
+leftGap =
+    -- TODO: ther should be some notion of padding!
+    4
+
+
+bottomGap =
+    -- TODO: ther should be some notion of padding!
+    2
+
+
 renderBandGrouped : ( Data, Config ) -> Html msg
 renderBandGrouped ( data, config ) =
     let
@@ -514,7 +524,7 @@ renderBandGrouped ( data, config ) =
 
         iconOffset : Float
         iconOffset =
-            symbolSpace Vertical bandSingleScale (getIconsFromLayout c.layout) + symbolGap |> Helpers.floorFloat
+            symbolSpace Vertical bandSingleScale (getIconsFromLayout c.layout) + symbolGap
 
         symbolElements =
             case c.layout of
@@ -536,6 +546,7 @@ renderBandGrouped ( data, config ) =
     <|
         symbolElements
             ++ bandGroupedContinousAxis c iconOffset data linearScale
+            ++ bandGroupedOrdinalAxis c iconOffset data bandGroupScale
             ++ [ g
                     [ transform [ Translate m.left m.top ]
                     , class [ "series" ]
@@ -882,6 +893,39 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
             )
 
 
+bandGroupedOrdinalAxis : ConfigStruct -> Float -> Data -> BandScale String -> List (Svg msg)
+bandGroupedOrdinalAxis c iconOffset data bandScale =
+    case c.showOrdinalAxis of
+        True ->
+            case c.orientation of
+                Vertical ->
+                    let
+                        axis =
+                            Axis.bottom [] (Scale.toRenderable identity bandScale)
+                    in
+                    [ g
+                        [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                        , class [ "axis", "axis--horizontal" ]
+                        ]
+                        [ axis ]
+                    ]
+
+                Horizontal ->
+                    let
+                        axis =
+                            Axis.left [] (Scale.toRenderable identity bandScale)
+                    in
+                    [ g
+                        [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
+                        , class [ "axis", "axis--vertical" ]
+                        ]
+                        [ axis ]
+                    ]
+
+        False ->
+            []
+
+
 bandGroupedContinousAxis : ConfigStruct -> Float -> Data -> ContinuousScale Float -> List (Svg msg)
 bandGroupedContinousAxis c iconOffset data linearScale =
     case c.showContinousAxis of
@@ -914,10 +958,6 @@ bandGroupedContinousAxis c iconOffset data linearScale =
                 attributes =
                     [ ticks, tickFormat, tickCount ]
                         |> List.filterMap identity
-
-                axisGap =
-                    -- TODO: ther should be some notion of padding!
-                    6
             in
             case c.orientation of
                 Vertical ->
@@ -926,7 +966,7 @@ bandGroupedContinousAxis c iconOffset data linearScale =
                             Axis.left attributes linearScale
                     in
                     [ g
-                        [ transform [ Translate (c.margin.left - axisGap |> Helpers.floorFloat) iconOffset ]
+                        [ transform [ Translate (c.margin.left - leftGap) (iconOffset + c.margin.top) ]
                         , class [ "axis", "axis--vertical" ]
                         ]
                         [ axis ]
@@ -938,7 +978,7 @@ bandGroupedContinousAxis c iconOffset data linearScale =
                             Axis.bottom attributes linearScale
                     in
                     [ g
-                        [ transform [ Translate c.margin.left (c.height + axisGap |> Helpers.floorFloat) ]
+                        [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
                         , class [ "axis", "axis--horizontal" ]
                         ]
                         [ axis ]

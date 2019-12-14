@@ -672,6 +672,8 @@ symbolSpace orientation bandSingleScale symbols =
             )
         |> List.maximum
         |> Maybe.withDefault 0
+        |> floor
+        |> toFloat
 
 
 symbolCustomSpace : Orientation -> Float -> Chart.Symbol.CustomSymbolConf -> Float

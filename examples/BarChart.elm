@@ -173,7 +173,7 @@ main =
                     |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-a")))
                     |> Bar.setContinousDataTickCount (CustomTickCount 5)
                     |> Bar.setDimensions
-                        { margin = { top = 1, right = 1, bottom = 5, left = 35 }
+                        { margin = { top = 10, right = 10, bottom = 25, left = 35 }
                         , width = width
                         , height = height
                         }
@@ -198,7 +198,7 @@ main =
                     |> Bar.setContinousDataTickCount (CustomTickCount 5)
                     |> Bar.setContinousDataTickFormat (CustomTickFormat valueFormatter)
                     |> Bar.setDimensions
-                        { margin = { top = 4, right = 2, bottom = 22, left = 4 }
+                        { margin = { top = 10, right = 10, bottom = 22, left = 35 }
                         , width = width
                         , height = height
                         }
