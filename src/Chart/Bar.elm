@@ -41,20 +41,12 @@ import Chart.Type
         , DataGroupBand
         , Domain(..)
         , GroupedConfig
-        , GroupedConfigStruct
         , Layout(..)
         , Margin
         , Orientation(..)
         , PointBand
         , adjustLinearRange
         , defaultConfig
-        , defaultGroupedConfig
-        , defaultHeight
-        , defaultLayout
-        , defaultMargin
-        , defaultOrientation
-        , defaultTicksCount
-        , defaultWidth
         , fromConfig
         , fromDataBand
         , fromDomainBand
@@ -73,7 +65,6 @@ import Chart.Type
         , setContinousDataTickCount
         , setDimensions
         , setDomain
-        , setShowColumnLabels
         , setShowContinousAxis
         , setShowOrdinalAxis
         , showIcons
@@ -85,9 +76,9 @@ import Chart.Type
 import Html exposing (Html)
 import Html.Attributes
 import List.Extra
-import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
-import Shape exposing (StackConfig, StackResult)
-import TypedSvg exposing (g, rect, style, svg, text_)
+import Scale exposing (BandScale, ContinuousScale, defaultBandConfig)
+import Shape exposing (StackConfig)
+import TypedSvg exposing (g, rect, svg, text_)
 import TypedSvg.Attributes
     exposing
         ( alignmentBaseline
@@ -131,7 +122,7 @@ render ( data, config ) =
             fromConfig config
     in
     case data of
-        DataBand d ->
+        DataBand _ ->
             case c.layout of
                 Grouped _ ->
                     renderBandGrouped ( data, config )
@@ -335,18 +326,9 @@ renderBandStacked ( data, config ) =
         stackDepth =
             getDataDepth data
 
-        d =
-            data
-                |> fromDataBand
-                |> List.map .points
-
         domain =
             getDomain config
                 |> fromDomainBand
-
-        bandGroupDomain =
-            domain
-                |> .bandGroup
 
         bandGroupRange =
             getBandGroupRange config w h
@@ -466,11 +448,13 @@ horizontalRectsStacked config bandGroupScale ( group, values ) =
 -- BAND GROUPED
 
 
+leftGap : Float
 leftGap =
     -- TODO: ther should be some notion of padding!
     4
 
 
+bottomGap : Float
 bottomGap =
     -- TODO: ther should be some notion of padding!
     2
@@ -598,17 +582,12 @@ columns c iconOffset bandGroupScale bandSingleScale linearScale dataGroup =
 column : ConfigStruct -> Float -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> Svg msg
 column c iconOffset bandSingleScale linearScale idx point =
     let
-        ( x__, y__ ) =
-            point
-
-        label =
-            case c.orientation of
-                Horizontal ->
-                    horizontalLabel c bandSingleScale linearScale point
-
-                Vertical ->
-                    verticalLabel c bandSingleScale linearScale point
-
+        --label =
+        --    case c.orientation of
+        --        Horizontal ->
+        --            horizontalLabel c bandSingleScale linearScale point
+        --        Vertical ->
+        --            verticalLabel c bandSingleScale linearScale point
         rectangle =
             case c.orientation of
                 Vertical ->
@@ -913,94 +892,92 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
 
 bandGroupedOrdinalAxis : ConfigStruct -> Float -> Data -> BandScale String -> List (Svg msg)
 bandGroupedOrdinalAxis c iconOffset data bandScale =
-    case c.showOrdinalAxis of
-        True ->
-            case c.orientation of
-                Vertical ->
-                    let
-                        axis =
-                            Axis.bottom [] (Scale.toRenderable identity bandScale)
-                    in
-                    [ g
-                        [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                        , class [ "axis", "axis--horizontal" ]
-                        ]
-                        [ axis ]
+    if c.showOrdinalAxis == True then
+        case c.orientation of
+            Vertical ->
+                let
+                    axis =
+                        Axis.bottom [] (Scale.toRenderable identity bandScale)
+                in
+                [ g
+                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                    , class [ "axis", "axis--horizontal" ]
                     ]
+                    [ axis ]
+                ]
 
-                Horizontal ->
-                    let
-                        axis =
-                            Axis.left [] (Scale.toRenderable identity bandScale)
-                    in
-                    [ g
-                        [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
-                        , class [ "axis", "axis--vertical" ]
-                        ]
-                        [ axis ]
+            Horizontal ->
+                let
+                    axis =
+                        Axis.left [] (Scale.toRenderable identity bandScale)
+                in
+                [ g
+                    [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
+                    , class [ "axis", "axis--vertical" ]
                     ]
+                    [ axis ]
+                ]
 
-        False ->
-            []
+    else
+        []
 
 
 bandGroupedContinousAxis : ConfigStruct -> Float -> Data -> ContinuousScale Float -> List (Svg msg)
 bandGroupedContinousAxis c iconOffset data linearScale =
-    case c.showContinousAxis of
-        True ->
-            let
-                ticks =
-                    case c.continousDataTicks of
-                        DefaultTicks ->
-                            Nothing
+    if c.showContinousAxis == True then
+        let
+            ticks =
+                case c.continousDataTicks of
+                    DefaultTicks ->
+                        Nothing
 
-                        CustomTicks t ->
-                            Just (Axis.ticks t)
+                    CustomTicks t ->
+                        Just (Axis.ticks t)
 
-                tickCount =
-                    case c.continousDataTickCount of
-                        DefaultTickCount ->
-                            Nothing
+            tickCount =
+                case c.continousDataTickCount of
+                    DefaultTickCount ->
+                        Nothing
 
-                        CustomTickCount count ->
-                            Just (Axis.tickCount count)
+                    CustomTickCount count ->
+                        Just (Axis.tickCount count)
 
-                tickFormat =
-                    case c.continousDataTickFormat of
-                        DefaultTickFormat ->
-                            Nothing
+            tickFormat =
+                case c.continousDataTickFormat of
+                    DefaultTickFormat ->
+                        Nothing
 
-                        CustomTickFormat formatter ->
-                            Just (Axis.tickFormat formatter)
+                    CustomTickFormat formatter ->
+                        Just (Axis.tickFormat formatter)
 
-                attributes =
-                    [ ticks, tickFormat, tickCount ]
-                        |> List.filterMap identity
-            in
-            case c.orientation of
-                Vertical ->
-                    let
-                        axis =
-                            Axis.left attributes linearScale
-                    in
-                    [ g
-                        [ transform [ Translate (c.margin.left - leftGap) (iconOffset + c.margin.top) ]
-                        , class [ "axis", "axis--vertical" ]
-                        ]
-                        [ axis ]
+            attributes =
+                [ ticks, tickFormat, tickCount ]
+                    |> List.filterMap identity
+        in
+        case c.orientation of
+            Vertical ->
+                let
+                    axis =
+                        Axis.left attributes linearScale
+                in
+                [ g
+                    [ transform [ Translate (c.margin.left - leftGap) (iconOffset + c.margin.top) ]
+                    , class [ "axis", "axis--vertical" ]
                     ]
+                    [ axis ]
+                ]
 
-                Horizontal ->
-                    let
-                        axis =
-                            Axis.bottom attributes linearScale
-                    in
-                    [ g
-                        [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                        , class [ "axis", "axis--horizontal" ]
-                        ]
-                        [ axis ]
+            Horizontal ->
+                let
+                    axis =
+                        Axis.bottom attributes linearScale
+                in
+                [ g
+                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                    , class [ "axis", "axis--horizontal" ]
                     ]
+                    [ axis ]
+                ]
 
-        False ->
-            []
+    else
+        []

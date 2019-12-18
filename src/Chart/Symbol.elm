@@ -12,7 +12,7 @@ module Chart.Symbol exposing
 
 import List.Extra
 import TypedSvg exposing (circle, g, path, polygon)
-import TypedSvg.Attributes exposing (d, points, r, transform, viewBox)
+import TypedSvg.Attributes exposing (d, points, r, transform)
 import TypedSvg.Attributes.InPx as InPx
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Transform(..))

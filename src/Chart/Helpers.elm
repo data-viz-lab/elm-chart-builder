@@ -8,7 +8,6 @@ module Chart.Helpers exposing
 import Chart.Type
     exposing
         ( Data
-        , DataGroupBand
         , fromDataBand
         , fromDomainBand
         , getDomainFromData

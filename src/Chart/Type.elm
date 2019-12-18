@@ -63,12 +63,10 @@ module Chart.Type exposing
     , toConfig
     )
 
-import Axis
 import Chart.Symbol exposing (Symbol(..), symbolGap)
 import Scale exposing (BandScale)
 import Set
-import Shape exposing (StackConfig, StackResult)
-import TypedSvg.Core exposing (Svg)
+import Shape
 
 
 type Orientation
@@ -100,7 +98,10 @@ type alias BandDomain =
 
 
 type alias DomainBandStruct =
-    { bandGroup : BandDomain, bandSingle : BandDomain, linear : LinearDomain }
+    { bandGroup : BandDomain
+    , bandSingle : BandDomain
+    , linear : LinearDomain
+    }
 
 
 type Domain
@@ -112,7 +113,9 @@ type alias PointBand =
 
 
 type alias DataGroupBand =
-    { groupLabel : Maybe String, points : List PointBand }
+    { groupLabel : Maybe String
+    , points : List PointBand
+    }
 
 
 type Data
@@ -678,10 +681,6 @@ symbolSpace orientation bandSingleScale symbols =
 
 symbolCustomSpace : Orientation -> Float -> Chart.Symbol.CustomSymbolConf -> Float
 symbolCustomSpace orientation localDimension conf =
-    let
-        iconRatio =
-            conf.height / conf.width
-    in
     case orientation of
         Horizontal ->
             let
