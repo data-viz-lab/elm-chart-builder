@@ -199,7 +199,7 @@ main =
                 [ Bar.init data
                     |> Bar.setLayout (Stacked NoDirection)
                     |> Bar.setDimensions
-                        { margin = { top = 10, right = 20, bottom = 10, left = 20 }
+                        { margin = { top = 10, right = 20, bottom = 25, left = 35 }
                         , width = width
                         , height = height
                         }
@@ -225,7 +225,7 @@ main =
                     |> Bar.setLayout (Stacked NoDirection)
                     |> Bar.setOrientation Horizontal
                     |> Bar.setDimensions
-                        { margin = { top = 20, right = 10, bottom = 20, left = 10 }
+                        { margin = { top = 20, right = 20, bottom = 30, left = 30 }
                         , width = width
                         , height = height
                         }
@@ -238,7 +238,7 @@ main =
                     |> Bar.setLayout (Stacked Diverging)
                     |> Bar.setOrientation Horizontal
                     |> Bar.setDimensions
-                        { margin = { top = 20, right = 10, bottom = 20, left = 10 }
+                        { margin = { top = 20, right = 20, bottom = 30, left = 30 }
                         , width = width
                         , height = height
                         }
@@ -250,7 +250,7 @@ main =
                     |> Bar.setLayout (Stacked Diverging)
                     |> Bar.setOrientation Vertical
                     |> Bar.setDimensions
-                        { margin = { top = 20, right = 10, bottom = 20, left = 10 }
+                        { margin = { top = 20, right = 10, bottom = 30, left = 35 }
                         , width = width
                         , height = height
                         }

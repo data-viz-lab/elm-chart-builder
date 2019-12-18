@@ -45,6 +45,7 @@ import Chart.Type
         , Margin
         , Orientation(..)
         , PointBand
+        , RenderContext(..)
         , adjustLinearRange
         , defaultConfig
         , fromConfig
@@ -343,14 +344,23 @@ renderBandStacked ( data, config ) =
             Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange domain.bandSingle
 
         linearRange =
-            getLinearRange config w h bandSingleScale
+            getLinearRange config RenderChart w h bandSingleScale
                 |> adjustLinearRange config stackDepth
+
+        linearRangeAxis =
+            getLinearRange config RenderAxis w h bandSingleScale
 
         linearScale : ContinuousScale Float
         linearScale =
             -- For stacked scales
             -- |> Scale.nice 4
             Scale.linear linearRange extent
+
+        linearScaleAxis : ContinuousScale Float
+        linearScaleAxis =
+            -- For stacked scales
+            -- |> Scale.nice 4
+            Scale.linear linearRangeAxis extent
 
         columnValues =
             List.Extra.transpose values
@@ -363,19 +373,33 @@ renderBandStacked ( data, config ) =
         scaledValues =
             List.map (List.map (\( a1, a2 ) -> ( Scale.convert linearScale a1, Scale.convert linearScale a2 ))) columnValues
                 |> Helpers.floorValues
+
+        dataLength =
+            data |> fromDataBand |> List.length
+
+        axisBandScale : BandScale String
+        axisBandScale =
+            if dataLength == 1 then
+                bandSingleScale
+
+            else
+                bandGroupScale
     in
     svg
         [ viewBox 0 0 outerW outerH
         , width outerW
         , height outerH
         ]
-        [ g
-            [ transform [ stackedContainerTranslate c m.left m.top (toFloat stackDepth) ]
-            , class [ "series" ]
-            ]
-          <|
-            List.map (stackedColumns c bandGroupScale) (List.map2 (\a b -> ( a, b )) columnGroupes scaledValues)
-        ]
+        (bandOrdinalAxis c axisBandScale
+            ++ bandGroupedContinousAxis c 0 linearScaleAxis
+            ++ [ g
+                    [ transform [ stackedContainerTranslate c m.left m.top (toFloat stackDepth) ]
+                    , class [ "series" ]
+                    ]
+                 <|
+                    List.map (stackedColumns c bandGroupScale) (List.map2 (\a b -> ( a, b )) columnGroupes scaledValues)
+               ]
+        )
 
 
 stackedContainerTranslate : ConfigStruct -> Float -> Float -> Float -> Transform
@@ -492,7 +516,7 @@ renderBandGrouped ( data, config ) =
             getBandSingleRange config (Scale.bandwidth bandGroupScale)
 
         linearRange =
-            getLinearRange config w h bandSingleScale
+            getLinearRange config RenderChart w h bandSingleScale
 
         dataLength =
             data |> fromDataBand |> List.length
@@ -547,8 +571,8 @@ renderBandGrouped ( data, config ) =
         ]
     <|
         symbolElements
-            ++ bandGroupedContinousAxis c iconOffset data linearScale
-            ++ bandGroupedOrdinalAxis c iconOffset data axisBandScale
+            ++ bandGroupedContinousAxis c iconOffset linearScale
+            ++ bandOrdinalAxis c axisBandScale
             ++ [ g
                     [ transform [ Translate m.left m.top ]
                     , class [ "series" ]
@@ -890,8 +914,8 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
             )
 
 
-bandGroupedOrdinalAxis : ConfigStruct -> Float -> Data -> BandScale String -> List (Svg msg)
-bandGroupedOrdinalAxis c iconOffset data bandScale =
+bandOrdinalAxis : ConfigStruct -> BandScale String -> List (Svg msg)
+bandOrdinalAxis c bandScale =
     if c.showOrdinalAxis == True then
         case c.orientation of
             Vertical ->
@@ -922,8 +946,8 @@ bandGroupedOrdinalAxis c iconOffset data bandScale =
         []
 
 
-bandGroupedContinousAxis : ConfigStruct -> Float -> Data -> ContinuousScale Float -> List (Svg msg)
-bandGroupedContinousAxis c iconOffset data linearScale =
+bandGroupedContinousAxis : ConfigStruct -> Float -> ContinuousScale Float -> List (Svg msg)
+bandGroupedContinousAxis c iconOffset linearScale =
     if c.showContinousAxis == True then
         let
             ticks =

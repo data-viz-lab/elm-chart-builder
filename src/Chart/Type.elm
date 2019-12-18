@@ -15,6 +15,7 @@ module Chart.Type exposing
     , Margin
     , Orientation(..)
     , PointBand
+    , RenderContext(..)
     , adjustLinearRange
     , defaultConfig
     , defaultGroupedConfig
@@ -67,6 +68,10 @@ import Chart.Symbol exposing (Symbol(..), symbolGap)
 import Scale exposing (BandScale)
 import Set
 import Shape
+
+
+
+--ideas on axis: https://codepen.io/deciob/pen/GRgrXgR
 
 
 type Orientation
@@ -566,8 +571,13 @@ getBandSingleRange config value =
             ( 0, floor value |> toFloat )
 
 
-getLinearRange : Config -> Float -> Float -> BandScale String -> ( Float, Float )
-getLinearRange config width height bandScale =
+type RenderContext
+    = RenderChart
+    | RenderAxis
+
+
+getLinearRange : Config -> RenderContext -> Float -> Float -> BandScale String -> ( Float, Float )
+getLinearRange config renderContext width height bandScale =
     let
         c =
             fromConfig config
@@ -590,7 +600,12 @@ getLinearRange config width height bandScale =
                         ( 0, width )
 
                 Stacked _ ->
-                    ( width, 0 )
+                    case renderContext of
+                        RenderChart ->
+                            ( width, 0 )
+
+                        RenderAxis ->
+                            ( 0, width )
 
         Vertical ->
             case layout of
@@ -608,7 +623,6 @@ getLinearRange config width height bandScale =
 
 adjustLinearRange : Config -> Int -> ( Float, Float ) -> ( Float, Float )
 adjustLinearRange config stackedDepth ( a, b ) =
-    -- TODO: not very clear now!
     -- small adjustments related to the whitespace between stacked items?
     let
         c =
