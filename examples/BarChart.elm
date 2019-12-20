@@ -176,85 +176,99 @@ attrs =
     ]
 
 
+verticalGrouped : Html msg
+verticalGrouped =
+    Bar.init data
+        |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-a")))
+        |> Bar.setContinousDataTickCount (CustomTickCount 5)
+        |> Bar.setDimensions
+            { margin = { top = 10, right = 10, bottom = 25, left = 35 }
+            , width = width
+            , height = height
+            }
+        |> Bar.render
+
+
+verticalStacked : Html msg
+verticalStacked =
+    Bar.init data
+        |> Bar.setLayout (Stacked NoDirection)
+        |> Bar.setDimensions
+            { margin = { top = 10, right = 20, bottom = 25, left = 35 }
+            , width = width
+            , height = height
+            }
+        |> Bar.render
+
+
+horizontalGrouped : Html msg
+horizontalGrouped =
+    Bar.init data
+        |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-b")))
+        |> Bar.setOrientation Horizontal
+        |> Bar.setContinousDataTickCount (CustomTickCount 5)
+        |> Bar.setContinousDataTickFormat (CustomTickFormat valueFormatter)
+        |> Bar.setDimensions
+            { margin = { top = 10, right = 10, bottom = 32, left = 35 }
+            , width = width
+            , height = height
+            }
+        |> Bar.render
+
+
+horizontalStacked : Html msg
+horizontalStacked =
+    Bar.init data
+        |> Bar.setLayout (Stacked NoDirection)
+        |> Bar.setOrientation Horizontal
+        |> Bar.setDimensions
+            { margin = { top = 20, right = 20, bottom = 30, left = 30 }
+            , width = width
+            , height = height
+            }
+        |> Bar.render
+
+
+horizontalStackedDiverging : Html msg
+horizontalStackedDiverging =
+    Bar.init dataStacked
+        --|> Bar.setShowColumnLabels True
+        |> Bar.setLayout (Stacked Diverging)
+        |> Bar.setOrientation Horizontal
+        |> Bar.setDimensions
+            { margin = { top = 20, right = 20, bottom = 30, left = 30 }
+            , width = width
+            , height = height
+            }
+        |> Bar.setContinousDataTickFormat (CustomTickFormat (\v -> abs v |> valueFormatter))
+        |> Bar.render
+
+
+verticalStackedDiverging : Html msg
+verticalStackedDiverging =
+    Bar.init dataStacked
+        |> Bar.setLayout (Stacked Diverging)
+        |> Bar.setOrientation Vertical
+        |> Bar.setDimensions
+            { margin = { top = 20, right = 10, bottom = 30, left = 35 }
+            , width = width
+            , height = height
+            }
+        |> Bar.setContinousDataTickFormat (CustomTickFormat (\v -> abs v |> valueFormatter))
+        |> Bar.render
+
+
 main : Html msg
 main =
     Html.div []
         [ Html.node "style" [] [ text css ]
         , Html.div
             [ class "wrapper" ]
-            [ Html.div
-                attrs
-                [ Bar.init data
-                    |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-a")))
-                    |> Bar.setContinousDataTickCount (CustomTickCount 5)
-                    |> Bar.setDimensions
-                        { margin = { top = 10, right = 10, bottom = 25, left = 35 }
-                        , width = width
-                        , height = height
-                        }
-                    |> Bar.render
-                ]
-            , Html.div
-                attrs
-                [ Bar.init data
-                    |> Bar.setLayout (Stacked NoDirection)
-                    |> Bar.setDimensions
-                        { margin = { top = 10, right = 20, bottom = 25, left = 35 }
-                        , width = width
-                        , height = height
-                        }
-                    |> Bar.render
-                ]
-            , Html.div
-                attrs
-                [ Bar.init data
-                    |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-b")))
-                    |> Bar.setOrientation Horizontal
-                    |> Bar.setContinousDataTickCount (CustomTickCount 5)
-                    |> Bar.setContinousDataTickFormat (CustomTickFormat valueFormatter)
-                    |> Bar.setDimensions
-                        { margin = { top = 10, right = 10, bottom = 32, left = 35 }
-                        , width = width
-                        , height = height
-                        }
-                    |> Bar.render
-                ]
-            , Html.div
-                attrs
-                [ Bar.init data
-                    |> Bar.setLayout (Stacked NoDirection)
-                    |> Bar.setOrientation Horizontal
-                    |> Bar.setDimensions
-                        { margin = { top = 20, right = 20, bottom = 30, left = 30 }
-                        , width = width
-                        , height = height
-                        }
-                    |> Bar.render
-                ]
-            , Html.div
-                attrs
-                [ Bar.init dataStacked
-                    --|> Bar.setShowColumnLabels True
-                    |> Bar.setLayout (Stacked Diverging)
-                    |> Bar.setOrientation Horizontal
-                    |> Bar.setDimensions
-                        { margin = { top = 20, right = 20, bottom = 30, left = 30 }
-                        , width = width
-                        , height = height
-                        }
-                    |> Bar.render
-                ]
-            , Html.div
-                attrs
-                [ Bar.init dataStacked
-                    |> Bar.setLayout (Stacked Diverging)
-                    |> Bar.setOrientation Vertical
-                    |> Bar.setDimensions
-                        { margin = { top = 20, right = 10, bottom = 30, left = 35 }
-                        , width = width
-                        , height = height
-                        }
-                    |> Bar.render
-                ]
+            [ Html.div attrs [ verticalGrouped ]
+            , Html.div attrs [ verticalStacked ]
+            , Html.div attrs [ horizontalGrouped ]
+            , Html.div attrs [ horizontalStacked ]
+            , Html.div attrs [ horizontalStackedDiverging ]
+            , Html.div attrs [ verticalStackedDiverging ]
             ]
         ]
