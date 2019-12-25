@@ -1,5 +1,5 @@
 module Chart.Type exposing
-    ( Axis(..)
+    ( AxisOrientation(..)
     , Config
     , ConfigStruct
     , ContinousDataTickCount(..)
@@ -17,6 +17,7 @@ module Chart.Type exposing
     , PointBand
     , RenderContext(..)
     , adjustLinearRange
+    , ariaLabelledby
     , defaultConfig
     , defaultGroupedConfig
     , defaultHeight
@@ -34,6 +35,7 @@ module Chart.Type exposing
     , getContinousDataTickFormat
     , getContinousDataTicks
     , getDataDepth
+    , getDesc
     , getDomain
     , getDomainFromData
     , getHeight
@@ -42,10 +44,13 @@ module Chart.Type exposing
     , getLinearRange
     , getMargin
     , getOffset
+    , getTitle
     , getWidth
+    , role
     , setContinousDataTickCount
     , setContinousDataTickFormat
     , setContinousDataTicks
+    , setDesc
     , setDimensions
     , setDomain
     , setHeight
@@ -56,6 +61,7 @@ module Chart.Type exposing
     , setShowColumnLabels
     , setShowContinousAxis
     , setShowOrdinalAxis
+    , setTitle
     , setWidth
     , showIcons
     , showIconsFromLayout
@@ -65,6 +71,8 @@ module Chart.Type exposing
     )
 
 import Chart.Symbol exposing (Symbol(..), symbolGap)
+import Html
+import Html.Attributes
 import Scale exposing (BandScale)
 import Set
 import Shape
@@ -89,7 +97,7 @@ type Direction
     | NoDirection
 
 
-type Axis
+type AxisOrientation
     = X
     | Y
 
@@ -163,6 +171,7 @@ type alias ConfigStruct =
     { continousDataTickCount : ContinousDataTickCount
     , continousDataTickFormat : ContinousDataTickFormat
     , continousDataTicks : ContinousDataTicks
+    , desc : String
     , domain : Domain
     , height : Float
     , layout : Layout
@@ -171,6 +180,7 @@ type alias ConfigStruct =
     , showColumnLabels : Bool
     , showContinousAxis : Bool
     , showOrdinalAxis : Bool
+    , title : String
     , width : Float
     }
 
@@ -181,6 +191,7 @@ defaultConfig =
         { continousDataTickCount = DefaultTickCount
         , continousDataTickFormat = DefaultTickFormat
         , continousDataTicks = DefaultTicks
+        , desc = ""
         , domain = DomainBand { bandGroup = [], bandSingle = [], linear = ( 0, 0 ) }
         , height = defaultHeight
         , layout = defaultLayout
@@ -189,6 +200,7 @@ defaultConfig =
         , showColumnLabels = False
         , showContinousAxis = True
         , showOrdinalAxis = True
+        , title = ""
         , width = defaultWidth
         }
 
@@ -205,6 +217,16 @@ toConfig config =
 fromConfig : Config -> ConfigStruct
 fromConfig (Config config) =
     config
+
+
+role : String -> Html.Attribute msg
+role name =
+    Html.Attributes.attribute "role" name
+
+
+ariaLabelledby : String -> Html.Attribute msg
+ariaLabelledby label =
+    Html.Attributes.attribute "aria-labelledby" label
 
 
 
@@ -329,6 +351,24 @@ setContinousDataTickCount count ( data, config ) =
             fromConfig config
     in
     ( data, toConfig { c | continousDataTickCount = count } )
+
+
+setDesc : String -> ( Data, Config ) -> ( Data, Config )
+setDesc desc ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | desc = desc } )
+
+
+setTitle : String -> ( Data, Config ) -> ( Data, Config )
+setTitle title ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | title = title } )
 
 
 setContinousDataTickFormat : ContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
@@ -462,6 +502,16 @@ setShowOrdinalAxis bool ( data, config ) =
 getContinousDataTickCount : Config -> ContinousDataTickCount
 getContinousDataTickCount config =
     fromConfig config |> .continousDataTickCount
+
+
+getDesc : Config -> String
+getDesc config =
+    fromConfig config |> .desc
+
+
+getTitle : Config -> String
+getTitle config =
+    fromConfig config |> .title
 
 
 getContinousDataTickFormat : Config -> ContinousDataTickFormat

@@ -181,6 +181,8 @@ verticalGrouped =
     Bar.init data
         |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-a")))
         |> Bar.setContinousDataTickCount (CustomTickCount 5)
+        |> Bar.setTitle "Vertical Grouped Chart"
+        |> Bar.setDesc "A vertical grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
             { margin = { top = 10, right = 10, bottom = 25, left = 35 }
             , width = width
@@ -193,6 +195,8 @@ verticalStacked : Html msg
 verticalStacked =
     Bar.init data
         |> Bar.setLayout (Stacked NoDirection)
+        |> Bar.setTitle "Vertical Stacked Chart"
+        |> Bar.setDesc "A vertical stacked chart example to demonstrate the charting library"
         |> Bar.setDimensions
             { margin = { top = 10, right = 20, bottom = 25, left = 35 }
             , width = width
@@ -208,6 +212,8 @@ horizontalGrouped =
         |> Bar.setOrientation Horizontal
         |> Bar.setContinousDataTickCount (CustomTickCount 5)
         |> Bar.setContinousDataTickFormat (CustomTickFormat valueFormatter)
+        |> Bar.setTitle "Horizontal Grouped Chart"
+        |> Bar.setDesc "A horizontal grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
             { margin = { top = 10, right = 10, bottom = 32, left = 35 }
             , width = width
@@ -221,6 +227,8 @@ horizontalStacked =
     Bar.init data
         |> Bar.setLayout (Stacked NoDirection)
         |> Bar.setOrientation Horizontal
+        |> Bar.setTitle "Horizontal Stacked Chart"
+        |> Bar.setDesc "A horizontal stacked chart example to demonstrate the charting library"
         |> Bar.setDimensions
             { margin = { top = 20, right = 20, bottom = 30, left = 30 }
             , width = width
@@ -235,6 +243,8 @@ horizontalStackedDiverging =
         --|> Bar.setShowColumnLabels True
         |> Bar.setLayout (Stacked Diverging)
         |> Bar.setOrientation Horizontal
+        |> Bar.setTitle "Horizontal Stacked Diverging Chart"
+        |> Bar.setDesc "A horizontal stacked diverging chart example to demonstrate the charting library"
         |> Bar.setDimensions
             { margin = { top = 20, right = 20, bottom = 30, left = 30 }
             , width = width
@@ -249,6 +259,8 @@ verticalStackedDiverging =
     Bar.init dataStacked
         |> Bar.setLayout (Stacked Diverging)
         |> Bar.setOrientation Vertical
+        |> Bar.setTitle "Vertical Stacked Diverging Chart"
+        |> Bar.setDesc "A vertical stacked diverging chart example to demonstrate the charting library"
         |> Bar.setDimensions
             { margin = { top = 20, right = 10, bottom = 30, left = 35 }
             , width = width

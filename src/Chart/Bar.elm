@@ -4,6 +4,7 @@ module Chart.Bar exposing
     , setContinousDataTickCount
     , setContinousDataTickFormat
     , setContinousDataTicks
+    , setDesc
     , setDimensions
     , setDomain
     , setHeight
@@ -13,6 +14,7 @@ module Chart.Bar exposing
     , setOrientation
     , setShowContinousAxis
     , setShowOrdinalAxis
+    , setTitle
     , setWidth
     )
 
@@ -31,7 +33,7 @@ import Chart.Symbol
         )
 import Chart.Type
     exposing
-        ( Axis(..)
+        ( AxisOrientation(..)
         , Config
         , ConfigStruct
         , ContinousDataTickCount(..)
@@ -47,6 +49,7 @@ import Chart.Type
         , PointBand
         , RenderContext(..)
         , adjustLinearRange
+        , ariaLabelledby
         , defaultConfig
         , fromConfig
         , fromDataBand
@@ -63,11 +66,13 @@ import Chart.Type
         , getMargin
         , getOffset
         , getWidth
+        , role
         , setContinousDataTickCount
         , setDimensions
         , setDomain
         , setShowContinousAxis
         , setShowOrdinalAxis
+        , setTitle
         , showIcons
         , showIconsFromLayout
         , symbolCustomSpace
@@ -145,6 +150,32 @@ setWidth =
 setLayout : Layout -> ( Data, Config ) -> ( Data, Config )
 setLayout =
     Chart.Type.setLayout
+
+
+{-| Sets an accessible, long-text description for the svg chart.
+Default value: ""
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setDesc "This is an accessible chart, with a desc element"
+        |> Bar.render
+
+-}
+setDesc : String -> ( Data, Config ) -> ( Data, Config )
+setDesc =
+    Chart.Type.setDesc
+
+
+{-| Sets an accessible title for the svg chart.
+Default value: ""
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setTitle "This is a chart"
+        |> Bar.render
+
+-}
+setTitle : String -> ( Data, Config ) -> ( Data, Config )
+setTitle =
+    Chart.Type.setTitle
 
 
 {-| Sets the orientation value in the config
@@ -285,6 +316,17 @@ setIcons =
 
 -- INTERNALS
 --
+
+
+descAndTitle : ConfigStruct -> List (Svg msg)
+descAndTitle c =
+    -- https://developer.paciellogroup.com/blog/2013/12/using-aria-enhance-svg-accessibility/
+    [ TypedSvg.title [] [ text c.title ]
+    , TypedSvg.desc [] [ text c.desc ]
+    ]
+
+
+
 -- BAND STACKED
 
 
@@ -389,8 +431,11 @@ renderBandStacked ( data, config ) =
         [ viewBox 0 0 outerW outerH
         , width outerW
         , height outerH
+        , role "img"
+        , ariaLabelledby "title desc"
         ]
-        (bandOrdinalAxis c axisBandScale
+        (descAndTitle c
+            ++ bandOrdinalAxis c axisBandScale
             ++ bandGroupedContinousAxis c 0 linearScaleAxis
             ++ [ g
                     [ transform [ stackedContainerTranslate c m.left m.top (toFloat stackDepth) ]
@@ -568,9 +613,12 @@ renderBandGrouped ( data, config ) =
         [ viewBox 0 0 outerW outerH
         , width outerW
         , height outerH
+        , role "img"
+        , ariaLabelledby "title desc"
         ]
     <|
         symbolElements
+            ++ descAndTitle c
             ++ bandGroupedContinousAxis c iconOffset linearScale
             ++ bandOrdinalAxis c axisBandScale
             ++ [ g
