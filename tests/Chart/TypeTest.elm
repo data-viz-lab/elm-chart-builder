@@ -25,15 +25,29 @@ suite =
                             DomainBand { bandGroup = [ "CA", "TX" ], bandSingle = [ "a", "b" ], linear = ( 0, 21 ) }
                     in
                     Expect.equal (getDomainFromData data) expected
+            , test "with DomainLinear" <|
+                \_ ->
+                    let
+                        data : Data
+                        data =
+                            DataLinear
+                                [ { groupLabel = Just "CA", points = [ ( 5, 10 ), ( 6, 20 ) ] }
+                                , { groupLabel = Just "TX", points = [ ( 5, 11 ), ( 6, 21 ) ] }
+                                ]
+
+                        expected : Domain
+                        expected =
+                            DomainLinear { horizontal = ( 0, 6 ), vertical = ( 0, 21 ) }
+                    in
+                    Expect.equal (getDomainFromData data) expected
             ]
         , describe "groupedLayoutConfig"
             [ test "showIcons is False" <|
                 \_ ->
                     Expect.equal (showIcons defaultGroupedConfig) False
-            , only <|
-                test "showIcons is True" <|
-                    \_ ->
-                        Expect.equal (showIcons (defaultGroupedConfig |> setIcons [ Triangle "id" ])) True
+            , test "showIcons is True" <|
+                \_ ->
+                    Expect.equal (showIcons (defaultGroupedConfig |> setIcons [ Triangle "id" ])) True
             ]
         , describe "symbolCustomSpace"
             [ test "horizontal, icon ratio < 1" <|

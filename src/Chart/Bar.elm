@@ -136,6 +136,9 @@ render ( data, config ) =
                 Stacked _ ->
                     renderBandStacked ( data, config )
 
+        _ ->
+            wrongDataTypeErrorView
+
 
 setHeight : Float -> ( Data, Config ) -> ( Data, Config )
 setHeight =
@@ -200,7 +203,6 @@ setMargin =
 Defaults to `Scale.ticks`
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setDomain { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) }
         |> Bar.setContinousDataTicks (CustomTicks <| Scale.ticks linearScale 5)
         |> Bar.render
 
@@ -214,7 +216,6 @@ setContinousDataTicks =
 Defaults to `Scale.ticks`
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setDomain { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) }
         |> Bar.setContinousDataTickCount (CustomTickCount 5)
         |> Bar.render
 
@@ -228,7 +229,6 @@ setContinousDataTickCount =
 Defaults to `Scale.tickFormat`
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setDomain { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) }
         |> Bar.setContinousDataTicks (CustomTickFormat .... TODO)
         |> Bar.render
 
@@ -247,7 +247,7 @@ setDimensions =
 If not set, the domain is calculated from the data
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setDomain { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) }
+        |> Bar.setDomain (DomainBand { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) })
         |> Bar.render
 
 -}
@@ -1053,3 +1053,12 @@ bandGroupedContinousAxis c iconOffset linearScale =
 
     else
         []
+
+
+
+-- ERROR VIEWS
+
+
+wrongDataTypeErrorView : Html msg
+wrongDataTypeErrorView =
+    Html.div [] [ Html.text "Data type not supported in bar charts" ]

@@ -7,6 +7,7 @@ module Chart.Type exposing
     , ContinousDataTicks(..)
     , Data(..)
     , DataGroupBand
+    , DataGroupLinear
     , Direction(..)
     , Domain(..)
     , GroupedConfig
@@ -15,6 +16,7 @@ module Chart.Type exposing
     , Margin
     , Orientation(..)
     , PointBand
+    , PointLinear
     , RenderContext(..)
     , adjustLinearRange
     , ariaLabelledby
@@ -28,7 +30,9 @@ module Chart.Type exposing
     , defaultWidth
     , fromConfig
     , fromDataBand
+    , fromDataLinear
     , fromDomainBand
+    , fromDomainLinear
     , getBandGroupRange
     , getBandSingleRange
     , getContinousDataTickCount
@@ -117,12 +121,38 @@ type alias DomainBandStruct =
     }
 
 
+dummyDomainBandStruct : DomainBandStruct
+dummyDomainBandStruct =
+    { bandGroup = []
+    , bandSingle = []
+    , linear = ( 0, 0 )
+    }
+
+
+type alias DomainLinearStruct =
+    { horizontal : LinearDomain
+    , vertical : LinearDomain
+    }
+
+
+dummyDomainLinearStruct : DomainLinearStruct
+dummyDomainLinearStruct =
+    { horizontal = ( 0, 0 )
+    , vertical = ( 0, 0 )
+    }
+
+
 type Domain
     = DomainBand DomainBandStruct
+    | DomainLinear DomainLinearStruct
 
 
 type alias PointBand =
     ( String, Float )
+
+
+type alias PointLinear =
+    ( Float, Float )
 
 
 type alias DataGroupBand =
@@ -131,8 +161,29 @@ type alias DataGroupBand =
     }
 
 
+dummyDataGroupBand : DataGroupBand
+dummyDataGroupBand =
+    { groupLabel = Nothing
+    , points = []
+    }
+
+
+type alias DataGroupLinear =
+    { groupLabel : Maybe String
+    , points : List PointLinear
+    }
+
+
+dummyDataGroupLinear : DataGroupLinear
+dummyDataGroupLinear =
+    { groupLabel = Nothing
+    , points = []
+    }
+
+
 type Data
     = DataBand (List DataGroupBand)
+    | DataLinear (List DataGroupLinear)
 
 
 type alias Range =
@@ -568,6 +619,22 @@ getDomainFromData data =
                         |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
                 }
 
+        DataLinear d ->
+            DomainLinear
+                { horizontal =
+                    d
+                        |> List.map .points
+                        |> List.concat
+                        |> List.map Tuple.first
+                        |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                , vertical =
+                    d
+                        |> List.map .points
+                        |> List.concat
+                        |> List.map Tuple.second
+                        |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                }
+
 
 fromDomainBand : Domain -> DomainBandStruct
 fromDomainBand domain =
@@ -575,12 +642,38 @@ fromDomainBand domain =
         DomainBand d ->
             d
 
+        _ ->
+            dummyDomainBandStruct
+
+
+fromDomainLinear : Domain -> DomainLinearStruct
+fromDomainLinear domain =
+    case domain of
+        DomainLinear d ->
+            d
+
+        _ ->
+            dummyDomainLinearStruct
+
 
 fromDataBand : Data -> List DataGroupBand
 fromDataBand data =
     case data of
         DataBand d ->
             d
+
+        _ ->
+            [ dummyDataGroupBand ]
+
+
+fromDataLinear : Data -> List DataGroupLinear
+fromDataLinear data =
+    case data of
+        DataLinear d ->
+            d
+
+        _ ->
+            [ dummyDataGroupLinear ]
 
 
 getDataDepth : Data -> Int
