@@ -1,9 +1,9 @@
 module Chart.Bar exposing
     ( init
     , render
-    , setContinousDataTickCount
-    , setContinousDataTickFormat
-    , setContinousDataTicks
+    , setAxisContinousDataTickCount
+    , setAxisContinousDataTickFormat
+    , setAxisContinousDataTicks
     , setDesc
     , setDimensions
     , setDomain
@@ -33,12 +33,12 @@ import Chart.Symbol
         )
 import Chart.Type
     exposing
-        ( AxisOrientation(..)
+        ( AxisContinousDataTickCount(..)
+        , AxisContinousDataTickFormat(..)
+        , AxisContinousDataTicks(..)
+        , AxisOrientation(..)
         , Config
         , ConfigStruct
-        , ContinousDataTickCount(..)
-        , ContinousDataTickFormat(..)
-        , ContinousDataTicks(..)
         , Data(..)
         , DataGroupBand
         , Domain(..)
@@ -67,7 +67,7 @@ import Chart.Type
         , getOffset
         , getWidth
         , role
-        , setContinousDataTickCount
+        , setAxisContinousDataTickCount
         , setDimensions
         , setDomain
         , setShowContinousAxis
@@ -207,35 +207,35 @@ Defaults to `Scale.ticks`
         |> Bar.render
 
 -}
-setContinousDataTicks : ContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
-setContinousDataTicks =
-    Chart.Type.setContinousDataTicks
+setAxisContinousDataTicks : AxisContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
+setAxisContinousDataTicks =
+    Chart.Type.setAxisContinousDataTicks
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis
 Defaults to `Scale.ticks`
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setContinousDataTickCount (CustomTickCount 5)
+        |> Bar.setAxisContinousDataTickCount (CustomTickCount 5)
         |> Bar.render
 
 -}
-setContinousDataTickCount : ContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
-setContinousDataTickCount =
-    Chart.Type.setContinousDataTickCount
+setAxisContinousDataTickCount : AxisContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
+setAxisContinousDataTickCount =
+    Chart.Type.setAxisContinousDataTickCount
 
 
 {-| Sets the formatting for ticks in a grouped bar chart continous axis
 Defaults to `Scale.tickFormat`
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setContinousDataTicks (CustomTickFormat .... TODO)
+        |> Bar.setAxisContinousDataTicks (CustomTickFormat .... TODO)
         |> Bar.render
 
 -}
-setContinousDataTickFormat : ContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
-setContinousDataTickFormat =
-    Chart.Type.setContinousDataTickFormat
+setAxisContinousDataTickFormat : AxisContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
+setAxisContinousDataTickFormat =
+    Chart.Type.setAxisContinousDataTickFormat
 
 
 setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
@@ -274,7 +274,7 @@ setDomain =
 
 {-| Sets the showContinousAxis boolean value in the config
 Default value: True
-This shows the bar's horizontal axis
+This shows the bar's continous scale axis
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
         |> Bar.setShowContinousAxis False
@@ -288,7 +288,7 @@ setShowContinousAxis =
 
 {-| Sets the showOrdinalAxis boolean value in the config
 Default value: True
-This shows the bar's vertical axis
+This shows the bar's ordinal scale axis
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
         |> Bar.setShowOrdinalAxis False
@@ -999,7 +999,7 @@ bandGroupedContinousAxis c iconOffset linearScale =
     if c.showContinousAxis == True then
         let
             ticks =
-                case c.continousDataTicks of
+                case c.axisContinousDataTicks of
                     DefaultTicks ->
                         Nothing
 
@@ -1007,7 +1007,7 @@ bandGroupedContinousAxis c iconOffset linearScale =
                         Just (Axis.ticks t)
 
             tickCount =
-                case c.continousDataTickCount of
+                case c.axisContinousDataTickCount of
                     DefaultTickCount ->
                         Nothing
 
@@ -1015,7 +1015,7 @@ bandGroupedContinousAxis c iconOffset linearScale =
                         Just (Axis.tickCount count)
 
             tickFormat =
-                case c.continousDataTickFormat of
+                case c.axisContinousDataTickFormat of
                     DefaultTickFormat ->
                         Nothing
 

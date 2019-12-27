@@ -180,7 +180,7 @@ verticalGrouped : Html msg
 verticalGrouped =
     Bar.init data
         |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-a")))
-        |> Bar.setContinousDataTickCount (CustomTickCount 5)
+        |> Bar.setAxisContinousDataTickCount (CustomTickCount 5)
         |> Bar.setTitle "Vertical Grouped Chart"
         |> Bar.setDesc "A vertical grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -210,8 +210,8 @@ horizontalGrouped =
     Bar.init data
         |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-b")))
         |> Bar.setOrientation Horizontal
-        |> Bar.setContinousDataTickCount (CustomTickCount 5)
-        |> Bar.setContinousDataTickFormat (CustomTickFormat valueFormatter)
+        |> Bar.setAxisContinousDataTickCount (CustomTickCount 5)
+        |> Bar.setAxisContinousDataTickFormat (CustomTickFormat valueFormatter)
         |> Bar.setTitle "Horizontal Grouped Chart"
         |> Bar.setDesc "A horizontal grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -250,7 +250,7 @@ horizontalStackedDiverging =
             , width = width
             , height = height
             }
-        |> Bar.setContinousDataTickFormat (CustomTickFormat (\v -> abs v |> valueFormatter))
+        |> Bar.setAxisContinousDataTickFormat (CustomTickFormat (\v -> abs v |> valueFormatter))
         |> Bar.render
 
 
@@ -266,7 +266,7 @@ verticalStackedDiverging =
             , width = width
             , height = height
             }
-        |> Bar.setContinousDataTickFormat (CustomTickFormat (\v -> abs v |> valueFormatter))
+        |> Bar.setAxisContinousDataTickFormat (CustomTickFormat (\v -> abs v |> valueFormatter))
         |> Bar.render
 
 

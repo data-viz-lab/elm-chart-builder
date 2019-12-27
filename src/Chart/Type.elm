@@ -1,10 +1,10 @@
 module Chart.Type exposing
-    ( AxisOrientation(..)
+    ( AxisContinousDataTickCount(..)
+    , AxisContinousDataTickFormat(..)
+    , AxisContinousDataTicks(..)
+    , AxisOrientation(..)
     , Config
     , ConfigStruct
-    , ContinousDataTickCount(..)
-    , ContinousDataTickFormat(..)
-    , ContinousDataTicks(..)
     , Data(..)
     , DataGroupBand
     , DataGroupLinear
@@ -33,11 +33,17 @@ module Chart.Type exposing
     , fromDataLinear
     , fromDomainBand
     , fromDomainLinear
+    , getAxisContinousDataTickCount
+    , getAxisContinousDataTickFormat
+    , getAxisContinousDataTicks
+    , getAxisHorizontalTickCount
+    , getAxisHorizontalTickFormat
+    , getAxisHorizontalTicks
+    , getAxisVerticalTickCount
+    , getAxisVerticalTickFormat
+    , getAxisVerticalTicks
     , getBandGroupRange
     , getBandSingleRange
-    , getContinousDataTickCount
-    , getContinousDataTickFormat
-    , getContinousDataTicks
     , getDataDepth
     , getDesc
     , getDomain
@@ -51,9 +57,15 @@ module Chart.Type exposing
     , getTitle
     , getWidth
     , role
-    , setContinousDataTickCount
-    , setContinousDataTickFormat
-    , setContinousDataTicks
+    , setAxisContinousDataTickCount
+    , setAxisContinousDataTickFormat
+    , setAxisContinousDataTicks
+    , setAxisHorizontalTickCount
+    , setAxisHorizontalTickFormat
+    , setAxisHorizontalTicks
+    , setAxisVerticalTickCount
+    , setAxisVerticalTickFormat
+    , setAxisVerticalTicks
     , setDesc
     , setDimensions
     , setDomain
@@ -205,25 +217,31 @@ defaultTicksCount =
     10
 
 
-type ContinousDataTicks
+type AxisContinousDataTicks
     = DefaultTicks
     | CustomTicks (List Float)
 
 
-type ContinousDataTickCount
+type AxisContinousDataTickCount
     = DefaultTickCount
     | CustomTickCount Int
 
 
-type ContinousDataTickFormat
+type AxisContinousDataTickFormat
     = DefaultTickFormat
     | CustomTickFormat (Float -> String)
 
 
 type alias ConfigStruct =
-    { continousDataTickCount : ContinousDataTickCount
-    , continousDataTickFormat : ContinousDataTickFormat
-    , continousDataTicks : ContinousDataTicks
+    { axisContinousDataTickCount : AxisContinousDataTickCount
+    , axisContinousDataTickFormat : AxisContinousDataTickFormat
+    , axisContinousDataTicks : AxisContinousDataTicks
+    , axisHorizontalTickCount : AxisContinousDataTickCount
+    , axisHorizontalTickFormat : AxisContinousDataTickFormat
+    , axisHorizontalTicks : AxisContinousDataTicks
+    , axisVerticalTickCount : AxisContinousDataTickCount
+    , axisVerticalTickFormat : AxisContinousDataTickFormat
+    , axisVerticalTicks : AxisContinousDataTicks
     , desc : String
     , domain : Domain
     , height : Float
@@ -243,9 +261,15 @@ type alias ConfigStruct =
 defaultConfig : Config
 defaultConfig =
     toConfig
-        { continousDataTickCount = DefaultTickCount
-        , continousDataTickFormat = DefaultTickFormat
-        , continousDataTicks = DefaultTicks
+        { axisContinousDataTickCount = DefaultTickCount
+        , axisContinousDataTickFormat = DefaultTickFormat
+        , axisContinousDataTicks = DefaultTicks
+        , axisHorizontalTickCount = DefaultTickCount
+        , axisHorizontalTickFormat = DefaultTickFormat
+        , axisHorizontalTicks = DefaultTicks
+        , axisVerticalTickCount = DefaultTickCount
+        , axisVerticalTickFormat = DefaultTickFormat
+        , axisVerticalTicks = DefaultTicks
         , desc = ""
         , domain = DomainBand { bandGroup = [], bandSingle = [], linear = ( 0, 0 ) }
         , height = defaultHeight
@@ -401,13 +425,31 @@ setIcons all config =
 -- SETTERS
 
 
-setContinousDataTickCount : ContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
-setContinousDataTickCount count ( data, config ) =
+setAxisContinousDataTickCount : AxisContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
+setAxisContinousDataTickCount count ( data, config ) =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | continousDataTickCount = count } )
+    ( data, toConfig { c | axisContinousDataTickCount = count } )
+
+
+setAxisHorizontalTickCount : AxisContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
+setAxisHorizontalTickCount count ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | axisHorizontalTickCount = count } )
+
+
+setAxisVerticalTickCount : AxisContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
+setAxisVerticalTickCount count ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | axisVerticalTickCount = count } )
 
 
 setDesc : String -> ( Data, Config ) -> ( Data, Config )
@@ -428,22 +470,58 @@ setTitle title ( data, config ) =
     ( data, toConfig { c | title = title } )
 
 
-setContinousDataTickFormat : ContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
-setContinousDataTickFormat format ( data, config ) =
+setAxisContinousDataTickFormat : AxisContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
+setAxisContinousDataTickFormat format ( data, config ) =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | continousDataTickFormat = format } )
+    ( data, toConfig { c | axisContinousDataTickFormat = format } )
 
 
-setContinousDataTicks : ContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
-setContinousDataTicks ticks ( data, config ) =
+setAxisHorizontalTickFormat : AxisContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
+setAxisHorizontalTickFormat format ( data, config ) =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | continousDataTicks = ticks } )
+    ( data, toConfig { c | axisHorizontalTickFormat = format } )
+
+
+setAxisVerticalTickFormat : AxisContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
+setAxisVerticalTickFormat format ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | axisVerticalTickFormat = format } )
+
+
+setAxisContinousDataTicks : AxisContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
+setAxisContinousDataTicks ticks ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | axisContinousDataTicks = ticks } )
+
+
+setAxisHorizontalTicks : AxisContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
+setAxisHorizontalTicks ticks ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | axisHorizontalTicks = ticks } )
+
+
+setAxisVerticalTicks : AxisContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
+setAxisVerticalTicks ticks ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | axisVerticalTicks = ticks } )
 
 
 setHeight : Float -> ( Data, Config ) -> ( Data, Config )
@@ -574,9 +652,19 @@ setShowVerticalAxis bool ( data, config ) =
 -- GETTERS
 
 
-getContinousDataTickCount : Config -> ContinousDataTickCount
-getContinousDataTickCount config =
-    fromConfig config |> .continousDataTickCount
+getAxisContinousDataTickCount : Config -> AxisContinousDataTickCount
+getAxisContinousDataTickCount config =
+    fromConfig config |> .axisContinousDataTickCount
+
+
+getAxisHorizontalTickCount : Config -> AxisContinousDataTickCount
+getAxisHorizontalTickCount config =
+    fromConfig config |> .axisHorizontalTickCount
+
+
+getAxisVerticalTickCount : Config -> AxisContinousDataTickCount
+getAxisVerticalTickCount config =
+    fromConfig config |> .axisVerticalTickCount
 
 
 getDesc : Config -> String
@@ -589,14 +677,34 @@ getTitle config =
     fromConfig config |> .title
 
 
-getContinousDataTickFormat : Config -> ContinousDataTickFormat
-getContinousDataTickFormat config =
-    fromConfig config |> .continousDataTickFormat
+getAxisContinousDataTickFormat : Config -> AxisContinousDataTickFormat
+getAxisContinousDataTickFormat config =
+    fromConfig config |> .axisContinousDataTickFormat
 
 
-getContinousDataTicks : Config -> ContinousDataTicks
-getContinousDataTicks config =
-    fromConfig config |> .continousDataTicks
+getAxisHorizontalTickFormat : Config -> AxisContinousDataTickFormat
+getAxisHorizontalTickFormat config =
+    fromConfig config |> .axisHorizontalTickFormat
+
+
+getAxisVerticalTickFormat : Config -> AxisContinousDataTickFormat
+getAxisVerticalTickFormat config =
+    fromConfig config |> .axisVerticalTickFormat
+
+
+getAxisContinousDataTicks : Config -> AxisContinousDataTicks
+getAxisContinousDataTicks config =
+    fromConfig config |> .axisContinousDataTicks
+
+
+getAxisVerticalTicks : Config -> AxisContinousDataTicks
+getAxisVerticalTicks config =
+    fromConfig config |> .axisVerticalTicks
+
+
+getAxisHorizontalTicks : Config -> AxisContinousDataTicks
+getAxisHorizontalTicks config =
+    fromConfig config |> .axisHorizontalTicks
 
 
 getMargin : Config -> Margin

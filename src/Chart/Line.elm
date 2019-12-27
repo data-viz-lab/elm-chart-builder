@@ -1,6 +1,12 @@
 module Chart.Line exposing
     ( init
     , render
+    , setAxisHorizontalTickCount
+    , setAxisHorizontalTickFormat
+    , setAxisHorizontalTicks
+    , setAxisVerticalTickCount
+    , setAxisVerticalTickFormat
+    , setAxisVerticalTicks
     , setDesc
     , setDimensions
     , setDomain
@@ -24,12 +30,12 @@ import Chart.Symbol
         )
 import Chart.Type
     exposing
-        ( AxisOrientation(..)
+        ( AxisContinousDataTickCount(..)
+        , AxisContinousDataTickFormat(..)
+        , AxisContinousDataTicks(..)
+        , AxisOrientation(..)
         , Config
         , ConfigStruct
-        , ContinousDataTickCount(..)
-        , ContinousDataTickFormat(..)
-        , ContinousDataTicks(..)
         , Data(..)
         , DataGroupLinear
         , Domain(..)
@@ -48,6 +54,12 @@ import Chart.Type
         , getMargin
         , getWidth
         , role
+        , setAxisHorizontalTickCount
+        , setAxisHorizontalTickFormat
+        , setAxisHorizontalTicks
+        , setAxisVerticalTickCount
+        , setAxisVerticalTickFormat
+        , setAxisVerticalTicks
         , setDimensions
         , setDomain
         , setShowHorizontalAxis
@@ -139,13 +151,13 @@ setMargin =
 Defaults to `Scale.ticks`
 
     Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
-        |> Line.setHorizontalDataTicks (CustomTicks <| Scale.ticks linearScale 5)
+        |> Line.setHorizontalTicks (CustomTicks <| Scale.ticks linearScale 5)
         |> Line.render
 
 -}
-setHorizontalDataTicks : ContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
-setHorizontalDataTicks =
-    Chart.Type.setHorizontalDataTicks
+setAxisHorizontalTicks : AxisContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
+setAxisHorizontalTicks =
+    Chart.Type.setAxisHorizontalTicks
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis
@@ -156,9 +168,9 @@ Defaults to `Scale.ticks`
         |> Line.render
 
 -}
-setHorizontalDataTickCount : ContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
-setHorizontalDataTickCount =
-    Chart.Type.setContinousDataTickCount
+setAxisHorizontalTickCount : AxisContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
+setAxisHorizontalTickCount =
+    Chart.Type.setAxisHorizontalTickCount
 
 
 {-| Sets the formatting for ticks in a grouped bar chart continous axis
@@ -169,22 +181,22 @@ Defaults to `Scale.tickFormat`
         |> Line.render
 
 -}
-setHorizontalDataTickFormat : ContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
-setHorizontalDataTickFormat =
-    Chart.Type.setHorizontalDataTickFormat
+setAxisHorizontalTickFormat : AxisContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
+setAxisHorizontalTickFormat =
+    Chart.Type.setAxisHorizontalTickFormat
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis
 Defaults to `Scale.ticks`
 
     Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
-        |> Line.setVerticalDataTicks (CustomTicks <| Scale.ticks linearScale 5)
+        |> Line.setAxisVerticalDataTicks (CustomTicks <| Scale.ticks linearScale 5)
         |> Line.render
 
 -}
-setVerticalDataTicks : ContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
-setVerticalDataTicks =
-    Chart.Type.setVerticalDataTicks
+setAxisVerticalTicks : AxisContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
+setAxisVerticalTicks =
+    Chart.Type.setAxisVerticalTicks
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis
@@ -195,9 +207,9 @@ Defaults to `Scale.ticks`
         |> Line.render
 
 -}
-setVerticalDataTickCount : ContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
-setVerticalDataTickCount =
-    Chart.Type.setContinousDataTickCount
+setAxisVerticalTickCount : AxisContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
+setAxisVerticalTickCount =
+    Chart.Type.setAxisVerticalTickCount
 
 
 {-| Sets the formatting for ticks in a grouped bar chart continous axis
@@ -208,9 +220,9 @@ Defaults to `Scale.tickFormat`
         |> Line.render
 
 -}
-setVerticalDataTickFormat : ContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
-setVerticalDataTickFormat =
-    Chart.Type.setVerticalDataTickFormat
+setAxisVerticalTickFormat : AxisContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
+setAxisVerticalTickFormat =
+    Chart.Type.setAxisVerticalTickFormat
 
 
 setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
@@ -375,38 +387,37 @@ renderLineGrouped ( data, config ) =
 axisGenerator : ConfigStruct -> AxisType -> ContinuousScale Float -> List (Svg msg)
 axisGenerator c axisType scale =
     if c.showContinousAxis == True then
-        let
-            ticks =
-                case c.continousDataTicks of
-                    DefaultTicks ->
-                        Nothing
-
-                    CustomTicks t ->
-                        Just (Axis.ticks t)
-
-            tickCount =
-                case c.continousDataTickCount of
-                    DefaultTickCount ->
-                        Nothing
-
-                    CustomTickCount count ->
-                        Just (Axis.tickCount count)
-
-            tickFormat =
-                case c.continousDataTickFormat of
-                    DefaultTickFormat ->
-                        Nothing
-
-                    CustomTickFormat formatter ->
-                        Just (Axis.tickFormat formatter)
-
-            attributes =
-                [ ticks, tickFormat, tickCount ]
-                    |> List.filterMap identity
-        in
         case axisType of
             Vertical ->
                 let
+                    ticks =
+                        case c.axisVerticalTicks of
+                            DefaultTicks ->
+                                Nothing
+
+                            CustomTicks t ->
+                                Just (Axis.ticks t)
+
+                    tickCount =
+                        case c.axisVerticalTickCount of
+                            DefaultTickCount ->
+                                Nothing
+
+                            CustomTickCount count ->
+                                Just (Axis.tickCount count)
+
+                    tickFormat =
+                        case c.axisVerticalTickFormat of
+                            DefaultTickFormat ->
+                                Nothing
+
+                            CustomTickFormat formatter ->
+                                Just (Axis.tickFormat formatter)
+
+                    attributes =
+                        [ ticks, tickFormat, tickCount ]
+                            |> List.filterMap identity
+
                     axis =
                         Axis.left attributes scale
                 in
@@ -419,6 +430,34 @@ axisGenerator c axisType scale =
 
             Horizontal ->
                 let
+                    ticks =
+                        case c.axisHorizontalTicks of
+                            DefaultTicks ->
+                                Nothing
+
+                            CustomTicks t ->
+                                Just (Axis.ticks t)
+
+                    tickCount =
+                        case c.axisHorizontalTickCount of
+                            DefaultTickCount ->
+                                Nothing
+
+                            CustomTickCount count ->
+                                Just (Axis.tickCount count)
+
+                    tickFormat =
+                        case c.axisHorizontalTickFormat of
+                            DefaultTickFormat ->
+                                Nothing
+
+                            CustomTickFormat formatter ->
+                                Just (Axis.tickFormat formatter)
+
+                    attributes =
+                        [ ticks, tickFormat, tickCount ]
+                            |> List.filterMap identity
+
                     axis =
                         Axis.bottom attributes scale
                 in
