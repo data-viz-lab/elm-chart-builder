@@ -64,7 +64,9 @@ module Chart.Type exposing
     , setOrientation
     , setShowColumnLabels
     , setShowContinousAxis
+    , setShowHorizontalAxis
     , setShowOrdinalAxis
+    , setShowVerticalAxis
     , setTitle
     , setWidth
     , showIcons
@@ -230,7 +232,9 @@ type alias ConfigStruct =
     , orientation : Orientation
     , showColumnLabels : Bool
     , showContinousAxis : Bool
+    , showHorizontalAxis : Bool
     , showOrdinalAxis : Bool
+    , showVerticalAxis : Bool
     , title : String
     , width : Float
     }
@@ -250,7 +254,9 @@ defaultConfig =
         , orientation = defaultOrientation
         , showColumnLabels = False
         , showContinousAxis = True
+        , showHorizontalAxis = True
         , showOrdinalAxis = True
+        , showVerticalAxis = True
         , title = ""
         , width = defaultWidth
         }
@@ -544,6 +550,24 @@ setShowOrdinalAxis bool ( data, config ) =
             fromConfig config
     in
     ( data, toConfig { c | showOrdinalAxis = bool } )
+
+
+setShowHorizontalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowHorizontalAxis bool ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | showHorizontalAxis = bool } )
+
+
+setShowVerticalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
+setShowVerticalAxis bool ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    ( data, toConfig { c | showVerticalAxis = bool } )
 
 
 
