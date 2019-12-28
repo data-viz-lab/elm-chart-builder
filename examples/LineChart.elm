@@ -38,10 +38,17 @@ css =
     fill: #333;
 }
 
-.series path {
-    stroke: crimson;
+.line {
     stroke-width: 2px;
     fill: none;
+}
+
+.line-0 {
+    stroke: crimson;
+}
+
+.line-1 {
+    stroke: #3949ab;
 }
 """
 

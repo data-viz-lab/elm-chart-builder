@@ -346,6 +346,7 @@ renderLineGrouped ( data, config ) =
         sortedData =
             data
                 |> fromDataLinear
+                --FIXME
                 |> List.sortBy (.points >> List.map Tuple.first)
 
         horizontalScale : ContinuousScale Float
@@ -382,7 +383,13 @@ renderLineGrouped ( data, config ) =
                     , class [ "series" ]
                     ]
                  <|
-                    List.map (\d -> Path.element (line d) []) sortedData
+                    List.indexedMap
+                        (\idx d ->
+                            Path.element (line d)
+                                [ class [ "line", "line-" ++ String.fromInt idx ]
+                                ]
+                        )
+                        sortedData
                ]
 
 
