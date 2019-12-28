@@ -231,7 +231,7 @@ setAxisContinousDataTickCount =
 Defaults to `Scale.tickFormat`
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setAxisContinousDataTicks (CustomTickFormat .... TODO)
+        |> Bar.setAxisContinousDataTickFormat (CustomTickFormat (FormatNumber.format { usLocale | decimals = 0 }))
         |> Bar.render
 
 -}
