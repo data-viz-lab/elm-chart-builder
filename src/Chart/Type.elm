@@ -352,12 +352,14 @@ defaultTicksCount =
 leftGap : Float
 leftGap =
     -- TODO: there should be some notion of padding!
+    -- TODO: pass this as an exposed option in config?
     4
 
 
 bottomGap : Float
 bottomGap =
     -- TODO: there should be some notion of padding!
+    -- TODO: pass this as an exposed option in config?
     2
 
 
@@ -589,8 +591,14 @@ setMargin margin ( data, config ) =
     let
         c =
             fromConfig config
+
+        left =
+            margin.left + leftGap
+
+        bottom =
+            margin.bottom + bottomGap
     in
-    ( data, toConfig { c | margin = margin } )
+    ( data, toConfig { c | margin = { margin | left = left, bottom = bottom } } )
 
 
 setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
@@ -599,15 +607,18 @@ setDimensions { margin, width, height } ( data, config ) =
         c =
             fromConfig config
 
-        m =
-            margin
+        left =
+            margin.left + leftGap
+
+        bottom =
+            margin.bottom + bottomGap
     in
     ( data
     , toConfig
         { c
-            | width = width - m.left - m.right
-            , height = height - m.top - m.bottom
-            , margin = margin
+            | width = width - left - margin.right
+            , height = height - margin.top - bottom
+            , margin = { margin | left = left, bottom = bottom }
         }
     )
 
@@ -729,18 +740,6 @@ getMargin : Config -> Margin
 getMargin config =
     fromConfig config
         |> .margin
-
-
-
---|> (\m ->
---        let
---            left =
---                m.left + leftGap
---            bottom =
---                m.bottom + bottomGap
---        in
---        { m | left = left, bottom = bottom }
---   )
 
 
 getHeight : Config -> Float
