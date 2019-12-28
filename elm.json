@@ -1,5 +1,8 @@
 {
     "type": "application",
+    "name": "data-viz-lab/elm-chart-builder",
+    "summary": "An opinionated and accessible charting library for Elm",
+    "license": "MIT",
     "source-directories": [
         "src"
     ],
