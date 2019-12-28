@@ -50,6 +50,7 @@ import Chart.Type
         , RenderContext(..)
         , adjustLinearRange
         , ariaLabelledby
+        , bottomGap
         , defaultConfig
         , fromConfig
         , fromDataBand
@@ -66,6 +67,7 @@ import Chart.Type
         , getMargin
         , getOffset
         , getWidth
+        , leftGap
         , role
         , setAxisContinousDataTickCount
         , setDimensions
@@ -515,18 +517,6 @@ horizontalRectsStacked config bandGroupScale ( group, values ) =
 
 
 -- BAND GROUPED
-
-
-leftGap : Float
-leftGap =
-    -- TODO: ther should be some notion of padding!
-    4
-
-
-bottomGap : Float
-bottomGap =
-    -- TODO: ther should be some notion of padding!
-    2
 
 
 renderBandGrouped : ( Data, Config ) -> Html msg

@@ -39,7 +39,7 @@ css =
 }
 
 .series path {
-    stroke: red;
+    stroke: crimson;
     stroke-width: 2px;
     fill: none;
 }

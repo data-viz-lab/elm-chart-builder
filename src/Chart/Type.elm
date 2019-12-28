@@ -20,6 +20,7 @@ module Chart.Type exposing
     , RenderContext(..)
     , adjustLinearRange
     , ariaLabelledby
+    , bottomGap
     , defaultConfig
     , defaultGroupedConfig
     , defaultHeight
@@ -56,6 +57,7 @@ module Chart.Type exposing
     , getOffset
     , getTitle
     , getWidth
+    , leftGap
     , role
     , setAxisContinousDataTickCount
     , setAxisContinousDataTickFormat
@@ -212,11 +214,6 @@ type alias Margin =
     }
 
 
-defaultTicksCount : Int
-defaultTicksCount =
-    10
-
-
 type AxisContinousDataTicks
     = DefaultTicks
     | CustomTicks (List Float)
@@ -341,6 +338,27 @@ defaultMargin =
     , bottom = 20
     , left = 30
     }
+
+
+defaultTicksCount : Int
+defaultTicksCount =
+    10
+
+
+
+-- CONSTANTS
+
+
+leftGap : Float
+leftGap =
+    -- TODO: there should be some notion of padding!
+    4
+
+
+bottomGap : Float
+bottomGap =
+    -- TODO: there should be some notion of padding!
+    2
 
 
 
@@ -709,7 +727,20 @@ getAxisHorizontalTicks config =
 
 getMargin : Config -> Margin
 getMargin config =
-    fromConfig config |> .margin
+    fromConfig config
+        |> .margin
+
+
+
+--|> (\m ->
+--        let
+--            left =
+--                m.left + leftGap
+--            bottom =
+--                m.bottom + bottomGap
+--        in
+--        { m | left = left, bottom = bottom }
+--   )
 
 
 getHeight : Config -> Float

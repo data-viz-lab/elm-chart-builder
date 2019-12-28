@@ -44,6 +44,7 @@ import Chart.Type
         , PointLinear
         , RenderContext(..)
         , ariaLabelledby
+        , bottomGap
         , defaultConfig
         , fromConfig
         , fromDataLinear
@@ -53,6 +54,7 @@ import Chart.Type
         , getHeight
         , getMargin
         , getWidth
+        , leftGap
         , role
         , setAxisHorizontalTickCount
         , setAxisHorizontalTickFormat
@@ -422,7 +424,7 @@ axisGenerator c axisType scale =
                         Axis.left attributes scale
                 in
                 [ g
-                    [ transform [ Translate c.margin.left c.margin.top ]
+                    [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
                     , class [ "axis", "axis--vertical" ]
                     ]
                     [ axis ]
@@ -462,7 +464,7 @@ axisGenerator c axisType scale =
                         Axis.bottom attributes scale
                 in
                 [ g
-                    [ transform [ Translate c.margin.left (c.height + c.margin.top) ]
+                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
                     , class [ "axis", "axis--horizontal" ]
                     ]
                     [ axis ]
