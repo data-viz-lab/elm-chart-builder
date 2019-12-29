@@ -1,11 +1,11 @@
-module Chart.Helpers exposing
+module Chart.Internal.Helpers exposing
     ( dataBandToDataStacked
     , floorFloat
     , floorValues
     , stackedValuesInverse
     )
 
-import Chart.Type
+import Chart.Internal.Type
     exposing
         ( Data
         , fromDataBand

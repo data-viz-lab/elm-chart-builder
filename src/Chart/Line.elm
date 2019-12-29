@@ -1,5 +1,12 @@
 module Chart.Line exposing
-    ( init
+    ( Data
+    , Domain
+    , dataLinear
+    , domainLinear
+    , init
+    , linearAxisCustomTickCount
+    , linearAxisCustomTickFormat
+    , linearAxisCustomTicks
     , render
     , setAxisHorizontalTickCount
     , setAxisHorizontalTickFormat
@@ -11,51 +18,36 @@ module Chart.Line exposing
     , setDimensions
     , setDomain
     , setHeight
+    , setMargin
+    , setShowHorizontalAxis
+    , setShowVerticalAxis
     , setTitle
     , setWidth
     )
 
-import Axis
-import Chart.Helpers as Helpers exposing (dataBandToDataStacked)
-import Chart.Symbol
+import Chart.Internal.Line
     exposing
-        ( Symbol(..)
-        , circle_
-        , corner
-        , custom
-        , getSymbolByIndex
-        , symbolGap
-        , symbolToId
-        , triangle
+        ( renderLineGrouped
+        , wrongDataTypeErrorView
         )
-import Chart.Type
+import Chart.Internal.Symbol exposing (Symbol(..))
+import Chart.Internal.Type as Type
     exposing
         ( AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
         , Config
-        , ConfigStruct
         , Data(..)
         , DataGroupLinear
         , Domain(..)
+        , DomainLinearStruct
         , Layout(..)
         , Margin
-        , PointLinear
         , RenderContext(..)
-        , ariaLabelledby
-        , bottomGap
         , defaultConfig
         , fromConfig
-        , fromDataLinear
-        , fromDomainLinear
-        , getDomain
         , getDomainFromData
-        , getHeight
-        , getMargin
-        , getWidth
-        , leftGap
-        , role
         , setAxisHorizontalTickCount
         , setAxisHorizontalTickFormat
         , setAxisHorizontalTicks
@@ -69,33 +61,81 @@ import Chart.Type
         , setTitle
         )
 import Html exposing (Html)
-import Html.Attributes
-import Path exposing (Path)
-import Scale exposing (ContinuousScale)
-import Shape
-import TypedSvg exposing (g, rect, svg, text_)
-import TypedSvg.Attributes
-    exposing
-        ( class
-        , transform
-        , viewBox
-        )
-import TypedSvg.Attributes.InPx exposing (height, width)
-import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
 
--- LOCAL TYPES
-
-
-type AxisType
-    = Vertical
-    | Horizontal
-
-
-
 -- API METHODS
+
+
+{-| Format of the data
+
+    data : Data
+    data =
+        DataLinear
+            [ { groupLabel = Just "A"
+              , points =
+                    [ ( 1, 10 )
+                    , ( 2, 13 )
+                    , ( 16, 16 )
+                    ]
+              }
+            , { groupLabel = Just "B"
+              , points =
+                    [ ( 1, 11 )
+                    , ( 2, 23 )
+                    , ( 3, 16 )
+                    ]
+              }
+            ]
+
+-}
+type alias Data =
+    Type.Data
+
+
+{-| dataGroupLinear data format
+
+    dataGroupLinear : Bar.DataGroupLinear
+    dataGroupLinear =
+        { groupLabel = Just "A"
+        , points =
+            [ ( 1, 10 )
+            , ( 2, 13 )
+            , ( 16, 16 )
+            ]
+        }
+
+-}
+type alias DataGroupLinear =
+    Type.DataGroupLinear
+
+
+{-| dataLinear data format constructor
+
+    data : Data
+    data =
+        DataLinear
+            [ { groupLabel = Just "A"
+              , points =
+                    [ ( 1, 10 )
+                    , ( 2, 13 )
+                    , ( 16, 16 )
+                    ]
+              }
+            , { groupLabel = Just "B"
+              , points =
+                    [ ( 1, 11 )
+                    , ( 2, 23 )
+                    , ( 3, 16 )
+                    ]
+              }
+            ]
+
+-}
+dataLinear : List DataGroupLinear -> Data
+dataLinear data =
+    Type.DataLinear data
 
 
 {-| Initializes the line chart
@@ -136,17 +176,17 @@ render ( data, config ) =
 
 setHeight : Float -> ( Data, Config ) -> ( Data, Config )
 setHeight =
-    Chart.Type.setHeight
+    Type.setHeight
 
 
 setWidth : Float -> ( Data, Config ) -> ( Data, Config )
 setWidth =
-    Chart.Type.setWidth
+    Type.setWidth
 
 
 setMargin : Margin -> ( Data, Config ) -> ( Data, Config )
 setMargin =
-    Chart.Type.setMargin
+    Type.setMargin
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis
@@ -159,7 +199,7 @@ Defaults to `Scale.ticks`
 -}
 setAxisHorizontalTicks : AxisContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
 setAxisHorizontalTicks =
-    Chart.Type.setAxisHorizontalTicks
+    Type.setAxisHorizontalTicks
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis
@@ -172,7 +212,7 @@ Defaults to `Scale.ticks`
 -}
 setAxisHorizontalTickCount : AxisContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
 setAxisHorizontalTickCount =
-    Chart.Type.setAxisHorizontalTickCount
+    Type.setAxisHorizontalTickCount
 
 
 {-| Sets the formatting for ticks in a grouped bar chart continous axis
@@ -185,7 +225,7 @@ Defaults to `Scale.tickFormat`
 -}
 setAxisHorizontalTickFormat : AxisContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
 setAxisHorizontalTickFormat =
-    Chart.Type.setAxisHorizontalTickFormat
+    Type.setAxisHorizontalTickFormat
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis
@@ -198,7 +238,7 @@ Defaults to `Scale.ticks`
 -}
 setAxisVerticalTicks : AxisContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
 setAxisVerticalTicks =
-    Chart.Type.setAxisVerticalTicks
+    Type.setAxisVerticalTicks
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis
@@ -211,7 +251,7 @@ Defaults to `Scale.ticks`
 -}
 setAxisVerticalTickCount : AxisContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
 setAxisVerticalTickCount =
-    Chart.Type.setAxisVerticalTickCount
+    Type.setAxisVerticalTickCount
 
 
 {-| Sets the formatting for ticks in a grouped bar chart continous axis
@@ -224,12 +264,12 @@ Defaults to `Scale.tickFormat`
 -}
 setAxisVerticalTickFormat : AxisContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
 setAxisVerticalTickFormat =
-    Chart.Type.setAxisVerticalTickFormat
+    Type.setAxisVerticalTickFormat
 
 
 setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
 setDimensions =
-    Chart.Type.setDimensions
+    Type.setDimensions
 
 
 {-| Sets the domain value in the config
@@ -242,7 +282,7 @@ If not set, the domain is calculated from the data
 -}
 setDomain : Domain -> ( Data, Config ) -> ( Data, Config )
 setDomain =
-    Chart.Type.setDomain
+    Type.setDomain
 
 
 {-| Sets an accessible, long-text description for the svg chart.
@@ -255,7 +295,7 @@ Default value: ""
 -}
 setDesc : String -> ( Data, Config ) -> ( Data, Config )
 setDesc =
-    Chart.Type.setDesc
+    Type.setDesc
 
 
 {-| Sets an accessible title for the svg chart.
@@ -268,7 +308,7 @@ Default value: ""
 -}
 setTitle : String -> ( Data, Config ) -> ( Data, Config )
 setTitle =
-    Chart.Type.setTitle
+    Type.setTitle
 
 
 {-| Sets the showHorizontalAxis boolean value in the config
@@ -282,7 +322,7 @@ This shows the bar's horizontal axis
 -}
 setShowHorizontalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
 setShowHorizontalAxis =
-    Chart.Type.setShowHorizontalAxis
+    Type.setShowHorizontalAxis
 
 
 {-| Sets the showVerticalAxis boolean value in the config
@@ -296,195 +336,64 @@ This shows the bar's vertical axis
 -}
 setShowVerticalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
 setShowVerticalAxis =
-    Chart.Type.setShowVerticalAxis
+    Type.setShowVerticalAxis
 
 
+{-| Pass the ticks to Bar.setLinearAxisTicks
 
--- INTERNALS
---
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setLinearAxisTicks [ 1, 2, 3 ]
 
-
-descAndTitle : ConfigStruct -> List (Svg msg)
-descAndTitle c =
-    -- https://developer.paciellogroup.com/blog/2013/12/using-aria-enhance-svg-accessibility/
-    [ TypedSvg.title [] [ text c.title ]
-    , TypedSvg.desc [] [ text c.desc ]
-    ]
+-}
+linearAxisCustomTicks : List Float -> AxisContinousDataTicks
+linearAxisCustomTicks ticks =
+    Type.CustomTicks ticks
 
 
-renderLineGrouped : ( Data, Config ) -> Html msg
-renderLineGrouped ( data, config ) =
-    let
-        c =
-            fromConfig config
+{-| Pass the number of ticks to Bar.setLinearAxisTickCount
 
-        m =
-            getMargin config
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setLinearAxisTickCount (CustomTickCount 5)
 
-        w =
-            getWidth config
-
-        h =
-            getHeight config
-
-        outerW =
-            w + m.left + m.right
-
-        outerH =
-            h + m.top + m.bottom
-
-        domain =
-            getDomain config
-                |> fromDomainLinear
-
-        horizontalRange =
-            ( 0, w )
-
-        verticalRange =
-            ( h, 0 )
-
-        sortedData =
-            data
-                |> fromDataLinear
-                --FIXME
-                |> List.sortBy (.points >> List.map Tuple.first)
-
-        horizontalScale : ContinuousScale Float
-        horizontalScale =
-            Scale.linear horizontalRange domain.horizontal
-
-        verticalScale : ContinuousScale Float
-        verticalScale =
-            Scale.linear verticalRange domain.vertical
-
-        lineGenerator : PointLinear -> Maybe PointLinear
-        lineGenerator ( x, y ) =
-            Just ( Scale.convert horizontalScale x, Scale.convert verticalScale y )
-
-        line : DataGroupLinear -> Path
-        line dataGroup =
-            dataGroup.points
-                |> List.map lineGenerator
-                |> Shape.line Shape.monotoneInXCurve
-    in
-    svg
-        [ viewBox 0 0 outerW outerH
-        , width outerW
-        , height outerH
-        , role "img"
-        , ariaLabelledby "title desc"
-        ]
-    <|
-        descAndTitle c
-            ++ axisGenerator c Vertical verticalScale
-            ++ axisGenerator c Horizontal horizontalScale
-            ++ [ g
-                    [ transform [ Translate m.left m.top ]
-                    , class [ "series" ]
-                    ]
-                 <|
-                    List.indexedMap
-                        (\idx d ->
-                            Path.element (line d)
-                                [ class [ "line", "line-" ++ String.fromInt idx ]
-                                ]
-                        )
-                        sortedData
-               ]
+-}
+linearAxisCustomTickCount : Int -> AxisContinousDataTickCount
+linearAxisCustomTickCount count =
+    Type.CustomTickCount count
 
 
-axisGenerator : ConfigStruct -> AxisType -> ContinuousScale Float -> List (Svg msg)
-axisGenerator c axisType scale =
-    if c.showContinousAxis == True then
-        case axisType of
-            Vertical ->
-                let
-                    ticks =
-                        case c.axisVerticalTicks of
-                            DefaultTicks ->
-                                Nothing
+{-| A custom formatter for the continous data axis values
 
-                            CustomTicks t ->
-                                Just (Axis.ticks t)
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat (FormatNumber.format { usLocale | decimals = 0 }))
 
-                    tickCount =
-                        case c.axisVerticalTickCount of
-                            DefaultTickCount ->
-                                Nothing
-
-                            CustomTickCount count ->
-                                Just (Axis.tickCount count)
-
-                    tickFormat =
-                        case c.axisVerticalTickFormat of
-                            DefaultTickFormat ->
-                                Nothing
-
-                            CustomTickFormat formatter ->
-                                Just (Axis.tickFormat formatter)
-
-                    attributes =
-                        [ ticks, tickFormat, tickCount ]
-                            |> List.filterMap identity
-
-                    axis =
-                        Axis.left attributes scale
-                in
-                [ g
-                    [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
-                    , class [ "axis", "axis--vertical" ]
-                    ]
-                    [ axis ]
-                ]
-
-            Horizontal ->
-                let
-                    ticks =
-                        case c.axisHorizontalTicks of
-                            DefaultTicks ->
-                                Nothing
-
-                            CustomTicks t ->
-                                Just (Axis.ticks t)
-
-                    tickCount =
-                        case c.axisHorizontalTickCount of
-                            DefaultTickCount ->
-                                Nothing
-
-                            CustomTickCount count ->
-                                Just (Axis.tickCount count)
-
-                    tickFormat =
-                        case c.axisHorizontalTickFormat of
-                            DefaultTickFormat ->
-                                Nothing
-
-                            CustomTickFormat formatter ->
-                                Just (Axis.tickFormat formatter)
-
-                    attributes =
-                        [ ticks, tickFormat, tickCount ]
-                            |> List.filterMap identity
-
-                    axis =
-                        Axis.bottom attributes scale
-                in
-                [ g
-                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                    , class [ "axis", "axis--horizontal" ]
-                    ]
-                    [ axis ]
-                ]
-
-    else
-        []
+-}
+linearAxisCustomTickFormat : (Float -> String) -> AxisContinousDataTickFormat
+linearAxisCustomTickFormat formatter =
+    Type.CustomTickFormat formatter
 
 
+{-| Domain Type
+For line charts this can only be of DomainLinear type
+(For now, DomainTime coming soon...)
+-}
+type alias Domain =
+    Type.Domain
 
--- ERROR VIEWS
 
+{-| DomainLinear constructor
 
-wrongDataTypeErrorView : Html msg
-wrongDataTypeErrorView =
-    Html.div [] [ Html.text "Data type not supported in line charts" ]
+    dummyDomainBandStruct : DomainBandStruct
+    dummyDomainBandStruct =
+        { bandGroup = []
+        , bandSingle = []
+        , linear = ( 0, 0 )
+        }
+
+    domain : Domain
+    domain =
+        domainBand dummyDomainBandStruct
+
+-}
+domainLinear : DomainLinearStruct -> Domain
+domainLinear str =
+    Type.DomainLinear str

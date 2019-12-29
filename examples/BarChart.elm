@@ -4,8 +4,6 @@ module Examples.BarChart exposing (data, main)
 -}
 
 import Chart.Bar as Bar
-import Chart.Symbol exposing (Symbol(..))
-import Chart.Type exposing (..)
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
@@ -56,11 +54,29 @@ css =
 """
 
 
-icons : String -> List (Symbol msg)
+icons : String -> List (Bar.BarSymbol msg)
 icons prefix =
-    [ Custom { identifier = prefix ++ "-bicycle-symbol", width = 640, height = 512, paths = [ bicycleSymbol ], useGap = False }
-    , Custom { identifier = prefix ++ "-car-symbol", width = 640, height = 512, paths = [ carSymbol ], useGap = False }
-    , Custom { identifier = prefix ++ "-plane-symbol", width = 576, height = 512, paths = [ planeSymbol ], useGap = False }
+    [ Bar.symbolCustom
+        { identifier = prefix ++ "-bicycle-symbol"
+        , width = 640
+        , height = 512
+        , paths = [ bicycleSymbol ]
+        , useGap = False
+        }
+    , Bar.symbolCustom
+        { identifier = prefix ++ "-car-symbol"
+        , width = 640
+        , height = 512
+        , paths = [ carSymbol ]
+        , useGap = False
+        }
+    , Bar.symbolCustom
+        { identifier = prefix ++ "-plane-symbol"
+        , width = 576
+        , height = 512
+        , paths = [ planeSymbol ]
+        , useGap = False
+        }
 
     --, Triangle (prefix ++ "-triangle-symbol")
     --, Circle (prefix ++ "-circle-symbol")
@@ -68,9 +84,9 @@ icons prefix =
     ]
 
 
-data : Data
+data : Bar.Data
 data =
-    DataBand
+    Bar.dataBand
         [ { groupLabel = Just "A"
           , points =
                 [ ( "a", 10 )
@@ -110,9 +126,9 @@ data =
         ]
 
 
-dataStacked : Data
+dataStacked : Bar.Data
 dataStacked =
-    DataBand
+    Bar.dataBand
         [ { groupLabel = Nothing
           , points =
                 [ ( "a", -10 )
@@ -159,11 +175,6 @@ planeSymbol =
     "M480 192H365.71L260.61 8.06A16.014 16.014 0 0 0 246.71 0h-65.5c-10.63 0-18.3 10.17-15.38 20.39L214.86 192H112l-43.2-57.6c-3.02-4.03-7.77-6.4-12.8-6.4H16.01C5.6 128-2.04 137.78.49 147.88L32 256 .49 364.12C-2.04 374.22 5.6 384 16.01 384H56c5.04 0 9.78-2.37 12.8-6.4L112 320h102.86l-49.03 171.6c-2.92 10.22 4.75 20.4 15.38 20.4h65.5c5.74 0 11.04-3.08 13.89-8.06L365.71 320H480c35.35 0 96-28.65 96-64s-60.65-64-96-64z"
 
 
-groupedConfig : GroupedConfig
-groupedConfig =
-    defaultGroupedConfig
-
-
 valueFormatter : Float -> String
 valueFormatter =
     FormatNumber.format { usLocale | decimals = 0 }
@@ -179,8 +190,8 @@ attrs =
 verticalGrouped : Html msg
 verticalGrouped =
     Bar.init data
-        |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-a")))
-        |> Bar.setAxisContinousDataTickCount (CustomTickCount 5)
+        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (icons "chart-a")))
+        |> Bar.setLinearAxisTickCount (Bar.linearAxisCustomTickCount 5)
         |> Bar.setTitle "Vertical Grouped Chart"
         |> Bar.setDesc "A vertical grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -194,7 +205,7 @@ verticalGrouped =
 verticalStacked : Html msg
 verticalStacked =
     Bar.init data
-        |> Bar.setLayout (Stacked NoDirection)
+        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.setTitle "Vertical Stacked Chart"
         |> Bar.setDesc "A vertical stacked chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -208,10 +219,10 @@ verticalStacked =
 horizontalGrouped : Html msg
 horizontalGrouped =
     Bar.init data
-        |> Bar.setLayout (Grouped (defaultGroupedConfig |> setIcons (icons "chart-b")))
-        |> Bar.setOrientation Horizontal
-        |> Bar.setAxisContinousDataTickCount (CustomTickCount 5)
-        |> Bar.setAxisContinousDataTickFormat (CustomTickFormat valueFormatter)
+        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (icons "chart-b")))
+        |> Bar.setOrientation Bar.horizontalOrientation
+        |> Bar.setLinearAxisTickCount (Bar.linearAxisCustomTickCount 5)
+        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat valueFormatter)
         |> Bar.setTitle "Horizontal Grouped Chart"
         |> Bar.setDesc "A horizontal grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -225,8 +236,8 @@ horizontalGrouped =
 horizontalStacked : Html msg
 horizontalStacked =
     Bar.init data
-        |> Bar.setLayout (Stacked NoDirection)
-        |> Bar.setOrientation Horizontal
+        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
+        |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setTitle "Horizontal Stacked Chart"
         |> Bar.setDesc "A horizontal stacked chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -241,8 +252,8 @@ horizontalStackedDiverging : Html msg
 horizontalStackedDiverging =
     Bar.init dataStacked
         --|> Bar.setShowColumnLabels True
-        |> Bar.setLayout (Stacked Diverging)
-        |> Bar.setOrientation Horizontal
+        |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
+        |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setTitle "Horizontal Stacked Diverging Chart"
         |> Bar.setDesc "A horizontal stacked diverging chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -250,15 +261,15 @@ horizontalStackedDiverging =
             , width = width
             , height = height
             }
-        |> Bar.setAxisContinousDataTickFormat (CustomTickFormat (\v -> abs v |> valueFormatter))
+        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat (\v -> abs v |> valueFormatter))
         |> Bar.render
 
 
 verticalStackedDiverging : Html msg
 verticalStackedDiverging =
     Bar.init dataStacked
-        |> Bar.setLayout (Stacked Diverging)
-        |> Bar.setOrientation Vertical
+        |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
+        |> Bar.setOrientation Bar.verticalOrientation
         |> Bar.setTitle "Vertical Stacked Diverging Chart"
         |> Bar.setDesc "A vertical stacked diverging chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -266,7 +277,7 @@ verticalStackedDiverging =
             , width = width
             , height = height
             }
-        |> Bar.setAxisContinousDataTickFormat (CustomTickFormat (\v -> abs v |> valueFormatter))
+        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat (\v -> abs v |> valueFormatter))
         |> Bar.render
 
 

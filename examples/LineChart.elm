@@ -4,9 +4,6 @@ module Examples.LineChart exposing (data, main)
 -}
 
 import Chart.Line as Line
-import Chart.Type exposing (..)
-import FormatNumber
-import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
 import Html.Attributes
 import Svg exposing (..)
@@ -63,9 +60,9 @@ height =
     250
 
 
-data : Data
+data : Line.Data
 data =
-    DataLinear
+    Line.dataLinear
         [ { groupLabel = Just "A"
           , points =
                 [ ( 1, 10 )
@@ -95,8 +92,8 @@ doubleLine =
     Line.init data
         |> Line.setTitle "A two line chart"
         |> Line.setDesc "A two line chart example to demonstrate the charting library"
-        |> Line.setDomain (DomainLinear { horizontal = ( 1, 16 ), vertical = ( 10, 23 ) })
-        |> Line.setAxisVerticalTickCount (CustomTickCount 5)
+        |> Line.setDomain (Line.domainLinear { horizontal = ( 1, 16 ), vertical = ( 10, 23 ) })
+        |> Line.setAxisVerticalTickCount (Line.linearAxisCustomTickCount 5)
         |> Line.setDimensions
             { margin = { top = 10, right = 10, bottom = 30, left = 30 }
             , width = width

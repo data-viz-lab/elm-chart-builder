@@ -1,4 +1,4 @@
-module Chart.Symbol exposing
+module Chart.Internal.Symbol exposing
     ( CustomSymbolConf
     , Symbol(..)
     , circle_

@@ -1,4 +1,4 @@
-module Chart.Type exposing
+module Chart.Internal.Type exposing
     ( AxisContinousDataTickCount(..)
     , AxisContinousDataTickFormat(..)
     , AxisContinousDataTicks(..)
@@ -10,6 +10,8 @@ module Chart.Type exposing
     , DataGroupLinear
     , Direction(..)
     , Domain(..)
+    , DomainBandStruct
+    , DomainLinearStruct
     , GroupedConfig
     , GroupedConfigStruct
     , Layout(..)
@@ -90,7 +92,7 @@ module Chart.Type exposing
     , toConfig
     )
 
-import Chart.Symbol exposing (Symbol(..), symbolGap)
+import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
 import Html
 import Html.Attributes
 import Scale exposing (BandScale)
@@ -998,7 +1000,7 @@ symbolSpace orientation bandSingleScale symbols =
         |> toFloat
 
 
-symbolCustomSpace : Orientation -> Float -> Chart.Symbol.CustomSymbolConf -> Float
+symbolCustomSpace : Orientation -> Float -> Symbol.CustomSymbolConf -> Float
 symbolCustomSpace orientation localDimension conf =
     case orientation of
         Horizontal ->
