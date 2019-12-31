@@ -10,7 +10,6 @@ Then navigate to the examples folder in the browser.
 `elm-test`
 
 ## TODO before publishing package
-* Fix all predifined symbols in `Chart.Bar`
 * Stacked line charts
 * Symbols on line charts
 * Alternative table representation 
