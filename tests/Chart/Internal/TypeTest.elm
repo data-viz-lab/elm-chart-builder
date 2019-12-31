@@ -1,7 +1,7 @@
-module Chart.TypeTest exposing (suite)
+module Chart.Internal.TypeTest exposing (suite)
 
-import Chart.Symbol exposing (Symbol(..))
-import Chart.Type exposing (..)
+import Chart.Internal.Symbol exposing (Symbol(..))
+import Chart.Internal.Type exposing (..)
 import Expect exposing (Expectation)
 import Test exposing (..)
 
@@ -61,7 +61,7 @@ suite =
                         localDimension =
                             5.0
 
-                        customSymbolConf : Chart.Symbol.CustomSymbolConf
+                        customSymbolConf : Chart.Internal.Symbol.CustomSymbolConf
                         customSymbolConf =
                             { identifier = "x"
                             , width = 110
@@ -88,7 +88,7 @@ suite =
                         localDimension =
                             5.0
 
-                        customSymbolConf : Chart.Symbol.CustomSymbolConf
+                        customSymbolConf : Chart.Internal.Symbol.CustomSymbolConf
                         customSymbolConf =
                             { identifier = "x"
                             , width = 100
@@ -115,7 +115,7 @@ suite =
                         localDimension =
                             5.0
 
-                        customSymbolConf : Chart.Symbol.CustomSymbolConf
+                        customSymbolConf : Chart.Internal.Symbol.CustomSymbolConf
                         customSymbolConf =
                             { identifier = "x"
                             , width = 110
@@ -142,7 +142,7 @@ suite =
                         localDimension =
                             5.0
 
-                        customSymbolConf : Chart.Symbol.CustomSymbolConf
+                        customSymbolConf : Chart.Internal.Symbol.CustomSymbolConf
                         customSymbolConf =
                             { identifier = "x"
                             , width = 100

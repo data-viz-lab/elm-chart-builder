@@ -1,7 +1,7 @@
-module Chart.HelpersTest exposing (suite)
+module Chart.Internal.HelpersTest exposing (suite)
 
-import Chart.Helpers exposing (..)
-import Chart.Type exposing (..)
+import Chart.Internal.Helpers exposing (..)
+import Chart.Internal.Type exposing (..)
 import Expect exposing (Expectation)
 import Test exposing (..)
 
