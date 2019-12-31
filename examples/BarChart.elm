@@ -54,33 +54,31 @@ css =
 """
 
 
+iconsCustom : String -> List (Bar.BarSymbol msg)
+iconsCustom prefix =
+    [ Bar.symbolCustom
+        |> Bar.setSymbolIdentifier (prefix ++ "-bicycle-symbol")
+        |> Bar.setSymbolWidth 640
+        |> Bar.setSymbolHeight 512
+        |> Bar.setSymbolPaths [ bicycleSymbol ]
+    , Bar.symbolCustom
+        |> Bar.setSymbolIdentifier (prefix ++ "-car-symbol")
+        |> Bar.setSymbolWidth 640
+        |> Bar.setSymbolHeight 512
+        |> Bar.setSymbolPaths [ carSymbol ]
+    , Bar.symbolCustom
+        |> Bar.setSymbolIdentifier (prefix ++ "-plane-symbol")
+        |> Bar.setSymbolWidth 576
+        |> Bar.setSymbolHeight 512
+        |> Bar.setSymbolPaths [ planeSymbol ]
+    ]
+
+
 icons : String -> List (Bar.BarSymbol msg)
 icons prefix =
-    [ Bar.symbolCustom
-        { identifier = prefix ++ "-bicycle-symbol"
-        , width = 640
-        , height = 512
-        , paths = [ bicycleSymbol ]
-        , useGap = False
-        }
-    , Bar.symbolCustom
-        { identifier = prefix ++ "-car-symbol"
-        , width = 640
-        , height = 512
-        , paths = [ carSymbol ]
-        , useGap = False
-        }
-    , Bar.symbolCustom
-        { identifier = prefix ++ "-plane-symbol"
-        , width = 576
-        , height = 512
-        , paths = [ planeSymbol ]
-        , useGap = False
-        }
-
-    --, Triangle (prefix ++ "-triangle-symbol")
-    --, Circle (prefix ++ "-circle-symbol")
-    --, Corner (prefix ++ "-corner-symbol")
+    [ Bar.symbolTriangle (prefix ++ "-triangle-symbol")
+    , Bar.symbolCircle (prefix ++ "-circle-symbol")
+    , Bar.symbolCorner (prefix ++ "-corner-symbol")
     ]
 
 
@@ -190,7 +188,7 @@ attrs =
 verticalGrouped : Html msg
 verticalGrouped =
     Bar.init data
-        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (icons "chart-a")))
+        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (iconsCustom "chart-a")))
         |> Bar.setLinearAxisTickCount (Bar.linearAxisCustomTickCount 5)
         |> Bar.setTitle "Vertical Grouped Chart"
         |> Bar.setDesc "A vertical grouped chart example to demonstrate the charting library"

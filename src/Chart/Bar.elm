@@ -27,10 +27,18 @@ module Chart.Bar exposing
     , setOrientation
     , setShowContinousAxis
     , setShowOrdinalAxis
+    , setSymbolHeight
+    , setSymbolIdentifier
+    , setSymbolPaths
+    , setSymbolUseGap
+    , setSymbolWidth
     , setTitle
     , setWidth
     , stackedLayout
+    , symbolCircle
+    , symbolCorner
     , symbolCustom
+    , symbolTriangle
     , verticalOrientation
     )
 
@@ -530,6 +538,93 @@ type alias BarSymbol msg =
 
 {-| A custom bar chart symbol type
 -}
-symbolCustom : Symbol.CustomSymbolConf -> BarSymbol msg
-symbolCustom conf =
-    Custom conf
+symbolCustom : BarSymbol msg
+symbolCustom =
+    Custom Symbol.initialCustomSymbolConf
+
+
+{-| Set the custom symbol identifier
+-}
+setSymbolIdentifier : String -> BarSymbol msg -> BarSymbol msg
+setSymbolIdentifier identifier symbol =
+    case symbol of
+        Custom conf ->
+            Custom { conf | identifier = identifier }
+
+        _ ->
+            symbol
+
+
+{-| Set the custom symbol width
+When using a custom svg icon this is the 3rd argument of its viewBox attribute
+-}
+setSymbolWidth : Float -> BarSymbol msg -> BarSymbol msg
+setSymbolWidth width symbol =
+    case symbol of
+        Custom conf ->
+            Custom { conf | width = width }
+
+        _ ->
+            symbol
+
+
+{-| Set the custom symbol height
+When using a custom svg icon this is the 4th argument of its viewBox attribute
+-}
+setSymbolHeight : Float -> BarSymbol msg -> BarSymbol msg
+setSymbolHeight height symbol =
+    case symbol of
+        Custom conf ->
+            Custom { conf | height = height }
+
+        _ ->
+            symbol
+
+
+{-| Set the custom symbol paths
+When using a custom svg icon these are the d attribute of the path elements
+-}
+setSymbolPaths : List String -> BarSymbol msg -> BarSymbol msg
+setSymbolPaths paths symbol =
+    case symbol of
+        Custom conf ->
+            Custom { conf | paths = paths }
+
+        _ ->
+            symbol
+
+
+{-| Set the useGap boolean flag
+All bar chart icons are drawn with a gap from the bar rectangles,
+but, depending on the custom icon shape and on the orientation of the chart,
+the icon could already have a gap and we do not want to add other space.
+-}
+setSymbolUseGap : Bool -> BarSymbol msg -> BarSymbol msg
+setSymbolUseGap bool symbol =
+    case symbol of
+        Custom conf ->
+            Custom { conf | useGap = bool }
+
+        _ ->
+            symbol
+
+
+{-| Circle symbol type
+-}
+symbolCircle : String -> BarSymbol msg
+symbolCircle id =
+    Circle id
+
+
+{-| Triangle symbol type
+-}
+symbolTriangle : String -> BarSymbol msg
+symbolTriangle id =
+    Triangle id
+
+
+{-| Corner symbol type
+-}
+symbolCorner : String -> BarSymbol msg
+symbolCorner id =
+    Corner id

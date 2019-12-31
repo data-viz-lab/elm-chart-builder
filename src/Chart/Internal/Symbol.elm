@@ -5,6 +5,7 @@ module Chart.Internal.Symbol exposing
     , corner
     , custom
     , getSymbolByIndex
+    , initialCustomSymbolConf
     , symbolGap
     , symbolToId
     , triangle
@@ -24,6 +25,16 @@ type alias CustomSymbolConf =
     , height : Float
     , paths : List String
     , useGap : Bool
+    }
+
+
+initialCustomSymbolConf : CustomSymbolConf
+initialCustomSymbolConf =
+    { identifier = "custom-symbol"
+    , width = 0
+    , height = 0
+    , paths = []
+    , useGap = True
     }
 
 
@@ -56,7 +67,7 @@ symbolToId symbol =
 
 symbolGap : Float
 symbolGap =
-    0.0
+    2.0
 
 
 triangle : Float -> Svg msg
@@ -73,7 +84,7 @@ triangle size =
 
 circle_ : Float -> Svg msg
 circle_ radius =
-    circle [ InPx.r radius ] []
+    circle [ InPx.cx radius, InPx.cy radius, InPx.r radius ] []
 
 
 corner : Float -> Svg msg

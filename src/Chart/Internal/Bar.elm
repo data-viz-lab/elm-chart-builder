@@ -545,9 +545,8 @@ horizontalSymbol c { idx, w, y_, h } =
                 ]
 
             Circle _ ->
-                --FIXME
                 [ g
-                    [ transform [ Translate (w + h / 2 + symbolGap) (y_ + h / 2) ]
+                    [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
                     ]
                     symbolRef
@@ -604,9 +603,8 @@ verticalSymbol c { idx, w, y_, x_ } =
                 ]
 
             Circle _ ->
-                --FIXME
                 [ g
-                    [ transform [ Translate x_ (y_ - w / 2 - symbolGap) ]
+                    [ transform [ Translate x_ (y_ - w - symbolGap) ]
                     , class [ "symbol" ]
                     ]
                     symbolRef
