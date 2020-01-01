@@ -49,6 +49,7 @@ import Chart.Internal.Type
         , getLinearRange
         , getMargin
         , getOffset
+        , getShowIndividualLabels
         , getWidth
         , leftGap
         , role
@@ -68,6 +69,7 @@ import TypedSvg.Attributes
     exposing
         ( alignmentBaseline
         , class
+        , dominantBaseline
         , shapeRendering
         , textAnchor
         , transform
@@ -76,7 +78,14 @@ import TypedSvg.Attributes
         )
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
+import TypedSvg.Types
+    exposing
+        ( AlignmentBaseline(..)
+        , AnchorAlignment(..)
+        , DominantBaseline(..)
+        , ShapeRendering(..)
+        , Transform(..)
+        )
 
 
 descAndTitle : ConfigStruct -> List (Svg msg)
@@ -403,12 +412,6 @@ columns c iconOffset bandGroupScale bandSingleScale linearScale dataGroup =
 column : ConfigStruct -> Float -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> Svg msg
 column c iconOffset bandSingleScale linearScale idx point =
     let
-        --label =
-        --    case c.orientation of
-        --        Horizontal ->
-        --            horizontalLabel c bandSingleScale linearScale point
-        --        Vertical ->
-        --            verticalLabel c bandSingleScale linearScale point
         rectangle =
             case c.orientation of
                 Vertical ->
@@ -427,7 +430,7 @@ verticalRect c iconOffset bandSingleScale linearScale idx point =
             point
 
         label =
-            verticalLabel c bandSingleScale linearScale point
+            verticalLabel c (x_ + w / 2) (y_ - labelGap) point
 
         x_ =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
@@ -478,7 +481,7 @@ horizontalRect c bandSingleScale linearScale idx point =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
 
         label =
-            horizontalLabel c bandSingleScale linearScale point
+            horizontalLabel c (w + labelGap) (y_ + h / 2) point
 
         symbol =
             horizontalSymbol c { idx = idx, w = w, y_ = y_, h = h }
@@ -506,16 +509,24 @@ dataGroupTranslation bandGroupScale dataGroup =
             Scale.convert bandGroupScale l
 
 
-verticalLabel : ConfigStruct -> BandScale String -> ContinuousScale Float -> PointBand -> List (Svg msg)
-verticalLabel c bandSingleScale linearScale point =
+verticalLabel : ConfigStruct -> Float -> Float -> PointBand -> List (Svg msg)
+verticalLabel c x_ y_ point =
     let
         ( x__, y__ ) =
             point
+
+        showIndividualLabels =
+            case c.layout of
+                Grouped config ->
+                    getShowIndividualLabels config
+
+                _ ->
+                    False
     in
-    if c.showColumnLabels then
+    if showIndividualLabels then
         [ text_
-            [ x <| Scale.convert (Scale.toRenderable (\s -> s) bandSingleScale) x__
-            , y <| Scale.convert linearScale y__ - 2
+            [ x x_
+            , y y_
             , textAnchor AnchorMiddle
             ]
             [ text <| x__ ]
@@ -644,18 +655,26 @@ verticalSymbol c { idx, w, y_, x_ } =
         []
 
 
-horizontalLabel : ConfigStruct -> BandScale String -> ContinuousScale Float -> PointBand -> List (Svg msg)
-horizontalLabel c bandSingleScale linearScale point =
+horizontalLabel : ConfigStruct -> Float -> Float -> PointBand -> List (Svg msg)
+horizontalLabel c x_ y_ point =
     let
         ( x__, y__ ) =
             point
+
+        showIndividualLabels =
+            case c.layout of
+                Grouped config ->
+                    getShowIndividualLabels config
+
+                _ ->
+                    False
     in
-    if c.showColumnLabels then
+    if showIndividualLabels then
         [ text_
-            [ y <| Scale.convert (Scale.toRenderable (\s -> s) bandSingleScale) x__
-            , x <| Scale.convert linearScale y__ + 2
+            [ y y_
+            , x x_
             , textAnchor AnchorStart
-            , alignmentBaseline AlignmentMiddle
+            , dominantBaseline DominantBaselineMiddle
             ]
             [ text <| x__ ]
         ]
@@ -809,3 +828,12 @@ bandGroupedContinousAxis c iconOffset linearScale =
 wrongDataTypeErrorView : Html msg
 wrongDataTypeErrorView =
     Html.div [] [ Html.text "Data type not supported in bar charts" ]
+
+
+
+-- CONSTANTS
+
+
+labelGap : Float
+labelGap =
+    2

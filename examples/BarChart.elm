@@ -15,9 +15,13 @@ import Svg.Attributes exposing (..)
 css : String
 css =
     """
+body {
+  font-family: Sans-Serif;
+}
+
 .wrapper {
   display: grid;
-  grid-template-columns: 350px 350px;
+  grid-template-columns: repeat(4, 350px);
   grid-gap: 20px;
   background-color: #fff;
   color: #444;
@@ -48,7 +52,7 @@ css =
     stroke: #b7b7b7;
 }
 
-.axis text {
+text {
     fill: #333;
 }
 """
@@ -200,6 +204,21 @@ verticalGrouped =
         |> Bar.render
 
 
+verticalGroupedWithLabels : Html msg
+verticalGroupedWithLabels =
+    Bar.init data
+        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
+        |> Bar.setLinearAxisTickCount (Bar.linearAxisCustomTickCount 5)
+        |> Bar.setTitle "Vertical Grouped Chart"
+        |> Bar.setDesc "A vertical grouped chart example to demonstrate the charting library"
+        |> Bar.setDimensions
+            { margin = { top = 20, right = 10, bottom = 25, left = 35 }
+            , width = width
+            , height = height
+            }
+        |> Bar.render
+
+
 verticalStacked : Html msg
 verticalStacked =
     Bar.init data
@@ -225,6 +244,23 @@ horizontalGrouped =
         |> Bar.setDesc "A horizontal grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
             { margin = { top = 10, right = 10, bottom = 32, left = 35 }
+            , width = width
+            , height = height
+            }
+        |> Bar.render
+
+
+horizontalGroupedWithLabels : Html msg
+horizontalGroupedWithLabels =
+    Bar.init data
+        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
+        |> Bar.setOrientation Bar.horizontalOrientation
+        |> Bar.setLinearAxisTickCount (Bar.linearAxisCustomTickCount 5)
+        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat valueFormatter)
+        |> Bar.setTitle "Horizontal Grouped Chart"
+        |> Bar.setDesc "A horizontal grouped chart example to demonstrate the charting library"
+        |> Bar.setDimensions
+            { margin = { top = 10, right = 20, bottom = 32, left = 35 }
             , width = width
             , height = height
             }
@@ -286,8 +322,10 @@ main =
         , Html.div
             [ class "wrapper" ]
             [ Html.div attrs [ verticalGrouped ]
-            , Html.div attrs [ verticalStacked ]
+            , Html.div attrs [ verticalGroupedWithLabels ]
             , Html.div attrs [ horizontalGrouped ]
+            , Html.div attrs [ horizontalGroupedWithLabels ]
+            , Html.div attrs [ verticalStacked ]
             , Html.div attrs [ horizontalStacked ]
             , Html.div attrs [ horizontalStackedDiverging ]
             , Html.div attrs [ verticalStackedDiverging ]

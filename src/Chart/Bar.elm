@@ -26,6 +26,7 @@ module Chart.Bar exposing
     , setMargin
     , setOrientation
     , setShowContinousAxis
+    , setShowIndividualLabels
     , setShowOrdinalAxis
     , setSymbolHeight
     , setSymbolIdentifier
@@ -328,22 +329,6 @@ setDomain =
     Type.setDomain
 
 
-
--- TODO:
---{-| Sets the showColumnLabels boolean value in the config
---Default value: False
---This shows the bar's ordinal value at the end of the rect, not the linear value
---
---    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
---        |> Bar.setShowColumnLabels True
---        |> Bar.render
---
----}
---setShowColumnLabels : Bool -> ( Data, Config ) -> ( Data, Config )
---setShowColumnLabels =
---    Chart.Type.setShowColumnLabels
-
-
 {-| Sets the showContinousAxis boolean value in the config
 Default value: True
 This shows the bar's continous scale axis
@@ -383,6 +368,23 @@ These are additional symbols at the end of each bar in a group, for facilitating
 setIcons : List (Symbol String) -> GroupedConfig -> GroupedConfig
 setIcons =
     Type.setIcons
+
+
+{-| Sets the showIndividualLabels boolean value in the grouped config
+Default value: False
+This shows the bar's ordinal value at the end of the rect, not the linear value.
+If used together with symbols, the label will be drawn on top of the symbol.
+Use with caution, there is no knowledge of text wrapping.
+With a vertical layout the available horizontal space is the width of the rects.
+With an horizontal layout the available horizontal space is the right margin.
+
+    defaultGroupedConfig
+        |> Bar.setShowIndividualLabels True
+
+-}
+setShowIndividualLabels : Bool -> GroupedConfig -> GroupedConfig
+setShowIndividualLabels =
+    Type.setShowIndividualLabels
 
 
 {-| Horizontal layout type

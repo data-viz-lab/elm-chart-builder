@@ -9,10 +9,11 @@ Then navigate to the examples folder in the browser.
 ## tests:
 `elm-test`
 
-## TODO before publishing package
+## TODO 
 * Stacked line charts
 * Symbols on line charts
 * Alternative table representation 
+* Tooltips
 
 ## TODO nice to have
-* Labels for bar and line charts
+* Labels for line charts

@@ -57,6 +57,7 @@ module Chart.Internal.Type exposing
     , getLinearRange
     , getMargin
     , getOffset
+    , getShowIndividualLabels
     , getTitle
     , getWidth
     , leftGap
@@ -78,9 +79,9 @@ module Chart.Internal.Type exposing
     , setLayout
     , setMargin
     , setOrientation
-    , setShowColumnLabels
     , setShowContinousAxis
     , setShowHorizontalAxis
+    , setShowIndividualLabels
     , setShowOrdinalAxis
     , setShowVerticalAxis
     , setTitle
@@ -247,7 +248,6 @@ type alias ConfigStruct =
     , layout : Layout
     , margin : Margin
     , orientation : Orientation
-    , showColumnLabels : Bool
     , showContinousAxis : Bool
     , showHorizontalAxis : Bool
     , showOrdinalAxis : Bool
@@ -275,7 +275,6 @@ defaultConfig =
         , layout = defaultLayout
         , margin = defaultMargin
         , orientation = defaultOrientation
-        , showColumnLabels = False
         , showContinousAxis = True
         , showHorizontalAxis = True
         , showOrdinalAxis = True
@@ -375,6 +374,7 @@ type GroupedConfig
 
 type alias GroupedConfigStruct =
     { icons : List (Symbol String)
+    , showIndividualLabels : Bool
     }
 
 
@@ -392,6 +392,7 @@ defaultGroupedConfig : GroupedConfig
 defaultGroupedConfig =
     toGroupedConfig
         { icons = []
+        , showIndividualLabels = False
         }
 
 
@@ -422,6 +423,13 @@ getIcons c =
         |> .icons
 
 
+getShowIndividualLabels : GroupedConfig -> Bool
+getShowIndividualLabels c =
+    c
+        |> fromGroupedConfig
+        |> .showIndividualLabels
+
+
 getIconsFromLayout : Layout -> List (Symbol String)
 getIconsFromLayout l =
     case l of
@@ -441,6 +449,15 @@ setIcons all config =
             fromGroupedConfig config
     in
     toGroupedConfig { c | icons = all }
+
+
+setShowIndividualLabels : Bool -> GroupedConfig -> GroupedConfig
+setShowIndividualLabels bool config =
+    let
+        c =
+            fromGroupedConfig config
+    in
+    toGroupedConfig { c | showIndividualLabels = bool }
 
 
 
@@ -632,15 +649,6 @@ setDomain domain ( data, config ) =
             fromConfig config
     in
     ( data, toConfig { c | domain = domain } )
-
-
-setShowColumnLabels : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowColumnLabels bool ( data, config ) =
-    let
-        c =
-            fromConfig config
-    in
-    ( data, toConfig { c | showColumnLabels = bool } )
 
 
 setShowContinousAxis : Bool -> ( Data, Config ) -> ( Data, Config )
