@@ -285,7 +285,6 @@ horizontalStacked =
 horizontalStackedDiverging : Html msg
 horizontalStackedDiverging =
     Bar.init dataStacked
-        --|> Bar.setShowColumnLabels True
         |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setTitle "Horizontal Stacked Diverging Chart"
