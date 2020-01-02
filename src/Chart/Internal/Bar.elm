@@ -186,16 +186,9 @@ renderBandStacked ( data, config ) =
             List.map (List.map (\( a1, a2 ) -> ( Scale.convert linearScale a1, Scale.convert linearScale a2 ))) columnValues
                 |> Helpers.floorValues
 
-        dataLength =
-            data |> fromDataBand |> List.length
-
         axisBandScale : BandScale String
         axisBandScale =
-            if dataLength == 1 then
-                bandSingleScale
-
-            else
-                bandGroupScale
+            bandGroupScale
     in
     svg
         [ viewBox 0 0 outerW outerH
