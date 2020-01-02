@@ -1,5 +1,6 @@
 module Chart.Internal.Bar exposing
-    ( renderBandGrouped
+    ( getStackedValuesAndGroupes
+    , renderBandGrouped
     , renderBandStacked
     , wrongDataTypeErrorView
     )
@@ -72,6 +73,7 @@ import TypedSvg.Attributes
         , dominantBaseline
         , shapeRendering
         , textAnchor
+        , title
         , transform
         , viewBox
         , xlinkHref
@@ -174,13 +176,8 @@ renderBandStacked ( data, config ) =
             -- |> Scale.nice 4
             Scale.linear linearRangeAxis extent
 
-        columnValues =
-            List.Extra.transpose values
-
-        columnGroupes =
-            data
-                |> fromDataBand
-                |> List.indexedMap (\idx s -> s.groupLabel |> Maybe.withDefault (String.fromInt idx))
+        ( columnValues, columnGroupes ) =
+            getStackedValuesAndGroupes values data
 
         scaledValues =
             List.map (List.map (\( a1, a2 ) -> ( Scale.convert linearScale a1, Scale.convert linearScale a2 ))) columnValues
@@ -205,9 +202,20 @@ renderBandStacked ( data, config ) =
                     , class [ "series" ]
                     ]
                  <|
-                    List.map (stackedColumns c bandGroupScale) (List.map2 (\a b -> ( a, b )) columnGroupes scaledValues)
+                    List.map (stackedColumns c bandGroupScale)
+                        (List.map2 (\a b -> ( a, b, labels )) columnGroupes scaledValues)
                ]
         )
+
+
+getStackedValuesAndGroupes : List (List ( Float, Float )) -> Data -> ( List (List ( Float, Float )), List String )
+getStackedValuesAndGroupes values data =
+    ( List.Extra.transpose values
+        |> List.reverse
+    , data
+        |> fromDataBand
+        |> List.indexedMap (\idx s -> s.groupLabel |> Maybe.withDefault (String.fromInt idx))
+    )
 
 
 stackedContainerTranslate : ConfigStruct -> Float -> Float -> Float -> Transform
@@ -224,7 +232,7 @@ stackedContainerTranslate config a b offset =
             Translate a (b + offset)
 
 
-stackedColumns : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ) ) -> Svg msg
+stackedColumns : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ), List String ) -> Svg msg
 stackedColumns config bandGroupScale payload =
     let
         rects =
@@ -238,26 +246,38 @@ stackedColumns config bandGroupScale payload =
     g [ class [ "columns" ] ] rects
 
 
-verticalRectsStacked : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ) ) -> List (Svg msg)
-verticalRectsStacked config bandGroupScale ( group, values ) =
+getLabel : Int -> List String -> String
+getLabel idx l =
+    List.Extra.getAt idx l
+        |> Maybe.withDefault ""
+
+
+verticalRectsStacked : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ), List String ) -> List (Svg msg)
+verticalRectsStacked config bandGroupScale ( group, values, labels ) =
     let
+        bandValue =
+            Scale.convert bandGroupScale group
+
         block idx ( upper, lower ) =
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
                 [ rect
-                    [ x <| Scale.convert bandGroupScale group
+                    [ x <| bandValue
                     , y <| lower - toFloat idx
                     , width <| Scale.bandwidth bandGroupScale
                     , height <| (abs <| upper - lower)
                     , shapeRendering RenderCrispEdges
                     ]
                     []
+
+                -- TODO: we need the values, not so much the group!
+                , TypedSvg.title [] [ text <| group ++ " - " ++ getLabel idx labels ]
                 ]
     in
     List.indexedMap (\idx -> block idx) values
 
 
-horizontalRectsStacked : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ) ) -> List (Svg msg)
-horizontalRectsStacked config bandGroupScale ( group, values ) =
+horizontalRectsStacked : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ), List String ) -> List (Svg msg)
+horizontalRectsStacked config bandGroupScale ( group, values, labels ) =
     let
         block idx ( lower, upper ) =
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
@@ -269,6 +289,9 @@ horizontalRectsStacked config bandGroupScale ( group, values ) =
                     , shapeRendering RenderCrispEdges
                     ]
                     []
+
+                -- TODO: we need the values, not so much the group!
+                , TypedSvg.title [] [ text <| group ++ " - " ++ getLabel idx labels ]
                 ]
     in
     values

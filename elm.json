@@ -1,8 +1,5 @@
 {
     "type": "application",
-    "name": "data-viz-lab/elm-chart-builder",
-    "summary": "An opinionated and accessible charting library for Elm",
-    "license": "MIT",
     "source-directories": [
         "src"
     ],
@@ -18,12 +15,14 @@
             "elm-community/list-extra": "8.2.2",
             "elm-community/typed-svg": "5.0.1",
             "folkertdev/one-true-path-experiment": "4.0.2",
-            "gampleman/elm-visualization": "2.0.0"
+            "gampleman/elm-visualization": "2.0.0",
+            "ggb/numeral-elm": "1.4.3"
         },
         "indirect": {
             "avh4/elm-color": "1.0.0",
             "elm/json": "1.1.3",
             "elm/parser": "1.1.0",
+            "elm/regex": "1.0.0",
             "elm/url": "1.0.0",
             "elm/virtual-dom": "1.0.2",
             "folkertdev/elm-deque": "3.0.1",

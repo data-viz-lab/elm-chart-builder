@@ -97,7 +97,6 @@ import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
 import Html
 import Html.Attributes
 import Scale exposing (BandScale)
-import Set
 import Shape
 
 
@@ -781,8 +780,15 @@ getDomainFromData data =
                         |> List.map .points
                         |> List.concat
                         |> List.map Tuple.first
-                        |> Set.fromList
-                        |> Set.toList
+                        |> List.foldr
+                            (\x acc ->
+                                if List.member x acc then
+                                    acc
+
+                                else
+                                    x :: acc
+                            )
+                            []
                 , linear =
                     d
                         |> List.map .points
