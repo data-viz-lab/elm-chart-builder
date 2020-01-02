@@ -31,7 +31,7 @@ body {
 
 .wrapper {
   display: grid;
-  grid-template-columns: 550px 250px;
+  grid-template-columns: 500px 200px 230px;
   grid-gap: 20px;
   background-color: #fff;
   color: #444;
@@ -136,6 +136,28 @@ data =
         ]
 
 
+dataGender : Bar.Data
+dataGender =
+    Bar.dataBand
+        [ { groupLabel = Just "Male"
+          , points =
+                [ ( "once per month", 0.229 )
+                , ( "once per week", 0.168 )
+                , ( "three times per week", 0.084 )
+                , ( "five times per week", 0.051 )
+                ]
+          }
+        , { groupLabel = Just "Female"
+          , points =
+                [ ( "once per month", 0.117 )
+                , ( "once per week", 0.072 )
+                , ( "three times per week", 0.031 )
+                , ( "five times per week", 0.017 )
+                ]
+          }
+        ]
+
+
 dataLegend : Bar.Data
 dataLegend =
     Bar.dataBand
@@ -170,6 +192,21 @@ stackedByFrequency =
         |> Bar.render
 
 
+stackedByFrequencyGender : Html msg
+stackedByFrequencyGender =
+    Bar.init dataGender
+        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
+        |> Bar.setTitle "Cycling frequency by gender"
+        |> Bar.setDesc "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
+        |> Bar.setShowContinousAxis False
+        |> Bar.setDimensions
+            { margin = { top = 30, right = 10, bottom = 30, left = 10 }
+            , width = 160
+            , height = height
+            }
+        |> Bar.render
+
+
 stackedByFrequencyLegend : Html msg
 stackedByFrequencyLegend =
     Bar.init dataLegend
@@ -180,7 +217,7 @@ stackedByFrequencyLegend =
         |> Bar.setDesc "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
         |> Bar.setDimensions
             { margin = { top = 30, right = 0, bottom = 30, left = 0 }
-            , width = 50
+            , width = 30
             , height = height
             }
         |> Bar.render
@@ -212,6 +249,7 @@ main =
         , Html.div
             [ class "wrapper" ]
             [ Html.div attrs [ stackedByFrequency ]
+            , Html.div attrs [ stackedByFrequencyGender ]
             , Html.div [ class "legend" ]
                 [ Html.div [ class "legend-chart" ] [ stackedByFrequencyLegend ]
                 , Html.div [ class "legend-labels" ]
