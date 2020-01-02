@@ -1,3 +1,5 @@
+![elm-chart-builder](./elm-chart-builder.png?raw=true "elm-chart-builder")
+
 # elm-chart-builder
 An opinionated and accessible charting library for Elm based on [gampleman/elm-visualization](https://github.com/gampleman/elm-visualization).
 
