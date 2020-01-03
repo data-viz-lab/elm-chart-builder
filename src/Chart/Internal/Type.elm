@@ -40,6 +40,7 @@ module Chart.Internal.Type exposing
     , fromDataLinear
     , fromDomainBand
     , fromDomainLinear
+    , getAxisContinousDataFormatter
     , getAxisContinousDataTickCount
     , getAxisContinousDataTickFormat
     , getAxisContinousDataTicks
@@ -784,16 +785,6 @@ getAxisVerticalTickCount config =
     fromConfig config |> .axisVerticalTickCount
 
 
-getDesc : Config -> String
-getDesc config =
-    fromConfig config |> .desc
-
-
-getTitle : Config -> String
-getTitle config =
-    fromConfig config |> .title
-
-
 getAxisContinousDataTickFormat : Config -> AxisContinousDataTickFormat
 getAxisContinousDataTickFormat config =
     fromConfig config |> .axisContinousDataTickFormat
@@ -822,6 +813,26 @@ getAxisVerticalTicks config =
 getAxisHorizontalTicks : Config -> AxisContinousDataTicks
 getAxisHorizontalTicks config =
     fromConfig config |> .axisHorizontalTicks
+
+
+getAxisContinousDataFormatter : AxisContinousDataTickFormat -> (Float -> String)
+getAxisContinousDataFormatter format =
+    case format of
+        DefaultTickFormat ->
+            \f -> String.fromFloat f
+
+        CustomTickFormat formatter ->
+            formatter
+
+
+getDesc : Config -> String
+getDesc config =
+    fromConfig config |> .desc
+
+
+getTitle : Config -> String
+getTitle config =
+    fromConfig config |> .title
 
 
 getMargin : Config -> Margin

@@ -42,6 +42,7 @@ import Chart.Internal.Type
         , fromConfig
         , fromDataBand
         , fromDomainBand
+        , getAxisContinousDataFormatter
         , getBandGroupRange
         , getBandSingleRange
         , getDataDepth
@@ -294,10 +295,13 @@ getLabel idx l =
         |> Maybe.withDefault ""
 
 
-getRectTitleText : Int -> String -> List String -> Float -> String
-getRectTitleText idx group labels value =
-    --TODO: pass a value formatter from the config
-    group ++ " - " ++ getLabel idx labels ++ ": " ++ String.fromFloat value
+getRectTitleText : AxisContinousDataTickFormat -> Int -> String -> List String -> Float -> String
+getRectTitleText tickFormat idx group labels value =
+    let
+        formatter =
+            getAxisContinousDataFormatter tickFormat
+    in
+    group ++ " - " ++ getLabel idx labels ++ ": " ++ formatter value
 
 
 verticalRectsStacked : ConfigStruct -> BandScale String -> ( String, StackedValues, List String ) -> List (Svg msg)
@@ -320,7 +324,7 @@ verticalRectsStacked config bandGroupScale ( group, values, labels ) =
                     , shapeRendering RenderCrispEdges
                     ]
                     []
-                , TypedSvg.title [] [ text <| getRectTitleText idx group labels rawValue ]
+                , TypedSvg.title [] [ text <| getRectTitleText config.axisContinousDataTickFormat idx group labels rawValue ]
                 ]
     in
     List.indexedMap (\idx -> block idx) values
@@ -343,7 +347,7 @@ horizontalRectsStacked config bandGroupScale ( group, values, labels ) =
                     , shapeRendering RenderCrispEdges
                     ]
                     []
-                , TypedSvg.title [] [ text <| getRectTitleText idx group labels rawValue ]
+                , TypedSvg.title [] [ text <| getRectTitleText config.axisContinousDataTickFormat idx group labels rawValue ]
                 ]
     in
     values

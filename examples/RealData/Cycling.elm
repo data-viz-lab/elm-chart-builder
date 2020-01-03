@@ -31,7 +31,7 @@ body {
 
 .wrapper {
   display: grid;
-  grid-template-columns: 240px 240px 500px;
+  grid-template-columns: 260px 240px 500px;
   grid-gap: 20px;
   background-color: #fff;
   color: #444;
@@ -68,9 +68,15 @@ text {
     font-size: 14px;
 }
 
+.legend-wrapper {
+    display: flex;
+    align-items: center;
+}
+
 .legend {
     display: flex;
     margin-right: 40px;
+    height: 300px;
 }
 
 .legend-labels {
@@ -159,16 +165,20 @@ dataGender =
         ]
 
 
+dataLegendPoints : List ( String, Float )
+dataLegendPoints =
+    [ ( "Once per month", 0.25 )
+    , ( "Once per week", 0.25 )
+    , ( "Three times per week", 0.25 )
+    , ( "Five times per week", 0.25 )
+    ]
+
+
 dataLegend : Bar.Data
 dataLegend =
     Bar.dataBand
         [ { groupLabel = Just "legend"
-          , points =
-                [ ( "Once per month", 0.25 )
-                , ( "Once per week", 0.25 )
-                , ( "Three times per week", 0.25 )
-                , ( "Five times per week", 0.25 )
-                ]
+          , points = dataLegendPoints
           }
         ]
 
@@ -220,9 +230,9 @@ stackedByFrequencyLegend =
         |> Bar.setTitle "Cycling frequency by age legend"
         |> Bar.setDesc "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
         |> Bar.setDimensions
-            { margin = { top = 30, right = 0, bottom = 30, left = 0 }
+            { margin = { top = 0, right = 0, bottom = 0, left = 0 }
             , width = 30
-            , height = height
+            , height = 300
             }
         |> Bar.render
 
@@ -246,7 +256,7 @@ attrs =
 
 attrsGender =
     [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
-    , Html.Attributes.style "width" (String.fromFloat 240 ++ "px")
+    , Html.Attributes.style "width" "240px"
     , class "chart-wrapper"
     ]
 
@@ -259,13 +269,14 @@ main =
             [ text "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016" ]
         , Html.div
             [ class "wrapper" ]
-            [ Html.div [ class "legend" ]
-                [ Html.div [ class "legend-chart" ] [ stackedByFrequencyLegend ]
-                , Html.div [ class "legend-labels" ]
-                    [ Html.div [] [ text "Five times per week" ]
-                    , Html.div [] [ text "Three times per week" ]
-                    , Html.div [] [ text "Once per week" ]
-                    , Html.div [] [ text "Once per month" ]
+            [ Html.div [ class "legend-wrapper" ]
+                [ Html.div [ class "legend" ]
+                    [ Html.div [ class "legend-chart" ] [ stackedByFrequencyLegend ]
+                    , Html.div [ class "legend-labels" ]
+                        (dataLegendPoints
+                            |> List.reverse
+                            |> List.map (\d -> Html.div [] [ text <| Tuple.first d ])
+                        )
                     ]
                 ]
             , Html.div attrsGender [ stackedByFrequencyGender ]
