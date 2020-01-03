@@ -3,6 +3,7 @@ module Chart.Internal.Type exposing
     , AxisContinousDataTickFormat(..)
     , AxisContinousDataTicks(..)
     , AxisOrientation(..)
+    , BandDomain
     , Config
     , ConfigStruct
     , Data(..)
@@ -15,6 +16,7 @@ module Chart.Internal.Type exposing
     , GroupedConfig
     , GroupedConfigStruct
     , Layout(..)
+    , LinearDomain
     , Margin
     , Orientation(..)
     , PointBand
@@ -74,6 +76,9 @@ module Chart.Internal.Type exposing
     , setDesc
     , setDimensions
     , setDomain
+    , setDomainBandBandGroup
+    , setDomainBandBandSingle
+    , setDomainBandLinear
     , setHeight
     , setIcons
     , setLayout
@@ -242,7 +247,7 @@ type alias ConfigStruct =
     , axisVerticalTickFormat : AxisContinousDataTickFormat
     , axisVerticalTicks : AxisContinousDataTicks
     , desc : String
-    , domain : Domain
+    , domain : Maybe Domain
     , height : Float
     , layout : Layout
     , margin : Margin
@@ -269,7 +274,7 @@ defaultConfig =
         , axisVerticalTickFormat = DefaultTickFormat
         , axisVerticalTicks = DefaultTicks
         , desc = ""
-        , domain = DomainBand { bandGroup = [], bandSingle = [], linear = ( 0, 0 ) }
+        , domain = Nothing
         , height = defaultHeight
         , layout = defaultLayout
         , margin = defaultMargin
@@ -647,7 +652,67 @@ setDomain domain ( data, config ) =
         c =
             fromConfig config
     in
-    ( data, toConfig { c | domain = domain } )
+    ( data, toConfig { c | domain = Just domain } )
+
+
+setDomainBandBandGroup : BandDomain -> ( Data, Config ) -> ( Data, Config )
+setDomainBandBandGroup bandDomain ( data, config ) =
+    let
+        c =
+            fromConfig config
+
+        domain =
+            case c.domain of
+                Just d ->
+                    fromDomainBand d
+
+                Nothing ->
+                    fromDomainBand <| getDomainFromData data
+
+        newDomain =
+            { domain | bandGroup = bandDomain }
+    in
+    ( data, toConfig { c | domain = Just (DomainBand newDomain) } )
+
+
+setDomainBandBandSingle : BandDomain -> ( Data, Config ) -> ( Data, Config )
+setDomainBandBandSingle bandDomain ( data, config ) =
+    let
+        c =
+            fromConfig config
+
+        domain =
+            case c.domain of
+                Just d ->
+                    fromDomainBand d
+
+                Nothing ->
+                    fromDomainBand <| getDomainFromData data
+
+        newDomain =
+            { domain | bandSingle = bandDomain }
+    in
+    ( data, toConfig { c | domain = Just (DomainBand newDomain) } )
+
+
+setDomainBandLinear : LinearDomain -> ( Data, Config ) -> ( Data, Config )
+setDomainBandLinear linearDomain ( data, config ) =
+    let
+        c =
+            fromConfig config
+
+        domain =
+            case c.domain of
+                Just d ->
+                    fromDomainBand d
+
+                Nothing ->
+                    fromDomainBand <| getDomainFromData data
+
+        newDomain =
+            { domain | linear = linearDomain }
+    in
+    ( data, toConfig { c | domain = Just (DomainBand newDomain) } )
 
 
 setShowContinousAxis : Bool -> ( Data, Config ) -> ( Data, Config )
@@ -761,9 +826,18 @@ getWidth config =
     fromConfig config |> .width
 
 
-getDomain : Config -> Domain
-getDomain config =
-    fromConfig config |> .domain
+getDomain : Data -> Config -> Domain
+getDomain data config =
+    let
+        domain =
+            fromConfig config |> .domain
+    in
+    case domain of
+        Just d ->
+            d
+
+        Nothing ->
+            getDomainFromData data
 
 
 getDomainFromData : Data -> Domain

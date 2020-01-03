@@ -31,7 +31,7 @@ body {
 
 .wrapper {
   display: grid;
-  grid-template-columns: 500px 200px 230px;
+  grid-template-columns: 240px 240px 500px;
   grid-gap: 20px;
   background-color: #fff;
   color: #444;
@@ -70,6 +70,7 @@ text {
 
 .legend {
     display: flex;
+    margin-right: 40px;
 }
 
 .legend-labels {
@@ -184,11 +185,13 @@ stackedByFrequency =
         |> Bar.setTitle "Cycling frequency by age"
         |> Bar.setDesc "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
         |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat valueFormatter)
+        |> Bar.setShowContinousAxis False
         |> Bar.setDimensions
-            { margin = { top = 30, right = 20, bottom = 30, left = 50 }
+            { margin = { top = 30, right = 20, bottom = 30, left = 0 }
             , width = width
             , height = height
             }
+        |> Bar.setDomainBandLinear ( 0, 0.55 )
         |> Bar.render
 
 
@@ -198,12 +201,13 @@ stackedByFrequencyGender =
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.setTitle "Cycling frequency by gender"
         |> Bar.setDesc "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
-        |> Bar.setShowContinousAxis False
+        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat valueFormatter)
         |> Bar.setDimensions
-            { margin = { top = 30, right = 10, bottom = 30, left = 10 }
-            , width = 160
+            { margin = { top = 30, right = 20, bottom = 30, left = 50 }
+            , width = 240
             , height = height
             }
+        |> Bar.setDomainBandLinear ( 0, 0.55 )
         |> Bar.render
 
 
@@ -240,6 +244,13 @@ attrs =
     ]
 
 
+attrsGender =
+    [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
+    , Html.Attributes.style "width" (String.fromFloat 240 ++ "px")
+    , class "chart-wrapper"
+    ]
+
+
 main : Html msg
 main =
     Html.div []
@@ -248,9 +259,7 @@ main =
             [ text "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016" ]
         , Html.div
             [ class "wrapper" ]
-            [ Html.div attrs [ stackedByFrequency ]
-            , Html.div attrs [ stackedByFrequencyGender ]
-            , Html.div [ class "legend" ]
+            [ Html.div [ class "legend" ]
                 [ Html.div [ class "legend-chart" ] [ stackedByFrequencyLegend ]
                 , Html.div [ class "legend-labels" ]
                     [ Html.div [] [ text "Five times per week" ]
@@ -259,6 +268,8 @@ main =
                     , Html.div [] [ text "Once per month" ]
                     ]
                 ]
+            , Html.div attrsGender [ stackedByFrequencyGender ]
+            , Html.div attrs [ stackedByFrequency ]
             ]
         , Html.footer [ class "footer" ]
             [ Html.a

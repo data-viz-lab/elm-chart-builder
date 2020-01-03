@@ -2,10 +2,12 @@ module Chart.Bar exposing
     ( BarSymbol
     , Data
     , DataGroupBand
+    , Domain
     , dataBand
     , defaultGroupedConfig
     , divergingDirection
     , domainBand
+    , getDomainFromData
     , groupedLayout
     , horizontalOrientation
     , init
@@ -17,6 +19,9 @@ module Chart.Bar exposing
     , setDesc
     , setDimensions
     , setDomain
+    , setDomainBandBandGroup
+    , setDomainBandBandSingle
+    , setDomainBandLinear
     , setHeight
     , setIcons
     , setLayout
@@ -67,7 +72,6 @@ import Chart.Internal.Type as Type
         , RenderContext(..)
         , defaultConfig
         , fromConfig
-        , getDomainFromData
         , setDimensions
         , setDomain
         , setShowContinousAxis
@@ -160,7 +164,6 @@ dataBand data =
 init : Data -> ( Data, Config )
 init data =
     ( data, defaultConfig )
-        |> setDomain (getDomainFromData data)
 
 
 {-| Renders the bar chart, after initialisation and customisation
@@ -311,6 +314,18 @@ setLinearAxisTickFormat =
     Type.setAxisContinousDataTickFormat
 
 
+{-| Sets margin, width and height all at once
+Prefer this method from the individual ones when you need to set all three at once.
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setDimensions
+            { margin = { top = 30, right = 20, bottom = 30, left = 0 }
+            , width = 400
+            , height = 400
+            }
+        |> Bar.render
+
+-}
 setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
 setDimensions =
     Type.setDimensions
@@ -318,15 +333,56 @@ setDimensions =
 
 {-| Sets the domain value in the config
 If not set, the domain is calculated from the data
+Instead of setDomain, it is usually more convenient use one of the more specific methods:
+setDomainBandBandGroup, setDomainBandBandSingle, setDomainBandLinear
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setDomain (DomainBand { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) })
+        |> Bar.setDomain (domainBand { bandGroup = [ "0" ], bandSingle = [ "a" ], linear = ( 0, 100 ) })
         |> Bar.render
 
 -}
 setDomain : Domain -> ( Data, Config ) -> ( Data, Config )
 setDomain =
     Type.setDomain
+
+
+{-| Sets the bandGroup value in the domain directly,
+in place of calculating it from the data.
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setDomainBandBandGroup [ "0" ]
+        |> Bar.render
+
+-}
+setDomainBandBandGroup : Type.BandDomain -> ( Data, Config ) -> ( Data, Config )
+setDomainBandBandGroup =
+    Type.setDomainBandBandGroup
+
+
+{-| Sets the bandSingle value in the domain directly,
+in place of calculating it from the data.
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setDomainBandBandSingle [ "a", "b" ]
+        |> Bar.render
+
+-}
+setDomainBandBandSingle : Type.BandDomain -> ( Data, Config ) -> ( Data, Config )
+setDomainBandBandSingle =
+    Type.setDomainBandBandSingle
+
+
+{-| Sets the bandLinear value in the domain directly,
+in place of calculating it from the data.
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setDomainBandLinear ( 0, 0.55 )
+        |> Bar.render
+
+-}
+setDomainBandLinear : Type.LinearDomain -> ( Data, Config ) -> ( Data, Config )
+setDomainBandLinear =
+    Type.setDomainBandLinear
 
 
 {-| Sets the showContinousAxis boolean value in the config
@@ -528,8 +584,8 @@ type alias Domain =
 
 -}
 domainBand : DomainBandStruct -> Domain
-domainBand str =
-    Type.DomainBand str
+domainBand struct =
+    Type.DomainBand struct
 
 
 {-| Bar chart symbol type
@@ -630,3 +686,15 @@ symbolTriangle id =
 symbolCorner : String -> BarSymbol msg
 symbolCorner id =
     Corner id
+
+
+
+-- GETTERS
+
+
+{-| Calculate the domains from the data
+This is what happens under the hood when creating a chart without explicitly passig a domain
+-}
+getDomainFromData : Data -> Domain
+getDomainFromData =
+    Type.getDomainFromData

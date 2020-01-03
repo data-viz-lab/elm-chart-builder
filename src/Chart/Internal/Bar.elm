@@ -141,8 +141,23 @@ renderBandStacked ( data, config ) =
         stackDepth =
             getDataDepth data
 
+        domainIsExplicitlySet =
+            case c.domain of
+                Just _ ->
+                    True
+
+                Nothing ->
+                    False
+
+        linearExtent =
+            if domainIsExplicitlySet then
+                domain.linear
+
+            else
+                extent
+
         domain =
-            getDomain config
+            getDomain data config
                 |> fromDomainBand
 
         bandGroupRange =
@@ -168,13 +183,13 @@ renderBandStacked ( data, config ) =
         linearScale =
             -- For stacked scales
             -- |> Scale.nice 4
-            Scale.linear linearRange extent
+            Scale.linear linearRange linearExtent
 
         linearScaleAxis : ContinuousScale Float
         linearScaleAxis =
             -- For stacked scales
             -- |> Scale.nice 4
-            Scale.linear linearRangeAxis extent
+            Scale.linear linearRangeAxis linearExtent
 
         ( columnValues, columnGroupes ) =
             getStackedValuesAndGroupes values data
@@ -325,7 +340,7 @@ renderBandGrouped ( data, config ) =
             h + m.top + m.bottom
 
         domain =
-            getDomain config
+            getDomain data config
                 |> fromDomainBand
 
         bandGroupRange =

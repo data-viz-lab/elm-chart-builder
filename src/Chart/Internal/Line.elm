@@ -92,7 +92,7 @@ renderLineGrouped ( data, config ) =
             h + m.top + m.bottom
 
         domain =
-            getDomain config
+            getDomain data config
                 |> fromDomainLinear
 
         horizontalRange =

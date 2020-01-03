@@ -34,17 +34,17 @@ body {
 
 .column-0 rect,
 .column-0 .symbol {
-    fill: #66c2a5;
+    fill: #e41a1c;
 }
 
 .column-1 rect,
 .column-1 .symbol {
-    fill: #fc8d62;
+    fill: #377eb8;
 }
 
 .column-2 rect,
 .column-2 .symbol {
-    fill: #8da0cb;
+    fill: #4daf4a;
 }
 
 .axis path,
