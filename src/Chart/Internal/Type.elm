@@ -22,6 +22,8 @@ module Chart.Internal.Type exposing
     , PointBand
     , PointLinear
     , RenderContext(..)
+    , StackedValues
+    , StackedValuesAndGroupes
     , adjustLinearRange
     , ariaLabelledby
     , bottomGap
@@ -462,6 +464,18 @@ setShowIndividualLabels bool config =
             fromGroupedConfig config
     in
     toGroupedConfig { c | showIndividualLabels = bool }
+
+
+
+-- STACKED
+
+
+type alias StackedValues =
+    List { rawValue : Float, stackedValue : ( Float, Float ) }
+
+
+type alias StackedValuesAndGroupes =
+    ( List StackedValues, List String )
 
 
 

@@ -8,6 +8,8 @@ module Chart.Internal.Helpers exposing
 import Chart.Internal.Type
     exposing
         ( Data
+        , StackedValues
+        , StackedValuesAndGroupes
         , fromDataBand
         , fromDomainBand
         , getDomainFromData
@@ -42,9 +44,17 @@ dataBandToDataStacked data =
             seed
 
 
-stackedValuesInverse : Float -> List ( Float, Float ) -> List ( Float, Float )
+stackedValuesInverse : Float -> StackedValues -> StackedValues
 stackedValuesInverse width values =
-    values |> List.map (\( left, right ) -> ( abs <| left - width, abs <| right - width ))
+    values
+        |> List.map
+            (\v ->
+                let
+                    ( left, right ) =
+                        v.stackedValue
+                in
+                { v | stackedValue = ( abs <| left - width, abs <| right - width ) }
+            )
 
 
 floorFloat : Float -> Float

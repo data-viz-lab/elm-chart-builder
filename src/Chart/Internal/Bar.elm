@@ -34,6 +34,8 @@ import Chart.Internal.Type
         , Orientation(..)
         , PointBand
         , RenderContext(..)
+        , StackedValues
+        , StackedValuesAndGroupes
         , adjustLinearRange
         , ariaLabelledby
         , bottomGap
@@ -194,9 +196,24 @@ renderBandStacked ( data, config ) =
         ( columnValues, columnGroupes ) =
             getStackedValuesAndGroupes values data
 
+        scaledValues : List StackedValues
         scaledValues =
-            List.map (List.map (\( a1, a2 ) -> ( Scale.convert linearScale a1, Scale.convert linearScale a2 ))) columnValues
-                |> Helpers.floorValues
+            columnValues
+                |> List.map
+                    (List.map
+                        (\vals ->
+                            let
+                                ( a1, a2 ) =
+                                    vals.stackedValue
+                            in
+                            { vals
+                                | stackedValue =
+                                    ( Scale.convert linearScale a1 |> Helpers.floorFloat
+                                    , Scale.convert linearScale a2 |> Helpers.floorFloat
+                                    )
+                            }
+                        )
+                    )
 
         axisBandScale : BandScale String
         axisBandScale =
@@ -223,10 +240,20 @@ renderBandStacked ( data, config ) =
         )
 
 
-getStackedValuesAndGroupes : List (List ( Float, Float )) -> Data -> ( List (List ( Float, Float )), List String )
+getStackedValuesAndGroupes : List (List ( Float, Float )) -> Data -> StackedValuesAndGroupes
 getStackedValuesAndGroupes values data =
+    let
+        m =
+            List.map2
+                (\d v ->
+                    List.map2 (\stackedValue rawValue -> { rawValue = Tuple.second rawValue, stackedValue = stackedValue })
+                        v
+                        d.points
+                )
+    in
     ( List.Extra.transpose values
         |> List.reverse
+        |> m (fromDataBand data)
     , data
         |> fromDataBand
         |> List.indexedMap (\idx s -> s.groupLabel |> Maybe.withDefault (String.fromInt idx))
@@ -247,7 +274,7 @@ stackedContainerTranslate config a b offset =
             Translate a (b + offset)
 
 
-stackedColumns : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ), List String ) -> Svg msg
+stackedColumns : ConfigStruct -> BandScale String -> ( String, StackedValues, List String ) -> Svg msg
 stackedColumns config bandGroupScale payload =
     let
         rects =
@@ -267,13 +294,23 @@ getLabel idx l =
         |> Maybe.withDefault ""
 
 
-verticalRectsStacked : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ), List String ) -> List (Svg msg)
+getRectTitleText : Int -> String -> List String -> Float -> String
+getRectTitleText idx group labels value =
+    --TODO: pass a value formatter from the config
+    group ++ " - " ++ getLabel idx labels ++ ": " ++ String.fromFloat value
+
+
+verticalRectsStacked : ConfigStruct -> BandScale String -> ( String, StackedValues, List String ) -> List (Svg msg)
 verticalRectsStacked config bandGroupScale ( group, values, labels ) =
     let
         bandValue =
             Scale.convert bandGroupScale group
 
-        block idx ( upper, lower ) =
+        block idx { rawValue, stackedValue } =
+            let
+                ( upper, lower ) =
+                    stackedValue
+            in
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
                 [ rect
                     [ x <| bandValue
@@ -283,18 +320,20 @@ verticalRectsStacked config bandGroupScale ( group, values, labels ) =
                     , shapeRendering RenderCrispEdges
                     ]
                     []
-
-                -- TODO: we need the values, not so much the group!
-                , TypedSvg.title [] [ text <| group ++ " - " ++ getLabel idx labels ]
+                , TypedSvg.title [] [ text <| getRectTitleText idx group labels rawValue ]
                 ]
     in
     List.indexedMap (\idx -> block idx) values
 
 
-horizontalRectsStacked : ConfigStruct -> BandScale String -> ( String, List ( Float, Float ), List String ) -> List (Svg msg)
+horizontalRectsStacked : ConfigStruct -> BandScale String -> ( String, StackedValues, List String ) -> List (Svg msg)
 horizontalRectsStacked config bandGroupScale ( group, values, labels ) =
     let
-        block idx ( lower, upper ) =
+        block idx { rawValue, stackedValue } =
+            let
+                ( lower, upper ) =
+                    stackedValue
+            in
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
                 [ rect
                     [ y <| Scale.convert bandGroupScale group
@@ -304,9 +343,7 @@ horizontalRectsStacked config bandGroupScale ( group, values, labels ) =
                     , shapeRendering RenderCrispEdges
                     ]
                     []
-
-                -- TODO: we need the values, not so much the group!
-                , TypedSvg.title [] [ text <| group ++ " - " ++ getLabel idx labels ]
+                , TypedSvg.title [] [ text <| getRectTitleText idx group labels rawValue ]
                 ]
     in
     values

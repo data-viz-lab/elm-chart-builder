@@ -1,7 +1,7 @@
 module Chart.Internal.BarTest exposing (suite)
 
 import Chart.Internal.Bar exposing (getStackedValuesAndGroupes)
-import Chart.Internal.Type exposing (..)
+import Chart.Internal.Type as Type
 import Expect exposing (Expectation)
 import Test exposing (..)
 
@@ -13,9 +13,9 @@ suite =
             [ test "Values are ordered in accordance with groupes" <|
                 \_ ->
                     let
-                        data : Data
+                        data : Type.Data
                         data =
-                            DataBand
+                            Type.DataBand
                                 [ { groupLabel = Just "16-24"
                                   , points =
                                         [ ( "once per month", 21.1 )
@@ -42,6 +42,7 @@ suite =
                                   }
                                 ]
 
+                        values : List (List ( Float, Float ))
                         values =
                             [ [ ( 0, 4.2 ), ( 0, 4.5 ), ( 0, 4.9 ) ]
                             , [ ( 4.2, 26.099999999999998 ), ( 4.5, 23.5 ), ( 4.9, 26 ) ]
@@ -49,14 +50,22 @@ suite =
                             , [ ( 41.199999999999996, 48.4 ), ( 36.6, 43.6 ), ( 41, 48.8 ) ]
                             ]
 
-                        expected : ( List (List ( Float, Float )), List String )
+                        expected : Type.StackedValuesAndGroupes
                         expected =
-                            ( [ [ ( 0, 4.9 ), ( 4.9, 26 ), ( 26, 41 ), ( 41, 48.8 ) ]
-                              , [ ( 0, 4.5 ), ( 4.5, 23.5 ), ( 23.5, 36.6 ), ( 36.6, 43.6 ) ]
-                              , [ ( 0, 4.2 )
-                                , ( 4.2, 26.099999999999998 )
-                                , ( 26.099999999999998, 41.199999999999996 )
-                                , ( 41.199999999999996, 48.4 )
+                            ( [ [ { rawValue = 21.1, stackedValue = ( 0, 4.9 ) }
+                                , { rawValue = 15.0, stackedValue = ( 4.9, 26 ) }
+                                , { rawValue = 7.8, stackedValue = ( 26, 41 ) }
+                                , { rawValue = 4.9, stackedValue = ( 41, 48.8 ) }
+                                ]
+                              , [ { rawValue = 19.0, stackedValue = ( 0, 4.5 ) }
+                                , { rawValue = 13.1, stackedValue = ( 4.5, 23.5 ) }
+                                , { rawValue = 7.0, stackedValue = ( 23.5, 36.6 ) }
+                                , { rawValue = 4.5, stackedValue = ( 36.6, 43.6 ) }
+                                ]
+                              , [ { rawValue = 21.9, stackedValue = ( 0, 4.2 ) }
+                                , { rawValue = 15.1, stackedValue = ( 4.2, 26.099999999999998 ) }
+                                , { rawValue = 7.2, stackedValue = ( 26.099999999999998, 41.199999999999996 ) }
+                                , { rawValue = 4.2, stackedValue = ( 41.199999999999996, 48.4 ) }
                                 ]
                               ]
                             , [ "16-24", "25-34", "35-44" ]
