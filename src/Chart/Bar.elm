@@ -19,9 +19,9 @@ module Chart.Bar exposing
     , setDesc
     , setDimensions
     , setDomain
-    , setDomainBandBandGroup
-    , setDomainBandBandSingle
-    , setDomainBandLinear
+    , setDomainBandGroup
+    , setDomainBandSingle
+    , setDomainLinear
     , setHeight
     , setIcons
     , setLayout
@@ -354,8 +354,8 @@ in place of calculating it from the data.
         |> Bar.render
 
 -}
-setDomainBandBandGroup : Type.BandDomain -> ( Data, Config ) -> ( Data, Config )
-setDomainBandBandGroup =
+setDomainBandGroup : Type.BandDomain -> ( Data, Config ) -> ( Data, Config )
+setDomainBandGroup =
     Type.setDomainBandBandGroup
 
 
@@ -367,8 +367,8 @@ in place of calculating it from the data.
         |> Bar.render
 
 -}
-setDomainBandBandSingle : Type.BandDomain -> ( Data, Config ) -> ( Data, Config )
-setDomainBandBandSingle =
+setDomainBandSingle : Type.BandDomain -> ( Data, Config ) -> ( Data, Config )
+setDomainBandSingle =
     Type.setDomainBandBandSingle
 
 
@@ -380,8 +380,8 @@ in place of calculating it from the data.
         |> Bar.render
 
 -}
-setDomainBandLinear : Type.LinearDomain -> ( Data, Config ) -> ( Data, Config )
-setDomainBandLinear =
+setDomainLinear : Type.LinearDomain -> ( Data, Config ) -> ( Data, Config )
+setDomainLinear =
     Type.setDomainBandLinear
 
 

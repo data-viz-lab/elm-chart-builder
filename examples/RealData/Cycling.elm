@@ -191,7 +191,7 @@ stackedByFrequency =
             , width = width
             , height = height
             }
-        |> Bar.setDomainBandLinear ( 0, 0.55 )
+        |> Bar.setDomainLinear ( 0, 0.55 )
         |> Bar.render
 
 
@@ -207,7 +207,7 @@ stackedByFrequencyGender =
             , width = 240
             , height = height
             }
-        |> Bar.setDomainBandLinear ( 0, 0.55 )
+        |> Bar.setDomainLinear ( 0, 0.55 )
         |> Bar.render
 
 
