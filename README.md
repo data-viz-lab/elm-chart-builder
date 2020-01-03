@@ -16,7 +16,6 @@ Then navigate to the examples folder in the browser.
 * Symbols on line charts
 * Alternative table representation 
 * Tooltips
-* Move the values formatter in the Axis configuration into the general configuration, so it can be shared with tooltips
 
 ## TODO nice to have
 * Labels for line charts
