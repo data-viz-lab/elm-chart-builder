@@ -21,7 +21,7 @@ body {
 
 .wrapper {
   display: grid;
-  grid-template-columns: repeat(4, 350px);
+  grid-template-columns: repeat(4, 250px);
   grid-gap: 20px;
   background-color: #fff;
   color: #444;
@@ -34,17 +34,17 @@ body {
 
 .column-0 rect,
 .column-0 .symbol {
-    fill: #e41a1c;
+    fill: #1776B6;
 }
 
 .column-1 rect,
 .column-1 .symbol {
-    fill: #377eb8;
+    fill: #FF7F00;
 }
 
 .column-2 rect,
 .column-2 .symbol {
-    fill: #4daf4a;
+    fill: #D8241F;
 }
 
 .axis path,
@@ -154,7 +154,7 @@ dataStacked =
 
 width : Float
 width =
-    350
+    250
 
 
 height : Float
