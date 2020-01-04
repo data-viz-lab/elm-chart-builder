@@ -4,9 +4,11 @@
 An opinionated and accessible charting library for Elm based on [gampleman/elm-visualization](https://github.com/gampleman/elm-visualization).
 
 ## examples:
+`cd examples`
+
 `elm reactor`
 
-Then navigate to the examples folder in the browser.
+Then navigate the examples in the browser.
 
 ## tests:
 `elm-test`
