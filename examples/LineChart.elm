@@ -1,13 +1,11 @@
-module Examples.LineChart exposing (data, main)
+module LineChart exposing (data, main)
 
 {-| This module shows how to build a simple bar chart.
 -}
 
 import Chart.Line as Line
 import Html exposing (Html)
-import Html.Attributes
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Html.Attributes exposing (class)
 
 
 css : String
@@ -106,7 +104,7 @@ doubleLine =
 main : Html msg
 main =
     Html.div []
-        [ Html.node "style" [] [ text css ]
+        [ Html.node "style" [] [ Html.text css ]
         , Html.div
             [ class "wrapper" ]
             [ Html.div attrs [ doubleLine ]

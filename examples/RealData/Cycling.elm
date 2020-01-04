@@ -1,15 +1,12 @@
-module Examples.RealData.BarChart exposing (main)
+module RealData.Cycling exposing (main)
 
 {-| This module shows how to build a simple bar chart.
 -}
 
 import Chart.Bar as Bar
-import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
-import Html.Attributes
+import Html.Attributes exposing (class)
 import Numeral
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
 
 
 css : String
@@ -247,6 +244,7 @@ height =
     600
 
 
+attrs : List (Html.Attribute msg)
 attrs =
     [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
     , Html.Attributes.style "width" (String.fromFloat width ++ "px")
@@ -254,6 +252,7 @@ attrs =
     ]
 
 
+attrsGender : List (Html.Attribute msg)
 attrsGender =
     [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
     , Html.Attributes.style "width" "240px"
@@ -264,9 +263,9 @@ attrsGender =
 main : Html msg
 main =
     Html.div []
-        [ Html.node "style" [] [ text css ]
+        [ Html.node "style" [] [ Html.text css ]
         , Html.header [ class "header" ]
-            [ text "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016" ]
+            [ Html.text "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016" ]
         , Html.div
             [ class "wrapper" ]
             [ Html.div [ class "legend-wrapper" ]
@@ -275,7 +274,7 @@ main =
                     , Html.div [ class "legend-labels" ]
                         (dataLegendPoints
                             |> List.reverse
-                            |> List.map (\d -> Html.div [] [ text <| Tuple.first d ])
+                            |> List.map (\d -> Html.div [] [ Html.text <| Tuple.first d ])
                         )
                     ]
                 ]
@@ -287,6 +286,6 @@ main =
                 [ Html.Attributes.href
                     "https://www.gov.uk/government/statistics/walking-and-cycling-statistics-england-2016"
                 ]
-                [ text "data source" ]
+                [ Html.text "data source" ]
             ]
         ]

@@ -1,4 +1,4 @@
-module Examples.BarChart exposing (data, main)
+module BarChart exposing (data, main)
 
 {-| This module shows how to build a simple bar chart.
 -}
@@ -7,9 +7,7 @@ import Chart.Bar as Bar
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
-import Html.Attributes
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Html.Attributes exposing (class)
 
 
 css : String
@@ -182,6 +180,7 @@ valueFormatter =
     FormatNumber.format { usLocale | decimals = 0 }
 
 
+attrs : List (Html.Attribute msg)
 attrs =
     [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
     , Html.Attributes.style "width" (String.fromFloat width ++ "px")
@@ -317,7 +316,7 @@ verticalStackedDiverging =
 main : Html msg
 main =
     Html.div []
-        [ Html.node "style" [] [ text css ]
+        [ Html.node "style" [] [ Html.text css ]
         , Html.div
             [ class "wrapper" ]
             [ Html.div attrs [ verticalGrouped ]
