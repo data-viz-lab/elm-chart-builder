@@ -16,6 +16,10 @@ body {
   font-family: Sans-Serif;
 }
 
+ul {
+    padding: 0;
+}
+
 .header {
     font-size: 20px;
     margin: 20px;
@@ -260,6 +264,28 @@ attrsGender =
     ]
 
 
+footer : Html msg
+footer =
+    Html.footer [ class "footer" ]
+        [ Html.ul []
+            [ Html.li []
+                [ Html.a
+                    [ Html.Attributes.href
+                        "https://www.gov.uk/government/statistics/walking-and-cycling-statistics-england-2016"
+                    ]
+                    [ Html.text "Data source" ]
+                ]
+            , Html.li []
+                [ Html.a
+                    [ Html.Attributes.href
+                        "https://github.com/data-viz-lab/elm-chart-builder/blob/master/examples/RealData/Cycling.elm"
+                    ]
+                    [ Html.text "Source code" ]
+                ]
+            ]
+        ]
+
+
 main : Html msg
 main =
     Html.div []
@@ -281,11 +307,5 @@ main =
             , Html.div attrsGender [ stackedByFrequencyGender ]
             , Html.div attrs [ stackedByFrequency ]
             ]
-        , Html.footer [ class "footer" ]
-            [ Html.a
-                [ Html.Attributes.href
-                    "https://www.gov.uk/government/statistics/walking-and-cycling-statistics-england-2016"
-                ]
-                [ Html.text "data source" ]
-            ]
+        , footer
         ]

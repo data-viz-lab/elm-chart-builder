@@ -154,7 +154,12 @@ renderBandStacked ( data, config ) =
 
         linearExtent =
             if domainIsExplicitlySet then
-                domain.linear
+                case c.layout of
+                    Stacked Diverging ->
+                        ( Tuple.second domain.linear * -1, Tuple.second domain.linear )
+
+                    _ ->
+                        domain.linear
 
             else
                 extent

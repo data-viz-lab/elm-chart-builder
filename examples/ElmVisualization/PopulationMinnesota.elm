@@ -78,14 +78,14 @@ text {
 
 .age {
     position: absolute;
-    left: 80px;
-    top: 20px;
+    left: 66px;
+    top: 6px;
     font-size: 16px;
 }
 
 .people {
     position: absolute;
-    left: 52%;
+    left: 50%;
     bottom: 10px;
     font-size: 16px;
 }
@@ -189,10 +189,9 @@ chart =
         |> Bar.setDesc "A horizontal stacked diverging chart example to demonstrate the charting library"
         |> Bar.setLinearAxisTickCount (Bar.linearAxisCustomTickCount 8)
         |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat (\v -> abs v |> valueFormatter))
-        --FIXME
-        --|> Bar.setDomainLinear ( -1000000, 1000000 )
+        |> Bar.setDomainLinear ( 0, 2000000 )
         |> Bar.setDimensions
-            { margin = { top = 20, right = 20, bottom = 50, left = 50 }
+            { margin = { top = 20, right = 40, bottom = 50, left = 40 }
             , width = 800
             , height = 500
             }
