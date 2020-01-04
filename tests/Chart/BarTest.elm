@@ -9,7 +9,7 @@ import Test exposing (..)
 suite : Test
 suite =
     describe "The Public Bar module"
-        [ describe "setDomainBandBandGroup"
+        [ describe "setDomainBandGroup"
             [ test "it should set the bandGroup value in the domain" <|
                 \_ ->
                     let
@@ -27,7 +27,7 @@ suite =
                         bar : ( Type.Data, Type.Config )
                         bar =
                             Bar.init data
-                                |> Bar.setDomainBandBandGroup bandGroup
+                                |> Bar.setDomainBandGroup bandGroup
 
                         ( _, config_ ) =
                             bar
@@ -59,7 +59,7 @@ suite =
                         bar : ( Type.Data, Type.Config )
                         bar =
                             Bar.init data
-                                |> Bar.setDomainBandBandGroup bandGroup
+                                |> Bar.setDomainBandGroup bandGroup
 
                         ( _, config_ ) =
                             bar
@@ -75,7 +75,7 @@ suite =
                     in
                     Expect.equal linear ( 0, 21 )
             ]
-        , describe "setDomainBandBandSingle"
+        , describe "setDomainBandSingle"
             [ test "it should set the bandSingle value in the domain" <|
                 \_ ->
                     let
@@ -93,7 +93,7 @@ suite =
                         bar : ( Type.Data, Type.Config )
                         bar =
                             Bar.init data
-                                |> Bar.setDomainBandBandSingle bandSingle
+                                |> Bar.setDomainBandSingle bandSingle
 
                         ( _, config_ ) =
                             bar
@@ -125,7 +125,7 @@ suite =
                         bar : ( Type.Data, Type.Config )
                         bar =
                             Bar.init data
-                                |> Bar.setDomainBandBandSingle bandSingle
+                                |> Bar.setDomainBandSingle bandSingle
 
                         ( _, config_ ) =
                             bar
@@ -141,7 +141,7 @@ suite =
                     in
                     Expect.equal linear ( 0, 21 )
             ]
-        , describe "setDomainBandLinear"
+        , describe "setDomainLinear"
             [ test "it should set the linear value in the domain" <|
                 \_ ->
                     let
@@ -158,7 +158,7 @@ suite =
                         bar : ( Type.Data, Type.Config )
                         bar =
                             Bar.init data
-                                |> Bar.setDomainBandLinear linearDomain
+                                |> Bar.setDomainLinear linearDomain
 
                         ( _, config_ ) =
                             bar
@@ -186,7 +186,7 @@ suite =
                         bar : ( Type.Data, Type.Config )
                         bar =
                             Bar.init data
-                                |> Bar.setDomainBandLinear ( 0, 30 )
+                                |> Bar.setDomainLinear ( 0, 30 )
 
                         ( _, config_ ) =
                             bar
