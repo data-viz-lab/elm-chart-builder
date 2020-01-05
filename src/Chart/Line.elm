@@ -1,34 +1,21 @@
 module Chart.Line exposing
-    ( Data
-    , Domain
-    , dataLinear
-    , domainLinear
-    , init
-    , render
-    , setAxisHorizontalTickCount
-    , setAxisHorizontalTickFormat
-    , setAxisHorizontalTicks
-    , setAxisVerticalTickCount
-    , setAxisVerticalTickFormat
-    , setAxisVerticalTicks
-    , setDesc
-    , setDimensions
-    , setDomain
-    , setHeight
-    , setMargin
-    , setShowHorizontalAxis
-    , setShowVerticalAxis
-    , setTitle
-    , setWidth
+    ( Data, Domain
+    , dataLinear, domainLinear, init, render, setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setDomain, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
 
-    # Types
-    @docs Data , Domain
+&#9888; This module is still a work in progress!
 
-    # API methods
-    @docs dataLinear, domainLinear, init, render, setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setDomain, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
+
+# Types
+
+@docs Data, Domain
+
+
+# API methods
+
+@docs dataLinear, domainLinear, init, render, setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setDomain, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
 
 -}
 

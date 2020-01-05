@@ -1,57 +1,19 @@
 module Chart.Bar exposing
-    ( BarSymbol
-    , Data
-    , DataGroupBand
-    , Domain
-    , dataBand
-    , defaultGroupedConfig
-    , divergingDirection
-    , domainBand
-    , getDomainFromData
-    , groupedLayout
-    , horizontalOrientation
-    , init
-    , noDirection
-    , render
-    , setDesc
-    , setDimensions
-    , setDomain
-    , setDomainBandGroup
-    , setDomainBandSingle
-    , setDomainLinear
-    , setHeight
-    , setIcons
-    , setLayout
-    , setLinearAxisTickCount
-    , setLinearAxisTickFormat
-    , setLinearAxisTicks
-    , setMargin
-    , setOrientation
-    , setShowContinousAxis
-    , setShowIndividualLabels
-    , setShowOrdinalAxis
-    , setSymbolHeight
-    , setSymbolIdentifier
-    , setSymbolPaths
-    , setSymbolUseGap
-    , setSymbolWidth
-    , setTitle
-    , setWidth
-    , stackedLayout
-    , symbolCircle
-    , symbolCorner
-    , symbolCustom
-    , symbolTriangle
-    , verticalOrientation
+    ( BarSymbol, Data, DataGroupBand, Domain
+    , dataBand, defaultGroupedConfig, divergingDirection, domainBand, getDomainFromData, groupedLayout, horizontalOrientation, init, noDirection, render, setDesc, setDimensions, setDomain, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setIcons, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowIndividualLabels, setShowOrdinalAxis, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth, setTitle, setWidth, stackedLayout, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, verticalOrientation
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
 
-    # Types
-    @docs BarSymbol, Data, DataGroupBand, Domain
 
-    # API methods
-    @docs dataBand, defaultGroupedConfig, divergingDirection, domainBand, getDomainFromData, groupedLayout, horizontalOrientation, init, noDirection, render, setDesc, setDimensions, setDomain, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setIcons, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowIndividualLabels, setShowOrdinalAxis, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth, setTitle, setWidth, stackedLayout, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, verticalOrientation
+# Types
+
+@docs BarSymbol, Data, DataGroupBand, Domain
+
+
+# API methods
+
+@docs dataBand, defaultGroupedConfig, divergingDirection, domainBand, getDomainFromData, groupedLayout, horizontalOrientation, init, noDirection, render, setDesc, setDimensions, setDomain, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setIcons, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowIndividualLabels, setShowOrdinalAxis, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth, setTitle, setWidth, stackedLayout, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, verticalOrientation
 
 -}
 
