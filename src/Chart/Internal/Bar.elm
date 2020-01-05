@@ -41,6 +41,7 @@ import Chart.Internal.Type
         , fromConfig
         , fromDataBand
         , fromDomainBand
+        , fromDomainBandInternal
         , getAxisContinousDataFormatter
         , getBandGroupRange
         , getBandSingleRange
@@ -127,7 +128,7 @@ renderBandStacked ( data, config ) =
 
         dataStacked : List ( String, List Float )
         dataStacked =
-            dataBandToDataStacked data
+            dataBandToDataStacked data config
 
         stackedConfig : StackConfig String
         stackedConfig =
@@ -142,29 +143,27 @@ renderBandStacked ( data, config ) =
         stackDepth =
             getDataDepth data
 
-        domainIsExplicitlySet =
-            case c.domain of
-                Just _ ->
-                    True
-
-                Nothing ->
-                    False
+        linearDomain =
+            c.domain
+                |> fromDomainBand
+                |> .linear
 
         linearExtent =
-            if domainIsExplicitlySet then
-                case c.layout of
-                    Stacked Diverging ->
-                        ( Tuple.second domain.linear * -1, Tuple.second domain.linear )
+            case linearDomain of
+                Just ld ->
+                    case c.layout of
+                        Stacked Diverging ->
+                            ( Tuple.second ld * -1, Tuple.second ld )
 
-                    _ ->
-                        domain.linear
+                        _ ->
+                            ld
 
-            else
-                extent
+                Nothing ->
+                    extent
 
         domain =
             getDomain data config
-                |> fromDomainBand
+                |> fromDomainBandInternal
 
         bandGroupRange =
             getBandGroupRange config w h
@@ -385,7 +384,7 @@ renderBandGrouped ( data, config ) =
 
         domain =
             getDomain data config
-                |> fromDomainBand
+                |> fromDomainBandInternal
 
         bandGroupRange =
             getBandGroupRange config w h

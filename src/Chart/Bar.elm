@@ -141,9 +141,9 @@ type alias DataGroupBand =
     Bar.init data
 
 -}
-init : List DataGroupBand -> ( List DataGroupBand, Config )
-init data =
-    ( data, defaultConfig )
+init : Config
+init =
+    defaultConfig
 
 
 {-| Renders the bar chart, after initialisation and customisation.
@@ -159,8 +159,8 @@ init data =
         |> Bar.render
 
 -}
-render : ( List DataGroupBand, Config ) -> Html msg
-render ( data, config ) =
+render : List DataGroupBand -> Config -> Html msg
+render data config =
     let
         c =
             fromConfig config
@@ -189,9 +189,9 @@ Default value: 400
         |> Bar.render
 
 -}
-setHeight : Float -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setHeight value ( data, config ) =
-    Type.setHeight value ( Type.DataBand data, config ) |> fromDataBand
+setHeight : Float -> Config -> Config
+setHeight value config =
+    Type.setHeight value config
 
 
 {-| Sets the outer width of the bar chart.
@@ -210,9 +210,9 @@ Default value: 600
         |> Bar.render
 
 -}
-setWidth : Float -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setWidth value ( data, config ) =
-    Type.setWidth value ( Type.DataBand data, config ) |> fromDataBand
+setWidth : Float -> Config -> Config
+setWidth value config =
+    Type.setWidth value config
 
 
 {-| Sets the chart layout.
@@ -233,9 +233,9 @@ Default value: Bar.groupedLayout
         |> Bar.render
 
 -}
-setLayout : Layout -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setLayout value ( data, config ) =
-    Type.setLayout value ( Type.DataBand data, config ) |> fromDataBand
+setLayout : Layout -> Config -> Config
+setLayout value config =
+    Type.setLayout value config
 
 
 {-| Sets an accessible, long-text description for the svg chart.
@@ -254,9 +254,9 @@ Default value: ""
         |> Bar.render
 
 -}
-setDesc : String -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setDesc value ( data, config ) =
-    Type.setDesc value ( Type.DataBand data, config ) |> fromDataBand
+setDesc : String -> Config -> Config
+setDesc value config =
+    Type.setDesc value config
 
 
 {-| Sets an accessible title for the svg chart.
@@ -275,9 +275,9 @@ Default value: ""
         |> Bar.render
 
 -}
-setTitle : String -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setTitle value ( data, config ) =
-    Type.setTitle value ( Type.DataBand data, config ) |> fromDataBand
+setTitle : String -> Config -> Config
+setTitle value config =
+    Type.setTitle value config
 
 
 {-| Sets the orientation value in the config.
@@ -296,9 +296,9 @@ Default value: Vertical
         |> Bar.render
 
 -}
-setOrientation : Orientation -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setOrientation value ( data, config ) =
-    Type.setOrientation value ( Type.DataBand data, config ) |> fromDataBand
+setOrientation : Orientation -> Config -> Config
+setOrientation value config =
+    Type.setOrientation value config
 
 
 {-| Sets the margin values in the config.
@@ -318,9 +318,9 @@ setOrientation value ( data, config ) =
         |> Bar.render
 
 -}
-setMargin : Margin -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setMargin value ( data, config ) =
-    Type.setMargin value ( Type.DataBand data, config ) |> fromDataBand
+setMargin : Margin -> Config -> Config
+setMargin value config =
+    Type.setMargin value config
 
 
 {-| Passes the tick values for a grouped bar chart continous axis.
@@ -339,9 +339,9 @@ Defaults to `Scale.ticks`
         |> Bar.render
 
 -}
-setLinearAxisTicks : List Float -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setLinearAxisTicks ticks ( data, config ) =
-    Type.setAxisContinousDataTicks (Type.CustomTicks ticks) ( Type.DataBand data, config ) |> fromDataBand
+setLinearAxisTicks : List Float -> Config -> Config
+setLinearAxisTicks ticks config =
+    Type.setAxisContinousDataTicks (Type.CustomTicks ticks) config
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis.
@@ -360,9 +360,9 @@ Defaults to `Scale.tickCount`
         |> Bar.render
 
 -}
-setLinearAxisTickCount : Int -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setLinearAxisTickCount count ( data, config ) =
-    Type.setAxisContinousDataTickCount (Type.CustomTickCount count) ( Type.DataBand data, config ) |> fromDataBand
+setLinearAxisTickCount : Int -> Config -> Config
+setLinearAxisTickCount count config =
+    Type.setAxisContinousDataTickCount (Type.CustomTickCount count) config
 
 
 {-| Sets the formatting for the ticks in a grouped bar chart continous axis.
@@ -385,9 +385,9 @@ Defaults to `Scale.tickFormat`
         |> Bar.render
 
 -}
-setLinearAxisTickFormat : (Float -> String) -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setLinearAxisTickFormat f ( data, config ) =
-    Type.setAxisContinousDataTickFormat (CustomTickFormat f) ( Type.DataBand data, config ) |> fromDataBand
+setLinearAxisTickFormat : (Float -> String) -> Config -> Config
+setLinearAxisTickFormat f config =
+    Type.setAxisContinousDataTickFormat (CustomTickFormat f) config
 
 
 {-| Sets the margin, width and height all at once.
@@ -412,12 +412,9 @@ Prefer this method from the individual ones when you need to set all three value
         |> Bar.render
 
 -}
-setDimensions :
-    { margin : Margin, width : Float, height : Float }
-    -> ( List DataGroupBand, Config )
-    -> ( List DataGroupBand, Config )
-setDimensions value ( data, config ) =
-    Type.setDimensions value ( Type.DataBand data, config ) |> fromDataBand
+setDimensions : { margin : Margin, width : Float, height : Float } -> Config -> Config
+setDimensions value config =
+    Type.setDimensions value config
 
 
 {-| Sets the domain value in the config.
@@ -447,9 +444,9 @@ Instead of setDomain, it is usually more convenient use one of the more specific
         |> Bar.render
 
 -}
-setDomain : Domain -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setDomain value ( data, config ) =
-    Type.setDomain value ( Type.DataBand data, config ) |> fromDataBand
+setDomain : Domain -> Config -> Config
+setDomain value config =
+    Type.setDomain value config
 
 
 {-| Sets the bandGroup value in the domain, in place of calculating it from the data.
@@ -466,9 +463,9 @@ setDomain value ( data, config ) =
         |> Bar.render
 
 -}
-setDomainBandGroup : Type.BandDomain -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setDomainBandGroup value ( data, config ) =
-    Type.setDomainBandBandGroup value ( Type.DataBand data, config ) |> fromDataBand
+setDomainBandGroup : Type.BandDomain -> Config -> Config
+setDomainBandGroup value config =
+    Type.setDomainBandBandGroup value config
 
 
 {-| Sets the bandSingle value in the domain, in place of calculating it from the data.
@@ -485,9 +482,9 @@ setDomainBandGroup value ( data, config ) =
         |> Bar.render
 
 -}
-setDomainBandSingle : Type.BandDomain -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setDomainBandSingle value ( data, config ) =
-    Type.setDomainBandBandSingle value ( Type.DataBand data, config ) |> fromDataBand
+setDomainBandSingle : Type.BandDomain -> Config -> Config
+setDomainBandSingle value config =
+    Type.setDomainBandBandSingle value config
 
 
 {-| Sets the bandLinear value in the domain, in place of calculating it from the data.
@@ -504,9 +501,9 @@ setDomainBandSingle value ( data, config ) =
         |> Bar.render
 
 -}
-setDomainLinear : Type.LinearDomain -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setDomainLinear value ( data, config ) =
-    Type.setDomainBandLinear value ( Type.DataBand data, config ) |> fromDataBand
+setDomainLinear : Type.LinearDomain -> Config -> Config
+setDomainLinear value config =
+    Type.setDomainBandLinear value config
 
 
 {-| Sets the showContinousAxis boolean value in the config
@@ -525,9 +522,9 @@ This shows the bar's continous scale axis
         |> Bar.render
 
 -}
-setShowContinousAxis : Bool -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setShowContinousAxis value ( data, config ) =
-    Type.setShowContinousAxis value ( Type.DataBand data, config ) |> fromDataBand
+setShowContinousAxis : Bool -> Config -> Config
+setShowContinousAxis value config =
+    Type.setShowContinousAxis value config
 
 
 {-| Sets the showOrdinalAxis boolean value in the config
@@ -546,9 +543,9 @@ This shows the bar's ordinal scale axis
         |> Bar.render
 
 -}
-setShowOrdinalAxis : Bool -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setShowOrdinalAxis value ( data, config ) =
-    Type.setShowOrdinalAxis value ( Type.DataBand data, config ) |> fromDataBand
+setShowOrdinalAxis : Bool -> Config -> Config
+setShowOrdinalAxis value config =
+    Type.setShowOrdinalAxis value config
 
 
 {-| Sets the Icon Symbols list in the `GroupedConfig`.

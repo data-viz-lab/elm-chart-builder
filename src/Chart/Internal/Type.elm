@@ -39,6 +39,7 @@ module Chart.Internal.Type exposing
     , fromDataBand
     , fromDataLinear
     , fromDomainBand
+    , fromDomainBandInternal
     , fromDomainLinear
     , getAxisContinousDataFormatter
     , getAxisContinousDataTickCount
@@ -141,13 +142,28 @@ type alias BandDomain =
 
 
 type alias DomainBandStruct =
+    { bandGroup : Maybe BandDomain
+    , bandSingle : Maybe BandDomain
+    , linear : Maybe LinearDomain
+    }
+
+
+type alias DomainBandStructInternal =
     { bandGroup : BandDomain
     , bandSingle : BandDomain
     , linear : LinearDomain
     }
 
 
-dummyDomainBandStruct : DomainBandStruct
+initialDomainBandStruct : DomainBandStruct
+initialDomainBandStruct =
+    { bandGroup = Nothing
+    , bandSingle = Nothing
+    , linear = Nothing
+    }
+
+
+dummyDomainBandStruct : DomainBandStructInternal
 dummyDomainBandStruct =
     { bandGroup = []
     , bandSingle = []
@@ -171,6 +187,11 @@ dummyDomainLinearStruct =
 type Domain
     = DomainBand DomainBandStruct
     | DomainLinear DomainLinearStruct
+
+
+type DomainInternal
+    = DomainBandInternal DomainBandStructInternal
+    | DomainLinearInternal DomainLinearStruct
 
 
 type alias PointBand =
@@ -250,7 +271,7 @@ type alias ConfigStruct =
     , axisVerticalTickFormat : AxisContinousDataTickFormat
     , axisVerticalTicks : AxisContinousDataTicks
     , desc : String
-    , domain : Maybe Domain
+    , domain : Domain
     , height : Float
     , layout : Layout
     , margin : Margin
@@ -277,7 +298,7 @@ defaultConfig =
         , axisVerticalTickFormat = DefaultTickFormat
         , axisVerticalTicks = DefaultTicks
         , desc = ""
-        , domain = Nothing
+        , domain = DomainBand initialDomainBandStruct
         , height = defaultHeight
         , layout = defaultLayout
         , margin = defaultMargin
@@ -483,137 +504,107 @@ type alias StackedValuesAndGroupes =
 -- SETTERS
 
 
-setAxisContinousDataTickCount : AxisContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
-setAxisContinousDataTickCount count ( data, config ) =
+setAxisContinousDataTickCount : AxisContinousDataTickCount -> Config -> Config
+setAxisContinousDataTickCount count config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | axisContinousDataTickCount = count } )
+    toConfig { c | axisContinousDataTickCount = count }
 
 
-setAxisHorizontalTickCount : AxisContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
-setAxisHorizontalTickCount count ( data, config ) =
+setAxisHorizontalTickCount : AxisContinousDataTickCount -> Config -> Config
+setAxisHorizontalTickCount count config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | axisHorizontalTickCount = count } )
+    toConfig { c | axisHorizontalTickCount = count }
 
 
-setAxisVerticalTickCount : AxisContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
-setAxisVerticalTickCount count ( data, config ) =
+setAxisVerticalTickCount : AxisContinousDataTickCount -> Config -> Config
+setAxisVerticalTickCount count config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | axisVerticalTickCount = count } )
+    toConfig { c | axisVerticalTickCount = count }
 
 
-setDesc : String -> ( Data, Config ) -> ( Data, Config )
-setDesc desc ( data, config ) =
+setDesc : String -> Config -> Config
+setDesc desc config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | desc = desc } )
+    toConfig { c | desc = desc }
 
 
-setTitle : String -> ( Data, Config ) -> ( Data, Config )
-setTitle title ( data, config ) =
+setTitle : String -> Config -> Config
+setTitle title config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | title = title } )
+    toConfig { c | title = title }
 
 
-setAxisContinousDataTickFormat : AxisContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
-setAxisContinousDataTickFormat format ( data, config ) =
+setAxisContinousDataTickFormat : AxisContinousDataTickFormat -> Config -> Config
+setAxisContinousDataTickFormat format config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | axisContinousDataTickFormat = format } )
+    toConfig { c | axisContinousDataTickFormat = format }
 
 
-setAxisHorizontalTickFormat : AxisContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
-setAxisHorizontalTickFormat format ( data, config ) =
+setAxisHorizontalTickFormat : AxisContinousDataTickFormat -> Config -> Config
+setAxisHorizontalTickFormat format config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | axisHorizontalTickFormat = format } )
+    toConfig { c | axisHorizontalTickFormat = format }
 
 
-setAxisVerticalTickFormat : AxisContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
-setAxisVerticalTickFormat format ( data, config ) =
+setAxisVerticalTickFormat : AxisContinousDataTickFormat -> Config -> Config
+setAxisVerticalTickFormat format config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | axisVerticalTickFormat = format } )
+    toConfig { c | axisVerticalTickFormat = format }
 
 
-setAxisContinousDataTicks : AxisContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
-setAxisContinousDataTicks ticks ( data, config ) =
+setAxisContinousDataTicks : AxisContinousDataTicks -> Config -> Config
+setAxisContinousDataTicks ticks config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | axisContinousDataTicks = ticks } )
+    toConfig { c | axisContinousDataTicks = ticks }
 
 
-setAxisHorizontalTicks : AxisContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
-setAxisHorizontalTicks ticks ( data, config ) =
+setAxisHorizontalTicks : AxisContinousDataTicks -> Config -> Config
+setAxisHorizontalTicks ticks config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | axisHorizontalTicks = ticks } )
+    toConfig { c | axisHorizontalTicks = ticks }
 
 
-setAxisVerticalTicks : AxisContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
-setAxisVerticalTicks ticks ( data, config ) =
+setAxisVerticalTicks : AxisContinousDataTicks -> Config -> Config
+setAxisVerticalTicks ticks config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | axisVerticalTicks = ticks } )
+    toConfig { c | axisVerticalTicks = ticks }
 
 
-setHeight : Float -> ( Data, Config ) -> ( Data, Config )
-setHeight height ( data, config ) =
-    let
-        c =
-            fromConfig config
-
-        m =
-            c.margin
-    in
-    ( data, toConfig { c | height = height - m.top - m.bottom } )
-
-
-setLayout : Layout -> ( Data, Config ) -> ( Data, Config )
-setLayout layout ( data, config ) =
-    let
-        c =
-            fromConfig config
-    in
-    ( data, toConfig { c | layout = layout } )
-
-
-setOrientation : Orientation -> ( Data, Config ) -> ( Data, Config )
-setOrientation orientation ( data, config ) =
-    let
-        c =
-            fromConfig config
-    in
-    ( data, toConfig { c | orientation = orientation } )
-
-
-setWidth : Float -> ( Data, Config ) -> ( Data, Config )
-setWidth width ( data, config ) =
+setHeight : Float -> Config -> Config
+setHeight height config =
     let
         c =
             fromConfig config
@@ -621,11 +612,41 @@ setWidth width ( data, config ) =
         m =
             c.margin
     in
-    ( data, toConfig { c | width = width - m.left - m.right } )
+    toConfig { c | height = height - m.top - m.bottom }
 
 
-setMargin : Margin -> ( Data, Config ) -> ( Data, Config )
-setMargin margin ( data, config ) =
+setLayout : Layout -> Config -> Config
+setLayout layout config =
+    let
+        c =
+            fromConfig config
+    in
+    toConfig { c | layout = layout }
+
+
+setOrientation : Orientation -> Config -> Config
+setOrientation orientation config =
+    let
+        c =
+            fromConfig config
+    in
+    toConfig { c | orientation = orientation }
+
+
+setWidth : Float -> Config -> Config
+setWidth width config =
+    let
+        c =
+            fromConfig config
+
+        m =
+            c.margin
+    in
+    toConfig { c | width = width - m.left - m.right }
+
+
+setMargin : Margin -> Config -> Config
+setMargin margin config =
     let
         c =
             fromConfig config
@@ -636,11 +657,11 @@ setMargin margin ( data, config ) =
         bottom =
             margin.bottom + bottomGap
     in
-    ( data, toConfig { c | margin = { margin | left = left, bottom = bottom } } )
+    toConfig { c | margin = { margin | left = left, bottom = bottom } }
 
 
-setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
-setDimensions { margin, width, height } ( data, config ) =
+setDimensions : { margin : Margin, width : Float, height : Float } -> Config -> Config
+setDimensions { margin, width, height } config =
     let
         c =
             fromConfig config
@@ -651,119 +672,105 @@ setDimensions { margin, width, height } ( data, config ) =
         bottom =
             margin.bottom + bottomGap
     in
-    ( data
-    , toConfig
+    toConfig
         { c
             | width = width - left - margin.right
             , height = height - margin.top - bottom
             , margin = { margin | left = left, bottom = bottom }
         }
-    )
 
 
-setDomain : Domain -> ( Data, Config ) -> ( Data, Config )
-setDomain domain ( data, config ) =
+setDomain : Domain -> Config -> Config
+setDomain domain config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | domain = Just domain } )
+    toConfig { c | domain = domain }
 
 
-setDomainBandBandGroup : BandDomain -> ( Data, Config ) -> ( Data, Config )
-setDomainBandBandGroup bandDomain ( data, config ) =
-    let
-        c =
-            fromConfig config
-
-        domain =
-            case c.domain of
-                Just d ->
-                    fromDomainBand d
-
-                Nothing ->
-                    fromDomainBand <| getDomainFromData data
-
-        newDomain =
-            { domain | bandGroup = bandDomain }
-    in
-    ( data, toConfig { c | domain = Just (DomainBand newDomain) } )
-
-
-setDomainBandBandSingle : BandDomain -> ( Data, Config ) -> ( Data, Config )
-setDomainBandBandSingle bandDomain ( data, config ) =
+setDomainBandBandGroup : BandDomain -> Config -> Config
+setDomainBandBandGroup bandDomain config =
     let
         c =
             fromConfig config
 
         domain =
-            case c.domain of
-                Just d ->
-                    fromDomainBand d
-
-                Nothing ->
-                    fromDomainBand <| getDomainFromData data
+            c.domain
+                |> fromDomainBand
 
         newDomain =
-            { domain | bandSingle = bandDomain }
+            { domain | bandGroup = Just bandDomain }
     in
-    ( data, toConfig { c | domain = Just (DomainBand newDomain) } )
+    toConfig { c | domain = DomainBand newDomain }
 
 
-setDomainBandLinear : LinearDomain -> ( Data, Config ) -> ( Data, Config )
-setDomainBandLinear linearDomain ( data, config ) =
+setDomainBandBandSingle : BandDomain -> Config -> Config
+setDomainBandBandSingle bandDomain config =
     let
         c =
             fromConfig config
 
         domain =
-            case c.domain of
-                Just d ->
-                    fromDomainBand d
-
-                Nothing ->
-                    fromDomainBand <| getDomainFromData data
+            c.domain
+                |> fromDomainBand
 
         newDomain =
-            { domain | linear = linearDomain }
+            { domain | bandSingle = Just bandDomain }
     in
-    ( data, toConfig { c | domain = Just (DomainBand newDomain) } )
+    toConfig { c | domain = DomainBand newDomain }
 
 
-setShowContinousAxis : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowContinousAxis bool ( data, config ) =
+setDomainBandLinear : LinearDomain -> Config -> Config
+setDomainBandLinear linearDomain config =
+    let
+        c =
+            fromConfig config
+
+        domain =
+            c.domain
+                |> fromDomainBand
+
+        newDomain =
+            { domain | linear = Just linearDomain }
+    in
+    toConfig { c | domain = DomainBand newDomain }
+
+
+setShowContinousAxis : Bool -> Config -> Config
+setShowContinousAxis bool config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | showContinousAxis = bool } )
+    toConfig { c | showContinousAxis = bool }
 
 
-setShowOrdinalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowOrdinalAxis bool ( data, config ) =
+setShowOrdinalAxis : Bool -> Config -> Config
+setShowOrdinalAxis bool config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | showOrdinalAxis = bool } )
+    toConfig { c | showOrdinalAxis = bool }
 
 
-setShowHorizontalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowHorizontalAxis bool ( data, config ) =
+setShowHorizontalAxis : Bool -> Config -> Config
+setShowHorizontalAxis bool config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | showHorizontalAxis = bool } )
+    toConfig { c | showHorizontalAxis = bool }
 
 
-setShowVerticalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowVerticalAxis bool ( data, config ) =
+setShowVerticalAxis : Bool -> Config -> Config
+setShowVerticalAxis bool config =
     let
         c =
             fromConfig config
     in
-    ( data, toConfig { c | showVerticalAxis = bool } )
+    toConfig { c | showVerticalAxis = bool }
 
 
 
@@ -851,53 +858,66 @@ getWidth config =
     fromConfig config |> .width
 
 
-getDomain : Data -> Config -> Domain
+getDomain : Data -> Config -> DomainInternal
 getDomain data config =
-    let
-        domain =
-            fromConfig config |> .domain
-    in
-    case domain of
-        Just d ->
-            d
-
-        Nothing ->
-            getDomainFromData data
+    getDomainFromData data config
 
 
-getDomainFromData : Data -> Domain
-getDomainFromData data =
+getDomainFromData : Data -> Config -> DomainInternal
+getDomainFromData data config =
     case data of
         DataBand d ->
-            DomainBand
+            let
+                domain =
+                    config
+                        |> fromConfig
+                        |> .domain
+                        |> fromDomainBand
+            in
+            DomainBandInternal
                 { bandGroup =
-                    d
-                        |> List.map .groupLabel
-                        |> List.indexedMap (\i g -> g |> Maybe.withDefault (String.fromInt i))
-                , bandSingle =
-                    d
-                        |> List.map .points
-                        |> List.concat
-                        |> List.map Tuple.first
-                        |> List.foldr
-                            (\x acc ->
-                                if List.member x acc then
-                                    acc
+                    case domain.bandGroup of
+                        Just bandGroup ->
+                            bandGroup
 
-                                else
-                                    x :: acc
-                            )
-                            []
+                        Nothing ->
+                            d
+                                |> List.map .groupLabel
+                                |> List.indexedMap (\i g -> g |> Maybe.withDefault (String.fromInt i))
+                , bandSingle =
+                    case domain.bandSingle of
+                        Just bandSingle ->
+                            bandSingle
+
+                        Nothing ->
+                            d
+                                |> List.map .points
+                                |> List.concat
+                                |> List.map Tuple.first
+                                |> List.foldr
+                                    (\x acc ->
+                                        if List.member x acc then
+                                            acc
+
+                                        else
+                                            x :: acc
+                                    )
+                                    []
                 , linear =
-                    d
-                        |> List.map .points
-                        |> List.concat
-                        |> List.map Tuple.second
-                        |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                    case domain.linear of
+                        Just linear ->
+                            linear
+
+                        Nothing ->
+                            d
+                                |> List.map .points
+                                |> List.concat
+                                |> List.map Tuple.second
+                                |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
                 }
 
         DataLinear d ->
-            DomainLinear
+            DomainLinearInternal
                 { horizontal =
                     d
                         |> List.map .points
@@ -917,6 +937,16 @@ fromDomainBand : Domain -> DomainBandStruct
 fromDomainBand domain =
     case domain of
         DomainBand d ->
+            d
+
+        _ ->
+            initialDomainBandStruct
+
+
+fromDomainBandInternal : DomainInternal -> DomainBandStructInternal
+fromDomainBandInternal domain =
+    case domain of
+        DomainBandInternal d ->
             d
 
         _ ->
