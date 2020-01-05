@@ -25,6 +25,16 @@ module Chart.Line exposing
     , setWidth
     )
 
+{-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
+
+    # Types
+    @docs Data , Domain
+
+    # API methods
+    @docs dataLinear, domainLinear, init, linearAxisCustomTickCount, linearAxisCustomTickFormat, linearAxisCustomTicks, render, setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setDomain, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
+
+-}
+
 import Chart.Internal.Line
     exposing
         ( renderLineGrouped
@@ -62,10 +72,6 @@ import Chart.Internal.Type as Type
         )
 import Html exposing (Html)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
-
-
-
--- API METHODS
 
 
 {-| Format of the data
@@ -174,16 +180,39 @@ render ( data, config ) =
             wrongDataTypeErrorView
 
 
+{-| Sets the outer height of the line chart
+Default value: 400
+
+    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+        |> Line.setHeight 600
+        |> Line.render
+
+-}
 setHeight : Float -> ( Data, Config ) -> ( Data, Config )
 setHeight =
     Type.setHeight
 
 
+{-| Sets the outer width of the line chart
+Default value: 400
+
+    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+        |> Line.setWidth 600
+        |> Line.render
+
+-}
 setWidth : Float -> ( Data, Config ) -> ( Data, Config )
 setWidth =
     Type.setWidth
 
 
+{-| Sets the margin values in the config
+
+    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+        |> Line.setMargin { top = 10, right = 10, bottom = 30, left = 30 }
+        |> Line.render
+
+-}
 setMargin : Margin -> ( Data, Config ) -> ( Data, Config )
 setMargin =
     Type.setMargin
@@ -267,6 +296,18 @@ setAxisVerticalTickFormat =
     Type.setAxisVerticalTickFormat
 
 
+{-| Sets margin, width and height all at once
+Prefer this method from the individual ones when you need to set all three at once.
+
+    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+        |> Line.setDimensions
+            { margin = { top = 30, right = 20, bottom = 30, left = 0 }
+            , width = 400
+            , height = 400
+            }
+        |> Line.render
+
+-}
 setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
 setDimensions =
     Type.setDimensions

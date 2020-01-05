@@ -48,6 +48,16 @@ module Chart.Bar exposing
     , verticalOrientation
     )
 
+{-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
+
+    # Types
+    @docs BarSymbol, Data, DataGroupBand, Domain
+
+    # API methods
+    @docs dataBand, defaultGroupedConfig, divergingDirection, domainBand, getDomainFromData, groupedLayout, horizontalOrientation, init, linearAxisCustomTickCount, linearAxisCustomTickFormat, linearAxisCustomTicks, noDirection, render, setDesc, setDimensions, setDomain, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setIcons, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowIndividualLabels, setShowOrdinalAxis, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth, setTitle, setWidth, stackedLayout, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, verticalOrientation
+
+-}
+
 import Chart.Internal.Bar
     exposing
         ( renderBandGrouped
@@ -261,7 +271,7 @@ setTitle =
 Default value: Vertical
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setOrientation Horizontal
+        |> Bar.setMargin { top = 10, right = 20, bottom = 25, left = 35 }
         |> Bar.render
 
 -}
@@ -270,6 +280,13 @@ setOrientation =
     Type.setOrientation
 
 
+{-| Sets the margin values in the config
+
+    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
+        |> Bar.setMargin { top = 10, right = 10, bottom = 30, left = 30 }
+        |> Bar.render
+
+-}
 setMargin : Margin -> ( Data, Config ) -> ( Data, Config )
 setMargin =
     Type.setMargin
@@ -289,7 +306,7 @@ setLinearAxisTicks =
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis
-Defaults to `Scale.ticks`
+Defaults to `Scale.tickCount`
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
         |> Bar.setLinearAxisTickCount (CustomTickCount 5)
