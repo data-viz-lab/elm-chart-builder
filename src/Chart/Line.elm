@@ -1,28 +1,45 @@
 module Chart.Line exposing
-    ( Data, Domain
-    , dataLinear, domainLinear, init, render, setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setDomain, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
+    ( DataGroupLinear
+    , init
+    , render
+    , setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setDomain, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
+    , domainLinear, Domain
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
 
-&#9888; This module is still a work in progress!
+&#9888; This module is still a work in progress and it has limited funcionality!
 
 
-# Types
+# Chart Data Format
 
-@docs Data, Domain
+@docs DataGroupLinear
 
 
-# API methods
+# Chart Initialization
 
-@docs dataLinear, domainLinear, init, render, setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setDomain, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
+@docs init
+
+
+# Chart Rendering
+
+@docs render
+
+
+# Configuration setters
+
+@docs setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setDomain, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
+
+
+# Configuration setters arguments
+
+@docs domainLinear, Domain
 
 -}
 
 import Chart.Internal.Line
     exposing
         ( renderLineGrouped
-        , wrongDataTypeErrorView
         )
 import Chart.Internal.Symbol exposing (Symbol(..))
 import Chart.Internal.Type as Type
@@ -58,33 +75,7 @@ import Html exposing (Html)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
-{-| Format of the data
-
-    data : Data
-    data =
-        DataLinear
-            [ { groupLabel = Just "A"
-              , points =
-                    [ ( 1, 10 )
-                    , ( 2, 13 )
-                    , ( 16, 16 )
-                    ]
-              }
-            , { groupLabel = Just "B"
-              , points =
-                    [ ( 1, 11 )
-                    , ( 2, 23 )
-                    , ( 3, 16 )
-                    ]
-              }
-            ]
-
--}
-type alias Data =
-    Type.Data
-
-
-{-| dataGroupLinear data format
+{-| Line chart data format.
 
     dataGroupLinear : Bar.DataGroupLinear
     dataGroupLinear =
@@ -101,267 +92,362 @@ type alias DataGroupLinear =
     Type.DataGroupLinear
 
 
-{-| dataLinear data format constructor
+{-| Initializes the line chart with the data
 
-    data : Data
+    data : List DataGroupLinear
     data =
-        DataLinear
-            [ { groupLabel = Just "A"
-              , points =
-                    [ ( 1, 10 )
-                    , ( 2, 13 )
-                    , ( 16, 16 )
-                    ]
-              }
-            , { groupLabel = Just "B"
-              , points =
-                    [ ( 1, 11 )
-                    , ( 2, 23 )
-                    , ( 3, 16 )
-                    ]
-              }
-            ]
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
 
 -}
-dataLinear : List DataGroupLinear -> Data
-dataLinear data =
-    Type.DataLinear data
-
-
-{-| Initializes the line chart
-
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
-
--}
-init : Data -> ( Data, Config )
+init : List DataGroupLinear -> ( List DataGroupLinear, Config )
 init data =
     ( data, defaultConfig )
-        |> setDomain (getDomainFromData data)
 
 
 {-| Renders the line chart, after initialisation and customisation
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Line.render
 
 -}
-render : ( Data, Config ) -> Html msg
+render : ( List DataGroupLinear, Config ) -> Html msg
 render ( data, config ) =
     let
         c =
             fromConfig config
     in
-    case data of
-        DataLinear _ ->
-            case c.layout of
-                Grouped _ ->
-                    renderLineGrouped ( data, config )
+    case c.layout of
+        Grouped _ ->
+            renderLineGrouped ( Type.DataLinear data, config )
 
-                Stacked _ ->
-                    Html.text "TODO"
-
-        _ ->
-            wrongDataTypeErrorView
+        Stacked _ ->
+            Html.text "TODO"
 
 
 {-| Sets the outer height of the line chart
 Default value: 400
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Line.setHeight 600
         |> Line.render
 
 -}
-setHeight : Float -> ( Data, Config ) -> ( Data, Config )
-setHeight =
-    Type.setHeight
+setHeight : Float -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setHeight value ( data, config ) =
+    Type.setHeight value ( Type.DataLinear data, config ) |> fromDataLinear
 
 
 {-| Sets the outer width of the line chart
 Default value: 400
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Line.setWidth 600
         |> Line.render
 
 -}
-setWidth : Float -> ( Data, Config ) -> ( Data, Config )
-setWidth =
-    Type.setWidth
+setWidth : Float -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setWidth value ( data, config ) =
+    Type.setWidth value ( Type.DataLinear data, config ) |> fromDataLinear
 
 
 {-| Sets the margin values in the config
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
-        |> Line.setMargin { top = 10, right = 10, bottom = 30, left = 30 }
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    margin =
+        { top = 30, right = 20, bottom = 30, left = 0 }
+
+    Line.init data
+        |> Line.setMargin margin
         |> Line.render
 
 -}
-setMargin : Margin -> ( Data, Config ) -> ( Data, Config )
-setMargin =
-    Type.setMargin
+setMargin : Margin -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setMargin value ( data, config ) =
+    Type.setMargin value ( Type.DataLinear data, config ) |> fromDataLinear
 
 
-{-| Sets the approximate number of ticks for a grouped bar chart continous axis
+{-| Set the ticks for the horizontal axis
 Defaults to `Scale.ticks`
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Line.setHorizontalTicks [ 1, 2, 3 ]
         |> Line.render
 
 -}
-setAxisHorizontalTicks : List Float -> ( Data, Config ) -> ( Data, Config )
-setAxisHorizontalTicks ticks =
-    Type.setAxisHorizontalTicks (Type.CustomTicks ticks)
+setAxisHorizontalTicks : List Float -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setAxisHorizontalTicks ticks ( data, config ) =
+    Type.setAxisHorizontalTicks (Type.CustomTicks ticks) ( Type.DataLinear data, config ) |> fromDataLinear
 
 
-{-| Sets the approximate number of ticks for a grouped bar chart continous axis
+{-| Sets the approximate number of ticks for the horizontal axis
 Defaults to `Scale.ticks`
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Line.setContinousDataTickCount 5
         |> Line.render
 
 -}
-setAxisHorizontalTickCount : Int -> ( Data, Config ) -> ( Data, Config )
-setAxisHorizontalTickCount count =
-    Type.setAxisHorizontalTickCount (Type.CustomTickCount count)
+setAxisHorizontalTickCount : Int -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setAxisHorizontalTickCount count ( data, config ) =
+    Type.setAxisHorizontalTickCount (Type.CustomTickCount count) ( Type.DataLinear data, config ) |> fromDataLinear
 
 
-{-| Sets the formatting for ticks in a grouped bar chart continous axis
+{-| Sets the formatting for ticks for the horizontal axis
 Defaults to `Scale.tickFormat`
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Line.setContinousDataTicks (FormatNumber.format { usLocale | decimals = 0 })
         |> Line.render
 
 -}
-setAxisHorizontalTickFormat : (Float -> String) -> ( Data, Config ) -> ( Data, Config )
-setAxisHorizontalTickFormat f =
-    Type.setAxisHorizontalTickFormat (Type.CustomTickFormat f)
+setAxisHorizontalTickFormat : (Float -> String) -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setAxisHorizontalTickFormat f ( data, config ) =
+    Type.setAxisHorizontalTickFormat (Type.CustomTickFormat f) ( Type.DataLinear data, config ) |> fromDataLinear
 
 
-{-| Sets the approximate number of ticks for a grouped bar chart continous axis
+{-| Set the ticks for the vertical axis
 Defaults to `Scale.ticks`
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Line.setAxisVerticalDataTicks [ 1, 2, 3 ]
         |> Line.render
 
 -}
-setAxisVerticalTicks : List Float -> ( Data, Config ) -> ( Data, Config )
-setAxisVerticalTicks ticks =
-    Type.setAxisVerticalTicks (Type.CustomTicks ticks)
+setAxisVerticalTicks : List Float -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setAxisVerticalTicks ticks ( data, config ) =
+    Type.setAxisVerticalTicks (Type.CustomTicks ticks) ( Type.DataLinear data, config ) |> fromDataLinear
 
 
-{-| Sets the approximate number of ticks for a grouped bar chart continous axis
+{-| Sets the approximate number of ticks for the vertical axis
 Defaults to `Scale.ticks`
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Line.setContinousDataTickCount 5
         |> Line.render
 
 -}
-setAxisVerticalTickCount : Int -> ( Data, Config ) -> ( Data, Config )
-setAxisVerticalTickCount count =
-    Type.setAxisVerticalTickCount (Type.CustomTickCount count)
+setAxisVerticalTickCount : Int -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setAxisVerticalTickCount count ( data, config ) =
+    Type.setAxisVerticalTickCount (Type.CustomTickCount count) ( Type.DataLinear data, config ) |> fromDataLinear
 
 
-{-| Sets the formatting for ticks in a grouped bar chart continous axis
+{-| Sets the formatting for ticks in the vertical axis
 Defaults to `Scale.tickFormat`
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Line.setContinousDataTicks (FormatNumber.format { usLocale | decimals = 0 })
         |> Line.render
 
 -}
-setAxisVerticalTickFormat : (Float -> String) -> ( Data, Config ) -> ( Data, Config )
-setAxisVerticalTickFormat f =
-    Type.setAxisVerticalTickFormat (Type.CustomTickFormat f)
+setAxisVerticalTickFormat : (Float -> String) -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setAxisVerticalTickFormat f ( data, config ) =
+    Type.setAxisVerticalTickFormat (Type.CustomTickFormat f) ( Type.DataLinear data, config ) |> fromDataLinear
 
 
 {-| Sets margin, width and height all at once
 Prefer this method from the individual ones when you need to set all three at once.
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    margin =
+        { top = 30, right = 20, bottom = 30, left = 0 }
+
+    Line.init data
         |> Line.setDimensions
-            { margin = { top = 30, right = 20, bottom = 30, left = 0 }
+            { margin = margin
             , width = 400
             , height = 400
             }
         |> Line.render
 
 -}
-setDimensions : { margin : Margin, width : Float, height : Float } -> ( Data, Config ) -> ( Data, Config )
-setDimensions =
-    Type.setDimensions
+setDimensions :
+    { margin : Margin, width : Float, height : Float }
+    -> ( List DataGroupLinear, Config )
+    -> ( List DataGroupLinear, Config )
+setDimensions value ( data, config ) =
+    Type.setDimensions value ( Type.DataLinear data, config ) |> fromDataLinear
 
 
 {-| Sets the domain value in the config
 If not set, the domain is calculated from the data
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Line.setDomain (DomainLinear { horizontal = ( 1, 1 ), vertical = ( 0, 20 ) })
         |> Line.render
 
 -}
-setDomain : Domain -> ( Data, Config ) -> ( Data, Config )
-setDomain =
-    Type.setDomain
+setDomain : Domain -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setDomain value ( data, config ) =
+    Type.setDomain value ( Type.DataLinear data, config ) |> fromDataLinear
 
 
 {-| Sets an accessible, long-text description for the svg chart.
 Default value: ""
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Line.setDesc "This is an accessible chart, with a desc element"
         |> Line.render
 
 -}
-setDesc : String -> ( Data, Config ) -> ( Data, Config )
-setDesc =
-    Type.setDesc
+setDesc : String -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setDesc value ( data, config ) =
+    Type.setDesc value ( Type.DataLinear data, config ) |> fromDataLinear
 
 
 {-| Sets an accessible title for the svg chart.
 Default value: ""
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Line.setTitle "This is a chart"
         |> Line.render
 
 -}
-setTitle : String -> ( Data, Config ) -> ( Data, Config )
-setTitle =
-    Type.setTitle
+setTitle : String -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setTitle value ( data, config ) =
+    Type.setTitle value ( Type.DataLinear data, config ) |> fromDataLinear
 
 
 {-| Sets the showHorizontalAxis boolean value in the config
 Default value: True
 This shows the bar's horizontal axis
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Bar.setShowHorizontalAxis False
         |> Bar.render
 
 -}
-setShowHorizontalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowHorizontalAxis =
-    Type.setShowHorizontalAxis
+setShowHorizontalAxis : Bool -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setShowHorizontalAxis value ( data, config ) =
+    Type.setShowHorizontalAxis value ( Type.DataLinear data, config ) |> fromDataLinear
 
 
 {-| Sets the showVerticalAxis boolean value in the config
 Default value: True
 This shows the bar's vertical axis
 
-    Line.init (DataLinear [ { groupLabel = Nothing, points = [ ( 0, 10 ), ( 1, 20 ) ] } ])
+    data : List DataGroupLinear
+    data =
+        [ { groupLabel = Nothing
+          , points = [ ( 1, 10 ), (2, 20) ]
+          }
+        ]
+
+    Line.init data
         |> Bar.setShowVerticalAxis False
         |> Bar.render
 
 -}
-setShowVerticalAxis : Bool -> ( Data, Config ) -> ( Data, Config )
-setShowVerticalAxis =
-    Type.setShowVerticalAxis
+setShowVerticalAxis : Bool -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
+setShowVerticalAxis value ( data, config ) =
+    Type.setShowVerticalAxis value ( Type.DataLinear data, config ) |> fromDataLinear
 
 
 {-| Domain Type
@@ -389,3 +475,12 @@ type alias Domain =
 domainLinear : DomainLinearStruct -> Domain
 domainLinear str =
     Type.DomainLinear str
+
+
+
+--INTERNAL
+
+
+fromDataLinear : ( Data, Config ) -> ( List DataGroupLinear, Config )
+fromDataLinear ( data, config ) =
+    ( Type.fromDataLinear data, config )

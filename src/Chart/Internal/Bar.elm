@@ -2,7 +2,6 @@ module Chart.Internal.Bar exposing
     ( getStackedValuesAndGroupes
     , renderBandGrouped
     , renderBandStacked
-    , wrongDataTypeErrorView
     )
 
 import Axis
@@ -71,8 +70,7 @@ import Shape exposing (StackConfig)
 import TypedSvg exposing (g, rect, svg, text_)
 import TypedSvg.Attributes
     exposing
-        ( alignmentBaseline
-        , class
+        ( class
         , dominantBaseline
         , shapeRendering
         , textAnchor
@@ -896,15 +894,6 @@ bandGroupedContinousAxis c iconOffset linearScale =
 
     else
         []
-
-
-
--- ERROR VIEWS
-
-
-wrongDataTypeErrorView : Html msg
-wrongDataTypeErrorView =
-    Html.div [] [ Html.text "Data type not supported in bar charts" ]
 
 
 

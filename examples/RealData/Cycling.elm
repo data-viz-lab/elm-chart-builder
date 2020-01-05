@@ -90,80 +90,88 @@ text {
 """
 
 
-data : Bar.Data
+width : Float
+width =
+    500
+
+
+height : Float
+height =
+    600
+
+
+data : List Bar.DataGroupBand
 data =
-    Bar.dataBand
-        [ { groupLabel = Just "16-24"
-          , points =
-                [ ( "once per month", 0.211 )
-                , ( "once per week", 0.015 )
-                , ( "three times per week", 0.078 )
-                , ( "five times per week", 0.049 )
-                ]
-          }
-        , { groupLabel = Just "25-34"
-          , points =
-                [ ( "once per month", 0.019 )
-                , ( "once per week", 0.131 )
-                , ( "three times per week", 0.07 )
-                , ( "five times per week", 0.045 )
-                ]
-          }
-        , { groupLabel = Just "35-44"
-          , points =
-                [ ( "once per month", 0.219 )
-                , ( "once per week", 0.151 )
-                , ( "three times per week", 0.072 )
-                , ( "five times per week", 0.042 )
-                ]
-          }
-        , { groupLabel = Just "45-54"
-          , points =
-                [ ( "once per month", 0.217 )
-                , ( "once per week", 0.015 )
-                , ( "three times per week", 0.069 )
-                , ( "five times per week", 0.004 )
-                ]
-          }
-        , { groupLabel = Just "55-64"
-          , points =
-                [ ( "once per month", 0.152 )
-                , ( "once per week", 0.107 )
-                , ( "three times per week", 0.045 )
-                , ( "five times per week", 0.025 )
-                ]
-          }
-        , { groupLabel = Just "65+years"
-          , points =
-                [ ( "once per month", 0.076 )
-                , ( "once per week", 0.053 )
-                , ( "three times per week", 0.021 )
-                , ( "five times per week", 0.012 )
-                ]
-          }
-        ]
+    [ { groupLabel = Just "16-24"
+      , points =
+            [ ( "once per month", 0.211 )
+            , ( "once per week", 0.015 )
+            , ( "three times per week", 0.078 )
+            , ( "five times per week", 0.049 )
+            ]
+      }
+    , { groupLabel = Just "25-34"
+      , points =
+            [ ( "once per month", 0.019 )
+            , ( "once per week", 0.131 )
+            , ( "three times per week", 0.07 )
+            , ( "five times per week", 0.045 )
+            ]
+      }
+    , { groupLabel = Just "35-44"
+      , points =
+            [ ( "once per month", 0.219 )
+            , ( "once per week", 0.151 )
+            , ( "three times per week", 0.072 )
+            , ( "five times per week", 0.042 )
+            ]
+      }
+    , { groupLabel = Just "45-54"
+      , points =
+            [ ( "once per month", 0.217 )
+            , ( "once per week", 0.015 )
+            , ( "three times per week", 0.069 )
+            , ( "five times per week", 0.004 )
+            ]
+      }
+    , { groupLabel = Just "55-64"
+      , points =
+            [ ( "once per month", 0.152 )
+            , ( "once per week", 0.107 )
+            , ( "three times per week", 0.045 )
+            , ( "five times per week", 0.025 )
+            ]
+      }
+    , { groupLabel = Just "65+years"
+      , points =
+            [ ( "once per month", 0.076 )
+            , ( "once per week", 0.053 )
+            , ( "three times per week", 0.021 )
+            , ( "five times per week", 0.012 )
+            ]
+      }
+    ]
 
 
-dataGender : Bar.Data
+dataGender : List Bar.DataGroupBand
 dataGender =
-    Bar.dataBand
-        [ { groupLabel = Just "Male"
-          , points =
-                [ ( "once per month", 0.229 )
-                , ( "once per week", 0.168 )
-                , ( "three times per week", 0.084 )
-                , ( "five times per week", 0.051 )
-                ]
-          }
-        , { groupLabel = Just "Female"
-          , points =
-                [ ( "once per month", 0.117 )
-                , ( "once per week", 0.072 )
-                , ( "three times per week", 0.031 )
-                , ( "five times per week", 0.017 )
-                ]
-          }
-        ]
+    [ { groupLabel = Just "Male"
+      , points =
+            [ ( "once per month", 0.229 )
+            , ( "once per week", 0.168 )
+            , ( "three times per week", 0.084 )
+            , ( "five times per week", 0.051 )
+            ]
+      }
+    , { groupLabel = Just "Female"
+      , points =
+            [ ( "once per month", 0.117 )
+            , ( "once per week", 0.072 )
+            , ( "three times per week", 0.031 )
+            , ( "five times per week", 0.017 )
+            ]
+      }
+    ]
 
 
 dataLegendPoints : List ( String, Float )
@@ -175,13 +183,12 @@ dataLegendPoints =
     ]
 
 
-dataLegend : Bar.Data
+dataLegend : List Bar.DataGroupBand
 dataLegend =
-    Bar.dataBand
-        [ { groupLabel = Just "legend"
-          , points = dataLegendPoints
-          }
-        ]
+    [ { groupLabel = Just "legend"
+      , points = dataLegendPoints
+      }
+    ]
 
 
 valueFormatter : Float -> String
@@ -236,16 +243,6 @@ stackedByFrequencyLegend =
             , height = 300
             }
         |> Bar.render
-
-
-width : Float
-width =
-    500
-
-
-height : Float
-height =
-    600
 
 
 attrs : List (Html.Attribute msg)

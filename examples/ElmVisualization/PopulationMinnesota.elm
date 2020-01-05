@@ -149,8 +149,8 @@ valueFormatter =
     FormatNumber.format { usLocale | decimals = 0 }
 
 
-formattedData : List { groupLabel : Maybe String, points : List ( String, Float ) }
-formattedData =
+data : List Bar.DataGroupBand
+data =
     populationMinnesota1850
         |> List.Extra.groupWhile
             (\a b -> a.age == b.age)
@@ -173,11 +173,6 @@ formattedData =
                     ]
                 }
             )
-
-
-data : Bar.Data
-data =
-    Bar.dataBand formattedData
 
 
 chart : Html msg

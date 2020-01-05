@@ -1,16 +1,19 @@
-![elm-chart-builder](./elm-chart-builder-example.png?raw=true "elm-chart-builder-example")
-
 # elm-chart-builder
 An opinionated and accessible charting library for Elm based on [gampleman/elm-visualization](https://github.com/gampleman/elm-visualization).
 
-## examples:
-`cd examples`
+The aim of this package is to make it easy to create some basic chart types. 
+These charts should be fully accessible, but for now this is still very much a work in progress.
 
-`elm reactor`
+The `Chart.Bar` module is almost feature complete.
+
+The `Chart.Line` module is still a work in progress and has limited functionality.
+
+## Examples:
+`cd examples && elm reactor`
 
 Then navigate the examples in the browser.
 
-## tests:
+## Tests:
 `elm-test`
 
 ## TODO 

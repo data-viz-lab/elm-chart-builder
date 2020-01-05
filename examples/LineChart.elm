@@ -1,6 +1,6 @@
 module LineChart exposing (data, main)
 
-{-| This module shows how to build a simple bar chart.
+{-| This module shows how to build a simple line chart.
 -}
 
 import Chart.Line as Line
@@ -58,26 +58,26 @@ height =
     250
 
 
-data : Line.Data
+data : List Line.DataGroupLinear
 data =
-    Line.dataLinear
-        [ { groupLabel = Just "A"
-          , points =
-                [ ( 1, 10 )
-                , ( 2, 13 )
-                , ( 16, 16 )
-                ]
-          }
-        , { groupLabel = Just "B"
-          , points =
-                [ ( 1, 11 )
-                , ( 2, 23 )
-                , ( 3, 16 )
-                ]
-          }
-        ]
+    [ { groupLabel = Just "A"
+      , points =
+            [ ( 1, 10 )
+            , ( 2, 13 )
+            , ( 16, 16 )
+            ]
+      }
+    , { groupLabel = Just "B"
+      , points =
+            [ ( 1, 11 )
+            , ( 2, 23 )
+            , ( 3, 16 )
+            ]
+      }
+    ]
 
 
+attrs : List (Html.Attribute msg)
 attrs =
     [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
     , Html.Attributes.style "width" (String.fromFloat width ++ "px")
@@ -97,7 +97,6 @@ doubleLine =
             , width = width
             , height = height
             }
-        --|> Line.setContinousDataTickFormat (CustomTickFormat (\v -> abs v |> valueFormatter))
         |> Line.render
 
 

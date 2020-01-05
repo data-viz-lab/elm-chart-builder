@@ -84,70 +84,46 @@ icons prefix =
     ]
 
 
-data : Bar.Data
+data : List Bar.DataGroupBand
 data =
-    Bar.dataBand
-        [ { groupLabel = Just "A"
-          , points =
-                [ ( "a", 10 )
-                , ( "b", 13 )
-                , ( "c", 16 )
-                ]
-          }
-        , { groupLabel = Just "B"
-          , points =
-                [ ( "a", 11 )
-                , ( "b", 23 )
-                , ( "c", 16 )
-                ]
-          }
-
-        --, { groupLabel = Just "C"
-        --  , points =
-        --        [ ( "a", 13 )
-        --        , ( "b", 18 )
-        --        , ( "c", 21 )
-        --        ]
-        --  }
-        --, { groupLabel = Just "D"
-        --  , points =
-        --        [ ( "a", 11 )
-        --        , ( "b", 23 )
-        --        , ( "c", 16 )
-        --        ]
-        --  }
-        --, { groupLabel = Just "E"
-        --  , points =
-        --        [ ( "a", 13 )
-        --        , ( "b", 18 )
-        --        , ( "c", 21 )
-        --        ]
-        --  }
-        ]
+    [ { groupLabel = Just "A"
+      , points =
+            [ ( "a", 10 )
+            , ( "b", 13 )
+            , ( "c", 16 )
+            ]
+      }
+    , { groupLabel = Just "B"
+      , points =
+            [ ( "a", 11 )
+            , ( "b", 23 )
+            , ( "c", 16 )
+            ]
+      }
+    ]
 
 
-dataStacked : Bar.Data
+dataStacked : List Bar.DataGroupBand
 dataStacked =
-    Bar.dataBand
-        [ { groupLabel = Nothing
-          , points =
-                [ ( "a", -10 )
-                , ( "b", 13 )
-                ]
-          }
-        , { groupLabel = Nothing
-          , points =
-                [ ( "a", -12 )
-                , ( "b", 16 )
-                ]
-          }
-        , { groupLabel = Nothing
-          , points =
-                [ ( "a", -11 )
-                , ( "b", 13 )
-                ]
-          }
-        ]
+    [ { groupLabel = Nothing
+      , points =
+            [ ( "a", -10 )
+            , ( "b", 13 )
+            ]
+      }
+    , { groupLabel = Nothing
+      , points =
+            [ ( "a", -12 )
+            , ( "b", 16 )
+            ]
+      }
+    , { groupLabel = Nothing
+      , points =
+            [ ( "a", -11 )
+            , ( "b", 13 )
+            ]
+      }
+    ]
 
 
 width : Float

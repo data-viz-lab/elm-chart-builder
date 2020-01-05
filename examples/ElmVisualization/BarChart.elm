@@ -54,14 +54,13 @@ dateFormat =
     DateFormat.format [ DateFormat.dayOfMonthFixed, DateFormat.text " ", DateFormat.monthNameAbbreviated ] Time.utc
 
 
-data : Bar.Data
+data : List Bar.DataGroupBand
 data =
-    Bar.dataBand
-        [ { groupLabel = Nothing
-          , points =
-                List.map (\t -> ( dateFormat (Tuple.first t), Tuple.second t )) timeSeries
-          }
-        ]
+    [ { groupLabel = Nothing
+      , points =
+            List.map (\t -> ( dateFormat (Tuple.first t), Tuple.second t )) timeSeries
+      }
+    ]
 
 
 chart : Html msg
