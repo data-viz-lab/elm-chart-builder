@@ -11,9 +11,6 @@ module Chart.Bar exposing
     , groupedLayout
     , horizontalOrientation
     , init
-    , linearAxisCustomTickCount
-    , linearAxisCustomTickFormat
-    , linearAxisCustomTicks
     , noDirection
     , render
     , setDesc
@@ -54,7 +51,7 @@ module Chart.Bar exposing
     @docs BarSymbol, Data, DataGroupBand, Domain
 
     # API methods
-    @docs dataBand, defaultGroupedConfig, divergingDirection, domainBand, getDomainFromData, groupedLayout, horizontalOrientation, init, linearAxisCustomTickCount, linearAxisCustomTickFormat, linearAxisCustomTicks, noDirection, render, setDesc, setDimensions, setDomain, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setIcons, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowIndividualLabels, setShowOrdinalAxis, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth, setTitle, setWidth, stackedLayout, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, verticalOrientation
+    @docs dataBand, defaultGroupedConfig, divergingDirection, domainBand, getDomainFromData, groupedLayout, horizontalOrientation, init, noDirection, render, setDesc, setDimensions, setDomain, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setIcons, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowIndividualLabels, setShowOrdinalAxis, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth, setTitle, setWidth, stackedLayout, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, verticalOrientation
 
 -}
 
@@ -296,39 +293,39 @@ setMargin =
 Defaults to `Scale.ticks`
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setContinousDataTicks (CustomTicks <| Scale.ticks linearScale 5)
+        |> Bar.setContinousDataTicks [ 1, 2, 3 ]
         |> Bar.render
 
 -}
-setLinearAxisTicks : AxisContinousDataTicks -> ( Data, Config ) -> ( Data, Config )
-setLinearAxisTicks =
-    Type.setAxisContinousDataTicks
+setLinearAxisTicks : List Float -> ( Data, Config ) -> ( Data, Config )
+setLinearAxisTicks ticks =
+    Type.setAxisContinousDataTicks (Type.CustomTicks ticks)
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis
 Defaults to `Scale.tickCount`
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setLinearAxisTickCount (CustomTickCount 5)
+        |> Bar.setLinearAxisTickCount 5
         |> Bar.render
 
 -}
-setLinearAxisTickCount : AxisContinousDataTickCount -> ( Data, Config ) -> ( Data, Config )
-setLinearAxisTickCount =
-    Type.setAxisContinousDataTickCount
+setLinearAxisTickCount : Int -> ( Data, Config ) -> ( Data, Config )
+setLinearAxisTickCount count =
+    Type.setAxisContinousDataTickCount (Type.CustomTickCount count)
 
 
 {-| Sets the formatting for ticks in a grouped bar chart continous axis
 Defaults to `Scale.tickFormat`
 
     Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setLinearAxisTickFormat (CustomTickFormat (FormatNumber.format { usLocale | decimals = 0 }))
+        |> Bar.setLinearAxisTickFormat (FormatNumber.format { usLocale | decimals = 0 })
         |> Bar.render
 
 -}
-setLinearAxisTickFormat : AxisContinousDataTickFormat -> ( Data, Config ) -> ( Data, Config )
-setLinearAxisTickFormat =
-    Type.setAxisContinousDataTickFormat
+setLinearAxisTickFormat : (Float -> String) -> ( Data, Config ) -> ( Data, Config )
+setLinearAxisTickFormat f =
+    Type.setAxisContinousDataTickFormat (CustomTickFormat f)
 
 
 {-| Sets margin, width and height all at once
@@ -544,39 +541,6 @@ Used for initialization purposes
 defaultGroupedConfig : GroupedConfig
 defaultGroupedConfig =
     Type.defaultGroupedConfig
-
-
-{-| Pass the ticks to Bar.setLinearAxisTicks
-
-    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setLinearAxisTicks [ 1, 2, 3 ]
-
--}
-linearAxisCustomTicks : List Float -> AxisContinousDataTicks
-linearAxisCustomTicks ticks =
-    Type.CustomTicks ticks
-
-
-{-| Pass the number of ticks to Bar.setLinearAxisTickCount
-
-    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setLinearAxisTickCount (CustomTickCount 5)
-
--}
-linearAxisCustomTickCount : Int -> AxisContinousDataTickCount
-linearAxisCustomTickCount count =
-    Type.CustomTickCount count
-
-
-{-| A custom formatter for the continous data axis values
-
-    Bar.init (DataBand [ { groupLabel = Nothing, points = [ ( "a", 10 ) ] } ])
-        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat (FormatNumber.format { usLocale | decimals = 0 }))
-
--}
-linearAxisCustomTickFormat : (Float -> String) -> AxisContinousDataTickFormat
-linearAxisCustomTickFormat formatter =
-    Type.CustomTickFormat formatter
 
 
 {-| Domain Type

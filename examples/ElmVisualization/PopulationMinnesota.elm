@@ -185,10 +185,10 @@ chart =
     Bar.init data
         |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
         |> Bar.setOrientation Bar.horizontalOrientation
-        |> Bar.setTitle "Horizontal Stacked Diverging Chart"
-        |> Bar.setDesc "A horizontal stacked diverging chart example to demonstrate the charting library"
-        |> Bar.setLinearAxisTickCount (Bar.linearAxisCustomTickCount 8)
-        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat (\v -> abs v |> valueFormatter))
+        |> Bar.setTitle "Population distribution in Minnesota 1850"
+        |> Bar.setDesc "A horizontal stacked diverging chart example to demonstrate how to create a population pyramid with the charting library"
+        |> Bar.setLinearAxisTickCount 8
+        |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
         |> Bar.setDomainLinear ( 0, 2000000 )
         |> Bar.setDimensions
             { margin = { top = 20, right = 40, bottom = 50, left = 40 }

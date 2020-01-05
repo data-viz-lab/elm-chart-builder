@@ -195,7 +195,7 @@ stackedByFrequency =
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.setTitle "Cycling frequency by age"
         |> Bar.setDesc "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
-        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat valueFormatter)
+        |> Bar.setLinearAxisTickFormat valueFormatter
         |> Bar.setShowContinousAxis False
         |> Bar.setDimensions
             { margin = { top = 30, right = 20, bottom = 30, left = 0 }
@@ -212,7 +212,7 @@ stackedByFrequencyGender =
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.setTitle "Cycling frequency by gender"
         |> Bar.setDesc "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
-        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat valueFormatter)
+        |> Bar.setLinearAxisTickFormat valueFormatter
         |> Bar.setDimensions
             { margin = { top = 30, right = 20, bottom = 30, left = 50 }
             , width = 240

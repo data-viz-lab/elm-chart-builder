@@ -192,7 +192,7 @@ verticalGrouped : Html msg
 verticalGrouped =
     Bar.init data
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (iconsCustom "chart-a")))
-        |> Bar.setLinearAxisTickCount (Bar.linearAxisCustomTickCount 5)
+        |> Bar.setLinearAxisTickCount 5
         |> Bar.setTitle "Vertical Grouped Chart"
         |> Bar.setDesc "A vertical grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -207,7 +207,7 @@ verticalGroupedWithLabels : Html msg
 verticalGroupedWithLabels =
     Bar.init data
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
-        |> Bar.setLinearAxisTickCount (Bar.linearAxisCustomTickCount 5)
+        |> Bar.setLinearAxisTickCount 5
         |> Bar.setTitle "Vertical Grouped Chart"
         |> Bar.setDesc "A vertical grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -237,8 +237,8 @@ horizontalGrouped =
     Bar.init data
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (icons "chart-b")))
         |> Bar.setOrientation Bar.horizontalOrientation
-        |> Bar.setLinearAxisTickCount (Bar.linearAxisCustomTickCount 5)
-        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat valueFormatter)
+        |> Bar.setLinearAxisTickCount 5
+        |> Bar.setLinearAxisTickFormat valueFormatter
         |> Bar.setTitle "Horizontal Grouped Chart"
         |> Bar.setDesc "A horizontal grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -254,8 +254,8 @@ horizontalGroupedWithLabels =
     Bar.init data
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
         |> Bar.setOrientation Bar.horizontalOrientation
-        |> Bar.setLinearAxisTickCount (Bar.linearAxisCustomTickCount 5)
-        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat valueFormatter)
+        |> Bar.setLinearAxisTickCount 5
+        |> Bar.setLinearAxisTickFormat valueFormatter
         |> Bar.setTitle "Horizontal Grouped Chart"
         |> Bar.setDesc "A horizontal grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -293,7 +293,7 @@ horizontalStackedDiverging =
             , width = width
             , height = height
             }
-        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat (\v -> abs v |> valueFormatter))
+        |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
         |> Bar.render
 
 
@@ -309,7 +309,7 @@ verticalStackedDiverging =
             , width = width
             , height = height
             }
-        |> Bar.setLinearAxisTickFormat (Bar.linearAxisCustomTickFormat (\v -> abs v |> valueFormatter))
+        |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
         |> Bar.render
 
 

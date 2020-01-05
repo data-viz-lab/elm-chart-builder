@@ -70,7 +70,7 @@ chart =
         |> Bar.setTitle "A simple bar chart"
         |> Bar.setDesc "This module shows how to build a simple bar chart"
         |> Bar.setDomainLinear ( 0, 5 )
-        |> Bar.setLinearAxisTickCount (Bar.linearAxisCustomTickCount 5)
+        |> Bar.setLinearAxisTickCount 5
         |> Bar.setDimensions
             { margin = { top = 10, right = 10, bottom = 30, left = 30 }
             , width = 600
