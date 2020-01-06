@@ -28,7 +28,9 @@ import Chart.Internal.Type
         , Data(..)
         , DataGroupBand
         , Direction(..)
-        , Domain(..)
+        , DomainBand(..)
+        , DomainBandStruct
+        , DomainLinear(..)
         , Layout(..)
         , Orientation(..)
         , PointBand
@@ -40,13 +42,12 @@ import Chart.Internal.Type
         , bottomGap
         , fromConfig
         , fromDataBand
-        , fromDomainBand
-        , fromDomainBandInternal
         , getAxisContinousDataFormatter
         , getBandGroupRange
         , getBandSingleRange
         , getDataDepth
-        , getDomain
+        , getDomainBand
+        , getDomainBandFromData
         , getHeight
         , getIcons
         , getIconsFromLayout
@@ -144,8 +145,8 @@ renderBandStacked ( data, config ) =
             getDataDepth data
 
         linearDomain =
-            c.domain
-                |> fromDomainBand
+            config
+                |> getDomainBand
                 |> .linear
 
         linearExtent =
@@ -161,9 +162,9 @@ renderBandStacked ( data, config ) =
                 Nothing ->
                     extent
 
+        domain : DomainBandStruct
         domain =
-            getDomain data config
-                |> fromDomainBandInternal
+            getDomainBandFromData data config
 
         bandGroupRange =
             getBandGroupRange config w h
@@ -172,10 +173,10 @@ renderBandStacked ( data, config ) =
             getBandSingleRange config (Scale.bandwidth bandGroupScale)
 
         bandGroupScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1 } bandGroupRange domain.bandGroup
+            Scale.band { defaultBandConfig | paddingInner = 0.1 } bandGroupRange (Maybe.withDefault [] domain.bandGroup)
 
         bandSingleScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange domain.bandSingle
+            Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange (Maybe.withDefault [] domain.bandSingle)
 
         linearRange =
             getLinearRange config RenderChart w h bandSingleScale
@@ -382,9 +383,9 @@ renderBandGrouped ( data, config ) =
         outerH =
             h + m.top + m.bottom
 
+        domain : DomainBandStruct
         domain =
-            getDomain data config
-                |> fromDomainBandInternal
+            getDomainBandFromData data config
 
         bandGroupRange =
             getBandGroupRange config w h
@@ -407,15 +408,17 @@ renderBandGrouped ( data, config ) =
 
         bandGroupScale : BandScale String
         bandGroupScale =
-            Scale.band { defaultBandConfig | paddingInner = paddingInnerGroup } bandGroupRange domain.bandGroup
+            Scale.band { defaultBandConfig | paddingInner = paddingInnerGroup }
+                bandGroupRange
+                (domain.bandGroup |> Maybe.withDefault [])
 
         bandSingleScale : BandScale String
         bandSingleScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange domain.bandSingle
+            Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange (Maybe.withDefault [] domain.bandSingle)
 
         linearScale : ContinuousScale Float
         linearScale =
-            Scale.linear linearRange domain.linear
+            Scale.linear linearRange (Maybe.withDefault ( 0, 0 ) domain.linear)
 
         iconOffset : Float
         iconOffset =

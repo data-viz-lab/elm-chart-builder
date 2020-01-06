@@ -67,15 +67,15 @@ chart : Html msg
 chart =
     Bar.init
         |> Bar.setHeight 400
-        --|> Bar.setTitle "A simple bar chart"
-        --|> Bar.setDesc "This module shows how to build a simple bar chart"
-        --|> Bar.setDomainLinear ( 0, 5 )
-        --|> Bar.setLinearAxisTickCount 5
-        --|> Bar.setDimensions
-        --    { margin = { top = 10, right = 10, bottom = 30, left = 30 }
-        --    , width = 600
-        --    , height = 400
-        --    }
+        |> Bar.setTitle "A simple bar chart"
+        |> Bar.setDesc "This module shows how to build a simple bar chart"
+        |> Bar.setDomainLinear ( 0, 5 )
+        |> Bar.setLinearAxisTickCount 5
+        |> Bar.setDimensions
+            { margin = { top = 10, right = 10, bottom = 30, left = 30 }
+            , width = 600
+            , height = 400
+            }
         |> Bar.render data
 
 

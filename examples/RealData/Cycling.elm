@@ -198,7 +198,7 @@ valueFormatter =
 
 stackedByFrequency : Html msg
 stackedByFrequency =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.setTitle "Cycling frequency by age"
         |> Bar.setDesc "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
@@ -210,12 +210,12 @@ stackedByFrequency =
             , height = height
             }
         |> Bar.setDomainLinear ( 0, 0.55 )
-        |> Bar.render
+        |> Bar.render data
 
 
 stackedByFrequencyGender : Html msg
 stackedByFrequencyGender =
-    Bar.init dataGender
+    Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.setTitle "Cycling frequency by gender"
         |> Bar.setDesc "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
@@ -226,12 +226,12 @@ stackedByFrequencyGender =
             , height = height
             }
         |> Bar.setDomainLinear ( 0, 0.55 )
-        |> Bar.render
+        |> Bar.render dataGender
 
 
 stackedByFrequencyLegend : Html msg
 stackedByFrequencyLegend =
-    Bar.init dataLegend
+    Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.setShowContinousAxis False
         |> Bar.setShowOrdinalAxis False
@@ -242,7 +242,7 @@ stackedByFrequencyLegend =
             , width = 30
             , height = 300
             }
-        |> Bar.render
+        |> Bar.render dataLegend
 
 
 attrs : List (Html.Attribute msg)

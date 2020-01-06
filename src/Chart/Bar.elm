@@ -3,7 +3,7 @@ module Chart.Bar exposing
     , init
     , render
     , setDesc, setDimensions, setDomain, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowOrdinalAxis, setTitle, setWidth
-    , defaultGroupedConfig, divergingDirection, Domain, domainBand, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
+    , defaultGroupedConfig, divergingDirection, Domain, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
     , setIcons, setShowIndividualLabels
     , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth
     )
@@ -94,6 +94,7 @@ import Chart.Internal.Type as Type
         , Config
         , Data
         , Direction(..)
+        , DomainBand
         , DomainBandStruct
         , GroupedConfig
         , Layout(..)
@@ -103,7 +104,7 @@ import Chart.Internal.Type as Type
         , defaultConfig
         , fromConfig
         , setDimensions
-        , setDomain
+        , setDomainBand
         , setShowContinousAxis
         , setShowOrdinalAxis
         , setTitle
@@ -444,9 +445,9 @@ Instead of setDomain, it is usually more convenient use one of the more specific
         |> Bar.render
 
 -}
-setDomain : Domain -> Config -> Config
+setDomain : DomainBand -> Config -> Config
 setDomain value config =
-    Type.setDomain value config
+    Type.setDomainBand value config
 
 
 {-| Sets the bandGroup value in the domain, in place of calculating it from the data.
@@ -737,26 +738,27 @@ defaultGroupedConfig =
 For bar charts this can only be of DomainBand type
 -}
 type alias Domain =
-    Type.Domain
+    Type.DomainBand
 
 
-{-| DomainBand constructor
 
-    dummyDomainBandStruct : DomainBandStruct
-    dummyDomainBandStruct =
-        { bandGroup = []
-        , bandSingle = []
-        , linear = ( 0, 0 )
-        }
-
-    domain : Domain
-    domain =
-        domainBand dummyDomainBandStruct
-
--}
-domainBand : DomainBandStruct -> Domain
-domainBand struct =
-    Type.DomainBand struct
+--{-| DomainBand constructor
+--
+--    dummyDomainBandStruct : DomainBandStruct
+--    dummyDomainBandStruct =
+--        { bandGroup = []
+--        , bandSingle = []
+--        , linear = ( 0, 0 )
+--        }
+--
+--    domain : Domain
+--    domain =
+--        domainBand dummyDomainBandStruct
+--
+---}
+--domainBand : DomainBandStruct -> DomainBand
+--domainBand struct =
+--    DomainBand struct
 
 
 {-| Bar chart symbol type
@@ -859,12 +861,3 @@ symbolTriangle id =
 symbolCorner : String -> BarSymbol msg
 symbolCorner id =
     Corner id
-
-
-
---INTERNAL
-
-
-fromDataBand : ( Data, Config ) -> ( List DataGroupBand, Config )
-fromDataBand ( data, config ) =
-    ( Type.fromDataBand data, config )

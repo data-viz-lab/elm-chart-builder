@@ -11,8 +11,7 @@ import Chart.Internal.Type
         , Data
         , StackedValues
         , fromDataBand
-        , fromDomainBandInternal
-        , getDomainFromData
+        , getDomainBandFromData
         )
 
 
@@ -20,9 +19,9 @@ dataBandToDataStacked : Data -> Config -> List ( String, List Float )
 dataBandToDataStacked data config =
     let
         seed =
-            getDomainFromData data config
-                |> fromDomainBandInternal
+            getDomainBandFromData data config
                 |> .bandSingle
+                |> Maybe.withDefault []
                 |> List.map (\d -> ( d, [] ))
     in
     data

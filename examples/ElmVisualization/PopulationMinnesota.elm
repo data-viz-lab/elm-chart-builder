@@ -177,7 +177,7 @@ data =
 
 chart : Html msg
 chart =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setTitle "Population distribution in Minnesota 1850"
@@ -190,7 +190,7 @@ chart =
             , width = 800
             , height = 500
             }
-        |> Bar.render
+        |> Bar.render data
 
 
 footer : Html msg

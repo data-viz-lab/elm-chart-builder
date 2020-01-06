@@ -10,8 +10,9 @@ module Chart.Internal.Type exposing
     , DataGroupBand
     , DataGroupLinear
     , Direction(..)
-    , Domain(..)
+    , DomainBand
     , DomainBandStruct
+    , DomainLinear
     , DomainLinearStruct
     , GroupedConfig
     , GroupedConfigStruct
@@ -39,7 +40,6 @@ module Chart.Internal.Type exposing
     , fromDataBand
     , fromDataLinear
     , fromDomainBand
-    , fromDomainBandInternal
     , fromDomainLinear
     , getAxisContinousDataFormatter
     , getAxisContinousDataTickCount
@@ -55,8 +55,10 @@ module Chart.Internal.Type exposing
     , getBandSingleRange
     , getDataDepth
     , getDesc
-    , getDomain
-    , getDomainFromData
+    , getDomainBand
+    , getDomainBandFromData
+    , getDomainLinear
+    , getDomainLinearFromData
     , getHeight
     , getIcons
     , getIconsFromLayout
@@ -79,10 +81,11 @@ module Chart.Internal.Type exposing
     , setAxisVerticalTicks
     , setDesc
     , setDimensions
-    , setDomain
+    , setDomainBand
     , setDomainBandBandGroup
     , setDomainBandBandSingle
     , setDomainBandLinear
+    , setDomainLinear
     , setHeight
     , setIcons
     , setLayout
@@ -148,13 +151,6 @@ type alias DomainBandStruct =
     }
 
 
-type alias DomainBandStructInternal =
-    { bandGroup : BandDomain
-    , bandSingle : BandDomain
-    , linear : LinearDomain
-    }
-
-
 initialDomainBandStruct : DomainBandStruct
 initialDomainBandStruct =
     { bandGroup = Nothing
@@ -163,35 +159,25 @@ initialDomainBandStruct =
     }
 
 
-dummyDomainBandStruct : DomainBandStructInternal
-dummyDomainBandStruct =
-    { bandGroup = []
-    , bandSingle = []
-    , linear = ( 0, 0 )
-    }
-
-
 type alias DomainLinearStruct =
-    { horizontal : LinearDomain
-    , vertical : LinearDomain
+    { horizontal : Maybe LinearDomain
+    , vertical : Maybe LinearDomain
     }
 
 
-dummyDomainLinearStruct : DomainLinearStruct
-dummyDomainLinearStruct =
-    { horizontal = ( 0, 0 )
-    , vertical = ( 0, 0 )
+initialDomainLinearStruct : DomainLinearStruct
+initialDomainLinearStruct =
+    { horizontal = Nothing
+    , vertical = Nothing
     }
 
 
-type Domain
+type DomainBand
     = DomainBand DomainBandStruct
-    | DomainLinear DomainLinearStruct
 
 
-type DomainInternal
-    = DomainBandInternal DomainBandStructInternal
-    | DomainLinearInternal DomainLinearStruct
+type DomainLinear
+    = DomainLinear DomainLinearStruct
 
 
 type alias PointBand =
@@ -233,10 +219,6 @@ type Data
     | DataLinear (List DataGroupLinear)
 
 
-type alias Range =
-    ( Float, Float )
-
-
 type alias Margin =
     { top : Float
     , right : Float
@@ -271,7 +253,8 @@ type alias ConfigStruct =
     , axisVerticalTickFormat : AxisContinousDataTickFormat
     , axisVerticalTicks : AxisContinousDataTicks
     , desc : String
-    , domain : Domain
+    , domainBand : DomainBand
+    , domainLinear : DomainLinear
     , height : Float
     , layout : Layout
     , margin : Margin
@@ -298,7 +281,8 @@ defaultConfig =
         , axisVerticalTickFormat = DefaultTickFormat
         , axisVerticalTicks = DefaultTicks
         , desc = ""
-        , domain = DomainBand initialDomainBandStruct
+        , domainBand = DomainBand initialDomainBandStruct
+        , domainLinear = DomainLinear initialDomainLinearStruct
         , height = defaultHeight
         , layout = defaultLayout
         , margin = defaultMargin
@@ -680,13 +664,22 @@ setDimensions { margin, width, height } config =
         }
 
 
-setDomain : Domain -> Config -> Config
-setDomain domain config =
+setDomainLinear : DomainLinear -> Config -> Config
+setDomainLinear domain config =
     let
         c =
             fromConfig config
     in
-    toConfig { c | domain = domain }
+    toConfig { c | domainLinear = domain }
+
+
+setDomainBand : DomainBand -> Config -> Config
+setDomainBand domain config =
+    let
+        c =
+            fromConfig config
+    in
+    toConfig { c | domainBand = domain }
 
 
 setDomainBandBandGroup : BandDomain -> Config -> Config
@@ -696,13 +689,13 @@ setDomainBandBandGroup bandDomain config =
             fromConfig config
 
         domain =
-            c.domain
+            c.domainBand
                 |> fromDomainBand
 
         newDomain =
             { domain | bandGroup = Just bandDomain }
     in
-    toConfig { c | domain = DomainBand newDomain }
+    toConfig { c | domainBand = DomainBand newDomain }
 
 
 setDomainBandBandSingle : BandDomain -> Config -> Config
@@ -712,13 +705,13 @@ setDomainBandBandSingle bandDomain config =
             fromConfig config
 
         domain =
-            c.domain
+            c.domainBand
                 |> fromDomainBand
 
         newDomain =
             { domain | bandSingle = Just bandDomain }
     in
-    toConfig { c | domain = DomainBand newDomain }
+    toConfig { c | domainBand = DomainBand newDomain }
 
 
 setDomainBandLinear : LinearDomain -> Config -> Config
@@ -728,13 +721,13 @@ setDomainBandLinear linearDomain config =
             fromConfig config
 
         domain =
-            c.domain
+            c.domainBand
                 |> fromDomainBand
 
         newDomain =
             { domain | linear = Just linearDomain }
     in
-    toConfig { c | domain = DomainBand newDomain }
+    toConfig { c | domainBand = DomainBand newDomain }
 
 
 setShowContinousAxis : Bool -> Config -> Config
@@ -858,36 +851,45 @@ getWidth config =
     fromConfig config |> .width
 
 
-getDomain : Data -> Config -> DomainInternal
-getDomain data config =
-    getDomainFromData data config
+getDomainBand : Config -> DomainBandStruct
+getDomainBand config =
+    config
+        |> fromConfig
+        |> .domainBand
+        |> fromDomainBand
 
 
-getDomainFromData : Data -> Config -> DomainInternal
-getDomainFromData data config =
+getDomainLinear : Config -> DomainLinearStruct
+getDomainLinear config =
+    config
+        |> fromConfig
+        |> .domainLinear
+        |> fromDomainLinear
+
+
+getDomainBandFromData : Data -> Config -> DomainBandStruct
+getDomainBandFromData data config =
+    let
+        domain =
+            getDomainBand config
+    in
     case data of
         DataBand d ->
-            let
-                domain =
-                    config
-                        |> fromConfig
-                        |> .domain
-                        |> fromDomainBand
-            in
-            DomainBandInternal
+            DomainBand
                 { bandGroup =
                     case domain.bandGroup of
                         Just bandGroup ->
-                            bandGroup
+                            Just bandGroup
 
                         Nothing ->
                             d
                                 |> List.map .groupLabel
                                 |> List.indexedMap (\i g -> g |> Maybe.withDefault (String.fromInt i))
+                                |> Just
                 , bandSingle =
                     case domain.bandSingle of
                         Just bandSingle ->
-                            bandSingle
+                            Just bandSingle
 
                         Nothing ->
                             d
@@ -903,10 +905,11 @@ getDomainFromData data config =
                                             x :: acc
                                     )
                                     []
+                                |> Just
                 , linear =
                     case domain.linear of
                         Just linear ->
-                            linear
+                            Just linear
 
                         Nothing ->
                             d
@@ -914,53 +917,54 @@ getDomainFromData data config =
                                 |> List.concat
                                 |> List.map Tuple.second
                                 |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                                |> Just
                 }
+                |> fromDomainBand
 
+        _ ->
+            --TODO: should data be saparated, like domain?
+            domain
+
+
+getDomainLinearFromData : Data -> Config -> DomainLinearStruct
+getDomainLinearFromData data config =
+    let
+        domain =
+            getDomainLinear config
+    in
+    case data of
         DataLinear d ->
-            DomainLinearInternal
+            DomainLinear
                 { horizontal =
                     d
                         |> List.map .points
                         |> List.concat
                         |> List.map Tuple.first
                         |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                        |> Just
                 , vertical =
                     d
                         |> List.map .points
                         |> List.concat
                         |> List.map Tuple.second
                         |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                        |> Just
                 }
-
-
-fromDomainBand : Domain -> DomainBandStruct
-fromDomainBand domain =
-    case domain of
-        DomainBand d ->
-            d
+                |> fromDomainLinear
 
         _ ->
-            initialDomainBandStruct
+            --TODO: should data be saparated, like domain?
+            domain
 
 
-fromDomainBandInternal : DomainInternal -> DomainBandStructInternal
-fromDomainBandInternal domain =
-    case domain of
-        DomainBandInternal d ->
-            d
-
-        _ ->
-            dummyDomainBandStruct
+fromDomainBand : DomainBand -> DomainBandStruct
+fromDomainBand (DomainBand d) =
+    d
 
 
-fromDomainLinear : Domain -> DomainLinearStruct
-fromDomainLinear domain =
-    case domain of
-        DomainLinear d ->
-            d
-
-        _ ->
-            dummyDomainLinearStruct
+fromDomainLinear : DomainLinear -> DomainLinearStruct
+fromDomainLinear (DomainLinear d) =
+    d
 
 
 fromDataBand : Data -> List DataGroupBand

@@ -166,7 +166,7 @@ attrs =
 
 verticalGrouped : Html msg
 verticalGrouped =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (iconsCustom "chart-a")))
         |> Bar.setLinearAxisTickCount 5
         |> Bar.setTitle "Vertical Grouped Chart"
@@ -176,12 +176,12 @@ verticalGrouped =
             , width = width
             , height = height
             }
-        |> Bar.render
+        |> Bar.render data
 
 
 verticalGroupedWithLabels : Html msg
 verticalGroupedWithLabels =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
         |> Bar.setLinearAxisTickCount 5
         |> Bar.setTitle "Vertical Grouped Chart"
@@ -191,12 +191,12 @@ verticalGroupedWithLabels =
             , width = width
             , height = height
             }
-        |> Bar.render
+        |> Bar.render data
 
 
 verticalStacked : Html msg
 verticalStacked =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.setTitle "Vertical Stacked Chart"
         |> Bar.setDesc "A vertical stacked chart example to demonstrate the charting library"
@@ -205,12 +205,12 @@ verticalStacked =
             , width = width
             , height = height
             }
-        |> Bar.render
+        |> Bar.render data
 
 
 horizontalGrouped : Html msg
 horizontalGrouped =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (icons "chart-b")))
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setLinearAxisTickCount 5
@@ -222,12 +222,12 @@ horizontalGrouped =
             , width = width
             , height = height
             }
-        |> Bar.render
+        |> Bar.render data
 
 
 horizontalGroupedWithLabels : Html msg
 horizontalGroupedWithLabels =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setLinearAxisTickCount 5
@@ -239,12 +239,12 @@ horizontalGroupedWithLabels =
             , width = width
             , height = height
             }
-        |> Bar.render
+        |> Bar.render data
 
 
 horizontalStacked : Html msg
 horizontalStacked =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setTitle "Horizontal Stacked Chart"
@@ -254,12 +254,12 @@ horizontalStacked =
             , width = width
             , height = height
             }
-        |> Bar.render
+        |> Bar.render data
 
 
 horizontalStackedDiverging : Html msg
 horizontalStackedDiverging =
-    Bar.init dataStacked
+    Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setTitle "Horizontal Stacked Diverging Chart"
@@ -270,12 +270,12 @@ horizontalStackedDiverging =
             , height = height
             }
         |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
-        |> Bar.render
+        |> Bar.render dataStacked
 
 
 verticalStackedDiverging : Html msg
 verticalStackedDiverging =
-    Bar.init dataStacked
+    Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
         |> Bar.setOrientation Bar.verticalOrientation
         |> Bar.setTitle "Vertical Stacked Diverging Chart"
@@ -286,7 +286,7 @@ verticalStackedDiverging =
             , height = height
             }
         |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
-        |> Bar.render
+        |> Bar.render dataStacked
 
 
 main : Html msg
