@@ -92,10 +92,8 @@ import Chart.Internal.Type as Type
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
         , Config
-        , Data
         , Direction(..)
         , DomainBand
-        , DomainBandStruct
         , GroupedConfig
         , Layout(..)
         , Margin
