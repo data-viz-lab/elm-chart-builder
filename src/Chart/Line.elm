@@ -120,8 +120,8 @@ init =
         |> Line.render
 
 -}
-render : ( List DataGroupLinear, Config ) -> Html msg
-render ( data, config ) =
+render : List DataGroupLinear -> Config -> Html msg
+render data config =
     let
         c =
             fromConfig config

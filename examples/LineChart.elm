@@ -91,7 +91,7 @@ doubleLine =
         |> Line.setTitle "A two line chart"
         |> Line.setDesc "A two line chart example to demonstrate the charting library"
         -- TODO: should not be able to set the whole domain
-        |> Line.setDomain { horizontal = ( 1, 16 ), vertical = ( 10, 23 ) }
+        --|> Line.setDomain { horizontal = ( 1, 16 ), vertical = ( 10, 23 ) }
         |> Line.setAxisVerticalTickCount 5
         |> Line.setDimensions
             { margin = { top = 10, right = 10, bottom = 30, left = 30 }
