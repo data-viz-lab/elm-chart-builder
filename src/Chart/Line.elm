@@ -90,16 +90,10 @@ type alias DataGroupLinear =
     Type.DataGroupLinear
 
 
-{-| Initializes the line chart with the data
+{-| Initializes the line chart with a default config
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
+        |> Line.render data
 
 -}
 init : Config
@@ -117,7 +111,7 @@ init =
         ]
 
     Line.init data
-        |> Line.render
+        |> Line.render data
 
 -}
 render : List DataGroupLinear -> Config -> Html msg
@@ -137,16 +131,9 @@ render data config =
 {-| Sets the outer height of the line chart
 Default value: 400
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
         |> Line.setHeight 600
-        |> Line.render
+        |> Line.render data
 
 -}
 setHeight : Float -> Config -> Config
@@ -157,16 +144,9 @@ setHeight value config =
 {-| Sets the outer width of the line chart
 Default value: 400
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
         |> Line.setWidth 600
-        |> Line.render
+        |> Line.render data
 
 -}
 setWidth : Float -> Config -> Config
@@ -176,19 +156,12 @@ setWidth value config =
 
 {-| Sets the margin values in the config
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
     margin =
         { top = 30, right = 20, bottom = 30, left = 0 }
 
-    Line.init data
+    Line.init
         |> Line.setMargin margin
-        |> Line.render
+        |> Line.render data
 
 -}
 setMargin : Margin -> Config -> Config
@@ -199,16 +172,9 @@ setMargin value config =
 {-| Set the ticks for the horizontal axis
 Defaults to `Scale.ticks`
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
         |> Line.setHorizontalTicks [ 1, 2, 3 ]
-        |> Line.render
+        |> Line.render data
 
 -}
 setAxisHorizontalTicks : List Float -> Config -> Config
@@ -219,16 +185,9 @@ setAxisHorizontalTicks ticks config =
 {-| Sets the approximate number of ticks for the horizontal axis
 Defaults to `Scale.ticks`
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
         |> Line.setContinousDataTickCount 5
-        |> Line.render
+        |> Line.render data
 
 -}
 setAxisHorizontalTickCount : Int -> Config -> Config
@@ -239,16 +198,9 @@ setAxisHorizontalTickCount count config =
 {-| Sets the formatting for ticks for the horizontal axis
 Defaults to `Scale.tickFormat`
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
         |> Line.setContinousDataTicks (FormatNumber.format { usLocale | decimals = 0 })
-        |> Line.render
+        |> Line.render data
 
 -}
 setAxisHorizontalTickFormat : (Float -> String) -> Config -> Config
@@ -259,16 +211,9 @@ setAxisHorizontalTickFormat f config =
 {-| Set the ticks for the vertical axis
 Defaults to `Scale.ticks`
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
         |> Line.setAxisVerticalDataTicks [ 1, 2, 3 ]
-        |> Line.render
+        |> Line.render data
 
 -}
 setAxisVerticalTicks : List Float -> Config -> Config
@@ -279,16 +224,9 @@ setAxisVerticalTicks ticks config =
 {-| Sets the approximate number of ticks for the vertical axis
 Defaults to `Scale.ticks`
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
         |> Line.setContinousDataTickCount 5
-        |> Line.render
+        |> Line.render data
 
 -}
 setAxisVerticalTickCount : Int -> Config -> Config
@@ -299,16 +237,9 @@ setAxisVerticalTickCount count config =
 {-| Sets the formatting for ticks in the vertical axis
 Defaults to `Scale.tickFormat`
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
         |> Line.setContinousDataTicks (FormatNumber.format { usLocale | decimals = 0 })
-        |> Line.render
+        |> Line.render data
 
 -}
 setAxisVerticalTickFormat : (Float -> String) -> Config -> Config
@@ -319,23 +250,16 @@ setAxisVerticalTickFormat f config =
 {-| Sets margin, width and height all at once
 Prefer this method from the individual ones when you need to set all three at once.
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
     margin =
         { top = 30, right = 20, bottom = 30, left = 0 }
 
-    Line.init data
+    Line.init
         |> Line.setDimensions
             { margin = margin
             , width = 400
             , height = 400
             }
-        |> Line.render
+        |> Line.render data
 
 -}
 setDimensions : { margin : Margin, width : Float, height : Float } -> Config -> Config
@@ -346,16 +270,9 @@ setDimensions value config =
 {-| Sets the domain value in the config
 If not set, the domain is calculated from the data
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
         |> Line.setDomain (DomainLinear { horizontal = ( 1, 1 ), vertical = ( 0, 20 ) })
-        |> Line.render
+        |> Line.render data
 
 -}
 setDomain : DomainLinear -> Config -> Config
@@ -366,16 +283,9 @@ setDomain value config =
 {-| Sets an accessible, long-text description for the svg chart.
 Default value: ""
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
         |> Line.setDesc "This is an accessible chart, with a desc element"
-        |> Line.render
+        |> Line.render data
 
 -}
 setDesc : String -> Config -> Config
@@ -386,16 +296,9 @@ setDesc value config =
 {-| Sets an accessible title for the svg chart.
 Default value: ""
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
         |> Line.setTitle "This is a chart"
-        |> Line.render
+        |> Line.render data
 
 -}
 setTitle : String -> Config -> Config
@@ -407,16 +310,9 @@ setTitle value config =
 Default value: True
 This shows the bar's horizontal axis
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
         |> Bar.setShowHorizontalAxis False
-        |> Bar.render
+        |> Bar.render data
 
 -}
 setShowHorizontalAxis : Bool -> Config -> Config
@@ -428,16 +324,9 @@ setShowHorizontalAxis value config =
 Default value: True
 This shows the bar's vertical axis
 
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
+    Line.init
         |> Bar.setShowVerticalAxis False
-        |> Bar.render
+        |> Bar.render data
 
 -}
 setShowVerticalAxis : Bool -> Config -> Config
