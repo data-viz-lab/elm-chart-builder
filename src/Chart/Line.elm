@@ -29,11 +29,6 @@ module Chart.Line exposing
 
 @docs setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setDomain, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
 
-
-# Configuration setters arguments
-
-@docs domainLinear
-
 -}
 
 import Chart.Internal.Line

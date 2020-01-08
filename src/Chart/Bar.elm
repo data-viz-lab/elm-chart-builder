@@ -33,7 +33,7 @@ module Chart.Bar exposing
 
 # Configuration setters arguments
 
-@docs defaultGroupedConfig, divergingDirection, domainBand, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
+@docs defaultGroupedConfig, divergingDirection, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
 
 
 # GroupedConfig setters
