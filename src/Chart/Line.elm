@@ -3,7 +3,6 @@ module Chart.Line exposing
     , init
     , render
     , setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setDomain, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
-    , Domain
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -33,7 +32,7 @@ module Chart.Line exposing
 
 # Configuration setters arguments
 
-@docs domainLinear, Domain
+@docs domainLinear
 
 -}
 
@@ -332,11 +331,3 @@ This shows the bar's vertical axis
 setShowVerticalAxis : Bool -> Config -> Config
 setShowVerticalAxis value config =
     Type.setShowVerticalAxis value config
-
-
-{-| Domain Type
-For line charts this can only be of DomainLinear type
-(For now, DomainTime coming soon...)
--}
-type alias Domain =
-    Type.DomainLinear

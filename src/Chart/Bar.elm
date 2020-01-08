@@ -2,8 +2,8 @@ module Chart.Bar exposing
     ( DataGroupBand
     , init
     , render
-    , setDesc, setDimensions, setDomain, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowOrdinalAxis, setTitle, setWidth
-    , defaultGroupedConfig, divergingDirection, Domain, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
+    , setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowOrdinalAxis, setTitle, setWidth
+    , defaultGroupedConfig, divergingDirection, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
     , setIcons, setShowIndividualLabels
     , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth
     )
@@ -28,12 +28,12 @@ module Chart.Bar exposing
 
 # Configuration setters
 
-@docs setDesc, setDimensions, setDomain, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowOrdinalAxis, setTitle, setWidth
+@docs setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowOrdinalAxis, setTitle, setWidth
 
 
 # Configuration setters arguments
 
-@docs defaultGroupedConfig, divergingDirection, Domain, domainBand, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
+@docs defaultGroupedConfig, divergingDirection, domainBand, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
 
 
 # GroupedConfig setters
@@ -333,31 +333,6 @@ setDimensions value config =
     Type.setDimensions value config
 
 
-{-| Sets the domain value in the config.
-
-If not set, the domain is calculated from the data.
-
-Instead of setDomain, it is usually more convenient use one of the more specific methods:
-`setDomainBandBandGroup`, `setDomainBandBandSingle`, `setDomainBandLinear`
-
-    domain : Domain
-    domain =
-        domainBand
-            { bandGroup = [ "0" ]
-            , bandSingle = [ "a" ]
-            , linear = ( 0, 100 )
-            }
-
-    Bar.init
-        |> Bar.setDomain domain
-        |> Bar.render data
-
--}
-setDomain : DomainBand -> Config -> Config
-setDomain value config =
-    Type.setDomainBand value config
-
-
 {-| Sets the bandGroup value in the domain, in place of calculating it from the data.
 
     Bar.init
@@ -563,13 +538,6 @@ Used for initialization purposes
 defaultGroupedConfig : GroupedConfig
 defaultGroupedConfig =
     Type.defaultGroupedConfig
-
-
-{-| Domain Type
-For bar charts this can only be of DomainBand type
--}
-type alias Domain =
-    Type.DomainBand
 
 
 {-| Bar chart symbol type
