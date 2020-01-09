@@ -13,18 +13,17 @@ suite =
             [ test "it should set the bandGroup value in the domain" <|
                 \_ ->
                     let
-                        data : Type.Data
+                        data : List Type.DataGroupBand
                         data =
-                            Type.DataBand
-                                [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
-                                , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
-                                ]
+                            [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
+                            , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
+                            ]
 
                         bandGroup : List String
                         bandGroup =
                             [ "CA", "TX", "NY" ]
 
-                        bar : ( Type.Data, Type.Config )
+                        bar : ( List Type.DataGroupBand, Type.Config )
                         bar =
                             Bar.init data
                                 |> Bar.setDomainBandGroup bandGroup
@@ -45,18 +44,17 @@ suite =
             , test "when setting the bandGroup value in the domain, the linear value should calculate from the data" <|
                 \_ ->
                     let
-                        data : Type.Data
+                        data : List Type.DataGroupBand
                         data =
-                            Type.DataBand
-                                [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
-                                , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
-                                ]
+                            [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
+                            , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
+                            ]
 
                         bandGroup : List String
                         bandGroup =
                             [ "CA", "TX", "NY" ]
 
-                        bar : ( Type.Data, Type.Config )
+                        bar : ( List Type.DataGroupBand, Type.Config )
                         bar =
                             Bar.init data
                                 |> Bar.setDomainBandGroup bandGroup
@@ -79,18 +77,17 @@ suite =
             [ test "it should set the bandSingle value in the domain" <|
                 \_ ->
                     let
-                        data : Type.Data
+                        data : List Type.DataGroupBand
                         data =
-                            Type.DataBand
-                                [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
-                                , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
-                                ]
+                            [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
+                            , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
+                            ]
 
                         bandSingle : List String
                         bandSingle =
                             [ "a", "b", "c" ]
 
-                        bar : ( Type.Data, Type.Config )
+                        bar : ( List Type.DataGroupBand, Type.Config )
                         bar =
                             Bar.init data
                                 |> Bar.setDomainBandSingle bandSingle
@@ -111,18 +108,17 @@ suite =
             , test "when setting the bandSingle value in the domain, the linear value should calculate from the data" <|
                 \_ ->
                     let
-                        data : Type.Data
+                        data : List Type.DataGroupBand
                         data =
-                            Type.DataBand
-                                [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
-                                , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
-                                ]
+                            [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
+                            , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
+                            ]
 
                         bandSingle : List String
                         bandSingle =
                             [ "a", "b", "c" ]
 
-                        bar : ( Type.Data, Type.Config )
+                        bar : ( List Type.DataGroupBand, Type.Config )
                         bar =
                             Bar.init data
                                 |> Bar.setDomainBandSingle bandSingle
@@ -145,17 +141,16 @@ suite =
             [ test "it should set the linear value in the domain" <|
                 \_ ->
                     let
-                        data : Type.Data
+                        data : List Type.DataGroupBand
                         data =
-                            Type.DataBand
-                                [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
-                                , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
-                                ]
+                            [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
+                            , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
+                            ]
 
                         linearDomain =
                             ( 0, 30 )
 
-                        bar : ( Type.Data, Type.Config )
+                        bar : ( List Type.DataGroupBand, Type.Config )
                         bar =
                             Bar.init data
                                 |> Bar.setDomainLinear linearDomain
@@ -176,14 +171,13 @@ suite =
             , test "when setting the linear value in the domain, the bandGroup value should be set from the data" <|
                 \_ ->
                     let
-                        data : Type.Data
+                        data : List Type.DataGroupBand
                         data =
-                            Type.DataBand
-                                [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
-                                , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
-                                ]
+                            [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
+                            , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
+                            ]
 
-                        bar : ( Type.Data, Type.Config )
+                        bar : ( List Type.DataGroupBand, Type.Config )
                         bar =
                             Bar.init data
                                 |> Bar.setDomainLinear ( 0, 30 )

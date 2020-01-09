@@ -2,8 +2,8 @@ module Chart.Bar exposing
     ( DataGroupBand
     , init
     , render
-    , setDesc, setDimensions, setDomain, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowOrdinalAxis, setTitle, setWidth
-    , defaultGroupedConfig, divergingDirection, Domain, domainBand, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
+    , setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowOrdinalAxis, setTitle, setWidth
+    , defaultGroupedConfig, divergingDirection, domainBand, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
     , setIcons, setShowIndividualLabels
     , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth
     )
@@ -28,7 +28,7 @@ module Chart.Bar exposing
 
 # Configuration setters
 
-@docs setDesc, setDimensions, setDomain, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowOrdinalAxis, setTitle, setWidth
+@docs setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowOrdinalAxis, setTitle, setWidth
 
 
 # Configuration setters arguments
@@ -94,6 +94,7 @@ import Chart.Internal.Type as Type
         , Config
         , Data
         , Direction(..)
+        , Domain
         , DomainBandStruct
         , GroupedConfig
         , Layout(..)
@@ -103,7 +104,6 @@ import Chart.Internal.Type as Type
         , defaultConfig
         , fromConfig
         , setDimensions
-        , setDomain
         , setShowContinousAxis
         , setShowOrdinalAxis
         , setTitle
@@ -148,13 +148,6 @@ init data =
 
 {-| Renders the bar chart, after initialisation and customisation.
 
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
-
     Bar.init data
         |> Bar.render
 
@@ -177,13 +170,6 @@ render ( data, config ) =
 
 Default value: 400
 
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
-
     Bar.init data
         |> Bar.setHeight 600
         |> Bar.render
@@ -197,13 +183,6 @@ setHeight value ( data, config ) =
 {-| Sets the outer width of the bar chart.
 
 Default value: 600
-
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
 
     Bar.init data
         |> Bar.setWidth 800
@@ -221,13 +200,6 @@ Values: Bar.stackedLayout or Bar.groupedLayout
 
 Default value: Bar.groupedLayout
 
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
-
     Bar.init data
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.render
@@ -241,13 +213,6 @@ setLayout value ( data, config ) =
 {-| Sets an accessible, long-text description for the svg chart.
 
 Default value: ""
-
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
 
     Bar.init data
         |> Bar.setDesc "This is an accessible chart, with a desc element"
@@ -263,13 +228,6 @@ setDesc value ( data, config ) =
 
 Default value: ""
 
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
-
     Bar.init data
         |> Bar.setTitle "This is a chart"
         |> Bar.render
@@ -284,13 +242,6 @@ setTitle value ( data, config ) =
 
 Default value: Vertical
 
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
-
     Bar.init data
         |> Bar.setOrientation horizontalOrientation
         |> Bar.render
@@ -302,13 +253,6 @@ setOrientation value ( data, config ) =
 
 
 {-| Sets the margin values in the config.
-
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
 
     margin =
         { top = 30, right = 20, bottom = 30, left = 0 }
@@ -327,13 +271,6 @@ setMargin value ( data, config ) =
 
 Defaults to `Scale.ticks`
 
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
-
     Bar.init data
         |> Bar.setLinearAxisTicks [ 1, 2, 3 ]
         |> Bar.render
@@ -348,13 +285,6 @@ setLinearAxisTicks ticks ( data, config ) =
 
 Defaults to `Scale.tickCount`
 
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
-
     Bar.init data
         |> Bar.setLinearAxisTickCount 5
         |> Bar.render
@@ -368,13 +298,6 @@ setLinearAxisTickCount count ( data, config ) =
 {-| Sets the formatting for the ticks in a grouped bar chart continous axis.
 
 Defaults to `Scale.tickFormat`
-
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
 
     formatter =
         FormatNumber.format { usLocale | decimals = 0 }
@@ -392,13 +315,6 @@ setLinearAxisTickFormat f ( data, config ) =
 
 {-| Sets the margin, width and height all at once.
 Prefer this method from the individual ones when you need to set all three values at once.
-
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
 
     margin =
         { top = 30, right = 20, bottom = 30, left = 0 }
@@ -420,46 +336,7 @@ setDimensions value ( data, config ) =
     Type.setDimensions value ( Type.DataBand data, config ) |> fromDataBand
 
 
-{-| Sets the domain value in the config.
-
-If not set, the domain is calculated from the data.
-
-Instead of setDomain, it is usually more convenient use one of the more specific methods:
-`setDomainBandBandGroup`, `setDomainBandBandSingle`, `setDomainBandLinear`
-
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
-
-    domain : Domain
-    domain =
-        domainBand
-            { bandGroup = [ "0" ]
-            , bandSingle = [ "a" ]
-            , linear = ( 0, 100 )
-            }
-
-    Bar.init data
-        |> Bar.setDomain domain
-        |> Bar.render
-
--}
-setDomain : Domain -> ( List DataGroupBand, Config ) -> ( List DataGroupBand, Config )
-setDomain value ( data, config ) =
-    Type.setDomain value ( Type.DataBand data, config ) |> fromDataBand
-
-
 {-| Sets the bandGroup value in the domain, in place of calculating it from the data.
-
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
 
     Bar.init data
         |> Bar.setDomainBandBandGroup [ "0" ]
@@ -473,13 +350,6 @@ setDomainBandGroup value ( data, config ) =
 
 {-| Sets the bandSingle value in the domain, in place of calculating it from the data.
 
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
-
     Bar.init data
         |> Bar.setDomainBandBandSingle [ "a", "b" ]
         |> Bar.render
@@ -491,13 +361,6 @@ setDomainBandSingle value ( data, config ) =
 
 
 {-| Sets the bandLinear value in the domain, in place of calculating it from the data.
-
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
 
     Bar.init data
         |> Bar.setDomainBandLinear ( 0, 0.55 )
@@ -513,13 +376,6 @@ setDomainLinear value ( data, config ) =
 Default value: True
 This shows the bar's continous scale axis
 
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
-
     Bar.init data
         |> Bar.setShowContinousAxis False
         |> Bar.render
@@ -533,13 +389,6 @@ setShowContinousAxis value ( data, config ) =
 {-| Sets the showOrdinalAxis boolean value in the config
 Default value: True
 This shows the bar's ordinal scale axis
-
-    data : List DataGroupBand
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
-          }
-        ]
 
     Bar.init data
         |> Bar.setShowOrdinalAxis False
@@ -734,13 +583,6 @@ Used for initialization purposes
 defaultGroupedConfig : GroupedConfig
 defaultGroupedConfig =
     Type.defaultGroupedConfig
-
-
-{-| Domain Type
-For bar charts this can only be of DomainBand type
--}
-type alias Domain =
-    Type.Domain
 
 
 {-| DomainBand constructor

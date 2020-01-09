@@ -2,8 +2,8 @@ module Chart.Line exposing
     ( DataGroupLinear
     , init
     , render
-    , setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setDomain, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
-    , domainLinear, Domain
+    , setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
+    , domainLinear
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -28,12 +28,12 @@ module Chart.Line exposing
 
 # Configuration setters
 
-@docs setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setDomain, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
+@docs setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
 
 
 # Configuration setters arguments
 
-@docs domainLinear, Domain
+@docs domainLinear
 
 -}
 
@@ -66,7 +66,6 @@ import Chart.Internal.Type as Type
         , setAxisVerticalTickFormat
         , setAxisVerticalTicks
         , setDimensions
-        , setDomain
         , setShowHorizontalAxis
         , setShowVerticalAxis
         , setTitle
@@ -346,26 +345,6 @@ setDimensions :
     -> ( List DataGroupLinear, Config )
 setDimensions value ( data, config ) =
     Type.setDimensions value ( Type.DataLinear data, config ) |> fromDataLinear
-
-
-{-| Sets the domain value in the config
-If not set, the domain is calculated from the data
-
-    data : List DataGroupLinear
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
-        |> Line.setDomain (DomainLinear { horizontal = ( 1, 1 ), vertical = ( 0, 20 ) })
-        |> Line.render
-
--}
-setDomain : Domain -> ( List DataGroupLinear, Config ) -> ( List DataGroupLinear, Config )
-setDomain value ( data, config ) =
-    Type.setDomain value ( Type.DataLinear data, config ) |> fromDataLinear
 
 
 {-| Sets an accessible, long-text description for the svg chart.

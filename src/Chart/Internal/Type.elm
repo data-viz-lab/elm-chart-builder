@@ -78,7 +78,6 @@ module Chart.Internal.Type exposing
     , setAxisVerticalTicks
     , setDesc
     , setDimensions
-    , setDomain
     , setDomainBandBandGroup
     , setDomainBandBandSingle
     , setDomainBandLinear
@@ -210,10 +209,6 @@ dummyDataGroupLinear =
 type Data
     = DataBand (List DataGroupBand)
     | DataLinear (List DataGroupLinear)
-
-
-type alias Range =
-    ( Float, Float )
 
 
 type alias Margin =
@@ -472,7 +467,10 @@ setShowIndividualLabels bool config =
 
 
 type alias StackedValues =
-    List { rawValue : Float, stackedValue : ( Float, Float ) }
+    List
+        { rawValue : Float
+        , stackedValue : ( Float, Float )
+        }
 
 
 type alias StackedValuesAndGroupes =
@@ -659,15 +657,6 @@ setDimensions { margin, width, height } ( data, config ) =
             , margin = { margin | left = left, bottom = bottom }
         }
     )
-
-
-setDomain : Domain -> ( Data, Config ) -> ( Data, Config )
-setDomain domain ( data, config ) =
-    let
-        c =
-            fromConfig config
-    in
-    ( data, toConfig { c | domain = Just domain } )
 
 
 setDomainBandBandGroup : BandDomain -> ( Data, Config ) -> ( Data, Config )
