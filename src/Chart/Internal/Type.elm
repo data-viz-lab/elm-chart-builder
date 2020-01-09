@@ -214,7 +214,10 @@ dummyDataGroupLinear =
     }
 
 
-type Data
+type
+    Data
+    --| DataOrdinal (List DataGroupOrdinal)
+    --| DataTime (List DataGroupTime)
     = DataBand (List DataGroupBand)
     | DataLinear (List DataGroupLinear)
 
