@@ -14,8 +14,8 @@ import Chart.Internal.Type
         , AxisOrientation(..)
         , Config
         , ConfigStruct
-        , Data(..)
         , DataGroupLinear
+        , DataLinear
         , Layout(..)
         , PointLinear
         , RenderContext(..)
@@ -68,7 +68,7 @@ descAndTitle c =
     ]
 
 
-renderLineGrouped : ( Data, Config ) -> Html msg
+renderLineGrouped : ( DataLinear, Config ) -> Html msg
 renderLineGrouped ( data, config ) =
     let
         c =

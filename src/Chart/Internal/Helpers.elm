@@ -8,14 +8,14 @@ module Chart.Internal.Helpers exposing
 import Chart.Internal.Type
     exposing
         ( Config
-        , Data
+        , DataBand
         , StackedValues
         , fromDataBand
         , getDomainBandFromData
         )
 
 
-dataBandToDataStacked : Data -> Config -> List ( String, List Float )
+dataBandToDataStacked : DataBand -> Config -> List ( String, List Float )
 dataBandToDataStacked data config =
     let
         seed =

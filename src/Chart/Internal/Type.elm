@@ -6,14 +6,18 @@ module Chart.Internal.Type exposing
     , BandDomain
     , Config
     , ConfigStruct
-    , Data(..)
+    , DataBand
     , DataGroupBand
     , DataGroupLinear
+    , DataLinear
     , Direction(..)
     , DomainBand
     , DomainBandStruct
     , DomainLinear
     , DomainLinearStruct
+    , ExternalData
+    , ExternalDataBandAccessor
+    , ExternalDataLinearAccessor
     , GroupedConfig
     , GroupedConfigStruct
     , Layout(..)
@@ -36,6 +40,8 @@ module Chart.Internal.Type exposing
     , defaultOrientation
     , defaultTicksCount
     , defaultWidth
+    , externalToDataBand
+    , externalToDataLinear
     , fromConfig
     , fromDataBand
     , fromDataLinear
@@ -53,7 +59,8 @@ module Chart.Internal.Type exposing
     , getAxisVerticalTicks
     , getBandGroupRange
     , getBandSingleRange
-    , getDataDepth
+    , getDataBandDepth
+    , getDataLinearDepth
     , getDesc
     , getDomainBand
     , getDomainBandFromData
@@ -98,11 +105,14 @@ module Chart.Internal.Type exposing
     , setShowVerticalAxis
     , setTitle
     , setWidth
+    , setXGroupBandAccessor
+    , setXGroupLinearAccessor
     , showIcons
     , showIconsFromLayout
     , symbolCustomSpace
     , symbolSpace
     , toConfig
+    , toExternalData
     )
 
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
@@ -113,7 +123,111 @@ import Shape
 
 
 
---ideas on axis: https://codepen.io/deciob/pen/GRgrXgR
+-- DATA
+-- DataOrdinal (List DataGroupOrdinal)
+-- DataTime (List DataGroupTime)
+
+
+type ExternalData data
+    = ExternalData (List (List data))
+
+
+fromExternalData : ExternalData data -> List (List data)
+fromExternalData (ExternalData data) =
+    data
+
+
+toExternalData : List (List data) -> ExternalData data
+toExternalData data =
+    ExternalData data
+
+
+type ExternalDataBandAccessor data
+    = ExternalDataBandAccessor (AccessorsBand data)
+
+
+type alias AccessorsBand data =
+    { xGroup : data -> String
+    , xValue : data -> String
+    , yValue : data -> Float
+    }
+
+
+fromExternalDataBandAccessor : ExternalDataBandAccessor data -> AccessorsBand data
+fromExternalDataBandAccessor (ExternalDataBandAccessor accessors) =
+    accessors
+
+
+toExternalDataBandAccessor : AccessorsBand data -> ExternalDataBandAccessor data
+toExternalDataBandAccessor accessors =
+    ExternalDataBandAccessor accessors
+
+
+type ExternalDataLinearAccessor data
+    = ExternalDataLinearAccessor (AccessorsLinear data)
+
+
+type alias AccessorsLinear data =
+    { xGroup : data -> String
+    , xValue : data -> Float
+    , yValue : data -> Float
+    }
+
+
+fromExternalDataLinearAccessor : ExternalDataLinearAccessor data -> AccessorsLinear data
+fromExternalDataLinearAccessor (ExternalDataLinearAccessor accessors) =
+    accessors
+
+
+toExternalDataLinearAccessor : AccessorsLinear data -> ExternalDataLinearAccessor data
+toExternalDataLinearAccessor accessors =
+    ExternalDataLinearAccessor accessors
+
+
+type DataBand
+    = DataBand (List DataGroupBand)
+
+
+type DataLinear
+    = DataLinear (List DataGroupLinear)
+
+
+type alias PointBand =
+    ( String, Float )
+
+
+type alias PointLinear =
+    ( Float, Float )
+
+
+type alias DataGroupBand =
+    { groupLabel : Maybe String
+    , points : List PointBand
+    }
+
+
+dummyDataGroupBand : DataGroupBand
+dummyDataGroupBand =
+    { groupLabel = Nothing
+    , points = []
+    }
+
+
+type alias DataGroupLinear =
+    { groupLabel : Maybe String
+    , points : List PointLinear
+    }
+
+
+dummyDataGroupLinear : DataGroupLinear
+dummyDataGroupLinear =
+    { groupLabel = Nothing
+    , points = []
+    }
+
+
+
+--------------------------------------------------
 
 
 type Orientation
@@ -180,54 +294,16 @@ type DomainLinear
     = DomainLinear DomainLinearStruct
 
 
-type alias PointBand =
-    ( String, Float )
-
-
-type alias PointLinear =
-    ( Float, Float )
-
-
-type alias DataGroupBand =
-    { groupLabel : Maybe String
-    , points : List PointBand
-    }
-
-
-dummyDataGroupBand : DataGroupBand
-dummyDataGroupBand =
-    { groupLabel = Nothing
-    , points = []
-    }
-
-
-type alias DataGroupLinear =
-    { groupLabel : Maybe String
-    , points : List PointLinear
-    }
-
-
-dummyDataGroupLinear : DataGroupLinear
-dummyDataGroupLinear =
-    { groupLabel = Nothing
-    , points = []
-    }
-
-
-type
-    Data
-    --| DataOrdinal (List DataGroupOrdinal)
-    --| DataTime (List DataGroupTime)
-    = DataBand (List DataGroupBand)
-    | DataLinear (List DataGroupLinear)
-
-
 type alias Margin =
     { top : Float
     , right : Float
     , bottom : Float
     , left : Float
     }
+
+
+
+--ideas on axis: https://codepen.io/deciob/pen/GRgrXgR
 
 
 type AxisContinousDataTicks
@@ -258,6 +334,9 @@ type alias ConfigStruct =
     , desc : String
     , domainBand : DomainBand
     , domainLinear : DomainLinear
+
+    --, externalDataBandAccessor : ExternalDataBandAccessor data
+    --, externalDataLinearAccessor : ExternalDataLinearAccessor data
     , height : Float
     , layout : Layout
     , margin : Margin
@@ -286,6 +365,9 @@ defaultConfig =
         , desc = ""
         , domainBand = DomainBand initialDomainBandStruct
         , domainLinear = DomainLinear initialDomainLinearStruct
+
+        --, externalDataBandAccessor = toExternalDataBandAccessor accessorsBand
+        --, externalDataLinearAccessor = toExternalDataLinearAccessor accessorsLinear
         , height = defaultHeight
         , layout = defaultLayout
         , margin = defaultMargin
@@ -870,94 +952,90 @@ getDomainLinear config =
         |> fromDomainLinear
 
 
-getDomainBandFromData : Data -> Config -> DomainBandStruct
+getDomainBandFromData : DataBand -> Config -> DomainBandStruct
 getDomainBandFromData data config =
     let
+        -- get the domain from config first
         domain =
             getDomainBand config
+
+        d =
+            fromDataBand data
     in
-    case data of
-        DataBand d ->
-            DomainBand
-                { bandGroup =
-                    case domain.bandGroup of
-                        Just bandGroup ->
-                            Just bandGroup
+    DomainBand
+        { bandGroup =
+            case domain.bandGroup of
+                Just bandGroup ->
+                    Just bandGroup
 
-                        Nothing ->
-                            d
-                                |> List.map .groupLabel
-                                |> List.indexedMap (\i g -> g |> Maybe.withDefault (String.fromInt i))
-                                |> Just
-                , bandSingle =
-                    case domain.bandSingle of
-                        Just bandSingle ->
-                            Just bandSingle
+                Nothing ->
+                    d
+                        |> List.map .groupLabel
+                        |> List.indexedMap (\i g -> g |> Maybe.withDefault (String.fromInt i))
+                        |> Just
+        , bandSingle =
+            case domain.bandSingle of
+                Just bandSingle ->
+                    Just bandSingle
 
-                        Nothing ->
-                            d
-                                |> List.map .points
-                                |> List.concat
-                                |> List.map Tuple.first
-                                |> List.foldr
-                                    (\x acc ->
-                                        if List.member x acc then
-                                            acc
-
-                                        else
-                                            x :: acc
-                                    )
-                                    []
-                                |> Just
-                , linear =
-                    case domain.linear of
-                        Just linear ->
-                            Just linear
-
-                        Nothing ->
-                            d
-                                |> List.map .points
-                                |> List.concat
-                                |> List.map Tuple.second
-                                |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
-                                |> Just
-                }
-                |> fromDomainBand
-
-        _ ->
-            --TODO: should data be saparated, like domain?
-            domain
-
-
-getDomainLinearFromData : Data -> Config -> DomainLinearStruct
-getDomainLinearFromData data config =
-    let
-        domain =
-            getDomainLinear config
-    in
-    case data of
-        DataLinear d ->
-            DomainLinear
-                { horizontal =
+                Nothing ->
                     d
                         |> List.map .points
                         |> List.concat
                         |> List.map Tuple.first
-                        |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                        |> List.foldr
+                            (\x acc ->
+                                if List.member x acc then
+                                    acc
+
+                                else
+                                    x :: acc
+                            )
+                            []
                         |> Just
-                , vertical =
+        , linear =
+            case domain.linear of
+                Just linear ->
+                    Just linear
+
+                Nothing ->
                     d
                         |> List.map .points
                         |> List.concat
                         |> List.map Tuple.second
                         |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
                         |> Just
-                }
-                |> fromDomainLinear
+        }
+        |> fromDomainBand
 
-        _ ->
-            --TODO: should data be saparated, like domain?
-            domain
+
+getDomainLinearFromData : DataLinear -> Config -> DomainLinearStruct
+getDomainLinearFromData data config =
+    let
+        -- get the domain from config first
+        domain =
+            getDomainLinear config
+
+        d =
+            fromDataLinear data
+    in
+    DomainLinear
+        { horizontal =
+            d
+                |> List.map .points
+                |> List.concat
+                |> List.map Tuple.first
+                |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                |> Just
+        , vertical =
+            d
+                |> List.map .points
+                |> List.concat
+                |> List.map Tuple.second
+                |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                |> Just
+        }
+        |> fromDomainLinear
 
 
 fromDomainBand : DomainBand -> DomainBandStruct
@@ -970,30 +1048,30 @@ fromDomainLinear (DomainLinear d) =
     d
 
 
-fromDataBand : Data -> List DataGroupBand
-fromDataBand data =
-    case data of
-        DataBand d ->
-            d
-
-        _ ->
-            [ dummyDataGroupBand ]
+fromDataBand : DataBand -> List DataGroupBand
+fromDataBand (DataBand d) =
+    d
 
 
-fromDataLinear : Data -> List DataGroupLinear
-fromDataLinear data =
-    case data of
-        DataLinear d ->
-            d
-
-        _ ->
-            [ dummyDataGroupLinear ]
+fromDataLinear : DataLinear -> List DataGroupLinear
+fromDataLinear (DataLinear d) =
+    d
 
 
-getDataDepth : Data -> Int
-getDataDepth data =
+getDataBandDepth : DataBand -> Int
+getDataBandDepth data =
     data
         |> fromDataBand
+        |> List.map .points
+        |> List.head
+        |> Maybe.withDefault []
+        |> List.length
+
+
+getDataLinearDepth : DataLinear -> Int
+getDataLinearDepth data =
+    data
+        |> fromDataLinear
         |> List.map .points
         |> List.head
         |> Maybe.withDefault []
@@ -1166,3 +1244,139 @@ symbolCustomSpace orientation localDimension conf =
                     localDimension / conf.width
             in
             scalingFactor * conf.height
+
+
+
+-- DATA METHODS
+
+
+externalToDataBand : ExternalData data -> ExternalDataBandAccessor data -> DataBand
+externalToDataBand externalData externalAccessors =
+    let
+        accessors =
+            fromExternalDataBandAccessor externalAccessors
+
+        data =
+            fromExternalData externalData
+    in
+    data
+        |> List.map
+            (\d ->
+                let
+                    groupLabel =
+                        d
+                            |> List.head
+                            |> Maybe.map accessors.xGroup
+
+                    points =
+                        d
+                            |> List.map (\p -> ( accessors.xValue p, accessors.yValue p ))
+                in
+                { groupLabel = groupLabel
+                , points = points
+                }
+            )
+        |> DataBand
+
+
+externalToDataLinear : ExternalData data -> ExternalDataLinearAccessor data -> DataLinear
+externalToDataLinear externalData externalAccessors =
+    let
+        accessors =
+            fromExternalDataLinearAccessor externalAccessors
+
+        data =
+            fromExternalData externalData
+    in
+    data
+        |> List.map
+            (\d ->
+                let
+                    groupLabel =
+                        d
+                            |> List.head
+                            |> Maybe.map accessors.xGroup
+
+                    points =
+                        d
+                            |> List.map (\p -> ( accessors.xValue p, accessors.yValue p ))
+                in
+                { groupLabel = groupLabel
+                , points = points
+                }
+            )
+        |> DataLinear
+
+
+setXGroupBandAccessor : (data -> String) -> ExternalDataBandAccessor data -> ExternalDataBandAccessor data
+setXGroupBandAccessor accessor accessors =
+    accessors
+        |> fromExternalDataBandAccessor
+        |> (\a -> { a | xGroup = accessor })
+        |> toExternalDataBandAccessor
+
+
+setXBandAccessor : (data -> String) -> ExternalDataBandAccessor data -> ExternalDataBandAccessor data
+setXBandAccessor accessor accessors =
+    accessors
+        |> fromExternalDataBandAccessor
+        |> (\a -> { a | xValue = accessor })
+        |> toExternalDataBandAccessor
+
+
+setYBandAccessor : (data -> Float) -> ExternalDataBandAccessor data -> ExternalDataBandAccessor data
+setYBandAccessor accessor accessors =
+    accessors
+        |> fromExternalDataBandAccessor
+        |> (\a -> { a | yValue = accessor })
+        |> toExternalDataBandAccessor
+
+
+type alias DefaultExternalDataBand =
+    { x : String, y : Float, xGroup : String }
+
+
+defaultDataBandAccessors : ExternalDataBandAccessor DefaultExternalDataBand
+defaultDataBandAccessors =
+    toExternalDataBandAccessor
+        { xGroup = .xGroup
+        , xValue = .x
+        , yValue = .y
+        }
+
+
+setXGroupLinearAccessor : (data -> String) -> ExternalDataLinearAccessor data -> ExternalDataLinearAccessor data
+setXGroupLinearAccessor accessor accessors =
+    accessors
+        |> fromExternalDataLinearAccessor
+        |> (\a -> { a | xGroup = accessor })
+        |> toExternalDataLinearAccessor
+
+
+type alias DefaultExternalDataLinear =
+    { x : Float, y : Float, xGroup : String }
+
+
+defaultDataLinearAccessors : ExternalDataLinearAccessor DefaultExternalDataLinear
+defaultDataLinearAccessors =
+    toExternalDataLinearAccessor
+        { xGroup = .xGroup
+        , xValue = .x
+        , yValue = .y
+        }
+
+
+setXLinearAccessor : (data -> Float) -> ExternalDataLinearAccessor data -> ExternalDataLinearAccessor data
+setXLinearAccessor accessor accessors =
+    accessors
+        |> fromExternalDataLinearAccessor
+        |> (\a -> { a | xValue = accessor })
+        |> toExternalDataLinearAccessor
+
+
+setYLinearAccessor : (data -> Float) -> ExternalDataLinearAccessor data -> ExternalDataLinearAccessor data
+setYLinearAccessor accessor accessors =
+    accessors
+        |> fromExternalDataLinearAccessor
+        |> (\a -> { a | yValue = accessor })
+        |> toExternalDataLinearAccessor

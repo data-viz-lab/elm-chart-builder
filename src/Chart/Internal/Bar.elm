@@ -25,7 +25,7 @@ import Chart.Internal.Type
         , AxisOrientation(..)
         , Config
         , ConfigStruct
-        , Data(..)
+        , DataBand
         , DataGroupBand
         , Direction(..)
         , DomainBand(..)
@@ -45,7 +45,7 @@ import Chart.Internal.Type
         , getAxisContinousDataFormatter
         , getBandGroupRange
         , getBandSingleRange
-        , getDataDepth
+        , getDataBandDepth
         , getDomainBand
         , getDomainBandFromData
         , getHeight
@@ -105,7 +105,7 @@ descAndTitle c =
 -- BAND STACKED
 
 
-renderBandStacked : ( Data, Config ) -> Html msg
+renderBandStacked : ( DataBand, Config ) -> Html msg
 renderBandStacked ( data, config ) =
     -- based on https://code.gampleman.eu/elm-visualization/StackedBarChart/
     let
@@ -142,7 +142,7 @@ renderBandStacked ( data, config ) =
             Shape.stack stackedConfig
 
         stackDepth =
-            getDataDepth data
+            getDataBandDepth data
 
         linearDomain =
             config
@@ -244,7 +244,7 @@ renderBandStacked ( data, config ) =
         )
 
 
-getStackedValuesAndGroupes : List (List ( Float, Float )) -> Data -> StackedValuesAndGroupes
+getStackedValuesAndGroupes : List (List ( Float, Float )) -> DataBand -> StackedValuesAndGroupes
 getStackedValuesAndGroupes values data =
     let
         m =
@@ -362,7 +362,7 @@ horizontalRectsStacked config bandGroupScale ( group, values, labels ) =
 -- BAND GROUPED
 
 
-renderBandGrouped : ( Data, Config ) -> Html msg
+renderBandGrouped : ( DataBand, Config ) -> Html msg
 renderBandGrouped ( data, config ) =
     let
         c =

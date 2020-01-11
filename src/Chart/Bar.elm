@@ -93,7 +93,7 @@ import Chart.Internal.Type as Type
         , AxisOrientation(..)
         , Config
         , Direction(..)
-        , DomainBand
+        , ExternalDataBandAccessor
         , GroupedConfig
         , Layout(..)
         , Margin
@@ -102,7 +102,6 @@ import Chart.Internal.Type as Type
         , defaultConfig
         , fromConfig
         , setDimensions
-        , setDomainBand
         , setShowContinousAxis
         , setShowOrdinalAxis
         , setTitle
@@ -152,18 +151,21 @@ init =
         |> Bar.render data
 
 -}
-render : List DataGroupBand -> Config -> Html msg
-render data config =
+render : ( List (List data), ExternalDataBandAccessor data ) -> Config -> Html msg
+render ( externalData, accessors ) config =
     let
         c =
             fromConfig config
+
+        data =
+            Type.externalToDataBand (Type.toExternalData externalData) accessors
     in
     case c.layout of
         Grouped _ ->
-            renderBandGrouped ( Type.DataBand data, config )
+            renderBandGrouped ( data, config )
 
         Stacked _ ->
-            renderBandStacked ( Type.DataBand data, config )
+            renderBandStacked ( data, config )
 
 
 {-| Sets the outer height of the bar chart.
