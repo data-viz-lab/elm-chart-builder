@@ -16,8 +16,8 @@ module Chart.Internal.Type exposing
     , DomainLinear
     , DomainLinearStruct
     , ExternalData
-    , ExternalDataBandAccessor
-    , ExternalDataLinearAccessor
+    , ExternalDataAccessorBand
+    , ExternalDataAccessorLinear
     , GroupedConfig
     , GroupedConfigStruct
     , Layout(..)
@@ -105,8 +105,12 @@ module Chart.Internal.Type exposing
     , setShowVerticalAxis
     , setTitle
     , setWidth
-    , setXGroupBandAccessor
-    , setXGroupLinearAccessor
+    , setXAccessorBand
+    , setXAccessorLinear
+    , setXGroupAccessorBand
+    , setXGroupAccessorLinear
+    , setYAccessorBand
+    , setYAccessorLinear
     , showIcons
     , showIconsFromLayout
     , symbolCustomSpace
@@ -142,8 +146,8 @@ toExternalData data =
     ExternalData data
 
 
-type ExternalDataBandAccessor data
-    = ExternalDataBandAccessor (AccessorsBand data)
+type ExternalDataAccessorBand data
+    = ExternalDataAccessorBand (AccessorsBand data)
 
 
 type alias AccessorsBand data =
@@ -153,18 +157,18 @@ type alias AccessorsBand data =
     }
 
 
-fromExternalDataBandAccessor : ExternalDataBandAccessor data -> AccessorsBand data
-fromExternalDataBandAccessor (ExternalDataBandAccessor accessors) =
+fromExternalDataAccessorBand : ExternalDataAccessorBand data -> AccessorsBand data
+fromExternalDataAccessorBand (ExternalDataAccessorBand accessors) =
     accessors
 
 
-toExternalDataBandAccessor : AccessorsBand data -> ExternalDataBandAccessor data
-toExternalDataBandAccessor accessors =
-    ExternalDataBandAccessor accessors
+toExternalDataAccessorBand : AccessorsBand data -> ExternalDataAccessorBand data
+toExternalDataAccessorBand accessors =
+    ExternalDataAccessorBand accessors
 
 
-type ExternalDataLinearAccessor data
-    = ExternalDataLinearAccessor (AccessorsLinear data)
+type ExternalDataAccessorLinear data
+    = ExternalDataAccessorLinear (AccessorsLinear data)
 
 
 type alias AccessorsLinear data =
@@ -174,14 +178,14 @@ type alias AccessorsLinear data =
     }
 
 
-fromExternalDataLinearAccessor : ExternalDataLinearAccessor data -> AccessorsLinear data
-fromExternalDataLinearAccessor (ExternalDataLinearAccessor accessors) =
+fromExternalDataAccessorLinear : ExternalDataAccessorLinear data -> AccessorsLinear data
+fromExternalDataAccessorLinear (ExternalDataAccessorLinear accessors) =
     accessors
 
 
-toExternalDataLinearAccessor : AccessorsLinear data -> ExternalDataLinearAccessor data
-toExternalDataLinearAccessor accessors =
-    ExternalDataLinearAccessor accessors
+toExternalDataAccessorLinear : AccessorsLinear data -> ExternalDataAccessorLinear data
+toExternalDataAccessorLinear accessors =
+    ExternalDataAccessorLinear accessors
 
 
 type DataBand
@@ -1250,11 +1254,11 @@ symbolCustomSpace orientation localDimension conf =
 -- DATA METHODS
 
 
-externalToDataBand : ExternalData data -> ExternalDataBandAccessor data -> DataBand
+externalToDataBand : ExternalData data -> ExternalDataAccessorBand data -> DataBand
 externalToDataBand externalData externalAccessors =
     let
         accessors =
-            fromExternalDataBandAccessor externalAccessors
+            fromExternalDataAccessorBand externalAccessors
 
         data =
             fromExternalData externalData
@@ -1279,11 +1283,11 @@ externalToDataBand externalData externalAccessors =
         |> DataBand
 
 
-externalToDataLinear : ExternalData data -> ExternalDataLinearAccessor data -> DataLinear
+externalToDataLinear : ExternalData data -> ExternalDataAccessorLinear data -> DataLinear
 externalToDataLinear externalData externalAccessors =
     let
         accessors =
-            fromExternalDataLinearAccessor externalAccessors
+            fromExternalDataAccessorLinear externalAccessors
 
         data =
             fromExternalData externalData
@@ -1308,75 +1312,49 @@ externalToDataLinear externalData externalAccessors =
         |> DataLinear
 
 
-setXGroupBandAccessor : (data -> String) -> ExternalDataBandAccessor data -> ExternalDataBandAccessor data
-setXGroupBandAccessor accessor accessors =
+setXGroupAccessorBand : (data -> String) -> ExternalDataAccessorBand data -> ExternalDataAccessorBand data
+setXGroupAccessorBand accessor accessors =
     accessors
-        |> fromExternalDataBandAccessor
+        |> fromExternalDataAccessorBand
         |> (\a -> { a | xGroup = accessor })
-        |> toExternalDataBandAccessor
+        |> toExternalDataAccessorBand
 
 
-setXBandAccessor : (data -> String) -> ExternalDataBandAccessor data -> ExternalDataBandAccessor data
-setXBandAccessor accessor accessors =
+setXAccessorBand : (data -> String) -> ExternalDataAccessorBand data -> ExternalDataAccessorBand data
+setXAccessorBand accessor accessors =
     accessors
-        |> fromExternalDataBandAccessor
+        |> fromExternalDataAccessorBand
         |> (\a -> { a | xValue = accessor })
-        |> toExternalDataBandAccessor
+        |> toExternalDataAccessorBand
 
 
-setYBandAccessor : (data -> Float) -> ExternalDataBandAccessor data -> ExternalDataBandAccessor data
-setYBandAccessor accessor accessors =
+setYAccessorBand : (data -> Float) -> ExternalDataAccessorBand data -> ExternalDataAccessorBand data
+setYAccessorBand accessor accessors =
     accessors
-        |> fromExternalDataBandAccessor
+        |> fromExternalDataAccessorBand
         |> (\a -> { a | yValue = accessor })
-        |> toExternalDataBandAccessor
+        |> toExternalDataAccessorBand
 
 
-type alias DefaultExternalDataBand =
-    { x : String, y : Float, xGroup : String }
-
-
-defaultDataBandAccessors : ExternalDataBandAccessor DefaultExternalDataBand
-defaultDataBandAccessors =
-    toExternalDataBandAccessor
-        { xGroup = .xGroup
-        , xValue = .x
-        , yValue = .y
-        }
-
-
-setXGroupLinearAccessor : (data -> String) -> ExternalDataLinearAccessor data -> ExternalDataLinearAccessor data
-setXGroupLinearAccessor accessor accessors =
+setXGroupAccessorLinear : (data -> String) -> ExternalDataAccessorLinear data -> ExternalDataAccessorLinear data
+setXGroupAccessorLinear accessor accessors =
     accessors
-        |> fromExternalDataLinearAccessor
+        |> fromExternalDataAccessorLinear
         |> (\a -> { a | xGroup = accessor })
-        |> toExternalDataLinearAccessor
+        |> toExternalDataAccessorLinear
 
 
-type alias DefaultExternalDataLinear =
-    { x : Float, y : Float, xGroup : String }
-
-
-defaultDataLinearAccessors : ExternalDataLinearAccessor DefaultExternalDataLinear
-defaultDataLinearAccessors =
-    toExternalDataLinearAccessor
-        { xGroup = .xGroup
-        , xValue = .x
-        , yValue = .y
-        }
-
-
-setXLinearAccessor : (data -> Float) -> ExternalDataLinearAccessor data -> ExternalDataLinearAccessor data
-setXLinearAccessor accessor accessors =
+setXAccessorLinear : (data -> Float) -> ExternalDataAccessorLinear data -> ExternalDataAccessorLinear data
+setXAccessorLinear accessor accessors =
     accessors
-        |> fromExternalDataLinearAccessor
+        |> fromExternalDataAccessorLinear
         |> (\a -> { a | xValue = accessor })
-        |> toExternalDataLinearAccessor
+        |> toExternalDataAccessorLinear
 
 
-setYLinearAccessor : (data -> Float) -> ExternalDataLinearAccessor data -> ExternalDataLinearAccessor data
-setYLinearAccessor accessor accessors =
+setYAccessorLinear : (data -> Float) -> ExternalDataAccessorLinear data -> ExternalDataAccessorLinear data
+setYAccessorLinear accessor accessors =
     accessors
-        |> fromExternalDataLinearAccessor
+        |> fromExternalDataAccessorLinear
         |> (\a -> { a | yValue = accessor })
-        |> toExternalDataLinearAccessor
+        |> toExternalDataAccessorLinear

@@ -6,6 +6,7 @@ module Chart.Bar exposing
     , defaultGroupedConfig, divergingDirection, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
     , setIcons, setShowIndividualLabels
     , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth
+    , ExternalDataAccessor, setXAccessor, setXGroupAccessor, setYAccessor
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -19,6 +20,11 @@ module Chart.Bar exposing
 # Chart Initialization
 
 @docs init
+
+
+# Chart Accessors
+
+ExternalDataAccessor, initAccessor, setXGroupAccessor, setXAccessor, setYAccessor
 
 
 # Chart Rendering
@@ -93,7 +99,7 @@ import Chart.Internal.Type as Type
         , AxisOrientation(..)
         , Config
         , Direction(..)
-        , ExternalDataBandAccessor
+        , ExternalDataAccessorBand
         , GroupedConfig
         , Layout(..)
         , Margin
@@ -151,7 +157,7 @@ init =
         |> Bar.render data
 
 -}
-render : ( List (List data), ExternalDataBandAccessor data ) -> Config -> Html msg
+render : ( List (List data), ExternalDataAccessorBand data ) -> Config -> Html msg
 render ( externalData, accessors ) config =
     let
         c =
@@ -642,3 +648,26 @@ symbolTriangle id =
 symbolCorner : String -> BarSymbol msg
 symbolCorner id =
     Corner id
+
+
+
+-- ACCESSORS
+
+
+type alias ExternalDataAccessor data =
+    Type.ExternalDataAccessorBand data
+
+
+setXGroupAccessor : (data -> String) -> Type.ExternalDataAccessorBand data -> Type.ExternalDataAccessorBand data
+setXGroupAccessor =
+    Type.setXGroupAccessorBand
+
+
+setXAccessor : (data -> String) -> Type.ExternalDataAccessorBand data -> Type.ExternalDataAccessorBand data
+setXAccessor =
+    Type.setXAccessorBand
+
+
+setYAccessor : (data -> Float) -> Type.ExternalDataAccessorBand data -> Type.ExternalDataAccessorBand data
+setYAccessor =
+    Type.setYAccessorBand

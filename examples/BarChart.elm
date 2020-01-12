@@ -84,46 +84,67 @@ icons prefix =
     ]
 
 
-data : List Bar.DataGroupBand
+type alias Data =
+    { x : String, y : Float, groupLabel : String }
+
+
+data : List (List Data)
 data =
-    [ { groupLabel = Just "A"
-      , points =
-            [ ( "a", 10 )
-            , ( "b", 13 )
-            , ( "c", 16 )
-            ]
-      }
-    , { groupLabel = Just "B"
-      , points =
-            [ ( "a", 11 )
-            , ( "b", 23 )
-            , ( "c", 16 )
-            ]
-      }
+    [ [ { groupLabel = "A"
+        , x = "a"
+        , y = 10
+        }
+      , { groupLabel = "A"
+        , x = "b"
+        , y = 13
+        }
+      , { groupLabel = "A"
+        , x = "c"
+        , y = 16
+        }
+      ]
+    , [ { groupLabel = "B"
+        , x = "a"
+        , y = 11
+        }
+      , { groupLabel = "B"
+        , x = "b"
+        , y = 23
+        }
+      , { groupLabel = "B"
+        , x = "c"
+        , y = 16
+        }
+      ]
     ]
 
 
-dataStacked : List Bar.DataGroupBand
+dataStacked : List (List Data)
 dataStacked =
-    [ { groupLabel = Nothing
-      , points =
-            [ ( "a", -10 )
-            , ( "b", 13 )
-            ]
-      }
-    , { groupLabel = Nothing
-      , points =
-            [ ( "a", -12 )
-            , ( "b", 16 )
-            ]
-      }
-    , { groupLabel = Nothing
-      , points =
-            [ ( "a", -11 )
-            , ( "b", 13 )
-            ]
-      }
+    [ [ { groupLabel = "A"
+        , x = "a"
+        , y = 10
+        }
+      , { groupLabel = "A"
+        , x = "b"
+        , y = 13
+        }
+      ]
+    , [ { groupLabel = "B"
+        , x = "a"
+        , y = 11
+        }
+      , { groupLabel = "B"
+        , x = "b"
+        , y = 23
+        }
+      ]
     ]
+
+
+accessors : Bar.ExternalDataAccessor Data
+accessors =
+    Bar.setXGroupAccessor .groupLabel (Bar.ExternalDataAccessor data)
 
 
 width : Float
