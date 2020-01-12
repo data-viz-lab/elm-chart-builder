@@ -1,12 +1,12 @@
 module Chart.Bar exposing
     ( DataGroupBand
     , init
+    , Accessors
     , render
     , setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowOrdinalAxis, setTitle, setWidth
     , defaultGroupedConfig, divergingDirection, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
     , setIcons, setShowIndividualLabels
     , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth
-    , ExternalDataAccessor, setXAccessor, setXGroupAccessor, setYAccessor
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -24,7 +24,7 @@ module Chart.Bar exposing
 
 # Chart Accessors
 
-ExternalDataAccessor, initAccessor, setXGroupAccessor, setXAccessor, setYAccessor
+@docs Accessors
 
 
 # Chart Rendering
@@ -93,7 +93,8 @@ import Chart.Internal.Bar
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..))
 import Chart.Internal.Type as Type
     exposing
-        ( AxisContinousDataTickCount(..)
+        ( AccessorsBand
+        , AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
@@ -157,7 +158,7 @@ init =
         |> Bar.render data
 
 -}
-render : ( List (List data), ExternalDataAccessorBand data ) -> Config -> Html msg
+render : ( List (List data), Accessors data ) -> Config -> Html msg
 render ( externalData, accessors ) config =
     let
         c =
@@ -652,22 +653,34 @@ symbolCorner id =
 
 
 -- ACCESSORS
+--type alias ExternalDataAccessor data =
+--    Type.ExternalDataAccessorBand data
+--
+--
+--setXGroupAccessor : (data -> String) -> Type.ExternalDataAccessorBand data -> Type.ExternalDataAccessorBand data
+--setXGroupAccessor =
+--    Type.setXGroupAccessorBand
+--
+--
+--setXAccessor : (data -> String) -> Type.ExternalDataAccessorBand data -> Type.ExternalDataAccessorBand data
+--setXAccessor =
+--    Type.setXAccessorBand
+--
+--
+--setYAccessor : (data -> Float) -> Type.ExternalDataAccessorBand data -> Type.ExternalDataAccessorBand data
+--setYAccessor =
+--    Type.setYAccessorBand
+--
+--
+--initAccessors : data -> Type.ExternalDataAccessorBand data
+--initAccessors =
+--    Type.initExternalDataAccessorBand
+--type alias Accessors data =
+--    AccessorsBand data
 
 
-type alias ExternalDataAccessor data =
-    Type.ExternalDataAccessorBand data
-
-
-setXGroupAccessor : (data -> String) -> Type.ExternalDataAccessorBand data -> Type.ExternalDataAccessorBand data
-setXGroupAccessor =
-    Type.setXGroupAccessorBand
-
-
-setXAccessor : (data -> String) -> Type.ExternalDataAccessorBand data -> Type.ExternalDataAccessorBand data
-setXAccessor =
-    Type.setXAccessorBand
-
-
-setYAccessor : (data -> Float) -> Type.ExternalDataAccessorBand data -> Type.ExternalDataAccessorBand data
-setYAccessor =
-    Type.setYAccessorBand
+type alias Accessors data =
+    { xGroup : data -> String
+    , xValue : data -> String
+    , yValue : data -> Float
+    }

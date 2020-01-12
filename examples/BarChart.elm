@@ -142,9 +142,9 @@ dataStacked =
     ]
 
 
-accessors : Bar.ExternalDataAccessor Data
-accessors =
-    Bar.setXGroupAccessor .groupLabel (Bar.ExternalDataAccessor data)
+accessors : Data -> Bar.Accessors Data
+accessors d =
+    Bar.Accessors .groupLabel .x .y
 
 
 width : Float
@@ -197,7 +197,7 @@ verticalGrouped =
             , width = width
             , height = height
             }
-        |> Bar.render data
+        |> Bar.render ( data, accessors )
 
 
 verticalGroupedWithLabels : Html msg
@@ -212,7 +212,7 @@ verticalGroupedWithLabels =
             , width = width
             , height = height
             }
-        |> Bar.render data
+        |> Bar.render ( data, accessors )
 
 
 verticalStacked : Html msg
@@ -226,7 +226,7 @@ verticalStacked =
             , width = width
             , height = height
             }
-        |> Bar.render data
+        |> Bar.render ( data, accessors )
 
 
 horizontalGrouped : Html msg
@@ -243,7 +243,7 @@ horizontalGrouped =
             , width = width
             , height = height
             }
-        |> Bar.render data
+        |> Bar.render ( data, accessors )
 
 
 horizontalGroupedWithLabels : Html msg
@@ -260,7 +260,7 @@ horizontalGroupedWithLabels =
             , width = width
             , height = height
             }
-        |> Bar.render data
+        |> Bar.render ( data, accessors )
 
 
 horizontalStacked : Html msg
@@ -275,7 +275,7 @@ horizontalStacked =
             , width = width
             , height = height
             }
-        |> Bar.render data
+        |> Bar.render ( data, accessors )
 
 
 horizontalStackedDiverging : Html msg
@@ -291,7 +291,7 @@ horizontalStackedDiverging =
             , height = height
             }
         |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
-        |> Bar.render dataStacked
+        |> Bar.render ( dataStacked, accessors )
 
 
 verticalStackedDiverging : Html msg
@@ -307,7 +307,7 @@ verticalStackedDiverging =
             , height = height
             }
         |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
-        |> Bar.render dataStacked
+        |> Bar.render ( dataStacked, accessors )
 
 
 main : Html msg

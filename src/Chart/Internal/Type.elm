@@ -1,5 +1,6 @@
 module Chart.Internal.Type exposing
-    ( AxisContinousDataTickCount(..)
+    ( AccessorsBand
+    , AxisContinousDataTickCount(..)
     , AxisContinousDataTickFormat(..)
     , AxisContinousDataTicks(..)
     , AxisOrientation(..)
@@ -75,6 +76,8 @@ module Chart.Internal.Type exposing
     , getShowIndividualLabels
     , getTitle
     , getWidth
+    , initExternalDataAccessorBand
+    , initExternalDataAccessorLinear
     , leftGap
     , role
     , setAxisContinousDataTickCount
@@ -1254,11 +1257,11 @@ symbolCustomSpace orientation localDimension conf =
 -- DATA METHODS
 
 
-externalToDataBand : ExternalData data -> ExternalDataAccessorBand data -> DataBand
+externalToDataBand : ExternalData data -> (d -> AccessorsBand d) -> DataBand
 externalToDataBand externalData externalAccessors =
     let
         accessors =
-            fromExternalDataAccessorBand externalAccessors
+            externalAccessors
 
         data =
             fromExternalData externalData
@@ -1274,7 +1277,7 @@ externalToDataBand externalData externalAccessors =
 
                     points =
                         d
-                            |> List.map (\p -> ( accessors.xValue p, accessors.yValue p ))
+                            |> List.map (\p -> ( (accessors p).xValue p, (accessors p).yValue p ))
                 in
                 { groupLabel = groupLabel
                 , points = points
@@ -1358,3 +1361,21 @@ setYAccessorLinear accessor accessors =
         |> fromExternalDataAccessorLinear
         |> (\a -> { a | yValue = accessor })
         |> toExternalDataAccessorLinear
+
+
+initExternalDataAccessorBand : data -> ExternalDataAccessorBand data
+initExternalDataAccessorBand _ =
+    ExternalDataAccessorBand
+        { xGroup = always ""
+        , xValue = always ""
+        , yValue = always 0
+        }
+
+
+initExternalDataAccessorLinear : data -> ExternalDataAccessorLinear data
+initExternalDataAccessorLinear _ =
+    ExternalDataAccessorLinear
+        { xGroup = always ""
+        , xValue = always 0
+        , yValue = always 0
+        }
