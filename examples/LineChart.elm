@@ -58,23 +58,42 @@ height =
     250
 
 
-data : List Line.DataGroupLinear
+type alias Data =
+    { x : Float, y : Float, groupLabel : String }
+
+
+data : List Data
 data =
-    [ { groupLabel = Just "A"
-      , points =
-            [ ( 1, 10 )
-            , ( 2, 13 )
-            , ( 16, 16 )
-            ]
+    [ { groupLabel = "A"
+      , x = 1
+      , y = 10
       }
-    , { groupLabel = Just "B"
-      , points =
-            [ ( 1, 11 )
-            , ( 2, 23 )
-            , ( 3, 16 )
-            ]
+    , { groupLabel = "A"
+      , x = 2
+      , y = 13
+      }
+    , { groupLabel = "A"
+      , x = 5
+      , y = 16
+      }
+    , { groupLabel = "B"
+      , x = 1
+      , y = 11
+      }
+    , { groupLabel = "B"
+      , x = 2
+      , y = 23
+      }
+    , { groupLabel = "B"
+      , x = 3
+      , y = 16
       }
     ]
+
+
+accessor : Line.Accessor Data
+accessor =
+    Line.Accessor .groupLabel .x .y
 
 
 attrs : List (Html.Attribute msg)
@@ -90,15 +109,13 @@ doubleLine =
     Line.init
         |> Line.setTitle "A two line chart"
         |> Line.setDesc "A two line chart example to demonstrate the charting library"
-        -- TODO: should not be able to set the whole domain
-        --|> Line.setDomain { horizontal = ( 1, 16 ), vertical = ( 10, 23 ) }
         |> Line.setAxisVerticalTickCount 5
         |> Line.setDimensions
             { margin = { top = 10, right = 10, bottom = 30, left = 30 }
             , width = width
             , height = height
             }
-        |> Line.render data
+        |> Line.render ( data, accessor )
 
 
 main : Html msg

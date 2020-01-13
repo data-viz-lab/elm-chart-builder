@@ -1,5 +1,5 @@
 module Chart.Line exposing
-    ( DataGroupLinear
+    ( DataGroupLinear, Accessor
     , init
     , render
     , setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setDomain, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
@@ -12,7 +12,7 @@ module Chart.Line exposing
 
 # Chart Data Format
 
-@docs DataGroupLinear
+@docs DataGroupLinear, Accessor
 
 
 # Chart Initialization
@@ -43,8 +43,6 @@ import Chart.Internal.Type as Type
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
         , Config
-        , Data(..)
-        , DataGroupLinear
         , DomainLinear
         , Layout(..)
         , Margin
@@ -108,15 +106,18 @@ init =
         |> Line.render data
 
 -}
-render : List DataGroupLinear -> Config -> Html msg
-render data config =
+render : ( List data, Accessor data ) -> Config -> Html msg
+render ( externalData, accessor ) config =
     let
         c =
             fromConfig config
+
+        data =
+            Type.externalToDataLinear (Type.toExternalData externalData) accessor
     in
     case c.layout of
         Grouped _ ->
-            renderLineGrouped ( Type.DataLinear data, config )
+            renderLineGrouped ( data, config )
 
         Stacked _ ->
             Html.text "TODO"
@@ -326,3 +327,23 @@ This shows the bar's vertical axis
 setShowVerticalAxis : Bool -> Config -> Config
 setShowVerticalAxis value config =
     Type.setShowVerticalAxis value config
+
+
+
+-- ACCESSOR
+
+
+{-| The data accessors
+
+    type alias Accessor data =
+        { xGroup : data -> String
+        , xValue : data -> String
+        , yValue : data -> Float
+        }
+
+-}
+type alias Accessor data =
+    { xGroup : data -> String
+    , xValue : data -> Float
+    , yValue : data -> Float
+    }

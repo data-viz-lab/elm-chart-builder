@@ -88,63 +88,59 @@ type alias Data =
     { x : String, y : Float, groupLabel : String }
 
 
-data : List (List Data)
+data : List Data
 data =
-    [ [ { groupLabel = "A"
-        , x = "a"
-        , y = 10
-        }
-      , { groupLabel = "A"
-        , x = "b"
-        , y = 13
-        }
-      , { groupLabel = "A"
-        , x = "c"
-        , y = 16
-        }
-      ]
-    , [ { groupLabel = "B"
-        , x = "a"
-        , y = 11
-        }
-      , { groupLabel = "B"
-        , x = "b"
-        , y = 23
-        }
-      , { groupLabel = "B"
-        , x = "c"
-        , y = 16
-        }
-      ]
+    [ { groupLabel = "A"
+      , x = "a"
+      , y = 10
+      }
+    , { groupLabel = "A"
+      , x = "b"
+      , y = 13
+      }
+    , { groupLabel = "A"
+      , x = "c"
+      , y = 16
+      }
+    , { groupLabel = "B"
+      , x = "a"
+      , y = 11
+      }
+    , { groupLabel = "B"
+      , x = "b"
+      , y = 23
+      }
+    , { groupLabel = "B"
+      , x = "c"
+      , y = 16
+      }
     ]
 
 
-dataStacked : List (List Data)
+dataStacked : List Data
 dataStacked =
-    [ [ { groupLabel = "A"
-        , x = "a"
-        , y = 10
-        }
-      , { groupLabel = "A"
-        , x = "b"
-        , y = 13
-        }
-      ]
-    , [ { groupLabel = "B"
-        , x = "a"
-        , y = 11
-        }
-      , { groupLabel = "B"
-        , x = "b"
-        , y = 23
-        }
-      ]
+    [ { groupLabel = "A"
+      , x = "a"
+      , y = 10
+      }
+    , { groupLabel = "A"
+      , x = "b"
+      , y = 13
+      }
+    , { groupLabel = "B"
+      , x = "a"
+      , y = 11
+      }
+    , { groupLabel = "B"
+      , x = "b"
+      , y = 23
+      }
     ]
 
 
-accessors : Data -> Bar.Accessors Data
-accessors d =
-    Bar.Accessors .groupLabel .x .y
+accessor : Bar.Accessor Data
+accessor =
+    Bar.Accessor .groupLabel .x .y
 
 
 width : Float
@@ -197,7 +193,7 @@ verticalGrouped =
             , width = width
             , height = height
             }
-        |> Bar.render ( data, accessors )
+        |> Bar.render ( data, accessor )
 
 
 verticalGroupedWithLabels : Html msg
@@ -212,7 +208,7 @@ verticalGroupedWithLabels =
             , width = width
             , height = height
             }
-        |> Bar.render ( data, accessors )
+        |> Bar.render ( data, accessor )
 
 
 verticalStacked : Html msg
@@ -226,7 +222,7 @@ verticalStacked =
             , width = width
             , height = height
             }
-        |> Bar.render ( data, accessors )
+        |> Bar.render ( data, accessor )
 
 
 horizontalGrouped : Html msg
@@ -243,7 +239,7 @@ horizontalGrouped =
             , width = width
             , height = height
             }
-        |> Bar.render ( data, accessors )
+        |> Bar.render ( data, accessor )
 
 
 horizontalGroupedWithLabels : Html msg
@@ -260,7 +256,7 @@ horizontalGroupedWithLabels =
             , width = width
             , height = height
             }
-        |> Bar.render ( data, accessors )
+        |> Bar.render ( data, accessor )
 
 
 horizontalStacked : Html msg
@@ -275,7 +271,7 @@ horizontalStacked =
             , width = width
             , height = height
             }
-        |> Bar.render ( data, accessors )
+        |> Bar.render ( data, accessor )
 
 
 horizontalStackedDiverging : Html msg
@@ -291,7 +287,7 @@ horizontalStackedDiverging =
             , height = height
             }
         |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
-        |> Bar.render ( dataStacked, accessors )
+        |> Bar.render ( dataStacked, accessor )
 
 
 verticalStackedDiverging : Html msg
@@ -307,7 +303,7 @@ verticalStackedDiverging =
             , height = height
             }
         |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
-        |> Bar.render ( dataStacked, accessors )
+        |> Bar.render ( dataStacked, accessor )
 
 
 main : Html msg

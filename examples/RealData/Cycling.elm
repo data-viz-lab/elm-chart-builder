@@ -100,94 +100,63 @@ height =
     600
 
 
-data : List Bar.DataGroupBand
+type alias Data =
+    { x : String, y : Float, groupLabel : String }
+
+
+accessor : Bar.Accessor Data
+accessor =
+    Bar.Accessor .groupLabel .x .y
+
+
+data : List Data
 data =
-    [ { groupLabel = Just "16-24"
-      , points =
-            [ ( "once per month", 0.211 )
-            , ( "once per week", 0.015 )
-            , ( "three times per week", 0.078 )
-            , ( "five times per week", 0.049 )
-            ]
-      }
-    , { groupLabel = Just "25-34"
-      , points =
-            [ ( "once per month", 0.019 )
-            , ( "once per week", 0.131 )
-            , ( "three times per week", 0.07 )
-            , ( "five times per week", 0.045 )
-            ]
-      }
-    , { groupLabel = Just "35-44"
-      , points =
-            [ ( "once per month", 0.219 )
-            , ( "once per week", 0.151 )
-            , ( "three times per week", 0.072 )
-            , ( "five times per week", 0.042 )
-            ]
-      }
-    , { groupLabel = Just "45-54"
-      , points =
-            [ ( "once per month", 0.217 )
-            , ( "once per week", 0.015 )
-            , ( "three times per week", 0.069 )
-            , ( "five times per week", 0.004 )
-            ]
-      }
-    , { groupLabel = Just "55-64"
-      , points =
-            [ ( "once per month", 0.152 )
-            , ( "once per week", 0.107 )
-            , ( "three times per week", 0.045 )
-            , ( "five times per week", 0.025 )
-            ]
-      }
-    , { groupLabel = Just "65+years"
-      , points =
-            [ ( "once per month", 0.076 )
-            , ( "once per week", 0.053 )
-            , ( "three times per week", 0.021 )
-            , ( "five times per week", 0.012 )
-            ]
-      }
+    [ { groupLabel = "16-24", x = "once per month", y = 0.211 }
+    , { groupLabel = "16-24", x = "once per week", y = 0.015 }
+    , { groupLabel = "16-24", x = "three times per week", y = 0.078 }
+    , { groupLabel = "16-24", x = "five times per week", y = 0.049 }
+    , { groupLabel = "25-34", x = "once per month", y = 0.019 }
+    , { groupLabel = "25-34", x = "once per week", y = 0.131 }
+    , { groupLabel = "25-34", x = "three times per week", y = 0.07 }
+    , { groupLabel = "25-34", x = "five times per week", y = 0.045 }
+    , { groupLabel = "35-44", x = "once per month", y = 0.219 }
+    , { groupLabel = "35-44", x = "once per week", y = 0.151 }
+    , { groupLabel = "35-44", x = "three times per week", y = 0.072 }
+    , { groupLabel = "35-44", x = "five times per week", y = 0.042 }
+    , { groupLabel = "45-54", x = "once per month", y = 0.217 }
+    , { groupLabel = "45-54", x = "once per week", y = 0.015 }
+    , { groupLabel = "45-54", x = "three times per week", y = 0.069 }
+    , { groupLabel = "45-54", x = "five times per week", y = 0.004 }
+    , { groupLabel = "55-64", x = "once per month", y = 0.152 }
+    , { groupLabel = "55-64", x = "once per week", y = 0.107 }
+    , { groupLabel = "55-64", x = "three times per week", y = 0.045 }
+    , { groupLabel = "55-64", x = "five times per week", y = 0.025 }
+    , { groupLabel = "65+years", x = "once per month", y = 0.076 }
+    , { groupLabel = "65+years", x = "once per week", y = 0.053 }
+    , { groupLabel = "65+years", x = "three times per week", y = 0.021 }
+    , { groupLabel = "65+years", x = "five times per week", y = 0.012 }
     ]
 
 
-dataGender : List Bar.DataGroupBand
+dataGender : List Data
 dataGender =
-    [ { groupLabel = Just "Male"
-      , points =
-            [ ( "once per month", 0.229 )
-            , ( "once per week", 0.168 )
-            , ( "three times per week", 0.084 )
-            , ( "five times per week", 0.051 )
-            ]
-      }
-    , { groupLabel = Just "Female"
-      , points =
-            [ ( "once per month", 0.117 )
-            , ( "once per week", 0.072 )
-            , ( "three times per week", 0.031 )
-            , ( "five times per week", 0.017 )
-            ]
-      }
+    [ { groupLabel = "Male", x = "once per month", y = 0.229 }
+    , { groupLabel = "Male", x = "once per week", y = 0.168 }
+    , { groupLabel = "Male", x = "three times per week", y = 0.084 }
+    , { groupLabel = "Male", x = "five times per week", y = 0.051 }
+    , { groupLabel = "Female", x = "once per month", y = 0.117 }
+    , { groupLabel = "Female", x = "once per week", y = 0.072 }
+    , { groupLabel = "Female", x = "three times per week", y = 0.031 }
+    , { groupLabel = "Female", x = "five times per week", y = 0.017 }
     ]
 
 
-dataLegendPoints : List ( String, Float )
-dataLegendPoints =
-    [ ( "Once per month", 0.25 )
-    , ( "Once per week", 0.25 )
-    , ( "Three times per week", 0.25 )
-    , ( "Five times per week", 0.25 )
-    ]
-
-
-dataLegend : List Bar.DataGroupBand
+dataLegend : List Data
 dataLegend =
-    [ { groupLabel = Just "legend"
-      , points = dataLegendPoints
-      }
+    [ { groupLabel = "legend", x = "Once per month", y = 0.25 }
+    , { groupLabel = "legend", x = "Once per week", y = 0.25 }
+    , { groupLabel = "legend", x = "Three times per week", y = 0.25 }
+    , { groupLabel = "legend", x = "Five times per week", y = 0.25 }
     ]
 
 
@@ -210,7 +179,7 @@ stackedByFrequency =
             , height = height
             }
         |> Bar.setDomainLinear ( 0, 0.55 )
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 
 stackedByFrequencyGender : Html msg
@@ -226,7 +195,7 @@ stackedByFrequencyGender =
             , height = height
             }
         |> Bar.setDomainLinear ( 0, 0.55 )
-        |> Bar.render dataGender
+        |> Bar.render ( dataGender, accessor )
 
 
 stackedByFrequencyLegend : Html msg
@@ -242,7 +211,7 @@ stackedByFrequencyLegend =
             , width = 30
             , height = 300
             }
-        |> Bar.render dataLegend
+        |> Bar.render ( dataLegend, accessor )
 
 
 attrs : List (Html.Attribute msg)
@@ -295,9 +264,9 @@ main =
                 [ Html.div [ class "legend" ]
                     [ Html.div [ class "legend-chart" ] [ stackedByFrequencyLegend ]
                     , Html.div [ class "legend-labels" ]
-                        (dataLegendPoints
+                        (dataLegend
                             |> List.reverse
-                            |> List.map (\d -> Html.div [] [ Html.text <| Tuple.first d ])
+                            |> List.map (\d -> Html.div [] [ Html.text d.x ])
                         )
                     ]
                 ]

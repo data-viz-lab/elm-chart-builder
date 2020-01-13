@@ -1,5 +1,5 @@
 module Chart.Internal.Type exposing
-    ( AccessorsBand
+    ( AccessorBand
     , AxisContinousDataTickCount(..)
     , AxisContinousDataTickFormat(..)
     , AxisContinousDataTicks(..)
@@ -17,8 +17,6 @@ module Chart.Internal.Type exposing
     , DomainLinear
     , DomainLinearStruct
     , ExternalData
-    , ExternalDataAccessorBand
-    , ExternalDataAccessorLinear
     , GroupedConfig
     , GroupedConfigStruct
     , Layout(..)
@@ -76,8 +74,6 @@ module Chart.Internal.Type exposing
     , getShowIndividualLabels
     , getTitle
     , getWidth
-    , initExternalDataAccessorBand
-    , initExternalDataAccessorLinear
     , leftGap
     , role
     , setAxisContinousDataTickCount
@@ -108,12 +104,6 @@ module Chart.Internal.Type exposing
     , setShowVerticalAxis
     , setTitle
     , setWidth
-    , setXAccessorBand
-    , setXAccessorLinear
-    , setXGroupAccessorBand
-    , setXGroupAccessorLinear
-    , setYAccessorBand
-    , setYAccessorLinear
     , showIcons
     , showIconsFromLayout
     , symbolCustomSpace
@@ -125,6 +115,7 @@ module Chart.Internal.Type exposing
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
 import Html
 import Html.Attributes
+import List.Extra
 import Scale exposing (BandScale)
 import Shape
 
@@ -136,59 +127,31 @@ import Shape
 
 
 type ExternalData data
-    = ExternalData (List (List data))
+    = ExternalData (List data)
 
 
-fromExternalData : ExternalData data -> List (List data)
+fromExternalData : ExternalData data -> List data
 fromExternalData (ExternalData data) =
     data
 
 
-toExternalData : List (List data) -> ExternalData data
+toExternalData : List data -> ExternalData data
 toExternalData data =
     ExternalData data
 
 
-type ExternalDataAccessorBand data
-    = ExternalDataAccessorBand (AccessorsBand data)
-
-
-type alias AccessorsBand data =
+type alias AccessorBand data =
     { xGroup : data -> String
     , xValue : data -> String
     , yValue : data -> Float
     }
 
 
-fromExternalDataAccessorBand : ExternalDataAccessorBand data -> AccessorsBand data
-fromExternalDataAccessorBand (ExternalDataAccessorBand accessors) =
-    accessors
-
-
-toExternalDataAccessorBand : AccessorsBand data -> ExternalDataAccessorBand data
-toExternalDataAccessorBand accessors =
-    ExternalDataAccessorBand accessors
-
-
-type ExternalDataAccessorLinear data
-    = ExternalDataAccessorLinear (AccessorsLinear data)
-
-
-type alias AccessorsLinear data =
+type alias AccessorLinear data =
     { xGroup : data -> String
     , xValue : data -> Float
     , yValue : data -> Float
     }
-
-
-fromExternalDataAccessorLinear : ExternalDataAccessorLinear data -> AccessorsLinear data
-fromExternalDataAccessorLinear (ExternalDataAccessorLinear accessors) =
-    accessors
-
-
-toExternalDataAccessorLinear : AccessorsLinear data -> ExternalDataAccessorLinear data
-toExternalDataAccessorLinear accessors =
-    ExternalDataAccessorLinear accessors
 
 
 type DataBand
@@ -1257,27 +1220,34 @@ symbolCustomSpace orientation localDimension conf =
 -- DATA METHODS
 
 
-externalToDataBand : ExternalData data -> (d -> AccessorsBand d) -> DataBand
-externalToDataBand externalData externalAccessors =
+externalToDataBand : ExternalData data -> AccessorBand data -> DataBand
+externalToDataBand externalData accessor =
     let
-        accessors =
-            externalAccessors
-
         data =
             fromExternalData externalData
     in
     data
+        |> List.Extra.groupWhile
+            (\a b -> accessor.xGroup a == accessor.xGroup b)
         |> List.map
             (\d ->
                 let
                     groupLabel =
                         d
-                            |> List.head
-                            |> Maybe.map accessors.xGroup
+                            |> Tuple.first
+                            |> accessor.xGroup
+                            |> Just
+
+                    firstPoint =
+                        d
+                            |> Tuple.first
+                            |> (\p -> ( accessor.xValue p, accessor.yValue p ))
 
                     points =
                         d
-                            |> List.map (\p -> ( (accessors p).xValue p, (accessors p).yValue p ))
+                            |> Tuple.second
+                            |> List.map (\p -> ( accessor.xValue p, accessor.yValue p ))
+                            |> (::) firstPoint
                 in
                 { groupLabel = groupLabel
                 , points = points
@@ -1286,96 +1256,37 @@ externalToDataBand externalData externalAccessors =
         |> DataBand
 
 
-externalToDataLinear : ExternalData data -> ExternalDataAccessorLinear data -> DataLinear
-externalToDataLinear externalData externalAccessors =
+externalToDataLinear : ExternalData data -> AccessorLinear data -> DataLinear
+externalToDataLinear externalData accessor =
     let
-        accessors =
-            fromExternalDataAccessorLinear externalAccessors
-
         data =
             fromExternalData externalData
     in
     data
+        |> List.Extra.groupWhile
+            (\a b -> accessor.xGroup a == accessor.xGroup b)
         |> List.map
             (\d ->
                 let
                     groupLabel =
                         d
-                            |> List.head
-                            |> Maybe.map accessors.xGroup
+                            |> Tuple.first
+                            |> accessor.xGroup
+                            |> Just
+
+                    firstPoint =
+                        d
+                            |> Tuple.first
+                            |> (\p -> ( accessor.xValue p, accessor.yValue p ))
 
                     points =
                         d
-                            |> List.map (\p -> ( accessors.xValue p, accessors.yValue p ))
+                            |> Tuple.second
+                            |> List.map (\p -> ( accessor.xValue p, accessor.yValue p ))
+                            |> (::) firstPoint
                 in
                 { groupLabel = groupLabel
                 , points = points
                 }
             )
         |> DataLinear
-
-
-setXGroupAccessorBand : (data -> String) -> ExternalDataAccessorBand data -> ExternalDataAccessorBand data
-setXGroupAccessorBand accessor accessors =
-    accessors
-        |> fromExternalDataAccessorBand
-        |> (\a -> { a | xGroup = accessor })
-        |> toExternalDataAccessorBand
-
-
-setXAccessorBand : (data -> String) -> ExternalDataAccessorBand data -> ExternalDataAccessorBand data
-setXAccessorBand accessor accessors =
-    accessors
-        |> fromExternalDataAccessorBand
-        |> (\a -> { a | xValue = accessor })
-        |> toExternalDataAccessorBand
-
-
-setYAccessorBand : (data -> Float) -> ExternalDataAccessorBand data -> ExternalDataAccessorBand data
-setYAccessorBand accessor accessors =
-    accessors
-        |> fromExternalDataAccessorBand
-        |> (\a -> { a | yValue = accessor })
-        |> toExternalDataAccessorBand
-
-
-setXGroupAccessorLinear : (data -> String) -> ExternalDataAccessorLinear data -> ExternalDataAccessorLinear data
-setXGroupAccessorLinear accessor accessors =
-    accessors
-        |> fromExternalDataAccessorLinear
-        |> (\a -> { a | xGroup = accessor })
-        |> toExternalDataAccessorLinear
-
-
-setXAccessorLinear : (data -> Float) -> ExternalDataAccessorLinear data -> ExternalDataAccessorLinear data
-setXAccessorLinear accessor accessors =
-    accessors
-        |> fromExternalDataAccessorLinear
-        |> (\a -> { a | xValue = accessor })
-        |> toExternalDataAccessorLinear
-
-
-setYAccessorLinear : (data -> Float) -> ExternalDataAccessorLinear data -> ExternalDataAccessorLinear data
-setYAccessorLinear accessor accessors =
-    accessors
-        |> fromExternalDataAccessorLinear
-        |> (\a -> { a | yValue = accessor })
-        |> toExternalDataAccessorLinear
-
-
-initExternalDataAccessorBand : data -> ExternalDataAccessorBand data
-initExternalDataAccessorBand _ =
-    ExternalDataAccessorBand
-        { xGroup = always ""
-        , xValue = always ""
-        , yValue = always 0
-        }
-
-
-initExternalDataAccessorLinear : data -> ExternalDataAccessorLinear data
-initExternalDataAccessorLinear _ =
-    ExternalDataAccessorLinear
-        { xGroup = always ""
-        , xValue = always 0
-        , yValue = always 0
-        }
