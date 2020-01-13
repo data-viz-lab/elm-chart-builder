@@ -7,22 +7,21 @@ module Chart.Internal.Helpers exposing
 
 import Chart.Internal.Type
     exposing
-        ( Data
+        ( Config
+        , DataBand
         , StackedValues
-        , StackedValuesAndGroupes
         , fromDataBand
-        , fromDomainBand
-        , getDomainFromData
+        , getDomainBandFromData
         )
 
 
-dataBandToDataStacked : Data -> List ( String, List Float )
-dataBandToDataStacked data =
+dataBandToDataStacked : DataBand -> Config -> List ( String, List Float )
+dataBandToDataStacked data config =
     let
         seed =
-            getDomainFromData data
-                |> fromDomainBand
+            getDomainBandFromData data config
                 |> .bandSingle
+                |> Maybe.withDefault []
                 |> List.map (\d -> ( d, [] ))
     in
     data

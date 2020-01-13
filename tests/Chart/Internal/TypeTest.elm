@@ -9,7 +9,7 @@ import Test exposing (..)
 suite : Test
 suite =
     describe "The Type module"
-        [ describe "getDomainFromData"
+        [ describe "getDomainBandFromData"
             [ test "with DomainBand" <|
                 \_ ->
                     let
@@ -20,11 +20,11 @@ suite =
                                 , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
                                 ]
 
-                        expected : Domain
+                        expected : DomainBandStruct
                         expected =
-                            DomainBand { bandGroup = [ "CA", "TX" ], bandSingle = [ "a", "b" ], linear = ( 0, 21 ) }
+                            { bandGroup = Just [ "CA", "TX" ], bandSingle = Just [ "a", "b" ], linear = Just ( 0, 21 ) }
                     in
-                    Expect.equal (getDomainFromData data) expected
+                    Expect.equal (getDomainBandFromData data defaultConfig) expected
             , test "with DomainBand complex example" <|
                 \_ ->
                     let
@@ -57,20 +57,20 @@ suite =
                                   }
                                 ]
 
-                        expected : Domain
+                        expected : DomainBandStruct
                         expected =
-                            DomainBand
-                                { bandGroup = [ "16-24", "25-34", "35-44" ]
-                                , bandSingle =
+                            { bandGroup = Just [ "16-24", "25-34", "35-44" ]
+                            , bandSingle =
+                                Just
                                     [ "once per month"
                                     , "once per week"
                                     , "three times per week"
                                     , "five times per week"
                                     ]
-                                , linear = ( 0, 21.9 )
-                                }
+                            , linear = Just ( 0, 21.9 )
+                            }
                     in
-                    Expect.equal (getDomainFromData data) expected
+                    Expect.equal (getDomainBandFromData data defaultConfig) expected
             , test "with DomainLinear" <|
                 \_ ->
                     let
@@ -81,11 +81,11 @@ suite =
                                 , { groupLabel = Just "TX", points = [ ( 5, 11 ), ( 6, 21 ) ] }
                                 ]
 
-                        expected : Domain
+                        expected : DomainLinearStruct
                         expected =
-                            DomainLinear { horizontal = ( 0, 6 ), vertical = ( 0, 21 ) }
+                            { horizontal = Just ( 0, 6 ), vertical = Just ( 0, 21 ) }
                     in
-                    Expect.equal (getDomainFromData data) expected
+                    Expect.equal (getDomainLinearFromData data defaultConfig) expected
             ]
         , describe "groupedLayoutConfig"
             [ test "showIcons is False" <|

@@ -84,46 +84,63 @@ icons prefix =
     ]
 
 
-data : List Bar.DataGroupBand
+type alias Data =
+    { x : String, y : Float, groupLabel : String }
+
+
+data : List Data
 data =
-    [ { groupLabel = Just "A"
-      , points =
-            [ ( "a", 10 )
-            , ( "b", 13 )
-            , ( "c", 16 )
-            ]
+    [ { groupLabel = "A"
+      , x = "a"
+      , y = 10
       }
-    , { groupLabel = Just "B"
-      , points =
-            [ ( "a", 11 )
-            , ( "b", 23 )
-            , ( "c", 16 )
-            ]
+    , { groupLabel = "A"
+      , x = "b"
+      , y = 13
+      }
+    , { groupLabel = "A"
+      , x = "c"
+      , y = 16
+      }
+    , { groupLabel = "B"
+      , x = "a"
+      , y = 11
+      }
+    , { groupLabel = "B"
+      , x = "b"
+      , y = 23
+      }
+    , { groupLabel = "B"
+      , x = "c"
+      , y = 16
       }
     ]
 
 
-dataStacked : List Bar.DataGroupBand
+dataStacked : List Data
 dataStacked =
-    [ { groupLabel = Nothing
-      , points =
-            [ ( "a", -10 )
-            , ( "b", 13 )
-            ]
+    [ { groupLabel = "A"
+      , x = "a"
+      , y = 10
       }
-    , { groupLabel = Nothing
-      , points =
-            [ ( "a", -12 )
-            , ( "b", 16 )
-            ]
+    , { groupLabel = "A"
+      , x = "b"
+      , y = 13
       }
-    , { groupLabel = Nothing
-      , points =
-            [ ( "a", -11 )
-            , ( "b", 13 )
-            ]
+    , { groupLabel = "B"
+      , x = "a"
+      , y = 11
+      }
+    , { groupLabel = "B"
+      , x = "b"
+      , y = 23
       }
     ]
+
+
+accessor : Bar.Accessor Data
+accessor =
+    Bar.Accessor .groupLabel .x .y
 
 
 width : Float
@@ -166,7 +183,7 @@ attrs =
 
 verticalGrouped : Html msg
 verticalGrouped =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (iconsCustom "chart-a")))
         |> Bar.setLinearAxisTickCount 5
         |> Bar.setTitle "Vertical Grouped Chart"
@@ -176,12 +193,12 @@ verticalGrouped =
             , width = width
             , height = height
             }
-        |> Bar.render
+        |> Bar.render ( data, accessor )
 
 
 verticalGroupedWithLabels : Html msg
 verticalGroupedWithLabels =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
         |> Bar.setLinearAxisTickCount 5
         |> Bar.setTitle "Vertical Grouped Chart"
@@ -191,12 +208,12 @@ verticalGroupedWithLabels =
             , width = width
             , height = height
             }
-        |> Bar.render
+        |> Bar.render ( data, accessor )
 
 
 verticalStacked : Html msg
 verticalStacked =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.setTitle "Vertical Stacked Chart"
         |> Bar.setDesc "A vertical stacked chart example to demonstrate the charting library"
@@ -205,12 +222,12 @@ verticalStacked =
             , width = width
             , height = height
             }
-        |> Bar.render
+        |> Bar.render ( data, accessor )
 
 
 horizontalGrouped : Html msg
 horizontalGrouped =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (icons "chart-b")))
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setLinearAxisTickCount 5
@@ -222,12 +239,12 @@ horizontalGrouped =
             , width = width
             , height = height
             }
-        |> Bar.render
+        |> Bar.render ( data, accessor )
 
 
 horizontalGroupedWithLabels : Html msg
 horizontalGroupedWithLabels =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setLinearAxisTickCount 5
@@ -239,12 +256,12 @@ horizontalGroupedWithLabels =
             , width = width
             , height = height
             }
-        |> Bar.render
+        |> Bar.render ( data, accessor )
 
 
 horizontalStacked : Html msg
 horizontalStacked =
-    Bar.init data
+    Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setTitle "Horizontal Stacked Chart"
@@ -254,12 +271,12 @@ horizontalStacked =
             , width = width
             , height = height
             }
-        |> Bar.render
+        |> Bar.render ( data, accessor )
 
 
 horizontalStackedDiverging : Html msg
 horizontalStackedDiverging =
-    Bar.init dataStacked
+    Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setTitle "Horizontal Stacked Diverging Chart"
@@ -270,12 +287,12 @@ horizontalStackedDiverging =
             , height = height
             }
         |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
-        |> Bar.render
+        |> Bar.render ( dataStacked, accessor )
 
 
 verticalStackedDiverging : Html msg
 verticalStackedDiverging =
-    Bar.init dataStacked
+    Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
         |> Bar.setOrientation Bar.verticalOrientation
         |> Bar.setTitle "Vertical Stacked Diverging Chart"
@@ -286,7 +303,7 @@ verticalStackedDiverging =
             , height = height
             }
         |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
-        |> Bar.render
+        |> Bar.render ( dataStacked, accessor )
 
 
 main : Html msg

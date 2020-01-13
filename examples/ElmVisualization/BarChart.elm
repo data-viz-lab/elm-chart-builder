@@ -65,7 +65,8 @@ data =
 
 chart : Html msg
 chart =
-    Bar.init data
+    Bar.init
+        |> Bar.setHeight 400
         |> Bar.setTitle "A simple bar chart"
         |> Bar.setDesc "This module shows how to build a simple bar chart"
         |> Bar.setDomainLinear ( 0, 5 )
@@ -75,7 +76,7 @@ chart =
             , width = 600
             , height = 400
             }
-        |> Bar.render
+        |> Bar.render data
 
 
 attrs : List (Html.Attribute msg)

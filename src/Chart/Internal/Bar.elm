@@ -25,10 +25,12 @@ import Chart.Internal.Type
         , AxisOrientation(..)
         , Config
         , ConfigStruct
-        , Data(..)
+        , DataBand
         , DataGroupBand
         , Direction(..)
-        , Domain(..)
+        , DomainBand(..)
+        , DomainBandStruct
+        , DomainLinear(..)
         , Layout(..)
         , Orientation(..)
         , PointBand
@@ -40,12 +42,12 @@ import Chart.Internal.Type
         , bottomGap
         , fromConfig
         , fromDataBand
-        , fromDomainBand
         , getAxisContinousDataFormatter
         , getBandGroupRange
         , getBandSingleRange
-        , getDataDepth
-        , getDomain
+        , getDataBandDepth
+        , getDomainBand
+        , getDomainBandFromData
         , getHeight
         , getIcons
         , getIconsFromLayout
@@ -103,7 +105,7 @@ descAndTitle c =
 -- BAND STACKED
 
 
-renderBandStacked : ( Data, Config ) -> Html msg
+renderBandStacked : ( DataBand, Config ) -> Html msg
 renderBandStacked ( data, config ) =
     -- based on https://code.gampleman.eu/elm-visualization/StackedBarChart/
     let
@@ -127,7 +129,7 @@ renderBandStacked ( data, config ) =
 
         dataStacked : List ( String, List Float )
         dataStacked =
-            dataBandToDataStacked data
+            dataBandToDataStacked data config
 
         stackedConfig : StackConfig String
         stackedConfig =
@@ -140,31 +142,29 @@ renderBandStacked ( data, config ) =
             Shape.stack stackedConfig
 
         stackDepth =
-            getDataDepth data
+            getDataBandDepth data
 
-        domainIsExplicitlySet =
-            case c.domain of
-                Just _ ->
-                    True
-
-                Nothing ->
-                    False
+        linearDomain =
+            config
+                |> getDomainBand
+                |> .linear
 
         linearExtent =
-            if domainIsExplicitlySet then
-                case c.layout of
-                    Stacked Diverging ->
-                        ( Tuple.second domain.linear * -1, Tuple.second domain.linear )
+            case linearDomain of
+                Just ld ->
+                    case c.layout of
+                        Stacked Diverging ->
+                            ( Tuple.second ld * -1, Tuple.second ld )
 
-                    _ ->
-                        domain.linear
+                        _ ->
+                            ld
 
-            else
-                extent
+                Nothing ->
+                    extent
 
+        domain : DomainBandStruct
         domain =
-            getDomain data config
-                |> fromDomainBand
+            getDomainBandFromData data config
 
         bandGroupRange =
             getBandGroupRange config w h
@@ -173,10 +173,10 @@ renderBandStacked ( data, config ) =
             getBandSingleRange config (Scale.bandwidth bandGroupScale)
 
         bandGroupScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1 } bandGroupRange domain.bandGroup
+            Scale.band { defaultBandConfig | paddingInner = 0.1 } bandGroupRange (Maybe.withDefault [] domain.bandGroup)
 
         bandSingleScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange domain.bandSingle
+            Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange (Maybe.withDefault [] domain.bandSingle)
 
         linearRange =
             getLinearRange config RenderChart w h bandSingleScale
@@ -244,7 +244,7 @@ renderBandStacked ( data, config ) =
         )
 
 
-getStackedValuesAndGroupes : List (List ( Float, Float )) -> Data -> StackedValuesAndGroupes
+getStackedValuesAndGroupes : List (List ( Float, Float )) -> DataBand -> StackedValuesAndGroupes
 getStackedValuesAndGroupes values data =
     let
         m =
@@ -362,7 +362,7 @@ horizontalRectsStacked config bandGroupScale ( group, values, labels ) =
 -- BAND GROUPED
 
 
-renderBandGrouped : ( Data, Config ) -> Html msg
+renderBandGrouped : ( DataBand, Config ) -> Html msg
 renderBandGrouped ( data, config ) =
     let
         c =
@@ -383,9 +383,9 @@ renderBandGrouped ( data, config ) =
         outerH =
             h + m.top + m.bottom
 
+        domain : DomainBandStruct
         domain =
-            getDomain data config
-                |> fromDomainBand
+            getDomainBandFromData data config
 
         bandGroupRange =
             getBandGroupRange config w h
@@ -408,15 +408,17 @@ renderBandGrouped ( data, config ) =
 
         bandGroupScale : BandScale String
         bandGroupScale =
-            Scale.band { defaultBandConfig | paddingInner = paddingInnerGroup } bandGroupRange domain.bandGroup
+            Scale.band { defaultBandConfig | paddingInner = paddingInnerGroup }
+                bandGroupRange
+                (domain.bandGroup |> Maybe.withDefault [])
 
         bandSingleScale : BandScale String
         bandSingleScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange domain.bandSingle
+            Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange (Maybe.withDefault [] domain.bandSingle)
 
         linearScale : ContinuousScale Float
         linearScale =
-            Scale.linear linearRange domain.linear
+            Scale.linear linearRange (Maybe.withDefault ( 0, 0 ) domain.linear)
 
         iconOffset : Float
         iconOffset =

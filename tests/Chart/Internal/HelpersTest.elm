@@ -24,7 +24,7 @@ suite =
                         expected =
                             [ ( "a", [ 11, 10 ] ), ( "b", [ 21, 20 ] ) ]
                     in
-                    Expect.equal (dataBandToDataStacked data) expected
+                    Expect.equal (dataBandToDataStacked data defaultConfig) expected
             , test "complex" <|
                 \_ ->
                     let
@@ -65,6 +65,6 @@ suite =
                             , ( "five times per week", [ 4.2, 4.5, 4.9 ] )
                             ]
                     in
-                    Expect.equal (dataBandToDataStacked data) expected
+                    Expect.equal (dataBandToDataStacked data defaultConfig) expected
             ]
         ]

@@ -58,23 +58,42 @@ height =
     250
 
 
-data : List Line.DataGroupLinear
+type alias Data =
+    { x : Float, y : Float, groupLabel : String }
+
+
+data : List Data
 data =
-    [ { groupLabel = Just "A"
-      , points =
-            [ ( 1, 10 )
-            , ( 2, 13 )
-            , ( 16, 16 )
-            ]
+    [ { groupLabel = "A"
+      , x = 1
+      , y = 10
       }
-    , { groupLabel = Just "B"
-      , points =
-            [ ( 1, 11 )
-            , ( 2, 23 )
-            , ( 3, 16 )
-            ]
+    , { groupLabel = "A"
+      , x = 2
+      , y = 13
+      }
+    , { groupLabel = "A"
+      , x = 5
+      , y = 16
+      }
+    , { groupLabel = "B"
+      , x = 1
+      , y = 11
+      }
+    , { groupLabel = "B"
+      , x = 2
+      , y = 23
+      }
+    , { groupLabel = "B"
+      , x = 3
+      , y = 16
       }
     ]
+
+
+accessor : Line.Accessor Data
+accessor =
+    Line.Accessor .groupLabel .x .y
 
 
 attrs : List (Html.Attribute msg)
@@ -87,7 +106,7 @@ attrs =
 
 doubleLine : Html msg
 doubleLine =
-    Line.init data
+    Line.init
         |> Line.setTitle "A two line chart"
         |> Line.setDesc "A two line chart example to demonstrate the charting library"
         |> Line.setAxisVerticalTickCount 5
@@ -96,7 +115,7 @@ doubleLine =
             , width = width
             , height = height
             }
-        |> Line.render
+        |> Line.render ( data, accessor )
 
 
 main : Html msg

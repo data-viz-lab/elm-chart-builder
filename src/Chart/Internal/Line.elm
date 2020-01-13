@@ -14,9 +14,8 @@ import Chart.Internal.Type
         , AxisOrientation(..)
         , Config
         , ConfigStruct
-        , Data(..)
         , DataGroupLinear
-        , Domain(..)
+        , DataLinear
         , Layout(..)
         , PointLinear
         , RenderContext(..)
@@ -24,8 +23,7 @@ import Chart.Internal.Type
         , bottomGap
         , fromConfig
         , fromDataLinear
-        , fromDomainLinear
-        , getDomain
+        , getDomainLinearFromData
         , getHeight
         , getMargin
         , getWidth
@@ -70,7 +68,7 @@ descAndTitle c =
     ]
 
 
-renderLineGrouped : ( Data, Config ) -> Html msg
+renderLineGrouped : ( DataLinear, Config ) -> Html msg
 renderLineGrouped ( data, config ) =
     let
         c =
@@ -92,8 +90,7 @@ renderLineGrouped ( data, config ) =
             h + m.top + m.bottom
 
         domain =
-            getDomain data config
-                |> fromDomainLinear
+            getDomainLinearFromData data config
 
         horizontalRange =
             ( 0, w )
@@ -109,11 +106,11 @@ renderLineGrouped ( data, config ) =
 
         horizontalScale : ContinuousScale Float
         horizontalScale =
-            Scale.linear horizontalRange domain.horizontal
+            Scale.linear horizontalRange (Maybe.withDefault ( 0, 0 ) domain.horizontal)
 
         verticalScale : ContinuousScale Float
         verticalScale =
-            Scale.linear verticalRange domain.vertical
+            Scale.linear verticalRange (Maybe.withDefault ( 0, 0 ) domain.vertical)
 
         lineGenerator : PointLinear -> Maybe PointLinear
         lineGenerator ( x, y ) =
