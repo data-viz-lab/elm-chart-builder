@@ -10,12 +10,15 @@ module Chart.Internal.Type exposing
     , DataBand
     , DataGroupBand
     , DataGroupLinear
+    , DataGroupTime
     , DataLinear
+    , DataTime
     , Direction(..)
     , DomainBand
     , DomainBandStruct
     , DomainLinear
     , DomainLinearStruct
+    , DomainTime
     , ExternalData
     , GroupedConfig
     , GroupedConfigStruct
@@ -25,6 +28,7 @@ module Chart.Internal.Type exposing
     , Orientation(..)
     , PointBand
     , PointLinear
+    , PointTime
     , RenderContext(..)
     , StackedValues
     , StackedValuesAndGroupes
@@ -41,9 +45,11 @@ module Chart.Internal.Type exposing
     , defaultWidth
     , externalToDataBand
     , externalToDataLinear
+    , externalToDataTime
     , fromConfig
     , fromDataBand
     , fromDataLinear
+    , fromDataTime
     , fromDomainBand
     , fromDomainLinear
     , getAxisContinousDataFormatter
@@ -65,6 +71,7 @@ module Chart.Internal.Type exposing
     , getDomainBandFromData
     , getDomainLinear
     , getDomainLinearFromData
+    , getDomainTimeFromData
     , getHeight
     , getIcons
     , getIconsFromLayout
@@ -74,6 +81,7 @@ module Chart.Internal.Type exposing
     , getShowIndividualLabels
     , getTitle
     , getWidth
+    , getZone
     , leftGap
     , role
     , setAxisContinousDataTickCount
@@ -92,6 +100,7 @@ module Chart.Internal.Type exposing
     , setDomainBandBandSingle
     , setDomainBandLinear
     , setDomainLinear
+    , setDomainTime
     , setHeight
     , setIcons
     , setLayout
@@ -118,6 +127,7 @@ import Html.Attributes
 import List.Extra
 import Scale exposing (BandScale)
 import Shape
+import Time exposing (Posix, Zone)
 
 
 
@@ -154,6 +164,13 @@ type alias AccessorLinear data =
     }
 
 
+type alias AccessorTime data =
+    { xGroup : data -> String
+    , xValue : data -> Posix
+    , yValue : data -> Float
+    }
+
+
 type DataBand
     = DataBand (List DataGroupBand)
 
@@ -162,12 +179,20 @@ type DataLinear
     = DataLinear (List DataGroupLinear)
 
 
+type DataTime
+    = DataTime (List DataGroupTime)
+
+
 type alias PointBand =
     ( String, Float )
 
 
 type alias PointLinear =
     ( Float, Float )
+
+
+type alias PointTime =
+    ( Posix, Float )
 
 
 type alias DataGroupBand =
@@ -191,6 +216,19 @@ type alias DataGroupLinear =
 
 dummyDataGroupLinear : DataGroupLinear
 dummyDataGroupLinear =
+    { groupLabel = Nothing
+    , points = []
+    }
+
+
+type alias DataGroupTime =
+    { groupLabel : Maybe String
+    , points : List PointTime
+    }
+
+
+dummyDataGroupTime : DataGroupTime
+dummyDataGroupTime =
     { groupLabel = Nothing
     , points = []
     }
@@ -222,6 +260,10 @@ type AxisOrientation
 
 type alias LinearDomain =
     ( Float, Float )
+
+
+type alias TimeDomain =
+    ( Posix, Posix )
 
 
 type alias BandDomain =
@@ -256,12 +298,29 @@ initialDomainLinearStruct =
     }
 
 
+type alias DomainTimeStruct =
+    { horizontal : Maybe TimeDomain
+    , vertical : Maybe LinearDomain
+    }
+
+
+initialDomainTimeStruct : DomainTimeStruct
+initialDomainTimeStruct =
+    { horizontal = Nothing
+    , vertical = Nothing
+    }
+
+
 type DomainBand
     = DomainBand DomainBandStruct
 
 
 type DomainLinear
     = DomainLinear DomainLinearStruct
+
+
+type DomainTime
+    = DomainTime DomainTimeStruct
 
 
 type alias Margin =
@@ -304,6 +363,7 @@ type alias ConfigStruct =
     , desc : String
     , domainBand : DomainBand
     , domainLinear : DomainLinear
+    , domainTime : DomainTime
 
     --, externalDataBandAccessor : ExternalDataBandAccessor data
     --, externalDataLinearAccessor : ExternalDataLinearAccessor data
@@ -317,6 +377,7 @@ type alias ConfigStruct =
     , showVerticalAxis : Bool
     , title : String
     , width : Float
+    , zone : Zone
     }
 
 
@@ -335,6 +396,7 @@ defaultConfig =
         , desc = ""
         , domainBand = DomainBand initialDomainBandStruct
         , domainLinear = DomainLinear initialDomainLinearStruct
+        , domainTime = DomainTime initialDomainTimeStruct
 
         --, externalDataBandAccessor = toExternalDataBandAccessor accessorsBand
         --, externalDataLinearAccessor = toExternalDataLinearAccessor accessorsLinear
@@ -348,6 +410,7 @@ defaultConfig =
         , showVerticalAxis = True
         , title = ""
         , width = defaultWidth
+        , zone = Time.utc
         }
 
 
@@ -731,6 +794,15 @@ setDomainLinear domain config =
     toConfig { c | domainLinear = domain }
 
 
+setDomainTime : DomainTime -> Config -> Config
+setDomainTime domain config =
+    let
+        c =
+            fromConfig config
+    in
+    toConfig { c | domainTime = domain }
+
+
 setDomainBand : DomainBand -> Config -> Config
 setDomainBand domain config =
     let
@@ -826,6 +898,11 @@ setShowVerticalAxis bool config =
 
 
 -- GETTERS
+
+
+getZone : Config -> Time.Zone
+getZone config =
+    fromConfig config |> .zone
 
 
 getAxisContinousDataTickCount : Config -> AxisContinousDataTickCount
@@ -925,6 +1002,14 @@ getDomainLinear config =
         |> fromDomainLinear
 
 
+getDomainTime : Config -> DomainTimeStruct
+getDomainTime config =
+    config
+        |> fromConfig
+        |> .domainTime
+        |> fromDomainTime
+
+
 getDomainBandFromData : DataBand -> Config -> DomainBandStruct
 getDomainBandFromData data config =
     let
@@ -1012,6 +1097,41 @@ getDomainLinearFromData data config =
         |> fromDomainLinear
 
 
+getDomainTimeFromData : DataTime -> Config -> DomainTimeStruct
+getDomainTimeFromData data config =
+    let
+        -- get the domain from config first
+        -- and use it!
+        domain =
+            getDomainTime config
+
+        d =
+            fromDataTime data
+    in
+    DomainTime
+        { horizontal =
+            d
+                |> List.map .points
+                |> List.concat
+                |> List.map Tuple.first
+                |> List.map Time.posixToMillis
+                |> (\dd ->
+                        ( List.minimum dd |> Maybe.withDefault 0 |> Time.millisToPosix
+                        , List.maximum dd |> Maybe.withDefault 0 |> Time.millisToPosix
+                        )
+                   )
+                |> Just
+        , vertical =
+            d
+                |> List.map .points
+                |> List.concat
+                |> List.map Tuple.second
+                |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                |> Just
+        }
+        |> fromDomainTime
+
+
 fromDomainBand : DomainBand -> DomainBandStruct
 fromDomainBand (DomainBand d) =
     d
@@ -1022,6 +1142,11 @@ fromDomainLinear (DomainLinear d) =
     d
 
 
+fromDomainTime : DomainTime -> DomainTimeStruct
+fromDomainTime (DomainTime d) =
+    d
+
+
 fromDataBand : DataBand -> List DataGroupBand
 fromDataBand (DataBand d) =
     d
@@ -1029,6 +1154,11 @@ fromDataBand (DataBand d) =
 
 fromDataLinear : DataLinear -> List DataGroupLinear
 fromDataLinear (DataLinear d) =
+    d
+
+
+fromDataTime : DataTime -> List DataGroupTime
+fromDataTime (DataTime d) =
     d
 
 
@@ -1294,3 +1424,39 @@ externalToDataLinear externalData accessor =
                 }
             )
         |> DataLinear
+
+
+externalToDataTime : ExternalData data -> AccessorTime data -> DataTime
+externalToDataTime externalData accessor =
+    let
+        data =
+            fromExternalData externalData
+    in
+    data
+        |> List.Extra.groupWhile
+            (\a b -> accessor.xGroup a == accessor.xGroup b)
+        |> List.map
+            (\d ->
+                let
+                    groupLabel =
+                        d
+                            |> Tuple.first
+                            |> accessor.xGroup
+                            |> Just
+
+                    firstPoint =
+                        d
+                            |> Tuple.first
+                            |> (\p -> ( accessor.xValue p, accessor.yValue p ))
+
+                    points =
+                        d
+                            |> Tuple.second
+                            |> List.map (\p -> ( accessor.xValue p, accessor.yValue p ))
+                            |> (::) firstPoint
+                in
+                { groupLabel = groupLabel
+                , points = points
+                }
+            )
+        |> DataTime

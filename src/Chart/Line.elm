@@ -1,5 +1,5 @@
 module Chart.Line exposing
-    ( DataGroupLinear, Accessor
+    ( DataGroupTime, Accessor
     , init
     , render
     , setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
@@ -13,7 +13,7 @@ module Chart.Line exposing
 
 # Chart Data Format
 
-@docs DataGroupLinear, Accessor
+@docs DataGroupTime, Accessor
 
 
 # Chart Initialization
@@ -44,7 +44,7 @@ import Chart.Internal.Type as Type
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
         , Config
-        , DomainLinear
+        , DomainTime
         , Layout(..)
         , Margin
         , RenderContext(..)
@@ -62,13 +62,14 @@ import Chart.Internal.Type as Type
         , setTitle
         )
 import Html exposing (Html)
+import Time exposing (Posix)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
 {-| Line chart data format.
 
-    dataGroupLinear : Bar.DataGroupLinear
-    dataGroupLinear =
+    dataGroupTime : Bar.DataGroupTime
+    dataGroupTime =
         { groupLabel = Just "A"
         , points =
             [ ( 1, 10 )
@@ -78,8 +79,8 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
         }
 
 -}
-type alias DataGroupLinear =
-    Type.DataGroupLinear
+type alias DataGroupTime =
+    Type.DataGroupTime
 
 
 {-| Initializes the line chart with a default config
@@ -95,7 +96,7 @@ init =
 
 {-| Renders the line chart, after initialisation and customisation
 
-    data : List DataGroupLinear
+    data : List DataGroupTime
     data =
         [ { groupLabel = Nothing
           , points = [ ( 1, 10 ), (2, 20) ]
@@ -113,7 +114,7 @@ render ( externalData, accessor ) config =
             fromConfig config
 
         data =
-            Type.externalToDataLinear (Type.toExternalData externalData) accessor
+            Type.externalToDataTime (Type.toExternalData externalData) accessor
     in
     case c.layout of
         Grouped _ ->
@@ -266,13 +267,13 @@ setDimensions value config =
 If not set, the domain is calculated from the data
 
     Line.init
-        |> Line.setDomain (DomainLinear { horizontal = ( 1, 1 ), vertical = ( 0, 20 ) })
+        |> Line.setDomain (DomainTime { horizontal = ( 1, 1 ), vertical = ( 0, 20 ) })
         |> Line.render data
 
 -}
-setDomain : DomainLinear -> Config -> Config
+setDomain : DomainTime -> Config -> Config
 setDomain value config =
-    Type.setDomainLinear value config
+    Type.setDomainTime value config
 
 
 {-| Sets an accessible, long-text description for the svg chart.
@@ -344,6 +345,6 @@ setShowVerticalAxis value config =
 -}
 type alias Accessor data =
     { xGroup : data -> String
-    , xValue : data -> Float
+    , xValue : data -> Posix
     , yValue : data -> Float
     }

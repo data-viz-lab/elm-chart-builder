@@ -6,6 +6,7 @@ module LineChart exposing (data, main)
 import Chart.Line as Line
 import Html exposing (Html)
 import Html.Attributes exposing (class)
+import Time exposing (Posix)
 
 
 css : String
@@ -59,33 +60,33 @@ height =
 
 
 type alias Data =
-    { x : Float, y : Float, groupLabel : String }
+    { x : Posix, y : Float, groupLabel : String }
 
 
 data : List Data
 data =
     [ { groupLabel = "A"
-      , x = 1
+      , x = Time.millisToPosix 1579275175634
       , y = 10
       }
     , { groupLabel = "A"
-      , x = 2
-      , y = 13
-      }
-    , { groupLabel = "A"
-      , x = 5
+      , x = Time.millisToPosix 1579285175634
       , y = 16
       }
-    , { groupLabel = "B"
-      , x = 1
-      , y = 11
+    , { groupLabel = "A"
+      , x = Time.millisToPosix 1579295175634
+      , y = 26
       }
     , { groupLabel = "B"
-      , x = 2
+      , x = Time.millisToPosix 1579275175634
+      , y = 13
+      }
+    , { groupLabel = "B"
+      , x = Time.millisToPosix 1579285175634
       , y = 23
       }
     , { groupLabel = "B"
-      , x = 3
+      , x = Time.millisToPosix 1579295175634
       , y = 16
       }
     ]
@@ -110,6 +111,7 @@ doubleLine =
         |> Line.setTitle "A two line chart"
         |> Line.setDesc "A two line chart example to demonstrate the charting library"
         |> Line.setAxisVerticalTickCount 5
+        |> Line.setAxisHorizontalTickCount 5
         |> Line.setDimensions
             { margin = { top = 10, right = 10, bottom = 30, left = 30 }
             , width = width

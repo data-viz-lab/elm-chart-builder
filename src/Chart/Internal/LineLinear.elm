@@ -1,4 +1,7 @@
-module Chart.Internal.Line exposing (renderLineGrouped)
+module Chart.Internal.Line exposing
+    ( renderLineGrouped
+    , wrongDataTypeErrorView
+    )
 
 import Axis
 import Chart.Internal.Helpers as Helpers
@@ -11,16 +14,16 @@ import Chart.Internal.Type
         , AxisOrientation(..)
         , Config
         , ConfigStruct
-        , DataGroupTime
-        , DataTime
+        , DataGroupLinear
+        , DataLinear
         , Layout(..)
-        , PointTime
+        , PointLinear
         , RenderContext(..)
         , ariaLabelledby
         , bottomGap
         , fromConfig
-        , fromDataTime
-        , getDomainTimeFromData
+        , fromDataLinear
+        , getDomainLinearFromData
         , getHeight
         , getMargin
         , getWidth
@@ -31,7 +34,6 @@ import Html exposing (Html)
 import Path exposing (Path)
 import Scale exposing (ContinuousScale)
 import Shape
-import Time exposing (Posix)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes
     exposing
@@ -66,7 +68,7 @@ descAndTitle c =
     ]
 
 
-renderLineGrouped : ( DataTime, Config ) -> Html msg
+renderLineGrouped : ( DataLinear, Config ) -> Html msg
 renderLineGrouped ( data, config ) =
     let
         c =
@@ -88,7 +90,7 @@ renderLineGrouped ( data, config ) =
             h + m.top + m.bottom
 
         domain =
-            getDomainTimeFromData data config
+            getDomainLinearFromData data config
 
         horizontalRange =
             ( 0, w )
@@ -98,36 +100,23 @@ renderLineGrouped ( data, config ) =
 
         sortedData =
             data
-                |> fromDataTime
-                |> List.map
-                    (\d ->
-                        let
-                            points =
-                                d.points
-                        in
-                        { d | points = List.sortBy (Tuple.first >> Time.posixToMillis) points }
-                    )
+                |> fromDataLinear
+                --FIXME
+                |> List.sortBy (.points >> List.map Tuple.first)
 
-        horizontalScale : ContinuousScale Posix
+        horizontalScale : ContinuousScale Float
         horizontalScale =
-            Scale.time c.zone
-                horizontalRange
-                (Maybe.withDefault
-                    ( Time.millisToPosix 0
-                    , Time.millisToPosix 0
-                    )
-                    domain.horizontal
-                )
+            Scale.linear horizontalRange (Maybe.withDefault ( 0, 0 ) domain.horizontal)
 
         verticalScale : ContinuousScale Float
         verticalScale =
             Scale.linear verticalRange (Maybe.withDefault ( 0, 0 ) domain.vertical)
 
-        lineGenerator : PointTime -> Maybe ( Float, Float )
+        lineGenerator : PointLinear -> Maybe PointLinear
         lineGenerator ( x, y ) =
             Just ( Scale.convert horizontalScale x, Scale.convert verticalScale y )
 
-        line : DataGroupTime -> Path
+        line : DataGroupLinear -> Path
         line dataGroup =
             dataGroup.points
                 |> List.map lineGenerator
@@ -142,8 +131,8 @@ renderLineGrouped ( data, config ) =
         ]
     <|
         descAndTitle c
-            ++ linearAxisGenerator c Vertical verticalScale
-            ++ timeAxisGenerator c Horizontal horizontalScale
+            ++ axisGenerator c Vertical verticalScale
+            ++ axisGenerator c Horizontal horizontalScale
             ++ [ g
                     [ transform [ Translate m.left m.top ]
                     , class [ "series" ]
@@ -159,87 +148,8 @@ renderLineGrouped ( data, config ) =
                ]
 
 
-timeAxisGenerator : ConfigStruct -> AxisType -> ContinuousScale Posix -> List (Svg msg)
-timeAxisGenerator c axisType scale =
-    if c.showContinousAxis == True then
-        case axisType of
-            Vertical ->
-                let
-                    --ticks =
-                    --    case c.axisVerticalTicks of
-                    --        DefaultTicks ->
-                    --            Nothing
-                    --        CustomTicks t ->
-                    --            Just (Axis.ticks t)
-                    --tickCount =
-                    --    case c.axisVerticalTickCount of
-                    --        DefaultTickCount ->
-                    --            Nothing
-                    --        CustomTickCount count ->
-                    --            Just (Axis.tickCount count)
-                    --tickFormat =
-                    --    case c.axisVerticalTickFormat of
-                    --        DefaultTickFormat ->
-                    --            Nothing
-                    --        CustomTickFormat formatter ->
-                    --            Just (Axis.tickFormat formatter)
-                    --attributes =
-                    --    [ ticks, tickFormat, tickCount ]
-                    --        |> List.filterMap identity
-                    axis =
-                        Axis.left [] scale
-                in
-                [ g
-                    [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
-                    , class [ "axis", "axis--vertical" ]
-                    ]
-                    [ axis ]
-                ]
-
-            Horizontal ->
-                let
-                    ticks =
-                        case c.axisHorizontalTicks of
-                            DefaultTicks ->
-                                Nothing
-
-                            CustomTicks t ->
-                                Just (Axis.ticks t)
-
-                    tickCount =
-                        case c.axisHorizontalTickCount of
-                            DefaultTickCount ->
-                                Nothing
-
-                            CustomTickCount count ->
-                                Just (Axis.tickCount count)
-
-                    --tickFormat =
-                    --    case c.axisHorizontalTickFormat of
-                    --        DefaultTickFormat ->
-                    --            Nothing
-                    --        CustomTickFormat formatter ->
-                    --            Just (Axis.tickFormat formatter)
-                    attributes =
-                        [ tickCount ]
-                            |> List.filterMap identity
-
-                    axis =
-                        Axis.bottom attributes scale
-                in
-                [ g
-                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                    , class [ "axis", "axis--horizontal" ]
-                    ]
-                    [ axis ]
-                ]
-
-    else
-        []
-
-
-linearAxisGenerator : ConfigStruct -> AxisType -> ContinuousScale Float -> List (Svg msg)
-linearAxisGenerator c axisType scale =
+axisGenerator : ConfigStruct -> AxisType -> ContinuousScale Float -> List (Svg msg)
+axisGenerator c axisType scale =
     if c.showContinousAxis == True then
         case axisType of
             Vertical ->
@@ -324,3 +234,12 @@ linearAxisGenerator c axisType scale =
 
     else
         []
+
+
+
+-- ERROR VIEWS
+
+
+wrongDataTypeErrorView : Html msg
+wrongDataTypeErrorView =
+    Html.div [] [ Html.text "Data type not supported in line charts" ]
