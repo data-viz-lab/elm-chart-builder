@@ -231,8 +231,8 @@ renderBandStacked ( data, config ) =
         , ariaLabelledby "title desc"
         ]
         (descAndTitle c
-            ++ bandOrdinalAxis c axisBandScale
-            ++ bandGroupedContinousAxis c 0 linearScaleAxis
+            ++ bandXAxis c axisBandScale
+            ++ bandGroupedYAxis c 0 linearScaleAxis
             ++ [ g
                     [ transform [ stackedContainerTranslate c m.left m.top (toFloat stackDepth) ]
                     , class [ "series" ]
@@ -328,7 +328,7 @@ verticalRectsStacked config bandGroupScale ( group, values, labels ) =
                     , shapeRendering RenderCrispEdges
                     ]
                     []
-                , TypedSvg.title [] [ text <| getRectTitleText config.axisContinousDataTickFormat idx group labels rawValue ]
+                , TypedSvg.title [] [ text <| getRectTitleText config.axisContinousYTickFormat idx group labels rawValue ]
                 ]
     in
     List.indexedMap (\idx -> block idx) values
@@ -351,7 +351,7 @@ horizontalRectsStacked config bandGroupScale ( group, values, labels ) =
                     , shapeRendering RenderCrispEdges
                     ]
                     []
-                , TypedSvg.title [] [ text <| getRectTitleText config.axisContinousDataTickFormat idx group labels rawValue ]
+                , TypedSvg.title [] [ text <| getRectTitleText config.axisContinousYTickFormat idx group labels rawValue ]
                 ]
     in
     values
@@ -455,8 +455,8 @@ renderBandGrouped ( data, config ) =
     <|
         symbolElements
             ++ descAndTitle c
-            ++ bandGroupedContinousAxis c iconOffset linearScale
-            ++ bandOrdinalAxis c axisBandScale
+            ++ bandGroupedYAxis c iconOffset linearScale
+            ++ bandXAxis c axisBandScale
             ++ [ g
                     [ transform [ Translate m.left m.top ]
                     , class [ "series" ]
@@ -806,9 +806,9 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
             )
 
 
-bandOrdinalAxis : ConfigStruct -> BandScale String -> List (Svg msg)
-bandOrdinalAxis c bandScale =
-    if c.showOrdinalAxis == True then
+bandXAxis : ConfigStruct -> BandScale String -> List (Svg msg)
+bandXAxis c bandScale =
+    if c.showXAxis == True then
         case c.orientation of
             Vertical ->
                 let
@@ -838,12 +838,12 @@ bandOrdinalAxis c bandScale =
         []
 
 
-bandGroupedContinousAxis : ConfigStruct -> Float -> ContinuousScale Float -> List (Svg msg)
-bandGroupedContinousAxis c iconOffset linearScale =
-    if c.showContinousAxis == True then
+bandGroupedYAxis : ConfigStruct -> Float -> ContinuousScale Float -> List (Svg msg)
+bandGroupedYAxis c iconOffset linearScale =
+    if c.showYAxis == True then
         let
             ticks =
-                case c.axisContinousDataTicks of
+                case c.axisContinousYTicks of
                     CustomTicks t ->
                         Just (Axis.ticks t)
 
@@ -851,7 +851,7 @@ bandGroupedContinousAxis c iconOffset linearScale =
                         Nothing
 
             tickCount =
-                case c.axisContinousDataTickCount of
+                case c.axisContinousYTickCount of
                     DefaultTickCount ->
                         Nothing
 
@@ -859,7 +859,7 @@ bandGroupedContinousAxis c iconOffset linearScale =
                         Just (Axis.tickCount count)
 
             tickFormat =
-                case c.axisContinousDataTickFormat of
+                case c.axisContinousYTickFormat of
                     CustomTickFormat formatter ->
                         Just (Axis.tickFormat formatter)
 

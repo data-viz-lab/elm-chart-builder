@@ -2,10 +2,11 @@ module Chart.Bar exposing
     ( DataGroupBand, Accessor
     , init
     , render
-    , setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowOrdinalAxis, setTitle, setWidth
+    , setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setMargin, setOrientation, setTitle, setWidth
     , defaultGroupedConfig, divergingDirection, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
     , setIcons, setShowIndividualLabels
     , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth
+    , setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setShowXAxis, setShowYAxis
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -101,8 +102,8 @@ import Chart.Internal.Type as Type
         , defaultConfig
         , fromConfig
         , setDimensions
-        , setShowContinousAxis
-        , setShowOrdinalAxis
+        , setShowXAxis
+        , setShowYAxis
         , setTitle
         )
 import Html exposing (Html)
@@ -277,9 +278,9 @@ Defaults to `Scale.ticks`
         |> Bar.render data
 
 -}
-setLinearAxisTicks : List Float -> Config -> Config
-setLinearAxisTicks ticks config =
-    Type.setAxisContinousDataTicks (Type.CustomTicks ticks) config
+setAxisYTicks : List Float -> Config -> Config
+setAxisYTicks ticks config =
+    Type.setAxisContinousYTicks (Type.CustomTicks ticks) config
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis.
@@ -291,9 +292,9 @@ Defaults to `Scale.tickCount`
         |> Bar.render data
 
 -}
-setLinearAxisTickCount : Int -> Config -> Config
-setLinearAxisTickCount count config =
-    Type.setAxisContinousDataTickCount (Type.CustomTickCount count) config
+setAxisYTickCount : Int -> Config -> Config
+setAxisYTickCount count config =
+    Type.setAxisContinousYTickCount (Type.CustomTickCount count) config
 
 
 {-| Sets the formatting for the ticks in a grouped bar chart continous axis.
@@ -308,9 +309,9 @@ Defaults to `Scale.tickFormat`
         |> Bar.render data
 
 -}
-setLinearAxisTickFormat : (Float -> String) -> Config -> Config
-setLinearAxisTickFormat f config =
-    Type.setAxisContinousDataTickFormat (CustomTickFormat f) config
+setAxisYTickFormat : (Float -> String) -> Config -> Config
+setAxisYTickFormat f config =
+    Type.setAxisContinousXTickFormat (CustomTickFormat f) config
 
 
 {-| Sets the margin, width and height all at once.
@@ -378,9 +379,9 @@ This shows the bar's continous scale axis
         |> Bar.render data
 
 -}
-setShowContinousAxis : Bool -> Config -> Config
-setShowContinousAxis value config =
-    Type.setShowContinousAxis value config
+setShowYAxis : Bool -> Config -> Config
+setShowYAxis value config =
+    Type.setShowYAxis value config
 
 
 {-| Sets the showOrdinalAxis boolean value in the config
@@ -392,9 +393,9 @@ This shows the bar's ordinal scale axis
         |> Bar.render data
 
 -}
-setShowOrdinalAxis : Bool -> Config -> Config
-setShowOrdinalAxis value config =
-    Type.setShowOrdinalAxis value config
+setShowXAxis : Bool -> Config -> Config
+setShowXAxis value config =
+    Type.setShowXAxis value config
 
 
 {-| Sets the Icon Symbols list in the `GroupedConfig`.

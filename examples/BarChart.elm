@@ -185,7 +185,7 @@ verticalGrouped : Html msg
 verticalGrouped =
     Bar.init
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (iconsCustom "chart-a")))
-        |> Bar.setLinearAxisTickCount 5
+        |> Bar.setAxisYTickCount 5
         |> Bar.setTitle "Vertical Grouped Chart"
         |> Bar.setDesc "A vertical grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -200,7 +200,7 @@ verticalGroupedWithLabels : Html msg
 verticalGroupedWithLabels =
     Bar.init
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
-        |> Bar.setLinearAxisTickCount 5
+        |> Bar.setAxisYTickCount 5
         |> Bar.setTitle "Vertical Grouped Chart"
         |> Bar.setDesc "A vertical grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -230,8 +230,8 @@ horizontalGrouped =
     Bar.init
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (icons "chart-b")))
         |> Bar.setOrientation Bar.horizontalOrientation
-        |> Bar.setLinearAxisTickCount 5
-        |> Bar.setLinearAxisTickFormat valueFormatter
+        |> Bar.setAxisYTickCount 5
+        |> Bar.setAxisYTickFormat valueFormatter
         |> Bar.setTitle "Horizontal Grouped Chart"
         |> Bar.setDesc "A horizontal grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -247,8 +247,8 @@ horizontalGroupedWithLabels =
     Bar.init
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
         |> Bar.setOrientation Bar.horizontalOrientation
-        |> Bar.setLinearAxisTickCount 5
-        |> Bar.setLinearAxisTickFormat valueFormatter
+        |> Bar.setAxisYTickCount 5
+        |> Bar.setAxisYTickFormat valueFormatter
         |> Bar.setTitle "Horizontal Grouped Chart"
         |> Bar.setDesc "A horizontal grouped chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -286,7 +286,7 @@ horizontalStackedDiverging =
             , width = width
             , height = height
             }
-        |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
+        |> Bar.setAxisYTickFormat (abs >> valueFormatter)
         |> Bar.render ( dataStacked, accessor )
 
 
@@ -302,7 +302,7 @@ verticalStackedDiverging =
             , width = width
             , height = height
             }
-        |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
+        |> Bar.setAxisYTickFormat (abs >> valueFormatter)
         |> Bar.render ( dataStacked, accessor )
 
 

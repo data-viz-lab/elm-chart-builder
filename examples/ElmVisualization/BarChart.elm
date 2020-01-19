@@ -37,7 +37,7 @@ text {
 """
 
 
-timeSeries : List ( Time.Posix, Float )
+timeSeries : List ( String, Float )
 timeSeries =
     [ ( Time.millisToPosix 1448928000000, 2.5 )
     , ( Time.millisToPosix 1451606400000, 2 )
@@ -47,6 +47,7 @@ timeSeries =
     , ( Time.millisToPosix 1454284800000, 1 )
     , ( Time.millisToPosix 1456790400000, 1.2 )
     ]
+        |> List.map (\t -> ( dateFormat (Tuple.first t), Tuple.second t ))
 
 
 dateFormat : Time.Posix -> String
@@ -54,13 +55,9 @@ dateFormat =
     DateFormat.format [ DateFormat.dayOfMonthFixed, DateFormat.text " ", DateFormat.monthNameAbbreviated ] Time.utc
 
 
-data : List Bar.DataGroupBand
-data =
-    [ { groupLabel = Nothing
-      , points =
-            List.map (\t -> ( dateFormat (Tuple.first t), Tuple.second t )) timeSeries
-      }
-    ]
+accessor : Bar.Accessor ( String, Float )
+accessor =
+    Bar.Accessor (always "") Tuple.first Tuple.second
 
 
 chart : Html msg
@@ -70,13 +67,13 @@ chart =
         |> Bar.setTitle "A simple bar chart"
         |> Bar.setDesc "This module shows how to build a simple bar chart"
         |> Bar.setDomainLinear ( 0, 5 )
-        |> Bar.setLinearAxisTickCount 5
+        |> Bar.setAxisYTickCount 5
         |> Bar.setDimensions
             { margin = { top = 10, right = 10, bottom = 30, left = 30 }
             , width = 600
             , height = 400
             }
-        |> Bar.render data
+        |> Bar.render ( timeSeries, accessor )
 
 
 attrs : List (Html.Attribute msg)

@@ -2,8 +2,8 @@ module Chart.Line exposing
     ( DataGroupTime, Accessor
     , init
     , render
-    , setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
-    , setDomain
+    , setAxisContinousXTickCount, setAxisContinousXTickFormat, setAxisContinousXTicks, setAxisContinousYTickCount, setAxisContinousYTickFormat, setAxisContinousYTicks, setDesc, setDimensions, setHeight, setMargin, setShowYAxis, setTitle, setWidth
+    , setDomain, setShowXAxis
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -28,7 +28,7 @@ module Chart.Line exposing
 
 # Configuration setters
 
-@docs setAxisHorizontalTickCount, setAxisHorizontalTickFormat, setAxisHorizontalTicks, setAxisVerticalTickCount, setAxisVerticalTickFormat, setAxisVerticalTicks, setDesc, setDimensions, setHeight, setMargin, setShowHorizontalAxis, setShowVerticalAxis, setTitle, setWidth
+@docs setAxisContinousXTickCount, setAxisContinousXTickFormat, setAxisContinousXTicks, setAxisContinousYTickCount, setAxisContinousYTickFormat, setAxisContinousYTicks, setDesc, setDimensions, setHeight, setMargin, setShowContinousXAxis, setShowYAxis, setTitle, setWidth
 
 -}
 
@@ -50,15 +50,15 @@ import Chart.Internal.Type as Type
         , RenderContext(..)
         , defaultConfig
         , fromConfig
-        , setAxisHorizontalTickCount
-        , setAxisHorizontalTickFormat
-        , setAxisHorizontalTicks
-        , setAxisVerticalTickCount
-        , setAxisVerticalTickFormat
-        , setAxisVerticalTicks
+        , setAxisContinousXTickCount
+        , setAxisContinousXTickFormat
+        , setAxisContinousXTicks
+        , setAxisContinousYTickCount
+        , setAxisContinousYTickFormat
+        , setAxisContinousYTicks
         , setDimensions
-        , setShowHorizontalAxis
-        , setShowVerticalAxis
+        , setShowXAxis
+        , setShowYAxis
         , setTitle
         )
 import Html exposing (Html)
@@ -169,13 +169,13 @@ setMargin value config =
 Defaults to `Scale.ticks`
 
     Line.init
-        |> Line.setHorizontalTicks [ 1, 2, 3 ]
+        |> Line.setContinousXTicks [ 1, 2, 3 ]
         |> Line.render data
 
 -}
-setAxisHorizontalTicks : List Float -> Config -> Config
-setAxisHorizontalTicks ticks config =
-    Type.setAxisHorizontalTicks (Type.CustomTicks ticks) config
+setAxisContinousXTicks : List Float -> Config -> Config
+setAxisContinousXTicks ticks config =
+    Type.setAxisContinousXTicks (Type.CustomTicks ticks) config
 
 
 {-| Sets the approximate number of ticks for the horizontal axis
@@ -186,9 +186,9 @@ Defaults to `Scale.ticks`
         |> Line.render data
 
 -}
-setAxisHorizontalTickCount : Int -> Config -> Config
-setAxisHorizontalTickCount count config =
-    Type.setAxisHorizontalTickCount (Type.CustomTickCount count) config
+setAxisContinousXTickCount : Int -> Config -> Config
+setAxisContinousXTickCount count config =
+    Type.setAxisContinousXTickCount (Type.CustomTickCount count) config
 
 
 {-| Sets the formatting for ticks for the horizontal axis
@@ -199,22 +199,22 @@ Defaults to `Scale.tickFormat`
         |> Line.render data
 
 -}
-setAxisHorizontalTickFormat : (Float -> String) -> Config -> Config
-setAxisHorizontalTickFormat f config =
-    Type.setAxisHorizontalTickFormat (Type.CustomTickFormat f) config
+setAxisContinousXTickFormat : (Float -> String) -> Config -> Config
+setAxisContinousXTickFormat f config =
+    Type.setAxisContinousXTickFormat (Type.CustomTickFormat f) config
 
 
 {-| Set the ticks for the vertical axis
 Defaults to `Scale.ticks`
 
     Line.init
-        |> Line.setAxisVerticalDataTicks [ 1, 2, 3 ]
+        |> Line.setAxisContinousYDataTicks [ 1, 2, 3 ]
         |> Line.render data
 
 -}
-setAxisVerticalTicks : List Float -> Config -> Config
-setAxisVerticalTicks ticks config =
-    Type.setAxisVerticalTicks (Type.CustomTicks ticks) config
+setAxisContinousYTicks : List Float -> Config -> Config
+setAxisContinousYTicks ticks config =
+    Type.setAxisContinousYTicks (Type.CustomTicks ticks) config
 
 
 {-| Sets the approximate number of ticks for the vertical axis
@@ -225,9 +225,9 @@ Defaults to `Scale.ticks`
         |> Line.render data
 
 -}
-setAxisVerticalTickCount : Int -> Config -> Config
-setAxisVerticalTickCount count config =
-    Type.setAxisVerticalTickCount (Type.CustomTickCount count) config
+setAxisContinousYTickCount : Int -> Config -> Config
+setAxisContinousYTickCount count config =
+    Type.setAxisContinousYTickCount (Type.CustomTickCount count) config
 
 
 {-| Sets the formatting for ticks in the vertical axis
@@ -238,9 +238,9 @@ Defaults to `Scale.tickFormat`
         |> Line.render data
 
 -}
-setAxisVerticalTickFormat : (Float -> String) -> Config -> Config
-setAxisVerticalTickFormat f config =
-    Type.setAxisVerticalTickFormat (Type.CustomTickFormat f) config
+setAxisContinousYTickFormat : (Float -> String) -> Config -> Config
+setAxisContinousYTickFormat f config =
+    Type.setAxisContinousYTickFormat (Type.CustomTickFormat f) config
 
 
 {-| Sets margin, width and height all at once
@@ -302,32 +302,32 @@ setTitle value config =
     Type.setTitle value config
 
 
-{-| Sets the showHorizontalAxis boolean value in the config
+{-| Sets the showContinousXAxis boolean value in the config
 Default value: True
 This shows the bar's horizontal axis
 
     Line.init
-        |> Bar.setShowHorizontalAxis False
+        |> Bar.setShowXAxis False
         |> Bar.render data
 
 -}
-setShowHorizontalAxis : Bool -> Config -> Config
-setShowHorizontalAxis value config =
-    Type.setShowHorizontalAxis value config
+setShowXAxis : Bool -> Config -> Config
+setShowXAxis value config =
+    Type.setShowXAxis value config
 
 
-{-| Sets the showVerticalAxis boolean value in the config
+{-| Sets the showYAxis boolean value in the config
 Default value: True
 This shows the bar's vertical axis
 
     Line.init
-        |> Bar.setShowVerticalAxis False
+        |> Bar.setShowYAxis False
         |> Bar.render data
 
 -}
-setShowVerticalAxis : Bool -> Config -> Config
-setShowVerticalAxis value config =
-    Type.setShowVerticalAxis value config
+setShowYAxis : Bool -> Config -> Config
+setShowYAxis value config =
+    Type.setShowYAxis value config
 
 
 

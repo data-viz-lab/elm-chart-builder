@@ -101,6 +101,10 @@ type alias Population =
     { year : Int, age : Int, gender : Gender, people : Int }
 
 
+type alias ChartData =
+    { age : String, gender : String, people : Float }
+
+
 populationMinnesota1850 : List Population
 populationMinnesota1850 =
     [ Population 1850 0 M 1483789
@@ -144,35 +148,35 @@ populationMinnesota1850 =
     ]
 
 
+data : List ChartData
+data =
+    populationMinnesota1850
+        |> List.map
+            (\d ->
+                let
+                    age =
+                        d.age |> String.fromInt
+
+                    ( gender, people ) =
+                        case d.gender of
+                            M ->
+                                ( "Male", toFloat -d.people )
+
+                            F ->
+                                ( "Female", toFloat d.people )
+                in
+                { age = age, gender = gender, people = people }
+            )
+
+
 valueFormatter : Float -> String
 valueFormatter =
     FormatNumber.format { usLocale | decimals = 0 }
 
 
-data : List Bar.DataGroupBand
-data =
-    populationMinnesota1850
-        |> List.Extra.groupWhile
-            (\a b -> a.age == b.age)
-        |> List.map
-            (\l ->
-                let
-                    m =
-                        Tuple.first l
-
-                    f =
-                        l
-                            |> Tuple.second
-                            |> List.head
-                            |> Maybe.withDefault { year = -1, age = -1, gender = F, people = -1 }
-                in
-                { groupLabel = m.age |> String.fromInt |> Just
-                , points =
-                    [ ( "Male", toFloat -m.people )
-                    , ( "Female", toFloat f.people )
-                    ]
-                }
-            )
+accessor : Bar.Accessor ChartData
+accessor =
+    Bar.Accessor .age .gender .people
 
 
 chart : Html msg
@@ -182,15 +186,15 @@ chart =
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setTitle "Population distribution in Minnesota 1850"
         |> Bar.setDesc "A horizontal stacked diverging chart example to demonstrate how to create a population pyramid with the charting library"
-        |> Bar.setLinearAxisTickCount 8
-        |> Bar.setLinearAxisTickFormat (abs >> valueFormatter)
+        |> Bar.setAxisYTickCount 8
+        |> Bar.setAxisYTickFormat (abs >> valueFormatter)
         |> Bar.setDomainLinear ( 0, 2000000 )
         |> Bar.setDimensions
             { margin = { top = 20, right = 40, bottom = 50, left = 40 }
             , width = 800
             , height = 500
             }
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 
 footer : Html msg
