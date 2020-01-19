@@ -303,6 +303,7 @@ getRectTitleText tickFormat idx group labels value =
     let
         formatter =
             getAxisContinousDataFormatter tickFormat
+                |> Maybe.withDefault (\f -> String.fromFloat f)
     in
     group ++ " - " ++ getLabel idx labels ++ ": " ++ formatter value
 
@@ -843,11 +844,11 @@ bandGroupedContinousAxis c iconOffset linearScale =
         let
             ticks =
                 case c.axisContinousDataTicks of
-                    DefaultTicks ->
-                        Nothing
-
                     CustomTicks t ->
                         Just (Axis.ticks t)
+
+                    _ ->
+                        Nothing
 
             tickCount =
                 case c.axisContinousDataTickCount of
@@ -859,11 +860,11 @@ bandGroupedContinousAxis c iconOffset linearScale =
 
             tickFormat =
                 case c.axisContinousDataTickFormat of
-                    DefaultTickFormat ->
-                        Nothing
-
                     CustomTickFormat formatter ->
                         Just (Axis.tickFormat formatter)
+
+                    _ ->
+                        Nothing
 
             attributes =
                 [ ticks, tickFormat, tickCount ]

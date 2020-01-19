@@ -338,6 +338,7 @@ type alias Margin =
 type AxisContinousDataTicks
     = DefaultTicks
     | CustomTicks (List Float)
+    | CustomTimeTicks (List Posix)
 
 
 type AxisContinousDataTickCount
@@ -348,6 +349,7 @@ type AxisContinousDataTickCount
 type AxisContinousDataTickFormat
     = DefaultTickFormat
     | CustomTickFormat (Float -> String)
+    | CustomTimeTickFormat (Posix -> String)
 
 
 type alias ConfigStruct =
@@ -950,14 +952,17 @@ getAxisHorizontalTicks config =
     fromConfig config |> .axisHorizontalTicks
 
 
-getAxisContinousDataFormatter : AxisContinousDataTickFormat -> (Float -> String)
+getAxisContinousDataFormatter : AxisContinousDataTickFormat -> Maybe (Float -> String)
 getAxisContinousDataFormatter format =
     case format of
         DefaultTickFormat ->
-            \f -> String.fromFloat f
+            Just (\f -> String.fromFloat f)
 
         CustomTickFormat formatter ->
-            formatter
+            Just formatter
+
+        CustomTimeTickFormat _ ->
+            Nothing
 
 
 getDesc : Config -> String

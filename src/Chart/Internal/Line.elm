@@ -200,11 +200,11 @@ timeAxisGenerator c axisType scale =
                 let
                     ticks =
                         case c.axisHorizontalTicks of
-                            DefaultTicks ->
-                                Nothing
-
-                            CustomTicks t ->
+                            CustomTimeTicks t ->
                                 Just (Axis.ticks t)
+
+                            _ ->
+                                Nothing
 
                     tickCount =
                         case c.axisHorizontalTickCount of
@@ -214,14 +214,16 @@ timeAxisGenerator c axisType scale =
                             CustomTickCount count ->
                                 Just (Axis.tickCount count)
 
-                    --tickFormat =
-                    --    case c.axisHorizontalTickFormat of
-                    --        DefaultTickFormat ->
-                    --            Nothing
-                    --        CustomTickFormat formatter ->
-                    --            Just (Axis.tickFormat formatter)
+                    tickFormat =
+                        case c.axisHorizontalTickFormat of
+                            CustomTimeTickFormat formatter ->
+                                Just (Axis.tickFormat formatter)
+
+                            _ ->
+                                Nothing
+
                     attributes =
-                        [ tickCount ]
+                        [ ticks, tickCount, tickFormat ]
                             |> List.filterMap identity
 
                     axis =
@@ -246,11 +248,11 @@ linearAxisGenerator c axisType scale =
                 let
                     ticks =
                         case c.axisVerticalTicks of
-                            DefaultTicks ->
-                                Nothing
-
                             CustomTicks t ->
                                 Just (Axis.ticks t)
+
+                            _ ->
+                                Nothing
 
                     tickCount =
                         case c.axisVerticalTickCount of
@@ -262,11 +264,11 @@ linearAxisGenerator c axisType scale =
 
                     tickFormat =
                         case c.axisVerticalTickFormat of
-                            DefaultTickFormat ->
-                                Nothing
-
                             CustomTickFormat formatter ->
                                 Just (Axis.tickFormat formatter)
+
+                            _ ->
+                                Nothing
 
                     attributes =
                         [ ticks, tickFormat, tickCount ]
@@ -286,11 +288,11 @@ linearAxisGenerator c axisType scale =
                 let
                     ticks =
                         case c.axisHorizontalTicks of
-                            DefaultTicks ->
-                                Nothing
-
                             CustomTicks t ->
                                 Just (Axis.ticks t)
+
+                            _ ->
+                                Nothing
 
                     tickCount =
                         case c.axisHorizontalTickCount of
@@ -302,11 +304,11 @@ linearAxisGenerator c axisType scale =
 
                     tickFormat =
                         case c.axisHorizontalTickFormat of
-                            DefaultTickFormat ->
-                                Nothing
-
                             CustomTickFormat formatter ->
                                 Just (Axis.tickFormat formatter)
+
+                            _ ->
+                                Nothing
 
                     attributes =
                         [ ticks, tickFormat, tickCount ]
