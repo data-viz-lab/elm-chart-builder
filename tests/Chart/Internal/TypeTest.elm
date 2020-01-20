@@ -13,9 +13,9 @@ suite =
             [ test "with DomainBand" <|
                 \_ ->
                     let
-                        data : Data
+                        data : DataBand
                         data =
-                            DataBand
+                            toDataBand
                                 [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
                                 , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
                                 ]
@@ -28,9 +28,9 @@ suite =
             , test "with DomainBand complex example" <|
                 \_ ->
                     let
-                        data : Data
+                        data : DataBand
                         data =
-                            DataBand
+                            toDataBand
                                 [ { groupLabel = Just "16-24"
                                   , points =
                                         [ ( "once per month", 21.1 )
@@ -74,9 +74,9 @@ suite =
             , test "with DomainLinear" <|
                 \_ ->
                     let
-                        data : Data
+                        data : DataLinear
                         data =
-                            DataLinear
+                            toDataLinear
                                 [ { groupLabel = Just "CA", points = [ ( 5, 10 ), ( 6, 20 ) ] }
                                 , { groupLabel = Just "TX", points = [ ( 5, 11 ), ( 6, 21 ) ] }
                                 ]

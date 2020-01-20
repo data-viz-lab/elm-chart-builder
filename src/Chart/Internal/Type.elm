@@ -100,9 +100,9 @@ module Chart.Internal.Type exposing
     , setLayout
     , setMargin
     , setOrientation
-    , setShowIndividualLabels
     , setShowAxisX
     , setShowAxisY
+    , setShowIndividualLabels
     , setTitle
     , setWidth
     , showIcons
@@ -110,6 +110,8 @@ module Chart.Internal.Type exposing
     , symbolCustomSpace
     , symbolSpace
     , toConfig
+    , toDataBand
+    , toDataLinear
     , toExternalData
     )
 
@@ -167,8 +169,18 @@ type DataBand
     = DataBand (List DataGroupBand)
 
 
+toDataBand : List DataGroupBand -> DataBand
+toDataBand dataBand =
+    DataBand dataBand
+
+
 type DataLinear
     = DataLinear (List DataGroupLinear)
+
+
+toDataLinear : List DataGroupLinear -> DataLinear
+toDataLinear dataLinear =
+    DataLinear dataLinear
 
 
 type DataTime

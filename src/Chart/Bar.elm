@@ -311,7 +311,7 @@ Defaults to `Scale.tickFormat`
 -}
 setAxisYTickFormat : (Float -> String) -> Config -> Config
 setAxisYTickFormat f config =
-    Type.setAxisXContinousTickFormat (CustomTickFormat f) config
+    Type.setAxisYContinousTickFormat (CustomTickFormat f) config
 
 
 {-| Sets the margin, width and height all at once.

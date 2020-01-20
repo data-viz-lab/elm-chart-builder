@@ -13,9 +13,9 @@ suite =
             [ test "simple" <|
                 \_ ->
                     let
-                        data : Data
+                        data : DataBand
                         data =
-                            DataBand
+                            toDataBand
                                 [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
                                 , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
                                 ]
@@ -28,9 +28,9 @@ suite =
             , test "complex" <|
                 \_ ->
                     let
-                        data : Data
+                        data : DataBand
                         data =
-                            DataBand
+                            toDataBand
                                 [ { groupLabel = Just "16-24"
                                   , points =
                                         [ ( "once per month", 21.1 )

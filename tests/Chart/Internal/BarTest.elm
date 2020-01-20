@@ -13,9 +13,9 @@ suite =
             [ test "Values are ordered in accordance with groupes" <|
                 \_ ->
                     let
-                        data : Type.Data
+                        data : Type.DataBand
                         data =
-                            Type.DataBand
+                            Type.toDataBand
                                 [ { groupLabel = Just "16-24"
                                   , points =
                                         [ ( "once per month", 21.1 )
