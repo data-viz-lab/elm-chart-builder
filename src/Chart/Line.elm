@@ -1,19 +1,21 @@
 module Chart.Line exposing
-    ( DataGroupTime, Accessor
+    ( Accessor
     , init
     , render
-    , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisY, setTitle, setWidth
-    , setDomain, setShowAxisX
+    , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
+
+The Line module draws time lines.
+It expects the X axis to plot time data and the Y axis to plot linear data.
 
 &#9888; This module is still a work in progress and it has limited funcionality!
 
 
 # Chart Data Format
 
-@docs DataGroupTime, Accessor
+@docs Accessor
 
 
 # Chart Initialization
@@ -28,7 +30,7 @@ module Chart.Line exposing
 
 # Configuration setters
 
-@docs setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowContinousXAxis, setShowAxisY, setTitle, setWidth
+@docs setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth
 
 -}
 
@@ -44,7 +46,6 @@ import Chart.Internal.Type as Type
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
         , Config
-        , DomainTime
         , Layout(..)
         , Margin
         , RenderContext(..)
@@ -66,27 +67,43 @@ import Time exposing (Posix)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
-{-| Line chart data format.
-
-    dataGroupTime : Bar.DataGroupTime
-    dataGroupTime =
-        { groupLabel = Just "A"
-        , points =
-            [ ( 1, 10 )
-            , ( 2, 13 )
-            , ( 16, 16 )
-            ]
-        }
-
+{-| The data accessors
 -}
-type alias DataGroupTime =
-    Type.DataGroupTime
+type alias Accessor data =
+    { xGroup : data -> String
+    , xValue : data -> Posix
+    , yValue : data -> Float
+    }
 
 
 {-| Initializes the line chart with a default config
 
+    data : List Data
+    data =
+        [ { groupLabel = "A"
+          , x = Time.millisToPosix 1579275175634
+          , y = 10
+          }
+        , { groupLabel = "A"
+          , x = Time.millisToPosix 1579285175634
+          , y = 16
+          }
+        , { groupLabel = "B"
+          , x = Time.millisToPosix 1579275175634
+          , y = 13
+          }
+        , { groupLabel = "B"
+          , x = Time.millisToPosix 1579285175634
+          , y = 23
+          }
+        ]
+
+    accessor : Line.Accessor data
+    accessor =
+        Line.Accessor .groupLabel .x .y
+
     Line.init
-        |> Line.render data
+        |> Line.render (data, accessor)
 
 -}
 init : Config
@@ -96,15 +113,8 @@ init =
 
 {-| Renders the line chart, after initialisation and customisation
 
-    data : List DataGroupTime
-    data =
-        [ { groupLabel = Nothing
-          , points = [ ( 1, 10 ), (2, 20) ]
-          }
-        ]
-
-    Line.init data
-        |> Line.render data
+    Line.init
+        |> Line.render ( data, accessor )
 
 -}
 render : ( List data, Accessor data ) -> Config -> Html msg
@@ -129,7 +139,7 @@ Default value: 400
 
     Line.init
         |> Line.setHeight 600
-        |> Line.render data
+        |> Line.render ( data, accessor )
 
 -}
 setHeight : Float -> Config -> Config
@@ -142,7 +152,7 @@ Default value: 400
 
     Line.init
         |> Line.setWidth 600
-        |> Line.render data
+        |> Line.render ( data, accessor )
 
 -}
 setWidth : Float -> Config -> Config
@@ -152,12 +162,14 @@ setWidth value config =
 
 {-| Sets the margin values in the config
 
+It follows d3s [margin convention](https://bl.ocks.org/mbostock/3019563).
+
     margin =
         { top = 30, right = 20, bottom = 30, left = 0 }
 
     Line.init
         |> Line.setMargin margin
-        |> Line.render data
+        |> Line.render (data, accessor)
 
 -}
 setMargin : Margin -> Config -> Config
@@ -165,12 +177,12 @@ setMargin value config =
     Type.setMargin value config
 
 
-{-| Set the ticks for the horizontal axis
+{-| Set the ticks for the time axis
 Defaults to `Scale.ticks`
 
     Line.init
         |> Line.setContinousXTicks [ 1, 2, 3 ]
-        |> Line.render data
+        |> Line.render ( data, accessor )
 
 -}
 setAxisXContinousTicks : List Float -> Config -> Config
@@ -178,12 +190,12 @@ setAxisXContinousTicks ticks config =
     Type.setAxisXContinousTicks (Type.CustomTicks ticks) config
 
 
-{-| Sets the approximate number of ticks for the horizontal axis
+{-| Sets the approximate number of ticks for the time axis
 Defaults to `Scale.ticks`
 
     Line.init
         |> Line.setContinousDataTickCount 5
-        |> Line.render data
+        |> Line.render ( data, accessor )
 
 -}
 setAxisXContinousTickCount : Int -> Config -> Config
@@ -191,12 +203,12 @@ setAxisXContinousTickCount count config =
     Type.setAxisXContinousTickCount (Type.CustomTickCount count) config
 
 
-{-| Sets the formatting for ticks for the horizontal axis
+{-| Sets the formatting for ticks for the time axis
 Defaults to `Scale.tickFormat`
 
     Line.init
         |> Line.setContinousDataTicks (FormatNumber.format { usLocale | decimals = 0 })
-        |> Line.render data
+        |> Line.render ( data, accessor )
 
 -}
 setAxisXContinousTickFormat : (Float -> String) -> Config -> Config
@@ -209,7 +221,7 @@ Defaults to `Scale.ticks`
 
     Line.init
         |> Line.setAxisYContinousDataTicks [ 1, 2, 3 ]
-        |> Line.render data
+        |> Line.render ( data, accessor )
 
 -}
 setAxisYContinousTicks : List Float -> Config -> Config
@@ -222,7 +234,7 @@ Defaults to `Scale.ticks`
 
     Line.init
         |> Line.setContinousDataTickCount 5
-        |> Line.render data
+        |> Line.render ( data, accessor )
 
 -}
 setAxisYContinousTickCount : Int -> Config -> Config
@@ -235,7 +247,7 @@ Defaults to `Scale.tickFormat`
 
     Line.init
         |> Line.setContinousDataTicks (FormatNumber.format { usLocale | decimals = 0 })
-        |> Line.render data
+        |> Line.render ( data, accessor )
 
 -}
 setAxisYContinousTickFormat : (Float -> String) -> Config -> Config
@@ -255,7 +267,7 @@ Prefer this method from the individual ones when you need to set all three at on
             , width = 400
             , height = 400
             }
-        |> Line.render data
+        |> Line.render (data, accessor)
 
 -}
 setDimensions : { margin : Margin, width : Float, height : Float } -> Config -> Config
@@ -263,25 +275,12 @@ setDimensions value config =
     Type.setDimensions value config
 
 
-{-| Sets the domain value in the config
-If not set, the domain is calculated from the data
-
-    Line.init
-        |> Line.setDomain (DomainTime { horizontal = ( 1, 1 ), vertical = ( 0, 20 ) })
-        |> Line.render data
-
--}
-setDomain : DomainTime -> Config -> Config
-setDomain value config =
-    Type.setDomainTime value config
-
-
 {-| Sets an accessible, long-text description for the svg chart.
 Default value: ""
 
     Line.init
         |> Line.setDesc "This is an accessible chart, with a desc element"
-        |> Line.render data
+        |> Line.render ( data, accessor )
 
 -}
 setDesc : String -> Config -> Config
@@ -294,7 +293,7 @@ Default value: ""
 
     Line.init
         |> Line.setTitle "This is a chart"
-        |> Line.render data
+        |> Line.render ( data, accessor )
 
 -}
 setTitle : String -> Config -> Config
@@ -302,9 +301,13 @@ setTitle value config =
     Type.setTitle value config
 
 
-{-| Sets the showContinousXAxis boolean value in the config
+{-| Sets the showAxisX boolean value in the config.
+
 Default value: True
-This shows the bar's horizontal axis
+
+By convention the X axix is the horizontal one, but
+if the layout is changed to vertical, then the X axis
+represents the vertical one.
 
     Line.init
         |> Bar.setShowAxisX False
@@ -316,9 +319,13 @@ setShowAxisX value config =
     Type.setShowAxisX value config
 
 
-{-| Sets the showAxisY boolean value in the config
+{-| Sets the showAxisY boolean value in the config.
+
 Default value: True
-This shows the bar's vertical axis
+
+By convention the Y axix is the vertical one, but
+if the layout is changed to horizontal, then the Y axis
+represents the horizontal one.
 
     Line.init
         |> Bar.setShowAxisY False
@@ -328,23 +335,3 @@ This shows the bar's vertical axis
 setShowAxisY : Bool -> Config -> Config
 setShowAxisY value config =
     Type.setShowAxisY value config
-
-
-
--- ACCESSOR
-
-
-{-| The data accessors
-
-    type alias Accessor data =
-        { xGroup : data -> String
-        , xValue : data -> String
-        , yValue : data -> Float
-        }
-
--}
-type alias Accessor data =
-    { xGroup : data -> String
-    , xValue : data -> Posix
-    , yValue : data -> Float
-    }

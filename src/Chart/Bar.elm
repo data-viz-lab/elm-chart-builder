@@ -1,20 +1,21 @@
 module Chart.Bar exposing
-    ( DataGroupBand, Accessor
+    ( Accessor
     , init
     , render
-    , setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setMargin, setOrientation, setTitle, setWidth
+    , setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setMargin, setOrientation, setShowAxisX, setShowAxisY, setTitle, setWidth
     , defaultGroupedConfig, divergingDirection, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
     , setIcons, setShowIndividualLabels
     , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth
-    , setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setShowAxisX, setShowAxisY
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
 
+The Bar module expects the X axis to plot grouped ordinal data and the Y axis to plot linear data.
+
 
 # Chart Data Format
 
-@docs DataGroupBand, Accessor
+@docs Accessor
 
 
 # Chart Initialization
@@ -29,7 +30,7 @@ module Chart.Bar exposing
 
 # Configuration setters
 
-@docs setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setLinearAxisTickCount, setLinearAxisTickFormat, setLinearAxisTicks, setMargin, setOrientation, setShowContinousAxis, setShowOrdinalAxis, setTitle, setWidth
+@docs setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setMargin, setOrientation, setShowAxisX, setShowAxisY, setTitle, setWidth
 
 
 # Configuration setters arguments
@@ -73,8 +74,9 @@ Icons can be added to grouped bar charts to improve understanding and accessibil
                 |> Bar.setIcons
             )
 
-    Bar.init data
+    Bar.init
         |> Bar.setLayout groupedLayout
+        |> Bar.render ( data, accessor )
 
 @docs BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth
 
@@ -110,27 +112,19 @@ import Html exposing (Html)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
-{-| Bar chart data format.
-
-    dataGroupBand : Bar.DataGroupBand
-    dataGroupBand =
-        { groupLabel = Just "A"
-        , points =
-            [ ( "a", 10 )
-            , ( "b", 13 )
-            , ( "c", 16 )
-            ]
-        }
-
+{-| The data accessors
 -}
-type alias DataGroupBand =
-    Type.DataGroupBand
+type alias Accessor data =
+    { xGroup : data -> String
+    , xValue : data -> String
+    , yValue : data -> Float
+    }
 
 
 {-| Initializes the bar chart with a default config.
 
     Bar.init
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 init : Config
@@ -140,15 +134,32 @@ init =
 
 {-| Renders the bar chart, after initialisation and customisation.
 
-    data : List DataGroupBand
+    data : List data
     data =
-        [ { groupLabel = Nothing
-          , points = [ ( "a", 10 ) ]
+        [ { groupLabel = "A"
+          , x = "a"
+          , y = 10
+          }
+        , { groupLabel = "A"
+          , x = "b"
+          , y = 13
+          }
+        , { groupLabel = "B"
+          , x = "a"
+          , y = 11
+          }
+        , { groupLabel = "B"
+          , x = "b"
+          , y = 23
           }
         ]
 
+    accessor : Accessor data
+    accessor =
+        Accessor .groupLabel .x .y
+
     Bar.init
-        |> Bar.render data
+        |> Bar.render (data, accessor)
 
 -}
 render : ( List data, Accessor data ) -> Config -> Html msg
@@ -174,7 +185,7 @@ Default value: 400
 
     Bar.init
         |> Bar.setHeight 600
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 setHeight : Float -> Config -> Config
@@ -188,7 +199,7 @@ Default value: 600
 
     Bar.init
         |> Bar.setWidth 800
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 setWidth : Float -> Config -> Config
@@ -198,13 +209,13 @@ setWidth value config =
 
 {-| Sets the chart layout.
 
-Values: Bar.stackedLayout or Bar.groupedLayout
+Values: `Bar.stackedLayout` or `Bar.groupedLayout`
 
 Default value: Bar.groupedLayout
 
     Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 setLayout : Layout -> Config -> Config
@@ -218,7 +229,7 @@ Default value: ""
 
     Bar.init
         |> Bar.setDesc "This is an accessible chart, with a desc element"
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 setDesc : String -> Config -> Config
@@ -232,7 +243,7 @@ Default value: ""
 
     Bar.init
         |> Bar.setTitle "This is a chart"
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 setTitle : String -> Config -> Config
@@ -242,11 +253,12 @@ setTitle value config =
 
 {-| Sets the orientation value in the config.
 
-Default value: Vertical
+Accepts: horizontalOrientation or verticalOrientation
+Default value: verticalOrientation
 
     Bar.init
         |> Bar.setOrientation horizontalOrientation
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 setOrientation : Orientation -> Config -> Config
@@ -256,12 +268,14 @@ setOrientation value config =
 
 {-| Sets the margin values in the config.
 
+It follows d3s [margin convention](https://bl.ocks.org/mbostock/3019563).
+
     margin =
         { top = 30, right = 20, bottom = 30, left = 0 }
 
-    Bar.init data
+    Bar.init
     |> Bar.setMargin margin
-    |> Bar.render
+    |> Bar.render ( data, accessor )
 
 -}
 setMargin : Margin -> Config -> Config
@@ -274,8 +288,8 @@ setMargin value config =
 Defaults to `Scale.ticks`
 
     Bar.init
-        |> Bar.setLinearAxisTicks [ 1, 2, 3 ]
-        |> Bar.render data
+        |> Bar.setAxisYTicks [ 1, 2, 3 ]
+        |> Bar.render ( data, accessor )
 
 -}
 setAxisYTicks : List Float -> Config -> Config
@@ -288,8 +302,8 @@ setAxisYTicks ticks config =
 Defaults to `Scale.tickCount`
 
     Bar.init
-        |> Bar.setLinearAxisTickCount 5
-        |> Bar.render data
+        |> Bar.setAxisYTickCount 5
+        |> Bar.render ( data, accessor )
 
 -}
 setAxisYTickCount : Int -> Config -> Config
@@ -305,8 +319,8 @@ Defaults to `Scale.tickFormat`
         FormatNumber.format { usLocale | decimals = 0 }
 
     Bar.init
-        |> Bar.setLinearAxisTickFormat formatter
-        |> Bar.render data
+        |> Bar.setAxisYTickFormat formatter
+        |> Bar.render (data, accessor)
 
 -}
 setAxisYTickFormat : (Float -> String) -> Config -> Config
@@ -326,7 +340,7 @@ Prefer this method from the individual ones when you need to set all three value
             , width = 400
             , height = 400
             }
-        |> Bar.render data
+        |> Bar.render (data, accessor)
 
 -}
 setDimensions : { margin : Margin, width : Float, height : Float } -> Config -> Config
@@ -338,7 +352,7 @@ setDimensions value config =
 
     Bar.init
         |> Bar.setDomainBandBandGroup [ "0" ]
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 setDomainBandGroup : Type.BandDomain -> Config -> Config
@@ -350,7 +364,7 @@ setDomainBandGroup value config =
 
     Bar.init
         |> Bar.setDomainBandBandSingle [ "a", "b" ]
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 setDomainBandSingle : Type.BandDomain -> Config -> Config
@@ -362,7 +376,7 @@ setDomainBandSingle value config =
 
     Bar.init
         |> Bar.setDomainBandLinear ( 0, 0.55 )
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 setDomainLinear : Type.LinearDomain -> Config -> Config
@@ -370,13 +384,17 @@ setDomainLinear value config =
     Type.setDomainBandLinear value config
 
 
-{-| Sets the showContinousAxis boolean value in the config
+{-| Sets the showAxisY boolean value in the config
+
 Default value: True
-This shows the bar's continous scale axis
+
+By convention the Y axix is the vertical one, but
+if the layout is changed to horizontal, then the Y axis
+represents the horizontal one.
 
     Bar.init
-        |> Bar.setShowContinousAxis False
-        |> Bar.render data
+        |> Bar.setShowAxisY False
+        |> Bar.render ( data, accessor )
 
 -}
 setShowAxisY : Bool -> Config -> Config
@@ -385,12 +403,16 @@ setShowAxisY value config =
 
 
 {-| Sets the showOrdinalAxis boolean value in the config
+
 Default value: True
-This shows the bar's ordinal scale axis
+
+By convention the X axix is the horizontal one, but
+if the layout is changed to vertical, then the X axis
+represents the vertical one.
 
     Bar.init
         |> Bar.setShowOrdinalAxis False
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 setShowAxisX : Bool -> Config -> Config
@@ -441,7 +463,7 @@ Used as argument to Bar.setOrientation
 
     Bar.init
         |> Bar.setOrientation horizontalOrientation
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 horizontalOrientation : Orientation
@@ -455,7 +477,7 @@ This is the default layout
 
     Bar.init
         |> Bar.setOrientation verticalOrientation
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 verticalOrientation : Orientation
@@ -464,11 +486,14 @@ verticalOrientation =
 
 
 {-| Stacked layout type
-Stacked layouts can not have icons
+
+Beware that stacked layouts do not support icons
+
+`stackedLayout` expects a `noDirection` or a `divergingDirection` argument.
 
     Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 stackedLayout : Direction -> Layout
@@ -484,7 +509,7 @@ This is the default layout type
 
     Bar.init
         |> Bar.setLayout groupedLayout
-        |> Bar.render data
+        |> Bar.render (data, accessor)
 
 -}
 groupedLayout : GroupedConfig -> Layout
@@ -501,7 +526,7 @@ An example can be a population pyramid chart.
 
     Bar.init
         |> Bar.setLayout stackedLayout
-        |> Bar.render data
+        |> Bar.render (data, accessor)
 
 -}
 divergingDirection : Direction
@@ -514,7 +539,7 @@ It is only used for stacked layouts
 
     Bar.init
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
-        |> Bar.render data
+        |> Bar.render ( data, accessor )
 
 -}
 noDirection : Direction
@@ -533,7 +558,7 @@ Used for initialization purposes
 
     Bar.init
         |> Bar.setLayout (Bar.groupedLayout )
-        |> Bar.render data
+        |> Bar.render (data, accessor)
 
 -}
 defaultGroupedConfig : GroupedConfig
@@ -641,27 +666,3 @@ symbolTriangle id =
 symbolCorner : String -> BarSymbol msg
 symbolCorner id =
     Corner id
-
-
-
--- ACCESSOR
-
-
-{-| The data accessors
-
-    type alias Accessor data =
-        { xGroup : data -> String
-        , xValue : data -> String
-        , yValue : data -> Float
-        }
-
--}
-type alias Accessor data =
-    { xGroup : data -> String
-    , xValue : data -> String
-    , yValue : data -> Float
-    }
-
-
-
---Type.AccessorBand data
