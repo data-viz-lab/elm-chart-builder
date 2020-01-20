@@ -328,7 +328,7 @@ verticalRectsStacked config bandGroupScale ( group, values, labels ) =
                     , shapeRendering RenderCrispEdges
                     ]
                     []
-                , TypedSvg.title [] [ text <| getRectTitleText config.axisContinousYTickFormat idx group labels rawValue ]
+                , TypedSvg.title [] [ text <| getRectTitleText config.axisYContinousTickFormat idx group labels rawValue ]
                 ]
     in
     List.indexedMap (\idx -> block idx) values
@@ -351,7 +351,7 @@ horizontalRectsStacked config bandGroupScale ( group, values, labels ) =
                     , shapeRendering RenderCrispEdges
                     ]
                     []
-                , TypedSvg.title [] [ text <| getRectTitleText config.axisContinousYTickFormat idx group labels rawValue ]
+                , TypedSvg.title [] [ text <| getRectTitleText config.axisYContinousTickFormat idx group labels rawValue ]
                 ]
     in
     values
@@ -808,7 +808,7 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
 
 bandXAxis : ConfigStruct -> BandScale String -> List (Svg msg)
 bandXAxis c bandScale =
-    if c.showXAxis == True then
+    if c.showAxisX == True then
         case c.orientation of
             Vertical ->
                 let
@@ -840,10 +840,10 @@ bandXAxis c bandScale =
 
 bandGroupedYAxis : ConfigStruct -> Float -> ContinuousScale Float -> List (Svg msg)
 bandGroupedYAxis c iconOffset linearScale =
-    if c.showYAxis == True then
+    if c.showAxisY == True then
         let
             ticks =
-                case c.axisContinousYTicks of
+                case c.axisYContinousTicks of
                     CustomTicks t ->
                         Just (Axis.ticks t)
 
@@ -851,7 +851,7 @@ bandGroupedYAxis c iconOffset linearScale =
                         Nothing
 
             tickCount =
-                case c.axisContinousYTickCount of
+                case c.axisYContinousTickCount of
                     DefaultTickCount ->
                         Nothing
 
@@ -859,7 +859,7 @@ bandGroupedYAxis c iconOffset linearScale =
                         Just (Axis.tickCount count)
 
             tickFormat =
-                case c.axisContinousYTickFormat of
+                case c.axisYContinousTickFormat of
                     CustomTickFormat formatter ->
                         Just (Axis.tickFormat formatter)
 

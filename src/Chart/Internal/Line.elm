@@ -161,7 +161,7 @@ renderLineGrouped ( data, config ) =
 
 timeAxisGenerator : ConfigStruct -> AxisType -> ContinuousScale Posix -> List (Svg msg)
 timeAxisGenerator c axisType scale =
-    if c.showXAxis == True then
+    if c.showAxisX == True then
         case axisType of
             Vertical ->
                 let
@@ -199,7 +199,7 @@ timeAxisGenerator c axisType scale =
             Horizontal ->
                 let
                     ticks =
-                        case c.axisContinousXTicks of
+                        case c.axisXContinousTicks of
                             CustomTimeTicks t ->
                                 Just (Axis.ticks t)
 
@@ -207,7 +207,7 @@ timeAxisGenerator c axisType scale =
                                 Nothing
 
                     tickCount =
-                        case c.axisContinousXTickCount of
+                        case c.axisXContinousTickCount of
                             DefaultTickCount ->
                                 Nothing
 
@@ -215,7 +215,7 @@ timeAxisGenerator c axisType scale =
                                 Just (Axis.tickCount count)
 
                     tickFormat =
-                        case c.axisContinousXTickFormat of
+                        case c.axisXContinousTickFormat of
                             CustomTimeTickFormat formatter ->
                                 Just (Axis.tickFormat formatter)
 
@@ -242,12 +242,12 @@ timeAxisGenerator c axisType scale =
 
 linearAxisGenerator : ConfigStruct -> AxisType -> ContinuousScale Float -> List (Svg msg)
 linearAxisGenerator c axisType scale =
-    if c.showYAxis == True then
+    if c.showAxisY == True then
         case axisType of
             Vertical ->
                 let
                     ticks =
-                        case c.axisContinousYTicks of
+                        case c.axisYContinousTicks of
                             CustomTicks t ->
                                 Just (Axis.ticks t)
 
@@ -255,7 +255,7 @@ linearAxisGenerator c axisType scale =
                                 Nothing
 
                     tickCount =
-                        case c.axisContinousYTickCount of
+                        case c.axisYContinousTickCount of
                             DefaultTickCount ->
                                 Nothing
 
@@ -263,7 +263,7 @@ linearAxisGenerator c axisType scale =
                                 Just (Axis.tickCount count)
 
                     tickFormat =
-                        case c.axisContinousYTickFormat of
+                        case c.axisYContinousTickFormat of
                             CustomTickFormat formatter ->
                                 Just (Axis.tickFormat formatter)
 
@@ -287,7 +287,7 @@ linearAxisGenerator c axisType scale =
             Horizontal ->
                 let
                     ticks =
-                        case c.axisContinousXTicks of
+                        case c.axisXContinousTicks of
                             CustomTicks t ->
                                 Just (Axis.ticks t)
 
@@ -295,7 +295,7 @@ linearAxisGenerator c axisType scale =
                                 Nothing
 
                     tickCount =
-                        case c.axisContinousXTickCount of
+                        case c.axisXContinousTickCount of
                             DefaultTickCount ->
                                 Nothing
 
@@ -303,7 +303,7 @@ linearAxisGenerator c axisType scale =
                                 Just (Axis.tickCount count)
 
                     tickFormat =
-                        case c.axisContinousXTickFormat of
+                        case c.axisXContinousTickFormat of
                             CustomTickFormat formatter ->
                                 Just (Axis.tickFormat formatter)
 

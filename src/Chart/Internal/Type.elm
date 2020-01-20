@@ -53,12 +53,12 @@ module Chart.Internal.Type exposing
     , fromDomainBand
     , fromDomainLinear
     , getAxisContinousDataFormatter
-    , getAxisContinousXTickCount
-    , getAxisContinousXTickFormat
-    , getAxisContinousXTicks
-    , getAxisContinousYTickCount
-    , getAxisContinousYTickFormat
-    , getAxisContinousYTicks
+    , getAxisXContinousTickCount
+    , getAxisXContinousTickFormat
+    , getAxisXContinousTicks
+    , getAxisYContinousTickCount
+    , getAxisYContinousTickFormat
+    , getAxisYContinousTicks
     , getBandGroupRange
     , getBandSingleRange
     , getDataBandDepth
@@ -81,12 +81,12 @@ module Chart.Internal.Type exposing
     , getZone
     , leftGap
     , role
-    , setAxisContinousXTickCount
-    , setAxisContinousXTickFormat
-    , setAxisContinousXTicks
-    , setAxisContinousYTickCount
-    , setAxisContinousYTickFormat
-    , setAxisContinousYTicks
+    , setAxisXContinousTickCount
+    , setAxisXContinousTickFormat
+    , setAxisXContinousTicks
+    , setAxisYContinousTickCount
+    , setAxisYContinousTickFormat
+    , setAxisYContinousTicks
     , setDesc
     , setDimensions
     , setDomainBand
@@ -101,8 +101,8 @@ module Chart.Internal.Type exposing
     , setMargin
     , setOrientation
     , setShowIndividualLabels
-    , setShowXAxis
-    , setShowYAxis
+    , setShowAxisX
+    , setShowAxisY
     , setTitle
     , setWidth
     , showIcons
@@ -345,12 +345,12 @@ type AxisContinousDataTickFormat
 
 
 type alias ConfigStruct =
-    { axisContinousXTickCount : AxisContinousDataTickCount
-    , axisContinousXTickFormat : AxisContinousDataTickFormat
-    , axisContinousXTicks : AxisContinousDataTicks
-    , axisContinousYTickCount : AxisContinousDataTickCount
-    , axisContinousYTickFormat : AxisContinousDataTickFormat
-    , axisContinousYTicks : AxisContinousDataTicks
+    { axisXContinousTickCount : AxisContinousDataTickCount
+    , axisXContinousTickFormat : AxisContinousDataTickFormat
+    , axisXContinousTicks : AxisContinousDataTicks
+    , axisYContinousTickCount : AxisContinousDataTickCount
+    , axisYContinousTickFormat : AxisContinousDataTickFormat
+    , axisYContinousTicks : AxisContinousDataTicks
     , desc : String
     , domainBand : DomainBand
     , domainLinear : DomainLinear
@@ -362,8 +362,8 @@ type alias ConfigStruct =
     , layout : Layout
     , margin : Margin
     , orientation : Orientation
-    , showXAxis : Bool
-    , showYAxis : Bool
+    , showAxisX : Bool
+    , showAxisY : Bool
     , title : String
     , width : Float
     , zone : Zone
@@ -373,12 +373,12 @@ type alias ConfigStruct =
 defaultConfig : Config
 defaultConfig =
     toConfig
-        { axisContinousXTickCount = DefaultTickCount
-        , axisContinousXTickFormat = DefaultTickFormat
-        , axisContinousXTicks = DefaultTicks
-        , axisContinousYTickCount = DefaultTickCount
-        , axisContinousYTickFormat = DefaultTickFormat
-        , axisContinousYTicks = DefaultTicks
+        { axisXContinousTickCount = DefaultTickCount
+        , axisXContinousTickFormat = DefaultTickFormat
+        , axisXContinousTicks = DefaultTicks
+        , axisYContinousTickCount = DefaultTickCount
+        , axisYContinousTickFormat = DefaultTickFormat
+        , axisYContinousTicks = DefaultTicks
         , desc = ""
         , domainBand = DomainBand initialDomainBandStruct
         , domainLinear = DomainLinear initialDomainLinearStruct
@@ -390,8 +390,8 @@ defaultConfig =
         , layout = defaultLayout
         , margin = defaultMargin
         , orientation = defaultOrientation
-        , showXAxis = True
-        , showYAxis = True
+        , showAxisX = True
+        , showAxisY = True
         , title = ""
         , width = defaultWidth
         , zone = Time.utc
@@ -593,22 +593,22 @@ type alias StackedValuesAndGroupes =
 -- SETTERS
 
 
-setAxisContinousXTickCount : AxisContinousDataTickCount -> Config -> Config
-setAxisContinousXTickCount count config =
+setAxisXContinousTickCount : AxisContinousDataTickCount -> Config -> Config
+setAxisXContinousTickCount count config =
     let
         c =
             fromConfig config
     in
-    toConfig { c | axisContinousXTickCount = count }
+    toConfig { c | axisXContinousTickCount = count }
 
 
-setAxisContinousYTickCount : AxisContinousDataTickCount -> Config -> Config
-setAxisContinousYTickCount count config =
+setAxisYContinousTickCount : AxisContinousDataTickCount -> Config -> Config
+setAxisYContinousTickCount count config =
     let
         c =
             fromConfig config
     in
-    toConfig { c | axisContinousYTickCount = count }
+    toConfig { c | axisYContinousTickCount = count }
 
 
 setDesc : String -> Config -> Config
@@ -629,40 +629,40 @@ setTitle title config =
     toConfig { c | title = title }
 
 
-setAxisContinousXTickFormat : AxisContinousDataTickFormat -> Config -> Config
-setAxisContinousXTickFormat format config =
+setAxisXContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
+setAxisXContinousTickFormat format config =
     let
         c =
             fromConfig config
     in
-    toConfig { c | axisContinousXTickFormat = format }
+    toConfig { c | axisXContinousTickFormat = format }
 
 
-setAxisContinousYTickFormat : AxisContinousDataTickFormat -> Config -> Config
-setAxisContinousYTickFormat format config =
+setAxisYContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
+setAxisYContinousTickFormat format config =
     let
         c =
             fromConfig config
     in
-    toConfig { c | axisContinousYTickFormat = format }
+    toConfig { c | axisYContinousTickFormat = format }
 
 
-setAxisContinousXTicks : AxisContinousDataTicks -> Config -> Config
-setAxisContinousXTicks ticks config =
+setAxisXContinousTicks : AxisContinousDataTicks -> Config -> Config
+setAxisXContinousTicks ticks config =
     let
         c =
             fromConfig config
     in
-    toConfig { c | axisContinousXTicks = ticks }
+    toConfig { c | axisXContinousTicks = ticks }
 
 
-setAxisContinousYTicks : AxisContinousDataTicks -> Config -> Config
-setAxisContinousYTicks ticks config =
+setAxisYContinousTicks : AxisContinousDataTicks -> Config -> Config
+setAxisYContinousTicks ticks config =
     let
         c =
             fromConfig config
     in
-    toConfig { c | axisContinousYTicks = ticks }
+    toConfig { c | axisYContinousTicks = ticks }
 
 
 setHeight : Float -> Config -> Config
@@ -817,22 +817,22 @@ setDomainBandLinear linearDomain config =
     toConfig { c | domainBand = DomainBand newDomain }
 
 
-setShowXAxis : Bool -> Config -> Config
-setShowXAxis bool config =
+setShowAxisX : Bool -> Config -> Config
+setShowAxisX bool config =
     let
         c =
             fromConfig config
     in
-    toConfig { c | showXAxis = bool }
+    toConfig { c | showAxisX = bool }
 
 
-setShowYAxis : Bool -> Config -> Config
-setShowYAxis bool config =
+setShowAxisY : Bool -> Config -> Config
+setShowAxisY bool config =
     let
         c =
             fromConfig config
     in
-    toConfig { c | showYAxis = bool }
+    toConfig { c | showAxisY = bool }
 
 
 
@@ -844,34 +844,34 @@ getZone config =
     fromConfig config |> .zone
 
 
-getAxisContinousXTickCount : Config -> AxisContinousDataTickCount
-getAxisContinousXTickCount config =
-    fromConfig config |> .axisContinousXTickCount
+getAxisXContinousTickCount : Config -> AxisContinousDataTickCount
+getAxisXContinousTickCount config =
+    fromConfig config |> .axisXContinousTickCount
 
 
-getAxisContinousYTickCount : Config -> AxisContinousDataTickCount
-getAxisContinousYTickCount config =
-    fromConfig config |> .axisContinousYTickCount
+getAxisYContinousTickCount : Config -> AxisContinousDataTickCount
+getAxisYContinousTickCount config =
+    fromConfig config |> .axisYContinousTickCount
 
 
-getAxisContinousXTickFormat : Config -> AxisContinousDataTickFormat
-getAxisContinousXTickFormat config =
-    fromConfig config |> .axisContinousXTickFormat
+getAxisXContinousTickFormat : Config -> AxisContinousDataTickFormat
+getAxisXContinousTickFormat config =
+    fromConfig config |> .axisXContinousTickFormat
 
 
-getAxisContinousYTickFormat : Config -> AxisContinousDataTickFormat
-getAxisContinousYTickFormat config =
-    fromConfig config |> .axisContinousYTickFormat
+getAxisYContinousTickFormat : Config -> AxisContinousDataTickFormat
+getAxisYContinousTickFormat config =
+    fromConfig config |> .axisYContinousTickFormat
 
 
-getAxisContinousYTicks : Config -> AxisContinousDataTicks
-getAxisContinousYTicks config =
-    fromConfig config |> .axisContinousYTicks
+getAxisYContinousTicks : Config -> AxisContinousDataTicks
+getAxisYContinousTicks config =
+    fromConfig config |> .axisYContinousTicks
 
 
-getAxisContinousXTicks : Config -> AxisContinousDataTicks
-getAxisContinousXTicks config =
-    fromConfig config |> .axisContinousXTicks
+getAxisXContinousTicks : Config -> AxisContinousDataTicks
+getAxisXContinousTicks config =
+    fromConfig config |> .axisXContinousTicks
 
 
 getAxisContinousDataFormatter : AxisContinousDataTickFormat -> Maybe (Float -> String)

@@ -6,7 +6,7 @@ module Chart.Bar exposing
     , defaultGroupedConfig, divergingDirection, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
     , setIcons, setShowIndividualLabels
     , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth
-    , setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setShowXAxis, setShowYAxis
+    , setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setShowAxisX, setShowAxisY
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -102,8 +102,8 @@ import Chart.Internal.Type as Type
         , defaultConfig
         , fromConfig
         , setDimensions
-        , setShowXAxis
-        , setShowYAxis
+        , setShowAxisX
+        , setShowAxisY
         , setTitle
         )
 import Html exposing (Html)
@@ -280,7 +280,7 @@ Defaults to `Scale.ticks`
 -}
 setAxisYTicks : List Float -> Config -> Config
 setAxisYTicks ticks config =
-    Type.setAxisContinousYTicks (Type.CustomTicks ticks) config
+    Type.setAxisYContinousTicks (Type.CustomTicks ticks) config
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis.
@@ -294,7 +294,7 @@ Defaults to `Scale.tickCount`
 -}
 setAxisYTickCount : Int -> Config -> Config
 setAxisYTickCount count config =
-    Type.setAxisContinousYTickCount (Type.CustomTickCount count) config
+    Type.setAxisYContinousTickCount (Type.CustomTickCount count) config
 
 
 {-| Sets the formatting for the ticks in a grouped bar chart continous axis.
@@ -311,7 +311,7 @@ Defaults to `Scale.tickFormat`
 -}
 setAxisYTickFormat : (Float -> String) -> Config -> Config
 setAxisYTickFormat f config =
-    Type.setAxisContinousXTickFormat (CustomTickFormat f) config
+    Type.setAxisXContinousTickFormat (CustomTickFormat f) config
 
 
 {-| Sets the margin, width and height all at once.
@@ -379,9 +379,9 @@ This shows the bar's continous scale axis
         |> Bar.render data
 
 -}
-setShowYAxis : Bool -> Config -> Config
-setShowYAxis value config =
-    Type.setShowYAxis value config
+setShowAxisY : Bool -> Config -> Config
+setShowAxisY value config =
+    Type.setShowAxisY value config
 
 
 {-| Sets the showOrdinalAxis boolean value in the config
@@ -393,9 +393,9 @@ This shows the bar's ordinal scale axis
         |> Bar.render data
 
 -}
-setShowXAxis : Bool -> Config -> Config
-setShowXAxis value config =
-    Type.setShowXAxis value config
+setShowAxisX : Bool -> Config -> Config
+setShowAxisX value config =
+    Type.setShowAxisX value config
 
 
 {-| Sets the Icon Symbols list in the `GroupedConfig`.
