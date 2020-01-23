@@ -3,6 +3,7 @@ module Chart.Line exposing
     , init
     , render
     , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth
+    , AccessorTimeStruct, accessorTime
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -70,10 +71,32 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 {-| The data accessors
 -}
 type alias Accessor data =
+    Type.AccessorLinearGroup data
+
+
+
+--type alias AccessorLinearGroup data
+--    = AccessorLinear (AccessorLinearStruct data)
+--    | AccessorTime (AccessorTimeStruct data)
+
+
+type alias AccessorTimeStruct data =
     { xGroup : data -> String
     , xValue : data -> Posix
     , yValue : data -> Float
     }
+
+
+accessorTime : Type.AccessorTimeStruct data -> Accessor data
+accessorTime acc =
+    Type.AccessorTime acc
+
+
+
+--{ xGroup : data -> String
+--, xValue : data -> Posix
+--, yValue : data -> Float
+--}
 
 
 {-| Initializes the line chart with a default config
@@ -117,14 +140,14 @@ init =
         |> Line.render ( data, accessor )
 
 -}
-render : ( List data, Accessor data ) -> Config -> Html msg
+render : ( List data, Type.AccessorLinearGroup data ) -> Config -> Html msg
 render ( externalData, accessor ) config =
     let
         c =
             fromConfig config
 
         data =
-            Type.externalToDataTime (Type.toExternalData externalData) accessor
+            Type.externalToDataLinearGroup (Type.toExternalData externalData) accessor
     in
     case c.layout of
         Grouped _ ->

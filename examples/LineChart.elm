@@ -94,7 +94,7 @@ data =
 
 accessor : Line.Accessor Data
 accessor =
-    Line.Accessor .groupLabel .x .y
+    Line.accessorTime (Line.AccessorTimeStruct .groupLabel .x .y)
 
 
 attrs : List (Html.Attribute msg)

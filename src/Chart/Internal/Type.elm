@@ -1,5 +1,7 @@
 module Chart.Internal.Type exposing
     ( AccessorBand
+    , AccessorLinearGroup(..)
+    , AccessorTimeStruct
     , AxisContinousDataTickCount(..)
     , AxisContinousDataTickFormat(..)
     , AxisContinousDataTicks(..)
@@ -11,8 +13,7 @@ module Chart.Internal.Type exposing
     , DataGroupBand
     , DataGroupLinear
     , DataGroupTime
-    , DataLinear
-    , DataTime
+    , DataLinearGroup(..)
     , Direction(..)
     , DomainBand
     , DomainBandStruct
@@ -35,6 +36,7 @@ module Chart.Internal.Type exposing
     , adjustLinearRange
     , ariaLabelledby
     , bottomGap
+    , dataLinearGroupToDataLinear
     , defaultConfig
     , defaultGroupedConfig
     , defaultHeight
@@ -44,12 +46,9 @@ module Chart.Internal.Type exposing
     , defaultTicksCount
     , defaultWidth
     , externalToDataBand
-    , externalToDataLinear
-    , externalToDataTime
+    , externalToDataLinearGroup
     , fromConfig
     , fromDataBand
-    , fromDataLinear
-    , fromDataTime
     , fromDomainBand
     , fromDomainLinear
     , getAxisContinousDataFormatter
@@ -111,7 +110,6 @@ module Chart.Internal.Type exposing
     , symbolSpace
     , toConfig
     , toDataBand
-    , toDataLinear
     , toExternalData
     )
 
@@ -151,14 +149,19 @@ type alias AccessorBand data =
     }
 
 
-type alias AccessorLinear data =
+type AccessorLinearGroup data
+    = AccessorLinear (AccessorLinearStruct data)
+    | AccessorTime (AccessorTimeStruct data)
+
+
+type alias AccessorLinearStruct data =
     { xGroup : data -> String
     , xValue : data -> Float
     , yValue : data -> Float
     }
 
 
-type alias AccessorTime data =
+type alias AccessorTimeStruct data =
     { xGroup : data -> String
     , xValue : data -> Posix
     , yValue : data -> Float
@@ -174,17 +177,23 @@ toDataBand dataBand =
     DataBand dataBand
 
 
-type DataLinear
-    = DataLinear (List DataGroupLinear)
+
+--type DataLinear
+--    = DataLinear (List DataGroupLinear)
+--
+--
+--toDataLinear : List DataGroupLinear -> DataLinear
+--toDataLinear dataLinear =
+--    DataLinear dataLinear
+--
+--
+--type DataTime
+--    = DataTime (List DataGroupTime)
 
 
-toDataLinear : List DataGroupLinear -> DataLinear
-toDataLinear dataLinear =
-    DataLinear dataLinear
-
-
-type DataTime
+type DataLinearGroup
     = DataTime (List DataGroupTime)
+    | DataLinear (List DataGroupLinear)
 
 
 type alias PointBand =
@@ -1006,27 +1015,24 @@ getDomainBandFromData data config =
         |> fromDomainBand
 
 
-getDomainLinearFromData : DataLinear -> Config -> DomainLinearStruct
-getDomainLinearFromData data config =
+getDomainLinearFromData : Config -> List DataGroupLinear -> DomainLinearStruct
+getDomainLinearFromData config data =
     let
         -- get the domain from config first
         -- and use it!
         domain =
             getDomainLinear config
-
-        d =
-            fromDataLinear data
     in
     DomainLinear
         { horizontal =
-            d
+            data
                 |> List.map .points
                 |> List.concat
                 |> List.map Tuple.first
                 |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
                 |> Just
         , vertical =
-            d
+            data
                 |> List.map .points
                 |> List.concat
                 |> List.map Tuple.second
@@ -1036,20 +1042,17 @@ getDomainLinearFromData data config =
         |> fromDomainLinear
 
 
-getDomainTimeFromData : DataTime -> Config -> DomainTimeStruct
+getDomainTimeFromData : List DataGroupTime -> Config -> DomainTime
 getDomainTimeFromData data config =
     let
         -- get the domain from config first
         -- and use it!
         domain =
             getDomainTime config
-
-        d =
-            fromDataTime data
     in
     DomainTime
         { horizontal =
-            d
+            data
                 |> List.map .points
                 |> List.concat
                 |> List.map Tuple.first
@@ -1061,14 +1064,13 @@ getDomainTimeFromData data config =
                    )
                 |> Just
         , vertical =
-            d
+            data
                 |> List.map .points
                 |> List.concat
                 |> List.map Tuple.second
                 |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
                 |> Just
         }
-        |> fromDomainTime
 
 
 fromDomainBand : DomainBand -> DomainBandStruct
@@ -1091,16 +1093,6 @@ fromDataBand (DataBand d) =
     d
 
 
-fromDataLinear : DataLinear -> List DataGroupLinear
-fromDataLinear (DataLinear d) =
-    d
-
-
-fromDataTime : DataTime -> List DataGroupTime
-fromDataTime (DataTime d) =
-    d
-
-
 getDataBandDepth : DataBand -> Int
 getDataBandDepth data =
     data
@@ -1111,10 +1103,9 @@ getDataBandDepth data =
         |> List.length
 
 
-getDataLinearDepth : DataLinear -> Int
+getDataLinearDepth : List DataGroupLinear -> Int
 getDataLinearDepth data =
     data
-        |> fromDataLinear
         |> List.map .points
         |> List.head
         |> Maybe.withDefault []
@@ -1329,73 +1320,98 @@ externalToDataBand externalData accessor =
         |> DataBand
 
 
-externalToDataLinear : ExternalData data -> AccessorLinear data -> DataLinear
-externalToDataLinear externalData accessor =
+externalToDataLinearGroup : ExternalData data -> AccessorLinearGroup data -> DataLinearGroup
+externalToDataLinearGroup externalData accessorGroup =
     let
         data =
             fromExternalData externalData
     in
-    data
-        |> List.Extra.groupWhile
-            (\a b -> accessor.xGroup a == accessor.xGroup b)
-        |> List.map
-            (\d ->
-                let
-                    groupLabel =
-                        d
-                            |> Tuple.first
-                            |> accessor.xGroup
-                            |> Just
+    case accessorGroup of
+        AccessorLinear accessor ->
+            data
+                |> List.Extra.groupWhile
+                    (\a b -> accessor.xGroup a == accessor.xGroup b)
+                |> List.map
+                    (\d ->
+                        let
+                            groupLabel =
+                                d
+                                    |> Tuple.first
+                                    |> accessor.xGroup
+                                    |> Just
 
-                    firstPoint =
-                        d
-                            |> Tuple.first
-                            |> (\p -> ( accessor.xValue p, accessor.yValue p ))
+                            firstPoint =
+                                d
+                                    |> Tuple.first
+                                    |> (\p -> ( accessor.xValue p, accessor.yValue p ))
 
-                    points =
-                        d
-                            |> Tuple.second
-                            |> List.map (\p -> ( accessor.xValue p, accessor.yValue p ))
-                            |> (::) firstPoint
-                in
-                { groupLabel = groupLabel
-                , points = points
-                }
-            )
-        |> DataLinear
+                            points =
+                                d
+                                    |> Tuple.second
+                                    |> List.map (\p -> ( accessor.xValue p, accessor.yValue p ))
+                                    |> (::) firstPoint
+                        in
+                        { groupLabel = groupLabel
+                        , points = points
+                        }
+                    )
+                |> DataLinear
+
+        AccessorTime accessor ->
+            data
+                |> List.Extra.groupWhile
+                    (\a b -> accessor.xGroup a == accessor.xGroup b)
+                |> List.map
+                    (\d ->
+                        let
+                            groupLabel =
+                                d
+                                    |> Tuple.first
+                                    |> accessor.xGroup
+                                    |> Just
+
+                            firstPoint =
+                                d
+                                    |> Tuple.first
+                                    |> (\p -> ( accessor.xValue p, accessor.yValue p ))
+
+                            points =
+                                d
+                                    |> Tuple.second
+                                    |> List.map (\p -> ( accessor.xValue p, accessor.yValue p ))
+                                    |> (::) firstPoint
+                        in
+                        { groupLabel = groupLabel
+                        , points = points
+                        }
+                    )
+                |> DataTime
 
 
-externalToDataTime : ExternalData data -> AccessorTime data -> DataTime
-externalToDataTime externalData accessor =
-    let
-        data =
-            fromExternalData externalData
-    in
-    data
-        |> List.Extra.groupWhile
-            (\a b -> accessor.xGroup a == accessor.xGroup b)
-        |> List.map
-            (\d ->
-                let
-                    groupLabel =
-                        d
-                            |> Tuple.first
-                            |> accessor.xGroup
-                            |> Just
+dataLinearGroupToDataLinear : DataLinearGroup -> List DataGroupLinear
+dataLinearGroupToDataLinear data =
+    case data of
+        DataTime d ->
+            d
+                |> List.map
+                    (\group ->
+                        let
+                            points =
+                                group.points
+                        in
+                        { groupLabel = group.groupLabel
+                        , points =
+                            points
+                                |> List.map
+                                    (\p ->
+                                        ( Tuple.first p
+                                            |> Time.posixToMillis
+                                            |> toFloat
+                                        , Tuple.second p
+                                        )
+                                    )
+                        }
+                    )
 
-                    firstPoint =
-                        d
-                            |> Tuple.first
-                            |> (\p -> ( accessor.xValue p, accessor.yValue p ))
-
-                    points =
-                        d
-                            |> Tuple.second
-                            |> List.map (\p -> ( accessor.xValue p, accessor.yValue p ))
-                            |> (::) firstPoint
-                in
-                { groupLabel = groupLabel
-                , points = points
-                }
-            )
-        |> DataTime
+        DataLinear d ->
+            d

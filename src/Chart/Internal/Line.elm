@@ -11,15 +11,18 @@ import Chart.Internal.Type
         , AxisOrientation(..)
         , Config
         , ConfigStruct
+        , DataGroupLinear
         , DataGroupTime
-        , DataTime
+        , DataLinearGroup
         , Layout(..)
+        , PointLinear
         , PointTime
         , RenderContext(..)
         , ariaLabelledby
         , bottomGap
+        , dataLinearGroupToDataLinear
         , fromConfig
-        , fromDataTime
+        , getDomainLinearFromData
         , getDomainTimeFromData
         , getHeight
         , getMargin
@@ -66,7 +69,7 @@ descAndTitle c =
     ]
 
 
-renderLineGrouped : ( DataTime, Config ) -> Html msg
+renderLineGrouped : ( DataLinearGroup, Config ) -> Html msg
 renderLineGrouped ( data, config ) =
     let
         c =
@@ -87,47 +90,57 @@ renderLineGrouped ( data, config ) =
         outerH =
             h + m.top + m.bottom
 
-        domain =
-            getDomainTimeFromData data config
+        linearData =
+            data
+                |> dataLinearGroupToDataLinear
 
+        linearDomain =
+            linearData
+                |> getDomainLinearFromData config
+
+        --|> fromDomainLinear
         horizontalRange =
             ( 0, w )
 
         verticalRange =
             ( h, 0 )
 
-        sortedData =
-            data
-                |> fromDataTime
+        sortedLinearData =
+            linearData
                 |> List.map
                     (\d ->
                         let
                             points =
                                 d.points
                         in
-                        { d | points = List.sortBy (Tuple.first >> Time.posixToMillis) points }
+                        { d | points = List.sortBy Tuple.first points }
                     )
 
-        horizontalScale : ContinuousScale Posix
-        horizontalScale =
-            Scale.time c.zone
+        horizontalLinearScale : ContinuousScale Float
+        horizontalLinearScale =
+            Scale.linear
                 horizontalRange
-                (Maybe.withDefault
-                    ( Time.millisToPosix 0
-                    , Time.millisToPosix 0
-                    )
-                    domain.horizontal
-                )
+                (Maybe.withDefault ( 0, 0 ) linearDomain.horizontal)
 
+        --horizontalTimeScale : ContinuousScale Posix
+        --horizontalTimeScale =
+        --    Scale.time c.zone
+        --        horizontalRange
+        --        (Maybe.withDefault
+        --            ( Time.millisToPosix 0
+        --            , Time.millisToPosix 0
+        --            )
+        --            domain.horizontal
+        --        )
         verticalScale : ContinuousScale Float
         verticalScale =
-            Scale.linear verticalRange (Maybe.withDefault ( 0, 0 ) domain.vertical)
+            Scale.linear verticalRange (Maybe.withDefault ( 0, 0 ) linearDomain.vertical)
 
-        lineGenerator : PointTime -> Maybe ( Float, Float )
+        lineGenerator : PointLinear -> Maybe ( Float, Float )
         lineGenerator ( x, y ) =
-            Just ( Scale.convert horizontalScale x, Scale.convert verticalScale y )
+            Just ( Scale.convert horizontalLinearScale x, Scale.convert verticalScale y )
 
-        line : DataGroupTime -> Path
+        line : DataGroupLinear -> Path
         line dataGroup =
             dataGroup.points
                 |> List.map lineGenerator
@@ -143,7 +156,8 @@ renderLineGrouped ( data, config ) =
     <|
         descAndTitle c
             ++ linearAxisGenerator c Vertical verticalScale
-            ++ timeAxisGenerator c Horizontal horizontalScale
+            --++ timeAxisGenerator c Horizontal horizontalLinearScale
+            ++ linearAxisGenerator c Horizontal horizontalLinearScale
             ++ [ g
                     [ transform [ Translate m.left m.top ]
                     , class [ "series" ]
@@ -155,7 +169,7 @@ renderLineGrouped ( data, config ) =
                                 [ class [ "line", "line-" ++ String.fromInt idx ]
                                 ]
                         )
-                        sortedData
+                        sortedLinearData
                ]
 
 
