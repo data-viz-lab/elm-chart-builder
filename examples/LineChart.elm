@@ -95,7 +95,7 @@ data =
 
 accessor : Line.Accessor Data
 accessor =
-    Line.time (Line.accessorTime .groupLabel .x .y)
+    Line.time (Line.AccessorTime .groupLabel .x .y)
 
 
 attrs : List (Html.Attribute msg)
@@ -169,7 +169,7 @@ xAxisTicks =
 
 accessorLinear : Line.Accessor DataLinear
 accessorLinear =
-    Line.linear (Line.accessorLinear .groupLabel .x .y)
+    Line.linear (Line.AccessorLinear .groupLabel .x .y)
 
 
 doubleLineLinear : Html msg

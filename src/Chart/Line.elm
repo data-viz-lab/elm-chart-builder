@@ -1,5 +1,5 @@
 module Chart.Line exposing
-    ( Accessor, accessorTime, accessorLinear, time, linear
+    ( Accessor, AccessorTime, AccessorLinear, time, linear
     , init
     , render
     , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth
@@ -15,7 +15,7 @@ It expects the X axis to plot time data and the Y axis to plot linear data.
 
 # Chart Data Format
 
-@docs Accessor, accessorTime, accessorLinear, time, linear
+@docs Accessor, AccessorTime, AccessorLinear, time, linear
 
 
 # Chart Initialization
@@ -63,10 +63,11 @@ import Chart.Internal.Type as Type
         , setTitle
         )
 import Html exposing (Html)
+import Time exposing (Posix)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
-{-| The data accessor.
+{-| The data accessors
 
 A line chart can have the horizontal axis as linear or time data.
 
@@ -80,19 +81,18 @@ type alias Accessor data =
 
 
 {-| The accessor structure for horizontal time lines.
-
-    type alias AccessorTimeStruct data =
-        { xGroup : data -> String
-        , xValue : data -> Posix
-        , yValue : data -> Float
-        }
-
 -}
-accessorTime data =
-    Type.AccessorTimeStruct data
+type alias AccessorTime data =
+    { xGroup : data -> String
+    , xValue : data -> Posix
+    , yValue : data -> Float
+    }
 
 
 {-| The accessor constructor for horizontal time lines.
+
+    Line.time (Line.AccessorTime .groupLabel .x .y)
+
 -}
 time : Type.AccessorTimeStruct data -> Accessor data
 time acc =
@@ -100,19 +100,18 @@ time acc =
 
 
 {-| The accessor structure for horizontal linear lines.
-
-    type alias AccessorLinearStruct data =
-        { xGroup : data -> String
-        , xValue : data -> Float
-        , yValue : data -> Float
-        }
-
 -}
-accessorLinear data =
-    Type.AccessorLinearStruct data
+type alias AccessorLinear data =
+    { xGroup : data -> String
+    , xValue : data -> Float
+    , yValue : data -> Float
+    }
 
 
 {-| The accessor constructor for horizontal linear lines.
+
+    Line.linear (Line.AccessorLinear .groupLabel .x .y)
+
 -}
 linear : Type.AccessorLinearStruct data -> Accessor data
 linear acc =
