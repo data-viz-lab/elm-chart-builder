@@ -1,0 +1,137 @@
+module RealData.Smoking exposing (main)
+
+{-| This module shows how to build a line chart.
+-}
+
+import Chart.Line as Line
+import Data exposing (smokeStats)
+import Html exposing (Html)
+import Html.Attributes exposing (class)
+import Set
+
+
+css : String
+css =
+    """
+body {
+  font-family: Sans-Serif;
+}
+
+ul {
+    padding: 0;
+}
+
+.header {
+    font-size: 20px;
+    margin: 20px;
+}
+
+.footer {
+    font-size: 12px;
+    margin: 20px;
+}
+
+.wrapper {
+  display: grid;
+  grid-template-columns: 800px 800px;
+  grid-gap: 20px;
+  background-color: #fff;
+  color: #444;
+  margin: 25px;
+}
+
+.axis path,
+.axis line {
+    stroke: #b7b7b7;
+}
+
+text {
+    fill: #333;
+    font-size: 14px;
+}
+
+.line {
+    stroke-width: 1px;
+    fill: none;
+}
+
+.male .line {
+    stroke: lightskyblue;
+}
+.female .line {
+    stroke: plum;
+}
+
+"""
+
+
+dataMale : List Data.SmokeStats
+dataMale =
+    smokeStats
+        |> List.filter (\s -> String.contains "Male" s.regionPerGender)
+
+
+dataFemale : List Data.SmokeStats
+dataFemale =
+    smokeStats
+        |> List.filter (\s -> String.contains "Female" s.regionPerGender)
+
+
+xAxisTicks : List Float
+xAxisTicks =
+    smokeStats
+        |> List.map .year
+        |> Set.fromList
+        |> Set.toList
+        |> List.sort
+        |> List.filter (\s -> modBy 2 (round s) /= 0)
+
+
+accessor : Line.Accessor Data.SmokeStats
+accessor =
+    Line.linear (Line.AccessorLinear .regionPerGender .year .percentage)
+
+
+line =
+    Line.init
+        |> Line.setTitle "Smoking in England"
+        |> Line.setDesc "Smoking in England"
+        |> Line.setAxisYContinousTickCount 5
+        |> Line.setAxisXContinousTicks xAxisTicks
+        |> Line.setAxisXContinousTickFormat (round >> String.fromInt)
+        |> Line.setDimensions
+            { margin = { top = 10, right = 20, bottom = 30, left = 30 }
+            , width = 700
+            , height = 400
+            }
+
+
+lineMale : Html msg
+lineMale =
+    line
+        |> Line.render ( dataMale, accessor )
+
+
+lineFemale : Html msg
+lineFemale =
+    line
+        |> Line.render ( dataFemale, accessor )
+
+
+attrs : List (Html.Attribute msg)
+attrs =
+    [ Html.Attributes.style "height" "700px"
+    , Html.Attributes.style "width" "400px"
+    , class "chart-wrapper"
+    ]
+
+
+main : Html msg
+main =
+    Html.div []
+        [ Html.node "style" [] [ Html.text css ]
+        , Html.div [ class "wrapper" ]
+            [ Html.div (class "male" :: attrs) [ lineMale ]
+            , Html.div (class "female" :: attrs) [ lineFemale ]
+            ]
+        ]

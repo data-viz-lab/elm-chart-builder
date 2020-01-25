@@ -1319,6 +1319,7 @@ externalToDataLinearGroup externalData accessorGroup =
     case accessorGroup of
         AccessorLinear accessor ->
             data
+                |> List.sortBy accessor.xGroup
                 |> List.Extra.groupWhile
                     (\a b -> accessor.xGroup a == accessor.xGroup b)
                 |> List.map
