@@ -5,7 +5,8 @@ import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol exposing (Symbol(..))
 import Chart.Internal.Type
     exposing
-        ( AxisContinousDataTickCount(..)
+        ( AccessorLinearGroup(..)
+        , AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
@@ -13,7 +14,7 @@ import Chart.Internal.Type
         , ConfigStruct
         , DataGroupLinear
         , DataGroupTime
-        , DataLinearGroup
+        , DataLinearGroup(..)
         , Layout(..)
         , PointLinear
         , PointTime
@@ -21,6 +22,7 @@ import Chart.Internal.Type
         , ariaLabelledby
         , bottomGap
         , dataLinearGroupToDataLinear
+        , dataLinearGroupToDataTime
         , fromConfig
         , getDomainLinearFromData
         , getDomainTimeFromData
@@ -98,6 +100,14 @@ renderLineGrouped ( data, config ) =
             linearData
                 |> getDomainLinearFromData config
 
+        timeData =
+            data
+                |> dataLinearGroupToDataTime
+
+        timeDomain =
+            timeData
+                |> getDomainTimeFromData config
+
         --|> fromDomainLinear
         horizontalRange =
             ( 0, w )
@@ -122,16 +132,32 @@ renderLineGrouped ( data, config ) =
                 horizontalRange
                 (Maybe.withDefault ( 0, 0 ) linearDomain.horizontal)
 
-        --horizontalTimeScale : ContinuousScale Posix
-        --horizontalTimeScale =
-        --    Scale.time c.zone
-        --        horizontalRange
-        --        (Maybe.withDefault
-        --            ( Time.millisToPosix 0
-        --            , Time.millisToPosix 0
-        --            )
-        --            domain.horizontal
-        --        )
+        horizontalTimeScale : Maybe (ContinuousScale Posix)
+        horizontalTimeScale =
+            case data of
+                DataTime _ ->
+                    Scale.time c.zone
+                        horizontalRange
+                        (Maybe.withDefault
+                            ( Time.millisToPosix 0
+                            , Time.millisToPosix 0
+                            )
+                            timeDomain.horizontal
+                        )
+                        |> Just
+
+                _ ->
+                    Nothing
+
+        linearOrTimeAxisGenerator : List (Svg msg)
+        linearOrTimeAxisGenerator =
+            case data of
+                DataTime _ ->
+                    timeAxisGenerator c Horizontal horizontalTimeScale
+
+                DataLinear _ ->
+                    linearAxisGenerator c Horizontal horizontalLinearScale
+
         verticalScale : ContinuousScale Float
         verticalScale =
             Scale.linear verticalRange (Maybe.withDefault ( 0, 0 ) linearDomain.vertical)
@@ -156,8 +182,7 @@ renderLineGrouped ( data, config ) =
     <|
         descAndTitle c
             ++ linearAxisGenerator c Vertical verticalScale
-            --++ timeAxisGenerator c Horizontal horizontalLinearScale
-            ++ linearAxisGenerator c Horizontal horizontalLinearScale
+            ++ linearOrTimeAxisGenerator
             ++ [ g
                     [ transform [ Translate m.left m.top ]
                     , class [ "series" ]
@@ -173,82 +198,57 @@ renderLineGrouped ( data, config ) =
                ]
 
 
-timeAxisGenerator : ConfigStruct -> AxisType -> ContinuousScale Posix -> List (Svg msg)
+timeAxisGenerator : ConfigStruct -> AxisType -> Maybe (ContinuousScale Posix) -> List (Svg msg)
 timeAxisGenerator c axisType scale =
     if c.showAxisX == True then
-        case axisType of
-            Vertical ->
-                let
-                    --ticks =
-                    --    case c.axisVerticalTicks of
-                    --        DefaultTicks ->
-                    --            Nothing
-                    --        CustomTicks t ->
-                    --            Just (Axis.ticks t)
-                    --tickCount =
-                    --    case c.axisVerticalTickCount of
-                    --        DefaultTickCount ->
-                    --            Nothing
-                    --        CustomTickCount count ->
-                    --            Just (Axis.tickCount count)
-                    --tickFormat =
-                    --    case c.axisVerticalTickFormat of
-                    --        DefaultTickFormat ->
-                    --            Nothing
-                    --        CustomTickFormat formatter ->
-                    --            Just (Axis.tickFormat formatter)
-                    --attributes =
-                    --    [ ticks, tickFormat, tickCount ]
-                    --        |> List.filterMap identity
-                    axis =
-                        Axis.left [] scale
-                in
-                [ g
-                    [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
-                    , class [ "axis", "axis--vertical" ]
-                    ]
-                    [ axis ]
-                ]
+        case scale of
+            Just s ->
+                case axisType of
+                    Vertical ->
+                        []
 
-            Horizontal ->
-                let
-                    ticks =
-                        case c.axisXContinousTicks of
-                            CustomTimeTicks t ->
-                                Just (Axis.ticks t)
+                    Horizontal ->
+                        let
+                            ticks =
+                                case c.axisXContinousTicks of
+                                    CustomTimeTicks t ->
+                                        Just (Axis.ticks t)
 
-                            _ ->
-                                Nothing
+                                    _ ->
+                                        Nothing
 
-                    tickCount =
-                        case c.axisXContinousTickCount of
-                            DefaultTickCount ->
-                                Nothing
+                            tickCount =
+                                case c.axisXContinousTickCount of
+                                    DefaultTickCount ->
+                                        Nothing
 
-                            CustomTickCount count ->
-                                Just (Axis.tickCount count)
+                                    CustomTickCount count ->
+                                        Just (Axis.tickCount count)
 
-                    tickFormat =
-                        case c.axisXContinousTickFormat of
-                            CustomTimeTickFormat formatter ->
-                                Just (Axis.tickFormat formatter)
+                            tickFormat =
+                                case c.axisXContinousTickFormat of
+                                    CustomTimeTickFormat formatter ->
+                                        Just (Axis.tickFormat formatter)
 
-                            _ ->
-                                Nothing
+                                    _ ->
+                                        Nothing
 
-                    attributes =
-                        [ ticks, tickCount, tickFormat ]
-                            |> List.filterMap identity
+                            attributes =
+                                [ ticks, tickCount, tickFormat ]
+                                    |> List.filterMap identity
 
-                    axis =
-                        Axis.bottom attributes scale
-                in
-                [ g
-                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                    , class [ "axis", "axis--horizontal" ]
-                    ]
-                    [ axis ]
-                ]
+                            axis =
+                                Axis.bottom attributes s
+                        in
+                        [ g
+                            [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                            , class [ "axis", "axis--horizontal" ]
+                            ]
+                            [ axis ]
+                        ]
+
+            _ ->
+                []
 
     else
         []

@@ -6,6 +6,7 @@ module LineChart exposing (data, main)
 import Chart.Line as Line
 import Html exposing (Html)
 import Html.Attributes exposing (class)
+import Set
 import Time exposing (Posix)
 
 
@@ -94,7 +95,7 @@ data =
 
 accessor : Line.Accessor Data
 accessor =
-    Line.accessorTime (Line.accessorTimeStruct .groupLabel .x .y)
+    Line.time (Line.accessorTime .groupLabel .x .y)
 
 
 attrs : List (Html.Attribute msg)
@@ -113,19 +114,84 @@ doubleLine =
         |> Line.setAxisYContinousTickCount 5
         |> Line.setAxisXContinousTickCount 5
         |> Line.setDimensions
-            { margin = { top = 10, right = 10, bottom = 30, left = 30 }
+            { margin = { top = 10, right = 20, bottom = 30, left = 30 }
             , width = width
             , height = height
             }
         |> Line.render ( data, accessor )
 
 
+
+-- Linear example
+
+
+type alias DataLinear =
+    { x : Float, y : Float, groupLabel : String }
+
+
+dataLinear : List DataLinear
+dataLinear =
+    [ { groupLabel = "A"
+      , x = 1991
+      , y = 10
+      }
+    , { groupLabel = "A"
+      , x = 1992
+      , y = 16
+      }
+    , { groupLabel = "A"
+      , x = 1993
+      , y = 26
+      }
+    , { groupLabel = "B"
+      , x = 1991
+      , y = 13
+      }
+    , { groupLabel = "B"
+      , x = 1992
+      , y = 23
+      }
+    , { groupLabel = "B"
+      , x = 1993
+      , y = 16
+      }
+    ]
+
+
+xAxisTicks : List Float
+xAxisTicks =
+    dataLinear
+        |> List.map .x
+        |> Set.fromList
+        |> Set.toList
+        |> List.sort
+
+
+accessorLinear : Line.Accessor DataLinear
+accessorLinear =
+    Line.linear (Line.accessorLinear .groupLabel .x .y)
+
+
+doubleLineLinear : Html msg
+doubleLineLinear =
+    Line.init
+        |> Line.setTitle "A two line chart"
+        |> Line.setDesc "A two line chart example to demonstrate the charting library"
+        |> Line.setAxisYContinousTickCount 5
+        |> Line.setAxisXContinousTicks xAxisTicks
+        |> Line.setAxisXContinousTickFormat (round >> String.fromInt)
+        |> Line.setDimensions
+            { margin = { top = 10, right = 20, bottom = 30, left = 30 }
+            , width = width
+            , height = height
+            }
+        |> Line.render ( dataLinear, accessorLinear )
+
+
 main : Html msg
 main =
     Html.div []
         [ Html.node "style" [] [ Html.text css ]
-        , Html.div
-            [ class "wrapper" ]
-            [ Html.div attrs [ doubleLine ]
-            ]
+        , Html.div [ class "wrapper" ] [ Html.div attrs [ doubleLine ] ]
+        , Html.div [ class "wrapper" ] [ Html.div attrs [ doubleLineLinear ] ]
         ]

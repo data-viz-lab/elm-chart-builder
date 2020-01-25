@@ -1,6 +1,7 @@
 module Chart.Internal.Type exposing
     ( AccessorBand
     , AccessorLinearGroup(..)
+    , AccessorLinearStruct
     , AccessorTimeStruct
     , AxisContinousDataTickCount(..)
     , AxisContinousDataTickFormat(..)
@@ -37,6 +38,7 @@ module Chart.Internal.Type exposing
     , ariaLabelledby
     , bottomGap
     , dataLinearGroupToDataLinear
+    , dataLinearGroupToDataTime
     , defaultConfig
     , defaultGroupedConfig
     , defaultHeight
@@ -175,20 +177,6 @@ type DataBand
 toDataBand : List DataGroupBand -> DataBand
 toDataBand dataBand =
     DataBand dataBand
-
-
-
---type DataLinear
---    = DataLinear (List DataGroupLinear)
---
---
---toDataLinear : List DataGroupLinear -> DataLinear
---toDataLinear dataLinear =
---    DataLinear dataLinear
---
---
---type DataTime
---    = DataTime (List DataGroupTime)
 
 
 type DataLinearGroup
@@ -1029,21 +1017,21 @@ getDomainLinearFromData config data =
                 |> List.map .points
                 |> List.concat
                 |> List.map Tuple.first
-                |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                |> (\dd -> ( List.minimum dd |> Maybe.withDefault 0, List.maximum dd |> Maybe.withDefault 0 ))
                 |> Just
         , vertical =
             data
                 |> List.map .points
                 |> List.concat
                 |> List.map Tuple.second
-                |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                |> (\dd -> ( List.minimum dd |> Maybe.withDefault 0, List.maximum dd |> Maybe.withDefault 0 ))
                 |> Just
         }
         |> fromDomainLinear
 
 
-getDomainTimeFromData : List DataGroupTime -> Config -> DomainTime
-getDomainTimeFromData data config =
+getDomainTimeFromData : Config -> List DataGroupTime -> DomainTimeStruct
+getDomainTimeFromData config data =
     let
         -- get the domain from config first
         -- and use it!
@@ -1071,6 +1059,7 @@ getDomainTimeFromData data config =
                 |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
                 |> Just
         }
+        |> fromDomainTime
 
 
 fromDomainBand : DomainBand -> DomainBandStruct
@@ -1415,3 +1404,13 @@ dataLinearGroupToDataLinear data =
 
         DataLinear d ->
             d
+
+
+dataLinearGroupToDataTime : DataLinearGroup -> List DataGroupTime
+dataLinearGroupToDataTime data =
+    case data of
+        DataTime d ->
+            d
+
+        _ ->
+            []

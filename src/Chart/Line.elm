@@ -3,7 +3,7 @@ module Chart.Line exposing
     , init
     , render
     , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth
-    , accessorTime, accessorTimeStruct
+    , accessorLinear, accessorTime, linear, time
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -69,36 +69,38 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 
 
 {-| The data accessors
+
+time accessor:
+accessor : Line.Accessor data
+accessor =
+Line.time (Line.accessorTime .groupLabel .x .y)
+
+linear accessor:
+accessor : Line.Accessor data
+accessor =
+Line.linear (Line.accessorLinear .groupLabel .x .y)
+
 -}
 type alias Accessor data =
     Type.AccessorLinearGroup data
 
 
-
---type alias AccessorLinearGroup data
---    = AccessorLinear (AccessorLinearStruct data)
---    | AccessorTime (AccessorTimeStruct data)
---type alias AccessorTimeStruct data =
---    { xGroup : data -> String
---    , xValue : data -> Posix
---    , yValue : data -> Float
---    }
-
-
-accessorTimeStruct data =
+accessorTime data =
     Type.AccessorTimeStruct data
 
 
-accessorTime : Type.AccessorTimeStruct data -> Accessor data
-accessorTime acc =
+time : Type.AccessorTimeStruct data -> Accessor data
+time acc =
     Type.AccessorTime acc
 
 
+accessorLinear data =
+    Type.AccessorLinearStruct data
 
---{ xGroup : data -> String
---, xValue : data -> Posix
---, yValue : data -> Float
---}
+
+linear : Type.AccessorLinearStruct data -> Accessor data
+linear acc =
+    Type.AccessorLinear acc
 
 
 {-| Initializes the line chart with a default config
@@ -125,7 +127,7 @@ accessorTime acc =
 
     accessor : Line.Accessor data
     accessor =
-        Line.Accessor .groupLabel .x .y
+        Line.time (Line.accessorTime .groupLabel .x .y)
 
     Line.init
         |> Line.render (data, accessor)
