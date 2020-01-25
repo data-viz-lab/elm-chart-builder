@@ -202,36 +202,15 @@ type alias DataGroupBand =
     }
 
 
-dummyDataGroupBand : DataGroupBand
-dummyDataGroupBand =
-    { groupLabel = Nothing
-    , points = []
-    }
-
-
 type alias DataGroupLinear =
     { groupLabel : Maybe String
     , points : List PointLinear
     }
 
 
-dummyDataGroupLinear : DataGroupLinear
-dummyDataGroupLinear =
-    { groupLabel = Nothing
-    , points = []
-    }
-
-
 type alias DataGroupTime =
     { groupLabel : Maybe String
     , points : List PointTime
-    }
-
-
-dummyDataGroupTime : DataGroupTime
-dummyDataGroupTime =
-    { groupLabel = Nothing
-    , points = []
     }
 
 
@@ -1008,24 +987,35 @@ getDomainLinearFromData config data =
     let
         -- get the domain from config first
         -- and use it!
+        domain : DomainLinearStruct
         domain =
             getDomainLinear config
     in
     DomainLinear
         { horizontal =
-            data
-                |> List.map .points
-                |> List.concat
-                |> List.map Tuple.first
-                |> (\dd -> ( List.minimum dd |> Maybe.withDefault 0, List.maximum dd |> Maybe.withDefault 0 ))
-                |> Just
+            case domain.horizontal of
+                Just _ ->
+                    domain.horizontal
+
+                Nothing ->
+                    data
+                        |> List.map .points
+                        |> List.concat
+                        |> List.map Tuple.first
+                        |> (\dd -> ( List.minimum dd |> Maybe.withDefault 0, List.maximum dd |> Maybe.withDefault 0 ))
+                        |> Just
         , vertical =
-            data
-                |> List.map .points
-                |> List.concat
-                |> List.map Tuple.second
-                |> (\dd -> ( List.minimum dd |> Maybe.withDefault 0, List.maximum dd |> Maybe.withDefault 0 ))
-                |> Just
+            case domain.vertical of
+                Just _ ->
+                    domain.vertical
+
+                Nothing ->
+                    data
+                        |> List.map .points
+                        |> List.concat
+                        |> List.map Tuple.second
+                        |> (\dd -> ( List.minimum dd |> Maybe.withDefault 0, List.maximum dd |> Maybe.withDefault 0 ))
+                        |> Just
         }
         |> fromDomainLinear
 
@@ -1035,29 +1025,40 @@ getDomainTimeFromData config data =
     let
         -- get the domain from config first
         -- and use it!
+        domain : DomainTimeStruct
         domain =
             getDomainTime config
     in
     DomainTime
         { horizontal =
-            data
-                |> List.map .points
-                |> List.concat
-                |> List.map Tuple.first
-                |> List.map Time.posixToMillis
-                |> (\dd ->
-                        ( List.minimum dd |> Maybe.withDefault 0 |> Time.millisToPosix
-                        , List.maximum dd |> Maybe.withDefault 0 |> Time.millisToPosix
-                        )
-                   )
-                |> Just
+            case domain.horizontal of
+                Just _ ->
+                    domain.horizontal
+
+                Nothing ->
+                    data
+                        |> List.map .points
+                        |> List.concat
+                        |> List.map Tuple.first
+                        |> List.map Time.posixToMillis
+                        |> (\dd ->
+                                ( List.minimum dd |> Maybe.withDefault 0 |> Time.millisToPosix
+                                , List.maximum dd |> Maybe.withDefault 0 |> Time.millisToPosix
+                                )
+                           )
+                        |> Just
         , vertical =
-            data
-                |> List.map .points
-                |> List.concat
-                |> List.map Tuple.second
-                |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
-                |> Just
+            case domain.vertical of
+                Just _ ->
+                    domain.vertical
+
+                Nothing ->
+                    data
+                        |> List.map .points
+                        |> List.concat
+                        |> List.map Tuple.second
+                        |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                        |> Just
         }
         |> fromDomainTime
 
