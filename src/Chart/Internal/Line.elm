@@ -13,11 +13,9 @@ import Chart.Internal.Type
         , Config
         , ConfigStruct
         , DataGroupLinear
-        , DataGroupTime
         , DataLinearGroup(..)
         , Layout(..)
         , PointLinear
-        , PointTime
         , RenderContext(..)
         , ariaLabelledby
         , bottomGap

@@ -1,9 +1,8 @@
 module Chart.Line exposing
-    ( Accessor
+    ( Accessor, accessorTime, accessorLinear, time, linear
     , init
     , render
     , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth
-    , accessorLinear, accessorTime, linear, time
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -16,7 +15,7 @@ It expects the X axis to plot time data and the Y axis to plot linear data.
 
 # Chart Data Format
 
-@docs Accessor
+@docs Accessor, accessorTime, accessorLinear, time, linear
 
 
 # Chart Initialization
@@ -64,40 +63,57 @@ import Chart.Internal.Type as Type
         , setTitle
         )
 import Html exposing (Html)
-import Time exposing (Posix)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
-{-| The data accessors
+{-| The data accessor.
 
-time accessor:
-accessor : Line.Accessor data
-accessor =
-Line.time (Line.accessorTime .groupLabel .x .y)
+A line chart can have the horizontal axis as linear or time data.
 
-linear accessor:
-accessor : Line.Accessor data
-accessor =
-Line.linear (Line.accessorLinear .groupLabel .x .y)
+    type Accessor data
+        = AccessorLinear (accessorLinear data)
+        | AccessorTime (accessorTime data)
 
 -}
 type alias Accessor data =
     Type.AccessorLinearGroup data
 
 
+{-| The accessor structure for horizontal time lines.
+
+    type alias AccessorTimeStruct data =
+        { xGroup : data -> String
+        , xValue : data -> Posix
+        , yValue : data -> Float
+        }
+
+-}
 accessorTime data =
     Type.AccessorTimeStruct data
 
 
+{-| The accessor constructor for horizontal time lines.
+-}
 time : Type.AccessorTimeStruct data -> Accessor data
 time acc =
     Type.AccessorTime acc
 
 
+{-| The accessor structure for horizontal linear lines.
+
+    type alias AccessorLinearStruct data =
+        { xGroup : data -> String
+        , xValue : data -> Float
+        , yValue : data -> Float
+        }
+
+-}
 accessorLinear data =
     Type.AccessorLinearStruct data
 
 
+{-| The accessor constructor for horizontal linear lines.
+-}
 linear : Type.AccessorLinearStruct data -> Accessor data
 linear acc =
     Type.AccessorLinear acc
