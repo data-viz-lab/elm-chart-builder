@@ -4,6 +4,11 @@ import Chart.Internal.Symbol exposing (Symbol(..))
 import Chart.Internal.Type exposing (..)
 import Expect exposing (Expectation)
 import Test exposing (..)
+import Time exposing (Posix)
+
+
+type alias Data =
+    { x : Posix, y : Float, groupLabel : String }
 
 
 suite : Test
@@ -71,21 +76,50 @@ suite =
                             }
                     in
                     Expect.equal (getDomainBandFromData data defaultConfig) expected
-            , test "with DomainLinear" <|
+            ]
+        , describe "getDomainLinearFromData"
+            [ test "with DomainLinear" <|
                 \_ ->
                     let
-                        data : DataLinear
+                        data : List DataGroupLinear
                         data =
-                            toDataLinear
-                                [ { groupLabel = Just "CA", points = [ ( 5, 10 ), ( 6, 20 ) ] }
-                                , { groupLabel = Just "TX", points = [ ( 5, 11 ), ( 6, 21 ) ] }
-                                ]
+                            [ { groupLabel = Just "CA", points = [ ( 5, 10 ), ( 6, 20 ) ] }
+                            , { groupLabel = Just "TX", points = [ ( 5, 11 ), ( 6, 21 ) ] }
+                            ]
 
                         expected : DomainLinearStruct
                         expected =
-                            { horizontal = Just ( 0, 6 ), vertical = Just ( 0, 21 ) }
+                            { horizontal = Just ( 5, 6 ), vertical = Just ( 0, 21 ) }
                     in
-                    Expect.equal (getDomainLinearFromData data defaultConfig) expected
+                    Expect.equal (getDomainLinearFromData defaultConfig data) expected
+            ]
+        , describe "getDomainTimeFromData"
+            [ test "with DomainTime" <|
+                \_ ->
+                    let
+                        data : List DataGroupTime
+                        data =
+                            [ { groupLabel = Just "CA"
+                              , points =
+                                    [ ( Time.millisToPosix 1579275175634, 10 )
+                                    , ( Time.millisToPosix 1579285175634, 20 )
+                                    ]
+                              }
+                            , { groupLabel = Just "TX"
+                              , points =
+                                    [ ( Time.millisToPosix 1579275175634, 11 )
+                                    , ( Time.millisToPosix 1579285175634, 21 )
+                                    ]
+                              }
+                            ]
+
+                        expected : DomainTimeStruct
+                        expected =
+                            { horizontal = Just ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579285175634 )
+                            , vertical = Just ( 0, 21 )
+                            }
+                    in
+                    Expect.equal (getDomainTimeFromData defaultConfig data) expected
             ]
         , describe "groupedLayoutConfig"
             [ test "showIcons is False" <|
@@ -204,5 +238,57 @@ suite =
                     Expect.within (Expect.Absolute 0.001)
                         (symbolCustomSpace orientation localDimension customSymbolConf)
                         expected
+            ]
+        , describe "externalToDataLinearGroup"
+            [ test "with time data" <|
+                \_ ->
+                    let
+                        t1 =
+                            Time.millisToPosix 1579275175634
+
+                        t2 =
+                            Time.millisToPosix 1579285175634
+
+                        data : ExternalData Data
+                        data =
+                            [ { groupLabel = "A"
+                              , x = t1
+                              , y = 10
+                              }
+                            , { groupLabel = "B"
+                              , x = t1
+                              , y = 13
+                              }
+                            , { groupLabel = "A"
+                              , x = t2
+                              , y = 16
+                              }
+                            , { groupLabel = "B"
+                              , x = t2
+                              , y = 23
+                              }
+                            ]
+                                |> toExternalData
+
+                        accessor : AccessorLinearGroup Data
+                        accessor =
+                            AccessorTime (AccessorTimeStruct .groupLabel .x .y)
+
+                        expected : DataLinearGroup
+                        expected =
+                            DataTime
+                                [ { groupLabel = Just "A"
+                                  , points = [ ( t1, 10 ), ( t2, 16 ) ]
+                                  }
+                                , { groupLabel = Just "B"
+                                  , points = [ ( t1, 13 ), ( t2, 23 ) ]
+                                  }
+                                ]
+
+                        result : DataLinearGroup
+                        result =
+                            externalToDataLinearGroup data accessor
+                    in
+                    Expect.equal result expected
             ]
         ]

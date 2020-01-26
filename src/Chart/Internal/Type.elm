@@ -21,6 +21,7 @@ module Chart.Internal.Type exposing
     , DomainLinear
     , DomainLinearStruct
     , DomainTime
+    , DomainTimeStruct
     , ExternalData
     , GroupedConfig
     , GroupedConfigStruct
@@ -1014,7 +1015,7 @@ getDomainLinearFromData config data =
                         |> List.map .points
                         |> List.concat
                         |> List.map Tuple.second
-                        |> (\dd -> ( List.minimum dd |> Maybe.withDefault 0, List.maximum dd |> Maybe.withDefault 0 ))
+                        |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
                         |> Just
         }
         |> fromDomainLinear
@@ -1350,6 +1351,7 @@ externalToDataLinearGroup externalData accessorGroup =
 
         AccessorTime accessor ->
             data
+                |> List.sortBy accessor.xGroup
                 |> List.Extra.groupWhile
                     (\a b -> accessor.xGroup a == accessor.xGroup b)
                 |> List.map
