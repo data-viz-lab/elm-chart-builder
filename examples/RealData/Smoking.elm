@@ -51,7 +51,7 @@ text {
 }
 
 .line {
-    stroke-width: 1px;
+    stroke-width: 2px;
     fill: none;
 }
 
@@ -99,6 +99,7 @@ line =
         |> Line.setAxisYContinousTickCount 5
         |> Line.setAxisXContinousTicks xAxisTicks
         |> Line.setAxisXContinousTickFormat (round >> String.fromInt)
+        |> Line.setDomainVertical ( 0, 50 )
         |> Line.setDimensions
             { margin = { top = 10, right = 20, bottom = 30, left = 30 }
             , width = 700

@@ -78,7 +78,7 @@ suite =
                     Expect.equal (getDomainBandFromData data defaultConfig) expected
             ]
         , describe "getDomainLinearFromData"
-            [ test "with DomainLinear" <|
+            [ test "with default domain" <|
                 \_ ->
                     let
                         data : List DataGroupLinear
@@ -92,9 +92,44 @@ suite =
                             { horizontal = Just ( 5, 6 ), vertical = Just ( 0, 21 ) }
                     in
                     Expect.equal (getDomainLinearFromData defaultConfig data) expected
+            , test "with Y domain manually set" <|
+                \_ ->
+                    let
+                        linearDomain : LinearDomain
+                        linearDomain =
+                            ( 0, 30 )
+
+                        config : Config
+                        config =
+                            defaultConfig
+                                |> setDomainLinearAndTimeVertical linearDomain
+
+                        data : List DataGroupLinear
+                        data =
+                            [ { groupLabel = Just "CA"
+                              , points =
+                                    [ ( 1, 10 )
+                                    , ( 2, 20 )
+                                    ]
+                              }
+                            , { groupLabel = Just "TX"
+                              , points =
+                                    [ ( 1, 11 )
+                                    , ( 2, 21 )
+                                    ]
+                              }
+                            ]
+
+                        expected : DomainLinearStruct
+                        expected =
+                            { horizontal = Just ( 1, 2 )
+                            , vertical = Just ( 0, 30 )
+                            }
+                    in
+                    Expect.equal (getDomainLinearFromData config data) expected
             ]
         , describe "getDomainTimeFromData"
-            [ test "with DomainTime" <|
+            [ test "with default domain" <|
                 \_ ->
                     let
                         data : List DataGroupTime
@@ -120,6 +155,41 @@ suite =
                             }
                     in
                     Expect.equal (getDomainTimeFromData defaultConfig data) expected
+            , test "with Y domain manually set" <|
+                \_ ->
+                    let
+                        linearDomain : LinearDomain
+                        linearDomain =
+                            ( 0, 30 )
+
+                        config : Config
+                        config =
+                            defaultConfig
+                                |> setDomainLinearAndTimeVertical linearDomain
+
+                        data : List DataGroupTime
+                        data =
+                            [ { groupLabel = Just "CA"
+                              , points =
+                                    [ ( Time.millisToPosix 1579275175634, 10 )
+                                    , ( Time.millisToPosix 1579285175634, 20 )
+                                    ]
+                              }
+                            , { groupLabel = Just "TX"
+                              , points =
+                                    [ ( Time.millisToPosix 1579275175634, 11 )
+                                    , ( Time.millisToPosix 1579285175634, 21 )
+                                    ]
+                              }
+                            ]
+
+                        expected : DomainTimeStruct
+                        expected =
+                            { horizontal = Just ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579285175634 )
+                            , vertical = Just ( 0, 30 )
+                            }
+                    in
+                    Expect.equal (getDomainTimeFromData config data) expected
             ]
         , describe "groupedLayoutConfig"
             [ test "showIcons is False" <|

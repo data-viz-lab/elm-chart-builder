@@ -2,7 +2,7 @@ module Chart.Line exposing
     ( Accessor, AccessorTime, AccessorLinear, time, linear
     , init
     , render
-    , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth
+    , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeHorizontal, setDomainVertical, setDomainLinearHorizontal
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -30,7 +30,7 @@ It expects the X axis to plot time data and the Y axis to plot linear data.
 
 # Configuration setters
 
-@docs setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth
+@docs setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeHorizontal, setDomainVertical, setDomainLinearHorizontal
 
 -}
 
@@ -377,3 +377,49 @@ represents the horizontal one.
 setShowAxisY : Bool -> Config -> Config
 setShowAxisY value config =
     Type.setShowAxisY value config
+
+
+{-| Sets the horizontal domain of a time line chart
+
+If not set, the domain is calculated from the data.
+If set on a linear line chart this setting will have no effect.
+
+    Line.init
+        |> Line.setDomainTimeHorizontal ( Time.millisToPosix 1579275175634, 10 )
+        |> Line.render ( data, accessor )
+
+-}
+setDomainTimeHorizontal : ( Posix, Posix ) -> Config -> Config
+setDomainTimeHorizontal value config =
+    Type.setDomainTimeHorizontal value config
+
+
+{-| Sets the vertical domain of a line chart
+
+This is always a linear domain, not a time domain.
+If not set, the domain is calculated from the data.
+If set on a linear line chart this setting will have no effect.
+
+    Line.init
+        |> Line.setDomainVertical ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579375175634 )
+        |> Line.render ( data, accessor )
+
+-}
+setDomainVertical : ( Float, Float ) -> Config -> Config
+setDomainVertical value config =
+    Type.setDomainLinearAndTimeVertical value config
+
+
+{-| Sets the horizontal domain of a linear line chart
+
+If not set, the domain is calculated from the data.
+If set on a linear line chart this setting will have no effect.
+
+    Line.init
+        |> Line.setDomainLinearHorizontal ( 0, 10 )
+        |> Line.render ( data, accessor )
+
+-}
+setDomainLinearHorizontal : ( Float, Float ) -> Config -> Config
+setDomainLinearHorizontal value config =
+    Type.setDomainLinearHorizontal value config

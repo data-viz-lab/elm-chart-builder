@@ -70,6 +70,7 @@ module Chart.Internal.Type exposing
     , getDomainBandFromData
     , getDomainLinear
     , getDomainLinearFromData
+    , getDomainTime
     , getDomainTimeFromData
     , getHeight
     , getIcons
@@ -96,7 +97,10 @@ module Chart.Internal.Type exposing
     , setDomainBandBandSingle
     , setDomainBandLinear
     , setDomainLinear
+    , setDomainLinearAndTimeVertical
+    , setDomainLinearHorizontal
     , setDomainTime
+    , setDomainTimeHorizontal
     , setHeight
     , setIcons
     , setLayout
@@ -344,9 +348,6 @@ type alias ConfigStruct =
     , domainBand : DomainBand
     , domainLinear : DomainLinear
     , domainTime : DomainTime
-
-    --, externalDataBandAccessor : ExternalDataBandAccessor data
-    --, externalDataLinearAccessor : ExternalDataLinearAccessor data
     , height : Float
     , layout : Layout
     , margin : Margin
@@ -372,9 +373,6 @@ defaultConfig =
         , domainBand = DomainBand initialDomainBandStruct
         , domainLinear = DomainLinear initialDomainLinearStruct
         , domainTime = DomainTime initialDomainTimeStruct
-
-        --, externalDataBandAccessor = toExternalDataBandAccessor accessorsBand
-        --, externalDataLinearAccessor = toExternalDataLinearAccessor accessorsLinear
         , height = defaultHeight
         , layout = defaultLayout
         , margin = defaultMargin
@@ -804,6 +802,61 @@ setDomainBandLinear linearDomain config =
             { domain | linear = Just linearDomain }
     in
     toConfig { c | domainBand = DomainBand newDomain }
+
+
+setDomainTimeHorizontal : TimeDomain -> Config -> Config
+setDomainTimeHorizontal timeDomain config =
+    let
+        c =
+            fromConfig config
+
+        domain =
+            c.domainTime
+                |> fromDomainTime
+
+        newDomain =
+            { domain | horizontal = Just timeDomain }
+    in
+    toConfig { c | domainTime = DomainTime newDomain }
+
+
+setDomainLinearHorizontal : LinearDomain -> Config -> Config
+setDomainLinearHorizontal linearDomain config =
+    let
+        c =
+            fromConfig config
+
+        domain =
+            c.domainLinear
+                |> fromDomainLinear
+
+        newDomain =
+            { domain | horizontal = Just linearDomain }
+    in
+    toConfig { c | domainLinear = DomainLinear newDomain }
+
+
+setDomainLinearAndTimeVertical : LinearDomain -> Config -> Config
+setDomainLinearAndTimeVertical linearDomain config =
+    let
+        c =
+            fromConfig config
+
+        domain =
+            c.domainLinear
+                |> fromDomainLinear
+
+        newDomain =
+            { domain | vertical = Just linearDomain }
+
+        domainTime =
+            c.domainTime
+                |> fromDomainTime
+
+        newDomainTime =
+            { domainTime | vertical = Just linearDomain }
+    in
+    toConfig { c | domainLinear = DomainLinear newDomain, domainTime = DomainTime newDomainTime }
 
 
 setShowAxisX : Bool -> Config -> Config
