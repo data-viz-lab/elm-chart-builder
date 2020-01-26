@@ -52,8 +52,8 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 
 
 type AxisType
-    = Vertical
-    | Horizontal
+    = Y
+    | X
 
 
 
@@ -107,10 +107,10 @@ renderLineGrouped ( data, config ) =
                 |> getDomainTimeFromData config
 
         --|> fromDomainLinear
-        horizontalRange =
+        xRange =
             ( 0, w )
 
-        verticalRange =
+        yRange =
             ( h, 0 )
 
         sortedLinearData =
@@ -124,23 +124,23 @@ renderLineGrouped ( data, config ) =
                         { d | points = List.sortBy Tuple.first points }
                     )
 
-        horizontalLinearScale : ContinuousScale Float
-        horizontalLinearScale =
+        xLinearScale : ContinuousScale Float
+        xLinearScale =
             Scale.linear
-                horizontalRange
-                (Maybe.withDefault ( 0, 0 ) linearDomain.horizontal)
+                xRange
+                (Maybe.withDefault ( 0, 0 ) linearDomain.x)
 
-        horizontalTimeScale : Maybe (ContinuousScale Posix)
-        horizontalTimeScale =
+        xTimeScale : Maybe (ContinuousScale Posix)
+        xTimeScale =
             case data of
                 DataTime _ ->
                     Scale.time c.zone
-                        horizontalRange
+                        xRange
                         (Maybe.withDefault
                             ( Time.millisToPosix 0
                             , Time.millisToPosix 0
                             )
-                            timeDomain.horizontal
+                            timeDomain.x
                         )
                         |> Just
 
@@ -151,18 +151,18 @@ renderLineGrouped ( data, config ) =
         linearOrTimeAxisGenerator =
             case data of
                 DataTime _ ->
-                    timeAxisGenerator c Horizontal horizontalTimeScale
+                    timeAxisGenerator c X xTimeScale
 
                 DataLinear _ ->
-                    linearAxisGenerator c Horizontal horizontalLinearScale
+                    linearAxisGenerator c X xLinearScale
 
-        verticalScale : ContinuousScale Float
-        verticalScale =
-            Scale.linear verticalRange (Maybe.withDefault ( 0, 0 ) linearDomain.vertical)
+        yScale : ContinuousScale Float
+        yScale =
+            Scale.linear yRange (Maybe.withDefault ( 0, 0 ) linearDomain.y)
 
         lineGenerator : PointLinear -> Maybe ( Float, Float )
         lineGenerator ( x, y ) =
-            Just ( Scale.convert horizontalLinearScale x, Scale.convert verticalScale y )
+            Just ( Scale.convert xLinearScale x, Scale.convert yScale y )
 
         line : DataGroupLinear -> Path
         line dataGroup =
@@ -179,7 +179,7 @@ renderLineGrouped ( data, config ) =
         ]
     <|
         descAndTitle c
-            ++ linearAxisGenerator c Vertical verticalScale
+            ++ linearAxisGenerator c Y yScale
             ++ linearOrTimeAxisGenerator
             ++ [ g
                     [ transform [ Translate m.left m.top ]
@@ -202,10 +202,10 @@ timeAxisGenerator c axisType scale =
         case scale of
             Just s ->
                 case axisType of
-                    Vertical ->
+                    Y ->
                         []
 
-                    Horizontal ->
+                    X ->
                         let
                             ticks =
                                 case c.axisXContinousTicks of
@@ -240,7 +240,7 @@ timeAxisGenerator c axisType scale =
                         in
                         [ g
                             [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                            , class [ "axis", "axis--horizontal" ]
+                            , class [ "axis", "axis--x" ]
                             ]
                             [ axis ]
                         ]
@@ -256,7 +256,7 @@ linearAxisGenerator : ConfigStruct -> AxisType -> ContinuousScale Float -> List 
 linearAxisGenerator c axisType scale =
     if c.showAxisY == True then
         case axisType of
-            Vertical ->
+            Y ->
                 let
                     ticks =
                         case c.axisYContinousTicks of
@@ -291,12 +291,12 @@ linearAxisGenerator c axisType scale =
                 in
                 [ g
                     [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
-                    , class [ "axis", "axis--vertical" ]
+                    , class [ "axis", "axis--y" ]
                     ]
                     [ axis ]
                 ]
 
-            Horizontal ->
+            X ->
                 let
                     ticks =
                         case c.axisXContinousTicks of
@@ -331,7 +331,7 @@ linearAxisGenerator c axisType scale =
                 in
                 [ g
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                    , class [ "axis", "axis--horizontal" ]
+                    , class [ "axis", "axis--x" ]
                     ]
                     [ axis ]
                 ]

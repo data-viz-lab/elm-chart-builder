@@ -97,10 +97,10 @@ module Chart.Internal.Type exposing
     , setDomainBandBandSingle
     , setDomainBandLinear
     , setDomainLinear
-    , setDomainLinearAndTimeVertical
-    , setDomainLinearHorizontal
+    , setDomainLinearAndTimeY
+    , setDomainLinearX
     , setDomainTime
-    , setDomainTimeHorizontal
+    , setDomainTimeX
     , setHeight
     , setIcons
     , setLayout
@@ -271,28 +271,28 @@ initialDomainBandStruct =
 
 
 type alias DomainLinearStruct =
-    { horizontal : Maybe LinearDomain
-    , vertical : Maybe LinearDomain
+    { x : Maybe LinearDomain
+    , y : Maybe LinearDomain
     }
 
 
 initialDomainLinearStruct : DomainLinearStruct
 initialDomainLinearStruct =
-    { horizontal = Nothing
-    , vertical = Nothing
+    { x = Nothing
+    , y = Nothing
     }
 
 
 type alias DomainTimeStruct =
-    { horizontal : Maybe TimeDomain
-    , vertical : Maybe LinearDomain
+    { x : Maybe TimeDomain
+    , y : Maybe LinearDomain
     }
 
 
 initialDomainTimeStruct : DomainTimeStruct
 initialDomainTimeStruct =
-    { horizontal = Nothing
-    , vertical = Nothing
+    { x = Nothing
+    , y = Nothing
     }
 
 
@@ -804,8 +804,8 @@ setDomainBandLinear linearDomain config =
     toConfig { c | domainBand = DomainBand newDomain }
 
 
-setDomainTimeHorizontal : TimeDomain -> Config -> Config
-setDomainTimeHorizontal timeDomain config =
+setDomainTimeX : TimeDomain -> Config -> Config
+setDomainTimeX timeDomain config =
     let
         c =
             fromConfig config
@@ -815,13 +815,13 @@ setDomainTimeHorizontal timeDomain config =
                 |> fromDomainTime
 
         newDomain =
-            { domain | horizontal = Just timeDomain }
+            { domain | x = Just timeDomain }
     in
     toConfig { c | domainTime = DomainTime newDomain }
 
 
-setDomainLinearHorizontal : LinearDomain -> Config -> Config
-setDomainLinearHorizontal linearDomain config =
+setDomainLinearX : LinearDomain -> Config -> Config
+setDomainLinearX linearDomain config =
     let
         c =
             fromConfig config
@@ -831,13 +831,13 @@ setDomainLinearHorizontal linearDomain config =
                 |> fromDomainLinear
 
         newDomain =
-            { domain | horizontal = Just linearDomain }
+            { domain | x = Just linearDomain }
     in
     toConfig { c | domainLinear = DomainLinear newDomain }
 
 
-setDomainLinearAndTimeVertical : LinearDomain -> Config -> Config
-setDomainLinearAndTimeVertical linearDomain config =
+setDomainLinearAndTimeY : LinearDomain -> Config -> Config
+setDomainLinearAndTimeY linearDomain config =
     let
         c =
             fromConfig config
@@ -847,14 +847,14 @@ setDomainLinearAndTimeVertical linearDomain config =
                 |> fromDomainLinear
 
         newDomain =
-            { domain | vertical = Just linearDomain }
+            { domain | y = Just linearDomain }
 
         domainTime =
             c.domainTime
                 |> fromDomainTime
 
         newDomainTime =
-            { domainTime | vertical = Just linearDomain }
+            { domainTime | y = Just linearDomain }
     in
     toConfig { c | domainLinear = DomainLinear newDomain, domainTime = DomainTime newDomainTime }
 
@@ -1046,10 +1046,10 @@ getDomainLinearFromData config data =
             getDomainLinear config
     in
     DomainLinear
-        { horizontal =
-            case domain.horizontal of
+        { x =
+            case domain.x of
                 Just _ ->
-                    domain.horizontal
+                    domain.x
 
                 Nothing ->
                     data
@@ -1058,10 +1058,10 @@ getDomainLinearFromData config data =
                         |> List.map Tuple.first
                         |> (\dd -> ( List.minimum dd |> Maybe.withDefault 0, List.maximum dd |> Maybe.withDefault 0 ))
                         |> Just
-        , vertical =
-            case domain.vertical of
+        , y =
+            case domain.y of
                 Just _ ->
-                    domain.vertical
+                    domain.y
 
                 Nothing ->
                     data
@@ -1084,10 +1084,10 @@ getDomainTimeFromData config data =
             getDomainTime config
     in
     DomainTime
-        { horizontal =
-            case domain.horizontal of
+        { x =
+            case domain.x of
                 Just _ ->
-                    domain.horizontal
+                    domain.x
 
                 Nothing ->
                     data
@@ -1101,10 +1101,10 @@ getDomainTimeFromData config data =
                                 )
                            )
                         |> Just
-        , vertical =
-            case domain.vertical of
+        , y =
+            case domain.y of
                 Just _ ->
-                    domain.vertical
+                    domain.y
 
                 Nothing ->
                     data

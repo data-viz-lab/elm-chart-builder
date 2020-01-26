@@ -89,7 +89,7 @@ suite =
 
                         expected : DomainLinearStruct
                         expected =
-                            { horizontal = Just ( 5, 6 ), vertical = Just ( 0, 21 ) }
+                            { x = Just ( 5, 6 ), y = Just ( 0, 21 ) }
                     in
                     Expect.equal (getDomainLinearFromData defaultConfig data) expected
             , test "with Y domain manually set" <|
@@ -102,7 +102,7 @@ suite =
                         config : Config
                         config =
                             defaultConfig
-                                |> setDomainLinearAndTimeVertical linearDomain
+                                |> setDomainLinearAndTimeY linearDomain
 
                         data : List DataGroupLinear
                         data =
@@ -122,8 +122,8 @@ suite =
 
                         expected : DomainLinearStruct
                         expected =
-                            { horizontal = Just ( 1, 2 )
-                            , vertical = Just ( 0, 30 )
+                            { x = Just ( 1, 2 )
+                            , y = Just ( 0, 30 )
                             }
                     in
                     Expect.equal (getDomainLinearFromData config data) expected
@@ -150,8 +150,8 @@ suite =
 
                         expected : DomainTimeStruct
                         expected =
-                            { horizontal = Just ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579285175634 )
-                            , vertical = Just ( 0, 21 )
+                            { x = Just ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579285175634 )
+                            , y = Just ( 0, 21 )
                             }
                     in
                     Expect.equal (getDomainTimeFromData defaultConfig data) expected
@@ -165,7 +165,7 @@ suite =
                         config : Config
                         config =
                             defaultConfig
-                                |> setDomainLinearAndTimeVertical linearDomain
+                                |> setDomainLinearAndTimeY linearDomain
 
                         data : List DataGroupTime
                         data =
@@ -185,8 +185,8 @@ suite =
 
                         expected : DomainTimeStruct
                         expected =
-                            { horizontal = Just ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579285175634 )
-                            , vertical = Just ( 0, 30 )
+                            { x = Just ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579285175634 )
+                            , y = Just ( 0, 30 )
                             }
                     in
                     Expect.equal (getDomainTimeFromData config data) expected
@@ -200,7 +200,7 @@ suite =
                     Expect.equal (showIcons (defaultGroupedConfig |> setIcons [ Triangle "id" ])) True
             ]
         , describe "symbolCustomSpace"
-            [ test "horizontal, icon ratio < 1" <|
+            [ test "x, icon ratio < 1" <|
                 \_ ->
                     let
                         orientation : Orientation
@@ -227,7 +227,7 @@ suite =
                     Expect.within (Expect.Absolute 0.001)
                         (symbolCustomSpace orientation localDimension customSymbolConf)
                         expected
-            , test "horizontal, icon ratio >= 1" <|
+            , test "x, icon ratio >= 1" <|
                 \_ ->
                     let
                         orientation : Orientation
@@ -254,7 +254,7 @@ suite =
                     Expect.within (Expect.Absolute 0.001)
                         (symbolCustomSpace orientation localDimension customSymbolConf)
                         expected
-            , test "vertical" <|
+            , test "y" <|
                 \_ ->
                     let
                         orientation : Orientation
@@ -281,7 +281,7 @@ suite =
                     Expect.within (Expect.Absolute 0.001)
                         (symbolCustomSpace orientation localDimension customSymbolConf)
                         expected
-            , test "vertical 2" <|
+            , test "y 2" <|
                 \_ ->
                     let
                         orientation : Orientation

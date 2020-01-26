@@ -2,7 +2,7 @@ module Chart.Line exposing
     ( Accessor, AccessorTime, AccessorLinear, time, linear
     , init
     , render
-    , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeHorizontal, setDomainVertical, setDomainLinearHorizontal
+    , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeX, setDomainY, setDomainLinearX
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -30,7 +30,7 @@ It expects the X axis to plot time data and the Y axis to plot linear data.
 
 # Configuration setters
 
-@docs setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeHorizontal, setDomainVertical, setDomainLinearHorizontal
+@docs setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeX, setDomainY, setDomainLinearX
 
 -}
 
@@ -69,7 +69,7 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 
 {-| The data accessors
 
-A line chart can have the horizontal axis as linear or time data.
+A line chart can have the x axis as linear or time data.
 
     type Accessor data
         = AccessorLinear (accessorLinear data)
@@ -80,7 +80,7 @@ type alias Accessor data =
     Type.AccessorLinearGroup data
 
 
-{-| The accessor structure for horizontal time lines.
+{-| The accessor structure for x time lines.
 -}
 type alias AccessorTime data =
     { xGroup : data -> String
@@ -89,7 +89,7 @@ type alias AccessorTime data =
     }
 
 
-{-| The accessor constructor for horizontal time lines.
+{-| The accessor constructor for x time lines.
 
     Line.time (Line.AccessorTime .groupLabel .x .y)
 
@@ -99,7 +99,7 @@ time acc =
     Type.AccessorTime acc
 
 
-{-| The accessor structure for horizontal linear lines.
+{-| The accessor structure for x linear lines.
 -}
 type alias AccessorLinear data =
     { xGroup : data -> String
@@ -108,7 +108,7 @@ type alias AccessorLinear data =
     }
 
 
-{-| The accessor constructor for horizontal linear lines.
+{-| The accessor constructor for x linear lines.
 
     Line.linear (Line.AccessorLinear .groupLabel .x .y)
 
@@ -258,7 +258,7 @@ setAxisXContinousTickFormat f config =
     Type.setAxisXContinousTickFormat (Type.CustomTickFormat f) config
 
 
-{-| Set the ticks for the vertical axis
+{-| Set the ticks for the y axis
 Defaults to `Scale.ticks`
 
     Line.init
@@ -271,7 +271,7 @@ setAxisYContinousTicks ticks config =
     Type.setAxisYContinousTicks (Type.CustomTicks ticks) config
 
 
-{-| Sets the approximate number of ticks for the vertical axis
+{-| Sets the approximate number of ticks for the y axis
 Defaults to `Scale.ticks`
 
     Line.init
@@ -284,7 +284,7 @@ setAxisYContinousTickCount count config =
     Type.setAxisYContinousTickCount (Type.CustomTickCount count) config
 
 
-{-| Sets the formatting for ticks in the vertical axis
+{-| Sets the formatting for ticks in the y axis
 Defaults to `Scale.tickFormat`
 
     Line.init
@@ -347,9 +347,9 @@ setTitle value config =
 
 Default value: True
 
-By convention the X axix is the horizontal one, but
-if the layout is changed to vertical, then the X axis
-represents the vertical one.
+By convention the X axix is the x one, but
+if the layout is changed to y, then the X axis
+represents the y one.
 
     Line.init
         |> Bar.setShowAxisX False
@@ -365,9 +365,9 @@ setShowAxisX value config =
 
 Default value: True
 
-By convention the Y axix is the vertical one, but
-if the layout is changed to horizontal, then the Y axis
-represents the horizontal one.
+By convention the Y axix is the y one, but
+if the layout is changed to x, then the Y axis
+represents the x one.
 
     Line.init
         |> Bar.setShowAxisY False
@@ -379,47 +379,47 @@ setShowAxisY value config =
     Type.setShowAxisY value config
 
 
-{-| Sets the horizontal domain of a time line chart
+{-| Sets the x domain of a time line chart
 
 If not set, the domain is calculated from the data.
 If set on a linear line chart this setting will have no effect.
 
     Line.init
-        |> Line.setDomainTimeHorizontal ( Time.millisToPosix 1579275175634, 10 )
+        |> Line.setDomainTimeX ( Time.millisToPosix 1579275175634, 10 )
         |> Line.render ( data, accessor )
 
 -}
-setDomainTimeHorizontal : ( Posix, Posix ) -> Config -> Config
-setDomainTimeHorizontal value config =
-    Type.setDomainTimeHorizontal value config
+setDomainTimeX : ( Posix, Posix ) -> Config -> Config
+setDomainTimeX value config =
+    Type.setDomainTimeX value config
 
 
-{-| Sets the vertical domain of a line chart
+{-| Sets the y domain of a line chart
 
 This is always a linear domain, not a time domain.
 If not set, the domain is calculated from the data.
 If set on a linear line chart this setting will have no effect.
 
     Line.init
-        |> Line.setDomainVertical ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579375175634 )
+        |> Line.setDomainY ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579375175634 )
         |> Line.render ( data, accessor )
 
 -}
-setDomainVertical : ( Float, Float ) -> Config -> Config
-setDomainVertical value config =
-    Type.setDomainLinearAndTimeVertical value config
+setDomainY : ( Float, Float ) -> Config -> Config
+setDomainY value config =
+    Type.setDomainLinearAndTimeY value config
 
 
-{-| Sets the horizontal domain of a linear line chart
+{-| Sets the x domain of a linear line chart
 
 If not set, the domain is calculated from the data.
 If set on a linear line chart this setting will have no effect.
 
     Line.init
-        |> Line.setDomainLinearHorizontal ( 0, 10 )
+        |> Line.setDomainLinearX ( 0, 10 )
         |> Line.render ( data, accessor )
 
 -}
-setDomainLinearHorizontal : ( Float, Float ) -> Config -> Config
-setDomainLinearHorizontal value config =
-    Type.setDomainLinearHorizontal value config
+setDomainLinearX : ( Float, Float ) -> Config -> Config
+setDomainLinearX value config =
+    Type.setDomainLinearX value config

@@ -9,7 +9,7 @@ import Test exposing (..)
 suite : Test
 suite =
     describe "The Public Line module"
-        [ describe "setDomainTimeVertical"
+        [ describe "setDomainTimeY"
             [ test "it should set the X LinearDomain value in the domain" <|
                 \_ ->
                     let
@@ -20,12 +20,12 @@ suite =
                         config : Type.Config
                         config =
                             Line.init
-                                |> Line.setDomainVertical linearDomain
+                                |> Line.setDomainY linearDomain
 
                         newDomain =
                             config
                                 |> Type.getDomainTime
-                                |> .vertical
+                                |> .y
                     in
                     Expect.equal (Just linearDomain) newDomain
             ]
