@@ -137,4 +137,11 @@ main =
             [ Html.div (class "male" :: attrs) [ lineMale ]
             , Html.div (class "female" :: attrs) [ lineFemale ]
             ]
+        , Html.footer []
+            [ Html.a
+                [ Html.Attributes.href
+                    "https://digital.nhs.uk/data-and-information/publications/clinical-indicators/compendium-of-population-health-indicators/compendium-public-health/current/smoking/cigarette-smoking-standardised-percent-16-years-annual-trend-mfp"
+                ]
+                [ Html.text "Data source" ]
+            ]
         ]
