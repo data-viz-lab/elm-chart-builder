@@ -2,7 +2,7 @@ module Chart.Line exposing
     ( Accessor, AccessorTime, AccessorLinear, time, linear
     , init
     , render
-    , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeX, setDomainY, setDomainLinearX
+    , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setCurve, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeX, setDomainY, setDomainLinearX
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -30,7 +30,7 @@ It expects the X axis to plot time data and the Y axis to plot linear data.
 
 # Configuration setters
 
-@docs setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeX, setDomainY, setDomainLinearX
+@docs setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setCurve, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeX, setDomainY, setDomainLinearX
 
 -}
 
@@ -63,6 +63,7 @@ import Chart.Internal.Type as Type
         , setTitle
         )
 import Html exposing (Html)
+import SubPath exposing (SubPath)
 import Time exposing (Posix)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
@@ -230,6 +231,22 @@ Defaults to `Scale.ticks`
 setAxisXContinousTicks : List Float -> Config -> Config
 setAxisXContinousTicks ticks config =
     Type.setAxisXContinousTicks (Type.CustomTicks ticks) config
+
+
+{-| Sets the line curve shape
+Defaults to `Shape.linearCurve`
+
+See [https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Shape](elm-visualization/latest/Shape)
+for more info.
+
+    Line.init
+        |> Line.curve Shape.monotoneInXCurve
+        |> Line.render ( data, accessor )
+
+-}
+setCurve : (List ( Float, Float ) -> SubPath) -> Config -> Config
+setCurve curve config =
+    Type.setCurve curve config
 
 
 {-| Sets the approximate number of ticks for the time axis

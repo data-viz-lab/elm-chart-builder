@@ -8,6 +8,7 @@ import Data exposing (smokeStats)
 import Html exposing (Html)
 import Html.Attributes exposing (class)
 import Set
+import Shape
 
 
 css : String
@@ -96,6 +97,7 @@ line =
     Line.init
         |> Line.setTitle "Smoking in England"
         |> Line.setDesc "Smoking in England"
+        |> Line.setCurve (\d -> Shape.basisCurve d)
         |> Line.setAxisYContinousTickCount 5
         |> Line.setAxisXContinousTicks xAxisTicks
         |> Line.setAxisXContinousTickFormat (round >> String.fromInt)

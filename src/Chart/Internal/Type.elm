@@ -90,6 +90,7 @@ module Chart.Internal.Type exposing
     , setAxisYContinousTickCount
     , setAxisYContinousTickFormat
     , setAxisYContinousTicks
+    , setCurve
     , setDesc
     , setDimensions
     , setDomainBand
@@ -126,6 +127,7 @@ import Html.Attributes
 import List.Extra
 import Scale exposing (BandScale)
 import Shape
+import SubPath exposing (SubPath)
 import Time exposing (Posix, Zone)
 
 
@@ -344,6 +346,7 @@ type alias ConfigStruct =
     , axisYContinousTickCount : AxisContinousDataTickCount
     , axisYContinousTickFormat : AxisContinousDataTickFormat
     , axisYContinousTicks : AxisContinousDataTicks
+    , curve : List ( Float, Float ) -> SubPath
     , desc : String
     , domainBand : DomainBand
     , domainLinear : DomainLinear
@@ -369,6 +372,7 @@ defaultConfig =
         , axisYContinousTickCount = DefaultTickCount
         , axisYContinousTickFormat = DefaultTickFormat
         , axisYContinousTicks = DefaultTicks
+        , curve = \d -> Shape.linearCurve d
         , desc = ""
         , domainBand = DomainBand initialDomainBandStruct
         , domainLinear = DomainLinear initialDomainLinearStruct
@@ -596,6 +600,15 @@ setAxisYContinousTickCount count config =
             fromConfig config
     in
     toConfig { c | axisYContinousTickCount = count }
+
+
+setCurve : (List ( Float, Float ) -> SubPath) -> Config -> Config
+setCurve curve config =
+    let
+        c =
+            fromConfig config
+    in
+    toConfig { c | curve = curve }
 
 
 setDesc : String -> Config -> Config

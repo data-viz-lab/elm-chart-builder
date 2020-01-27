@@ -168,7 +168,7 @@ renderLineGrouped ( data, config ) =
         line dataGroup =
             dataGroup.points
                 |> List.map lineGenerator
-                |> Shape.line Shape.monotoneInXCurve
+                |> Shape.line c.curve
     in
     svg
         [ viewBox 0 0 outerW outerH
