@@ -1,5 +1,6 @@
 module Chart.Internal.Helpers exposing
     ( dataBandToDataStacked
+    , dataLinearGroupToDataStacked
     , floorFloat
     , floorValues
     , stackedValuesInverse
@@ -9,6 +10,7 @@ import Chart.Internal.Type
     exposing
         ( Config
         , DataBand
+        , DataLinearGroup
         , StackedValues
         , fromDataBand
         , getDomainBandFromData
@@ -69,3 +71,8 @@ floorValues v =
                 d
                     |> List.map (\( a, b ) -> ( floorFloat a, floorFloat b ))
             )
+
+
+dataLinearGroupToDataStacked : DataLinearGroup -> Config -> List ( String, List Float )
+dataLinearGroupToDataStacked data config =
+    []

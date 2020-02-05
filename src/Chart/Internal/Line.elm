@@ -26,6 +26,7 @@ import Chart.Internal.Type
         , getDomainTimeFromData
         , getHeight
         , getMargin
+        , getOffset
         , getWidth
         , leftGap
         , role
@@ -33,7 +34,7 @@ import Chart.Internal.Type
 import Html exposing (Html)
 import Path exposing (Path)
 import Scale exposing (ContinuousScale)
-import Shape
+import Shape exposing (StackConfig)
 import Time exposing (Posix)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes
@@ -69,6 +70,10 @@ descAndTitle c =
     ]
 
 
+
+-- GROUPED
+
+
 renderLineGrouped : ( DataLinearGroup, Config ) -> Html msg
 renderLineGrouped ( data, config ) =
     let
@@ -90,10 +95,12 @@ renderLineGrouped ( data, config ) =
         outerH =
             h + m.top + m.bottom
 
+        --linearData : List DataGroupLinear
         linearData =
             data
                 |> dataLinearGroupToDataLinear
 
+        --linearDomain : DomainLinearStruct
         linearDomain =
             linearData
                 |> getDomainLinearFromData config
@@ -106,7 +113,6 @@ renderLineGrouped ( data, config ) =
             timeData
                 |> getDomainTimeFromData config
 
-        --|> fromDomainLinear
         xRange =
             ( 0, w )
 
@@ -194,6 +200,48 @@ renderLineGrouped ( data, config ) =
                         )
                         sortedLinearData
                ]
+
+
+
+-- STACKED
+
+
+renderLineStacked : ( DataLinearGroup, Config ) -> Html msg
+renderLineStacked ( data, config ) =
+    let
+        c =
+            fromConfig config
+
+        m =
+            getMargin config
+
+        w =
+            getWidth config
+
+        h =
+            getHeight config
+
+        outerW =
+            w + m.left + m.right
+
+        outerH =
+            h + m.top + m.bottom
+
+        dataStacked : List ( String, List Float )
+        dataStacked =
+            Helpers.dataLinearGroupToDataStacked data config
+
+        stackedConfig : StackConfig String
+        stackedConfig =
+            { data = dataStacked
+            , offset = getOffset config
+            , order = identity
+            }
+
+        { values, labels, extent } =
+            Shape.stack stackedConfig
+    in
+    Html.text ""
 
 
 timeAxisGenerator : ConfigStruct -> AxisType -> Maybe (ContinuousScale Posix) -> List (Svg msg)

@@ -4,6 +4,7 @@ import Chart.Internal.Helpers exposing (..)
 import Chart.Internal.Type exposing (..)
 import Expect exposing (Expectation)
 import Test exposing (..)
+import Time exposing (Posix)
 
 
 suite : Test
@@ -66,5 +67,32 @@ suite =
                             ]
                     in
                     Expect.equal (dataBandToDataStacked data defaultConfig) expected
+            ]
+        , describe "dataLinearGroupToDataStacked"
+            [ test "simple" <|
+                \_ ->
+                    let
+                        t1 =
+                            Time.millisToPosix 1579275175634
+
+                        t2 =
+                            Time.millisToPosix 1579285175634
+
+                        data : DataLinearGroup
+                        data =
+                            DataTime
+                                [ { groupLabel = Just "A"
+                                  , points = [ ( t1, 10 ), ( t2, 16 ) ]
+                                  }
+                                , { groupLabel = Just "B"
+                                  , points = [ ( t1, 13 ), ( t2, 23 ) ]
+                                  }
+                                ]
+
+                        expected : List ( String, List Float )
+                        expected =
+                            [ ( "A", [ 16, 10 ] ), ( "B", [ 23, 13 ] ) ]
+                    in
+                    Expect.equal (dataLinearGroupToDataStacked data defaultConfig) expected
             ]
         ]
