@@ -1,6 +1,7 @@
 module Chart.Internal.Helpers exposing
     ( dataBandToDataStacked
-    , dataLinearGroupToDataStacked
+    , dataLinearGroupToDataLinearStacked
+    , dataLinearGroupToDataTimeStacked
     , floorFloat
     , floorValues
     , stackedValuesInverse
@@ -10,11 +11,16 @@ import Chart.Internal.Type
     exposing
         ( Config
         , DataBand
-        , DataLinearGroup
+        , DataGroupLinear
+        , DataGroupTime
+        , DataLinearGroup(..)
+        , PointStacked
         , StackedValues
         , fromDataBand
         , getDomainBandFromData
         )
+import List.Extra
+import Time exposing (Posix)
 
 
 dataBandToDataStacked : DataBand -> Config -> List ( String, List Float )
@@ -73,6 +79,47 @@ floorValues v =
             )
 
 
-dataLinearGroupToDataStacked : DataLinearGroup -> Config -> List ( String, List Float )
-dataLinearGroupToDataStacked data config =
-    []
+reduceLeftStack : List { groupLabel : Maybe String, points : List ( a, Float ) } -> List a
+reduceLeftStack d =
+    d
+        |> List.head
+        |> Maybe.map .points
+        |> Maybe.withDefault []
+        |> List.map Tuple.first
+
+
+reduceRightStack : List { groupLabel : Maybe String, points : List ( a, Float ) } -> List (List Float)
+reduceRightStack d =
+    d
+        |> List.map .points
+        |> List.map
+            (\i ->
+                i
+                    |> List.map Tuple.second
+            )
+        |> List.reverse
+        |> List.Extra.transpose
+
+
+dataLinearGroupToDataTimeStacked : List DataGroupTime -> Config -> List (PointStacked Posix)
+dataLinearGroupToDataTimeStacked d config =
+    let
+        ( left, right ) =
+            ( reduceLeftStack d, reduceRightStack d )
+
+        result =
+            List.Extra.zip left right
+    in
+    result
+
+
+dataLinearGroupToDataLinearStacked : List DataGroupLinear -> Config -> List (PointStacked Float)
+dataLinearGroupToDataLinearStacked d config =
+    let
+        ( left, right ) =
+            ( reduceLeftStack d, reduceRightStack d )
+
+        result =
+            List.Extra.zip left right
+    in
+    result

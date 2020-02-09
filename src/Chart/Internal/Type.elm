@@ -31,6 +31,7 @@ module Chart.Internal.Type exposing
     , Orientation(..)
     , PointBand
     , PointLinear
+    , PointStacked
     , PointTime
     , RenderContext(..)
     , StackedValues
@@ -201,6 +202,10 @@ type alias PointLinear =
 
 type alias PointTime =
     ( Posix, Float )
+
+
+type alias PointStacked a =
+    ( a, List Float )
 
 
 type alias DataGroupBand =

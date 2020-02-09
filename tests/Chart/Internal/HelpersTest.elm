@@ -78,21 +78,20 @@ suite =
                         t2 =
                             Time.millisToPosix 1579285175634
 
-                        data : DataLinearGroup
+                        data : List DataGroupTime
                         data =
-                            DataTime
-                                [ { groupLabel = Just "A"
-                                  , points = [ ( t1, 10 ), ( t2, 16 ) ]
-                                  }
-                                , { groupLabel = Just "B"
-                                  , points = [ ( t1, 13 ), ( t2, 23 ) ]
-                                  }
-                                ]
+                            [ { groupLabel = Just "A"
+                              , points = [ ( t1, 10 ), ( t2, 16 ) ]
+                              }
+                            , { groupLabel = Just "B"
+                              , points = [ ( t1, 13 ), ( t2, 23 ) ]
+                              }
+                            ]
 
-                        expected : List ( String, List Float )
+                        expected : List (PointStacked Posix)
                         expected =
-                            [ ( "A", [ 16, 10 ] ), ( "B", [ 23, 13 ] ) ]
+                            [ ( t1, [ 13, 10 ] ), ( t2, [ 23, 16 ] ) ]
                     in
-                    Expect.equal (dataLinearGroupToDataStacked data defaultConfig) expected
+                    Expect.equal (dataLinearGroupToDataTimeStacked data defaultConfig) expected
             ]
         ]

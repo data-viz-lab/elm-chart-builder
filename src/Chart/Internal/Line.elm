@@ -14,8 +14,10 @@ import Chart.Internal.Type
         , ConfigStruct
         , DataGroupLinear
         , DataLinearGroup(..)
+        , DomainLinearStruct
         , Layout(..)
         , PointLinear
+        , PointStacked
         , RenderContext(..)
         , ariaLabelledby
         , bottomGap
@@ -95,12 +97,12 @@ renderLineGrouped ( data, config ) =
         outerH =
             h + m.top + m.bottom
 
-        --linearData : List DataGroupLinear
+        linearData : List DataGroupLinear
         linearData =
             data
                 |> dataLinearGroupToDataLinear
 
-        --linearDomain : DomainLinearStruct
+        linearDomain : DomainLinearStruct
         linearDomain =
             linearData
                 |> getDomainLinearFromData config
@@ -227,11 +229,21 @@ renderLineStacked ( data, config ) =
         outerH =
             h + m.top + m.bottom
 
-        dataStacked : List ( String, List Float )
-        dataStacked =
-            Helpers.dataLinearGroupToDataStacked data config
+        linearData : List DataGroupLinear
+        linearData =
+            data
+                |> dataLinearGroupToDataLinear
 
-        stackedConfig : StackConfig String
+        linearDomain : DomainLinearStruct
+        linearDomain =
+            linearData
+                |> getDomainLinearFromData config
+
+        dataStacked : List (PointStacked Float)
+        dataStacked =
+            Helpers.dataLinearGroupToDataLinearStacked linearData config
+
+        stackedConfig : StackConfig Float
         stackedConfig =
             { data = dataStacked
             , offset = getOffset config
@@ -240,6 +252,15 @@ renderLineStacked ( data, config ) =
 
         { values, labels, extent } =
             Shape.stack stackedConfig
+
+        timeData =
+            data
+                |> dataLinearGroupToDataTime
+
+        timeDomain =
+            timeData
+                |> getDomainTimeFromData config
+
     in
     Html.text ""
 
