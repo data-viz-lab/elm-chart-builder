@@ -180,6 +180,7 @@ doubleLineLinear =
         |> Line.setAxisYContinousTickCount 5
         |> Line.setAxisXContinousTicks xAxisTicks
         |> Line.setAxisXContinousTickFormat (round >> String.fromInt)
+        |> Line.setLayout Line.stackedLayout
         |> Line.setDimensions
             { margin = { top = 10, right = 20, bottom = 30, left = 30 }
             , width = width

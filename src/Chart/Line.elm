@@ -3,6 +3,7 @@ module Chart.Line exposing
     , init
     , render
     , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setCurve, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeX, setDomainY, setDomainLinearX
+    , setLayout, stackedLayout
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -37,6 +38,7 @@ It expects the X axis to plot time data and the Y axis to plot linear data.
 import Chart.Internal.Line
     exposing
         ( renderLineGrouped
+        , renderLineStacked
         )
 import Chart.Internal.Symbol exposing (Symbol(..))
 import Chart.Internal.Type as Type
@@ -46,6 +48,7 @@ import Chart.Internal.Type as Type
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
         , Config
+        , Direction(..)
         , Layout(..)
         , Margin
         , RenderContext(..)
@@ -174,7 +177,7 @@ render ( externalData, accessor ) config =
             renderLineGrouped ( data, config )
 
         Stacked _ ->
-            Html.text "TODO"
+            renderLineStacked ( data, config )
 
 
 {-| Sets the outer height of the line chart
@@ -440,3 +443,35 @@ If set on a linear line chart this setting will have no effect.
 setDomainLinearX : ( Float, Float ) -> Config -> Config
 setDomainLinearX value config =
     Type.setDomainLinearX value config
+
+
+{-| Sets the line layout.
+
+Values: `Line.stackedLayout` or `Line.groupedLayout`
+
+Default value: Line.groupedLayout
+
+    Line.init
+        |> Line.setLayout (Line.stackedLayout Line.noDirection)
+        |> Line.render ( data, accessor )
+
+-}
+setLayout : Layout -> Config -> Config
+setLayout value config =
+    Type.setLayout value config
+
+
+{-| Stacked layout type
+
+Beware that stacked layouts do not support icons
+
+`stackedLayout` expects a `noDirection` or a `divergingDirection` argument.
+
+    Bar.init
+        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
+        |> Bar.render ( data, accessor )
+
+-}
+stackedLayout : Layout
+stackedLayout =
+    Stacked NoDirection

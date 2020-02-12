@@ -1,4 +1,7 @@
-module Chart.Internal.Line exposing (renderLineGrouped)
+module Chart.Internal.Line exposing
+    ( renderLineGrouped
+    , renderLineStacked
+    )
 
 import Axis
 import Chart.Internal.Helpers as Helpers
@@ -252,6 +255,7 @@ renderLineStacked ( data, config ) =
 
         { values, labels, extent } =
             Shape.stack stackedConfig
+                |> Debug.log "buuuu"
 
         timeData =
             data
@@ -261,8 +265,71 @@ renderLineStacked ( data, config ) =
             timeData
                 |> getDomainTimeFromData config
 
+        xRange =
+            ( 0, w )
+
+        yRange =
+            ( h, 0 )
+
+        xLinearScale : ContinuousScale Float
+        xLinearScale =
+            Scale.linear
+                xRange
+                (Maybe.withDefault ( 0, 0 ) linearDomain.x)
+
+        xTimeScale : Maybe (ContinuousScale Posix)
+        xTimeScale =
+            case data of
+                DataTime _ ->
+                    Scale.time c.zone
+                        xRange
+                        (Maybe.withDefault
+                            ( Time.millisToPosix 0
+                            , Time.millisToPosix 0
+                            )
+                            timeDomain.x
+                        )
+                        |> Just
+
+                _ ->
+                    Nothing
+
+        yScale : ContinuousScale Float
+        yScale =
+            Scale.linear yRange extent
+
+        lineGenerator : PointLinear -> Maybe ( Float, Float )
+        lineGenerator ( x, y ) =
+            Just ( Scale.convert xLinearScale x, Scale.convert yScale y )
+
+        line : List PointLinear -> Path
+        line points =
+            points
+                |> List.map lineGenerator
+                |> Shape.line c.curve
     in
-    Html.text ""
+    svg
+        [ viewBox 0 0 outerW outerH
+        , width outerW
+        , height outerH
+        , role "img"
+        , ariaLabelledby "title desc"
+        ]
+    <|
+        descAndTitle c
+            ++ [ g
+                    [ transform [ Translate m.left m.top ]
+                    , class [ "series" ]
+                    ]
+                 <|
+                    List.indexedMap
+                        (\idx d ->
+                            Path.element (line d)
+                                [ class [ "line", "line-" ++ String.fromInt idx ]
+                                ]
+                        )
+                        values
+               ]
 
 
 timeAxisGenerator : ConfigStruct -> AxisType -> Maybe (ContinuousScale Posix) -> List (Svg msg)
