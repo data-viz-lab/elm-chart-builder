@@ -158,15 +158,6 @@ renderLineGrouped ( data, config ) =
                 _ ->
                     Nothing
 
-        linearOrTimeAxisGenerator : List (Svg msg)
-        linearOrTimeAxisGenerator =
-            case data of
-                DataTime _ ->
-                    timeAxisGenerator c X xTimeScale
-
-                DataLinear _ ->
-                    linearAxisGenerator c X xLinearScale
-
         yScale : ContinuousScale Float
         yScale =
             Scale.linear yRange (Maybe.withDefault ( 0, 0 ) linearDomain.y)
@@ -191,7 +182,7 @@ renderLineGrouped ( data, config ) =
     <|
         descAndTitle c
             ++ linearAxisGenerator c Y yScale
-            ++ linearOrTimeAxisGenerator
+            ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
             ++ [ g
                     [ transform [ Translate m.left m.top ]
                     , class [ "series" ]
@@ -237,16 +228,21 @@ renderLineStacked ( data, config ) =
             data
                 |> dataLinearGroupToDataLinear
 
+        xLinearData : List (List Float)
+        xLinearData =
+            linearData
+                |> List.map (.points >> List.map Tuple.first)
+
         linearDomain : DomainLinearStruct
         linearDomain =
             linearData
                 |> getDomainLinearFromData config
 
-        dataStacked : List (PointStacked Float)
+        dataStacked : List ( String, List Float )
         dataStacked =
             Helpers.dataLinearGroupToDataLinearStacked linearData config
 
-        stackedConfig : StackConfig Float
+        stackedConfig : StackConfig String
         stackedConfig =
             { data = dataStacked
             , offset = getOffset config
@@ -255,7 +251,10 @@ renderLineStacked ( data, config ) =
 
         { values, labels, extent } =
             Shape.stack stackedConfig
-                |> Debug.log "buuuu"
+
+        combinedData : List (List PointLinear)
+        combinedData =
+            Helpers.combineStakedValuesWithXValues values xLinearData
 
         timeData =
             data
@@ -317,6 +316,8 @@ renderLineStacked ( data, config ) =
         ]
     <|
         descAndTitle c
+            ++ linearAxisGenerator c Y yScale
+            ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
             ++ [ g
                     [ transform [ Translate m.left m.top ]
                     , class [ "series" ]
@@ -328,7 +329,7 @@ renderLineStacked ( data, config ) =
                                 [ class [ "line", "line-" ++ String.fromInt idx ]
                                 ]
                         )
-                        values
+                        combinedData
                ]
 
 
@@ -474,3 +475,21 @@ linearAxisGenerator c axisType scale =
 
     else
         []
+
+
+linearOrTimeAxisGenerator :
+    Maybe (ContinuousScale Posix)
+    -> ContinuousScale Float
+    -> ( DataLinearGroup, Config )
+    -> List (Svg msg)
+linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config ) =
+    let
+        c =
+            fromConfig config
+    in
+    case data of
+        DataTime _ ->
+            timeAxisGenerator c X xTimeScale
+
+        DataLinear _ ->
+            linearAxisGenerator c X xLinearScale

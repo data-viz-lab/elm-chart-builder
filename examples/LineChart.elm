@@ -172,27 +172,39 @@ accessorLinear =
     Line.linear (Line.AccessorLinear .groupLabel .x .y)
 
 
-doubleLineLinear : Html msg
-doubleLineLinear =
+doubleLineStacked =
     Line.init
         |> Line.setTitle "A two line chart"
         |> Line.setDesc "A two line chart example to demonstrate the charting library"
         |> Line.setAxisYContinousTickCount 5
-        |> Line.setAxisXContinousTicks xAxisTicks
-        |> Line.setAxisXContinousTickFormat (round >> String.fromInt)
+        |> Line.setAxisXContinousTickCount 5
         |> Line.setLayout Line.stackedLayout
         |> Line.setDimensions
             { margin = { top = 10, right = 20, bottom = 30, left = 30 }
             , width = width
             , height = height
             }
+
+
+doubleLineStackedLinear : Html msg
+doubleLineStackedLinear =
+    doubleLineStacked
+        |> Line.setAxisXContinousTicks xAxisTicks
+        |> Line.setAxisXContinousTickFormat (round >> String.fromInt)
         |> Line.render ( dataLinear, accessorLinear )
+
+
+doubleLineStackedTime : Html msg
+doubleLineStackedTime =
+    doubleLineStacked
+        |> Line.render ( data, accessor )
 
 
 main : Html msg
 main =
     Html.div []
         [ Html.node "style" [] [ Html.text css ]
-        , Html.div [ class "wrapper" ] [ Html.div attrs [ doubleLine ] ]
-        , Html.div [ class "wrapper" ] [ Html.div attrs [ doubleLineLinear ] ]
+        , Html.div [ class "wrapper" ] [ Html.h3 [] [ Html.text "time" ], Html.div attrs [ doubleLine ] ]
+        , Html.div [ class "wrapper" ] [ Html.h3 [] [ Html.text "Stacked time" ], Html.div attrs [ doubleLineStackedTime ] ]
+        , Html.div [ class "wrapper" ] [ Html.h3 [] [ Html.text "Stacked linear" ], Html.div attrs [ doubleLineStackedLinear ] ]
         ]

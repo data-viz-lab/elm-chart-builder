@@ -86,11 +86,14 @@ suite =
                             , { groupLabel = Just "B"
                               , points = [ ( t1, 13 ), ( t2, 23 ) ]
                               }
+                            , { groupLabel = Just "C"
+                              , points = [ ( t1, 14 ), ( t2, 24 ) ]
+                              }
                             ]
 
-                        expected : List (PointStacked Posix)
+                        expected : List ( String, List Float )
                         expected =
-                            [ ( t1, [ 13, 10 ] ), ( t2, [ 23, 16 ] ) ]
+                            [ ( "A", [ 10, 16 ] ), ( "B", [ 13, 23 ] ), ( "C", [ 14, 24 ] ) ]
                     in
                     Expect.equal (dataLinearGroupToDataTimeStacked data defaultConfig) expected
             ]

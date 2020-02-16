@@ -1,5 +1,6 @@
 module Chart.Internal.Helpers exposing
-    ( dataBandToDataStacked
+    ( combineStakedValuesWithXValues
+    , dataBandToDataStacked
     , dataLinearGroupToDataLinearStacked
     , dataLinearGroupToDataTimeStacked
     , floorFloat
@@ -101,25 +102,54 @@ reduceRightStack d =
         |> List.Extra.transpose
 
 
-dataLinearGroupToDataTimeStacked : List DataGroupTime -> Config -> List (PointStacked Posix)
-dataLinearGroupToDataTimeStacked d config =
-    let
-        ( left, right ) =
-            ( reduceLeftStack d, reduceRightStack d )
 
-        result =
-            List.Extra.zip left right
-    in
-    result
+--dataLinearGroupToDataTimeStacked : List DataGroupTime -> Config -> List (PointStacked Posix)
+--dataLinearGroupToDataTimeStacked d config =
+--    let
+--        ( left, right ) =
+--            ( reduceLeftStack d, reduceRightStack d )
+--
+--        result =
+--            List.Extra.zip left right
+--    in
+--    result
 
 
-dataLinearGroupToDataLinearStacked : List DataGroupLinear -> Config -> List (PointStacked Float)
-dataLinearGroupToDataLinearStacked d config =
-    let
-        ( left, right ) =
-            ( reduceLeftStack d, reduceRightStack d )
+dataLinearGroupToDataTimeStacked : List DataGroupTime -> Config -> List ( String, List Float )
+dataLinearGroupToDataTimeStacked data config =
+    data
+        |> List.indexedMap
+            (\i d ->
+                ( d.groupLabel |> Maybe.withDefault (String.fromInt i), d.points |> List.map Tuple.second )
+            )
 
-        result =
-            List.Extra.zip left right
-    in
-    result
+
+dataLinearGroupToDataLinearStacked : List DataGroupLinear -> Config -> List ( String, List Float )
+dataLinearGroupToDataLinearStacked data config =
+    -- let
+    --     ( left, right ) =
+    --         ( reduceLeftStack d, reduceRightStack d )
+    --     result =
+    --         List.Extra.zip left right
+    -- in
+    -- result
+    data
+        |> List.indexedMap
+            (\i d ->
+                ( d.groupLabel |> Maybe.withDefault (String.fromInt i), d.points |> List.map Tuple.second )
+            )
+
+
+combineStakedValuesWithXValues : List (List ( Float, Float )) -> List (List Float) -> List (List ( Float, Float ))
+combineStakedValuesWithXValues values xValues =
+    List.map2
+        (\lineValues xs ->
+            List.map2
+                (\value x ->
+                    ( x, Tuple.second value )
+                )
+                lineValues
+                xs
+        )
+        values
+        xValues
