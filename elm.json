@@ -15,10 +15,10 @@
         "elm/json": "1.0.0 <= v < 2.0.0",
         "elm/svg": "1.0.0 <= v < 2.0.0",
         "elm/time": "1.0.0 <= v < 2.0.0",
-        "elm-community/list-extra": "8.0.0 <= v < 9.0.0",
-        "emptyflash/typed-svg": "1.1.0 <= v < 2.0.0",
+        "elm-community/list-extra": "8.2.3 <= v < 9.0.0",
+        "elm-community/typed-svg": "6.0.0 <= v < 7.0.0",
         "folkertdev/one-true-path-experiment": "4.0.1 <= v < 5.0.0",
-        "gampleman/elm-visualization": "2.0.0 <= v < 3.0.0"
+        "gampleman/elm-visualization": "2.1.1 <= v < 3.0.0"
     },
     "test-dependencies": {
         "elm-explorations/test": "1.1.0 <= v < 2.0.0"
