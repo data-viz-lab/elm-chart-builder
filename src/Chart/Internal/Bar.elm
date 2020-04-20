@@ -1,11 +1,10 @@
 module Chart.Internal.Bar exposing
-    ( getStackedValuesAndGroupes
-    , renderBandGrouped
+    ( renderBandGrouped
     , renderBandStacked
     )
 
 import Axis
-import Chart.Internal.Helpers as Helpers exposing (dataBandToDataStacked)
+import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol
     exposing
         ( Symbol(..)
@@ -36,10 +35,10 @@ import Chart.Internal.Type
         , PointBand
         , RenderContext(..)
         , StackedValues
-        , StackedValuesAndGroupes
         , adjustLinearRange
         , ariaLabelledby
         , bottomGap
+        , dataBandToDataStacked
         , fromConfig
         , fromDataBand
         , getAxisContinousDataFormatter
@@ -55,11 +54,13 @@ import Chart.Internal.Type
         , getMargin
         , getOffset
         , getShowIndividualLabels
+        , getStackedValuesAndGroupes
         , getWidth
         , leftGap
         , role
         , showIcons
         , showIconsFromLayout
+        , stackedValuesInverse
         , symbolCustomSpace
         , symbolSpace
         , toConfig
@@ -244,26 +245,6 @@ renderBandStacked ( data, config ) =
         )
 
 
-getStackedValuesAndGroupes : List (List ( Float, Float )) -> DataBand -> StackedValuesAndGroupes
-getStackedValuesAndGroupes values data =
-    let
-        m =
-            List.map2
-                (\d v ->
-                    List.map2 (\stackedValue rawValue -> { rawValue = Tuple.second rawValue, stackedValue = stackedValue })
-                        v
-                        d.points
-                )
-    in
-    ( List.Extra.transpose values
-        |> List.reverse
-        |> m (fromDataBand data)
-    , data
-        |> fromDataBand
-        |> List.indexedMap (\idx s -> s.groupLabel |> Maybe.withDefault (String.fromInt idx))
-    )
-
-
 stackedContainerTranslate : ConfigStruct -> Float -> Float -> Float -> Transform
 stackedContainerTranslate config a b offset =
     let
@@ -355,7 +336,7 @@ horizontalRectsStacked config bandGroupScale ( group, values, labels ) =
                 ]
     in
     values
-        |> Helpers.stackedValuesInverse config.width
+        |> stackedValuesInverse config.width
         |> List.indexedMap (\idx -> block idx)
 
 
@@ -530,7 +511,7 @@ verticalRect c iconOffset bandSingleScale linearScale idx point =
         symbol =
             verticalSymbol c { idx = idx, x_ = x_, y_ = y_, w = w }
     in
-    [ rect
+    rect
         [ x <| x_
         , y <| y_
         , width <| w
@@ -538,8 +519,7 @@ verticalRect c iconOffset bandSingleScale linearScale idx point =
         , shapeRendering RenderCrispEdges
         ]
         []
-    ]
-        ++ symbol
+        :: symbol
         ++ label
 
 
@@ -564,7 +544,7 @@ horizontalRect c bandSingleScale linearScale idx point =
         symbol =
             horizontalSymbol c { idx = idx, w = w, y_ = y_, h = h }
     in
-    [ rect
+    rect
         [ x <| 0
         , y y_
         , width w
@@ -572,8 +552,7 @@ horizontalRect c bandSingleScale linearScale idx point =
         , shapeRendering RenderCrispEdges
         ]
         []
-    ]
-        ++ symbol
+        :: symbol
         ++ label
 
 
@@ -590,7 +569,7 @@ dataGroupTranslation bandGroupScale dataGroup =
 verticalLabel : ConfigStruct -> Float -> Float -> PointBand -> List (Svg msg)
 verticalLabel c x_ y_ point =
     let
-        ( x__, y__ ) =
+        ( x__, _ ) =
             point
 
         showIndividualLabels =
@@ -615,7 +594,7 @@ verticalLabel c x_ y_ point =
 
 
 horizontalSymbol : ConfigStruct -> { idx : Int, w : Float, y_ : Float, h : Float } -> List (Svg msg)
-horizontalSymbol c { idx, w, y_, h } =
+horizontalSymbol c { idx, w, y_ } =
     let
         symbol =
             getSymbolByIndex (getIconsFromLayout c.layout) idx
@@ -736,7 +715,7 @@ verticalSymbol c { idx, w, y_, x_ } =
 horizontalLabel : ConfigStruct -> Float -> Float -> PointBand -> List (Svg msg)
 horizontalLabel c x_ y_ point =
     let
-        ( x__, y__ ) =
+        ( x__, _ ) =
             point
 
         showIndividualLabels =

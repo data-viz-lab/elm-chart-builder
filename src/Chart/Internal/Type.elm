@@ -35,11 +35,12 @@ module Chart.Internal.Type exposing
     , PointTime
     , RenderContext(..)
     , StackedValues
-    , StackedValuesAndGroupes
     , adjustLinearRange
     , ariaLabelledby
     , bottomGap
+    , dataBandToDataStacked
     , dataLinearGroupToDataLinear
+    , dataLinearGroupToDataLinearStacked
     , dataLinearGroupToDataTime
     , defaultConfig
     , defaultGroupedConfig
@@ -80,6 +81,7 @@ module Chart.Internal.Type exposing
     , getMargin
     , getOffset
     , getShowIndividualLabels
+    , getStackedValuesAndGroupes
     , getTitle
     , getWidth
     , getZone
@@ -115,6 +117,7 @@ module Chart.Internal.Type exposing
     , setWidth
     , showIcons
     , showIconsFromLayout
+    , stackedValuesInverse
     , symbolCustomSpace
     , symbolSpace
     , toConfig
@@ -1489,3 +1492,83 @@ dataLinearGroupToDataTime data =
 
         _ ->
             []
+
+
+getStackedValuesAndGroupes : List (List ( Float, Float )) -> DataBand -> StackedValuesAndGroupes
+getStackedValuesAndGroupes values data =
+    let
+        m =
+            List.map2
+                (\d v ->
+                    List.map2 (\stackedValue rawValue -> { rawValue = Tuple.second rawValue, stackedValue = stackedValue })
+                        v
+                        d.points
+                )
+    in
+    ( List.Extra.transpose values
+        |> List.reverse
+        |> m (fromDataBand data)
+    , data
+        |> fromDataBand
+        |> List.indexedMap (\idx s -> s.groupLabel |> Maybe.withDefault (String.fromInt idx))
+    )
+
+
+dataLinearGroupToDataLinearStacked : List DataGroupLinear -> List ( String, List Float )
+dataLinearGroupToDataLinearStacked data =
+    data
+        |> List.indexedMap
+            (\i d ->
+                ( d.groupLabel |> Maybe.withDefault (String.fromInt i), d.points |> List.map Tuple.second )
+            )
+
+
+dataBandToDataStacked : DataBand -> Config -> List ( String, List Float )
+dataBandToDataStacked data config =
+    let
+        seed =
+            getDomainBandFromData data config
+                |> .bandSingle
+                |> Maybe.withDefault []
+                |> List.map (\d -> ( d, [] ))
+    in
+    data
+        |> fromDataBand
+        |> List.map .points
+        |> List.concat
+        |> List.foldl
+            (\d acc ->
+                List.map
+                    (\a ->
+                        if Tuple.first d == Tuple.first a then
+                            ( Tuple.first a, Tuple.second d :: Tuple.second a )
+
+                        else
+                            a
+                    )
+                    acc
+            )
+            seed
+
+
+stackedValuesInverse : Float -> StackedValues -> StackedValues
+stackedValuesInverse width values =
+    values
+        |> List.map
+            (\v ->
+                let
+                    ( left, right ) =
+                        v.stackedValue
+                in
+                { v | stackedValue = ( abs <| left - width, abs <| right - width ) }
+            )
+
+
+
+--dataLinearGroupToDataTimeStacked : List DataGroupTime -> List ( String, List Float )
+--dataLinearGroupToDataTimeStacked data =
+--    data
+--        |> List.indexedMap
+--            (\i d ->
+--                ( d.groupLabel |> Maybe.withDefault (String.fromInt i), d.points |> List.map Tuple.second )
+--            )

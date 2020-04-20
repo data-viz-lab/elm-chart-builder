@@ -20,11 +20,11 @@ import Chart.Internal.Type
         , DomainLinearStruct
         , Layout(..)
         , PointLinear
-        , PointStacked
         , RenderContext(..)
         , ariaLabelledby
         , bottomGap
         , dataLinearGroupToDataLinear
+        , dataLinearGroupToDataLinearStacked
         , dataLinearGroupToDataTime
         , fromConfig
         , getDomainLinearFromData
@@ -240,7 +240,7 @@ renderLineStacked ( data, config ) =
 
         dataStacked : List ( String, List Float )
         dataStacked =
-            Helpers.dataLinearGroupToDataLinearStacked linearData config
+            dataLinearGroupToDataLinearStacked linearData
 
         stackedConfig : StackConfig String
         stackedConfig =
@@ -249,7 +249,7 @@ renderLineStacked ( data, config ) =
             , order = identity
             }
 
-        { values, labels, extent } =
+        { values, extent } =
             Shape.stack stackedConfig
 
         combinedData : List (List PointLinear)
