@@ -170,6 +170,7 @@ attrs =
 verticalGrouped : Html msg
 verticalGrouped =
     Bar.init
+        |> Bar.setColorInterpolator Scale.Color.plasmaInterpolator
         |> Bar.setColorPalette Scale.Color.tableau10
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (iconsCustom "chart-a")))
         |> Bar.setAxisYTickCount 5
@@ -217,6 +218,7 @@ verticalStacked =
 horizontalGrouped : Html msg
 horizontalGrouped =
     Bar.init
+        |> Bar.setColorInterpolator Scale.Color.plasmaInterpolator
         |> Bar.setColorPalette Scale.Color.tableau10
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (icons "chart-b")))
         |> Bar.setOrientation Bar.horizontalOrientation

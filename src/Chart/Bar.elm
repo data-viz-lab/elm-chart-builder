@@ -2,7 +2,7 @@ module Chart.Bar exposing
     ( Accessor
     , init
     , render
-    , setColorPalette, setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setMargin, setOrientation, setShowAxisX, setShowAxisY, setTitle, setWidth
+    , setColorPalette, setColorInterpolator, setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setMargin, setOrientation, setShowAxisX, setShowAxisY, setTitle, setWidth
     , defaultGroupedConfig, divergingDirection, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
     , setIcons, setShowIndividualLabels
     , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth
@@ -30,7 +30,7 @@ The Bar module expects the X axis to plot grouped ordinal data and the Y axis to
 
 # Configuration setters
 
-@docs setColorPalette, setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setMargin, setOrientation, setShowAxisX, setShowAxisY, setTitle, setWidth
+@docs setColorPalette, setColorInterpolator, setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setMargin, setOrientation, setShowAxisX, setShowAxisY, setTitle, setWidth
 
 
 # Configuration setters arguments
@@ -364,6 +364,20 @@ setDimensions value config =
 setColorPalette : List Color -> Config -> Config
 setColorPalette palette config =
     Type.setColorResource (ColorPalette palette) config
+
+
+{-| Sets the color interpolator for the chart.
+
+This setting is not supported for stacked bar charts and will have no effect on them.
+
+    Bar.init
+        |> Bar.setColorInterpolator Scale.Color.plasmaInterpolator
+        |> Bar.render ( data, accessor )
+
+-}
+setColorInterpolator : (Float -> Color) -> Config -> Config
+setColorInterpolator interpolator config =
+    Type.setColorResource (ColorInterpolator interpolator) config
 
 
 {-| Sets the bandGroup value in the domain, in place of calculating it from the data.

@@ -66,6 +66,7 @@ import Chart.Internal.Type
         , symbolSpace
         , toConfig
         )
+import Color
 import Html exposing (Html)
 import Html.Attributes
 import List.Extra
@@ -309,7 +310,7 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
                     , width <| Scale.bandwidth bandGroupScale
                     , height <| (abs <| upper - lower)
                     , shapeRendering RenderCrispEdges
-                    , colorStyle c idx
+                    , colorCategoricalStyle c idx
                     ]
                     []
                 , TypedSvg.title [] [ text <| getRectTitleText c.axisYContinousTickFormat idx group labels rawValue ]
@@ -333,7 +334,7 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
                     , height <| Scale.bandwidth bandGroupScale
                     , width <| (abs <| upper - lower)
                     , shapeRendering RenderCrispEdges
-                    , colorStyle c idx
+                    , colorCategoricalStyle c idx
                     ]
                     []
                 , TypedSvg.title [] [ text <| getRectTitleText c.axisYContinousTickFormat idx group labels rawValue ]
@@ -406,6 +407,10 @@ renderBandGrouped ( data, config ) =
         linearScale =
             Scale.linear linearRange (Maybe.withDefault ( 0, 0 ) domain.linear)
 
+        colorScale : ContinuousScale Float
+        colorScale =
+            Scale.linear ( 0, 1 ) (Maybe.withDefault ( 0, 0 ) domain.linear)
+
         iconOffset : Float
         iconOffset =
             symbolSpace Vertical bandSingleScale (getIconsFromLayout c.layout) + symbolGap
@@ -447,12 +452,22 @@ renderBandGrouped ( data, config ) =
                     , class [ "series" ]
                     ]
                  <|
-                    List.map (columns c iconOffset bandGroupScale bandSingleScale linearScale) (fromDataBand data)
+                    List.map
+                        (columns c iconOffset bandGroupScale bandSingleScale linearScale colorScale)
+                        (fromDataBand data)
                ]
 
 
-columns : ConfigStruct -> Float -> BandScale String -> BandScale String -> ContinuousScale Float -> DataGroupBand -> Svg msg
-columns c iconOffset bandGroupScale bandSingleScale linearScale dataGroup =
+columns :
+    ConfigStruct
+    -> Float
+    -> BandScale String
+    -> BandScale String
+    -> ContinuousScale Float
+    -> ContinuousScale Float
+    -> DataGroupBand
+    -> Svg msg
+columns c iconOffset bandGroupScale bandSingleScale linearScale colorScale dataGroup =
     let
         tr =
             case c.orientation of
@@ -469,19 +484,27 @@ columns c iconOffset bandGroupScale bandSingleScale linearScale dataGroup =
         , class [ "data-group" ]
         ]
     <|
-        List.indexedMap (column c iconOffset bandSingleScale linearScale) dataGroup.points
+        List.indexedMap (column c iconOffset bandSingleScale linearScale colorScale) dataGroup.points
 
 
-column : ConfigStruct -> Float -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> Svg msg
-column c iconOffset bandSingleScale linearScale idx point =
+column :
+    ConfigStruct
+    -> Float
+    -> BandScale String
+    -> ContinuousScale Float
+    -> ContinuousScale Float
+    -> Int
+    -> PointBand
+    -> Svg msg
+column c iconOffset bandSingleScale linearScale colorScale idx point =
     let
         rectangle =
             case c.orientation of
                 Vertical ->
-                    verticalRect c iconOffset bandSingleScale linearScale idx point
+                    verticalRect c iconOffset bandSingleScale linearScale colorScale idx point
 
                 Horizontal ->
-                    horizontalRect c bandSingleScale linearScale idx point
+                    horizontalRect c bandSingleScale linearScale colorScale idx point
     in
     g [ class [ "column", "column-" ++ String.fromInt idx ] ] rectangle
 
@@ -491,13 +514,17 @@ verticalRect :
     -> Float
     -> BandScale String
     -> ContinuousScale Float
+    -> ContinuousScale Float
     -> Int
     -> PointBand
     -> List (Svg msg)
-verticalRect c iconOffset bandSingleScale linearScale idx point =
+verticalRect c iconOffset bandSingleScale linearScale colorScale idx point =
     let
         ( x__, y__ ) =
             point
+
+        style =
+            colorStyle c idx (Scale.convert colorScale y__)
 
         label =
             verticalLabel c (x_ + w / 2) (y_ - labelGap) point
@@ -520,7 +547,7 @@ verticalRect c iconOffset bandSingleScale linearScale idx point =
                 |> Helpers.floorFloat
 
         symbol =
-            verticalSymbol c { idx = idx, x_ = x_, y_ = y_, w = w }
+            verticalSymbol c { idx = idx, x_ = x_, y_ = y_, w = w, style = style }
     in
     rect
         [ x <| x_
@@ -528,15 +555,22 @@ verticalRect c iconOffset bandSingleScale linearScale idx point =
         , width <| w
         , height <| h
         , shapeRendering RenderCrispEdges
-        , colorStyle c idx
+        , style
         ]
         []
         :: symbol
         ++ label
 
 
-horizontalRect : ConfigStruct -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> List (Svg msg)
-horizontalRect c bandSingleScale linearScale idx point =
+horizontalRect :
+    ConfigStruct
+    -> BandScale String
+    -> ContinuousScale Float
+    -> ContinuousScale Float
+    -> Int
+    -> PointBand
+    -> List (Svg msg)
+horizontalRect c bandSingleScale linearScale colorScale idx point =
     let
         ( x__, y__ ) =
             point
@@ -550,11 +584,14 @@ horizontalRect c bandSingleScale linearScale idx point =
         y_ =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
 
+        style =
+            colorStyle c idx (Scale.convert colorScale y__)
+
         label =
             horizontalLabel c (w + labelGap) (y_ + h / 2) point
 
         symbol =
-            horizontalSymbol c { idx = idx, w = w, y_ = y_, h = h }
+            horizontalSymbol c { idx = idx, w = w, y_ = y_, h = h, style = style }
     in
     rect
         [ x <| 0
@@ -562,7 +599,7 @@ horizontalRect c bandSingleScale linearScale idx point =
         , width w
         , height h
         , shapeRendering RenderCrispEdges
-        , colorStyle c idx
+        , style
         ]
         []
         :: symbol
@@ -606,17 +643,17 @@ verticalLabel c x_ y_ point =
         []
 
 
-horizontalSymbol : ConfigStruct -> { idx : Int, w : Float, y_ : Float, h : Float } -> List (Svg msg)
-horizontalSymbol c { idx, w, y_ } =
+horizontalSymbol :
+    ConfigStruct
+    -> { idx : Int, w : Float, y_ : Float, h : Float, style : TypedSvg.Core.Attribute msg }
+    -> List (Svg msg)
+horizontalSymbol c { idx, w, y_, style } =
     let
         symbol =
             getSymbolByIndex (getIconsFromLayout c.layout) idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
-
-        style =
-            colorStyle c idx
     in
     if showIconsFromLayout c.layout then
         case symbol of
@@ -671,17 +708,17 @@ horizontalSymbol c { idx, w, y_ } =
         []
 
 
-verticalSymbol : ConfigStruct -> { idx : Int, w : Float, y_ : Float, x_ : Float } -> List (Svg msg)
-verticalSymbol c { idx, w, y_, x_ } =
+verticalSymbol :
+    ConfigStruct
+    -> { idx : Int, w : Float, y_ : Float, x_ : Float, style : TypedSvg.Core.Attribute msg }
+    -> List (Svg msg)
+verticalSymbol c { idx, w, y_, x_, style } =
     let
         symbol =
             getSymbolByIndex (getIconsFromLayout c.layout) idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
-
-        style =
-            colorStyle c idx
     in
     if showIconsFromLayout c.layout then
         case symbol of
@@ -918,8 +955,25 @@ labelGap =
 --  HELPERS
 
 
-colorStyle : ConfigStruct -> Int -> TypedSvg.Core.Attribute msg
-colorStyle c idx =
+{-| All possible color styles styles
+-}
+colorStyle : ConfigStruct -> Int -> Float -> TypedSvg.Core.Attribute msg
+colorStyle c idx interpolatorInput =
+    case c.colorResource of
+        ColorPalette colors ->
+            style ("fill: " ++ Helpers.colorPaletteToColor colors idx)
+
+        ColorInterpolator interpolator ->
+            style ("fill: " ++ (interpolator interpolatorInput |> Color.toCssString))
+
+        ColorNone ->
+            style ""
+
+
+{-| Only categorical styles
+-}
+colorCategoricalStyle : ConfigStruct -> Int -> TypedSvg.Core.Attribute msg
+colorCategoricalStyle c idx =
     case c.colorResource of
         ColorPalette colors ->
             style ("fill: " ++ Helpers.colorPaletteToColor colors idx)
