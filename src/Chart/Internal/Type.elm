@@ -8,6 +8,7 @@ module Chart.Internal.Type exposing
     , AxisContinousDataTicks(..)
     , AxisOrientation(..)
     , BandDomain
+    , ColorResource(..)
     , Config
     , ConfigStruct
     , DataBand
@@ -65,6 +66,7 @@ module Chart.Internal.Type exposing
     , getAxisYContinousTicks
     , getBandGroupRange
     , getBandSingleRange
+    , getColorResource
     , getDataBandDepth
     , getDataLinearDepth
     , getDesc
@@ -93,6 +95,7 @@ module Chart.Internal.Type exposing
     , setAxisYContinousTickCount
     , setAxisYContinousTickFormat
     , setAxisYContinousTicks
+    , setColorResource
     , setCurve
     , setDesc
     , setDimensions
@@ -126,6 +129,7 @@ module Chart.Internal.Type exposing
     )
 
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
+import Color exposing (Color)
 import Html
 import Html.Attributes
 import List.Extra
@@ -137,8 +141,6 @@ import Time exposing (Posix, Zone)
 
 
 -- DATA
--- DataOrdinal (List DataGroupOrdinal)
--- DataTime (List DataGroupTime)
 
 
 type ExternalData data
@@ -347,6 +349,12 @@ type AxisContinousDataTickFormat
     | CustomTimeTickFormat (Posix -> String)
 
 
+type ColorResource
+    = ColorPalette (List Color)
+    | ColorInterpolator (Float -> Color)
+    | ColorNone
+
+
 type alias ConfigStruct =
     { axisXContinousTickCount : AxisContinousDataTickCount
     , axisXContinousTickFormat : AxisContinousDataTickFormat
@@ -354,6 +362,7 @@ type alias ConfigStruct =
     , axisYContinousTickCount : AxisContinousDataTickCount
     , axisYContinousTickFormat : AxisContinousDataTickFormat
     , axisYContinousTicks : AxisContinousDataTicks
+    , colorResource : ColorResource
     , curve : List ( Float, Float ) -> SubPath
     , desc : String
     , domainBand : DomainBand
@@ -380,6 +389,7 @@ defaultConfig =
         , axisYContinousTickCount = DefaultTickCount
         , axisYContinousTickFormat = DefaultTickFormat
         , axisYContinousTicks = DefaultTicks
+        , colorResource = ColorNone
         , curve = \d -> Shape.linearCurve d
         , desc = ""
         , domainBand = DomainBand initialDomainBandStruct
@@ -673,6 +683,15 @@ setAxisYContinousTicks ticks config =
     toConfig { c | axisYContinousTicks = ticks }
 
 
+setColorResource : ColorResource -> Config -> Config
+setColorResource resource config =
+    let
+        c =
+            fromConfig config
+    in
+    toConfig { c | colorResource = resource }
+
+
 setHeight : Float -> Config -> Config
 setHeight height config =
     let
@@ -930,6 +949,11 @@ getAxisYContinousTickFormat config =
 getAxisYContinousTicks : Config -> AxisContinousDataTicks
 getAxisYContinousTicks config =
     fromConfig config |> .axisYContinousTicks
+
+
+getColorResource : Config -> ColorResource
+getColorResource config =
+    fromConfig config |> .colorResource
 
 
 getAxisXContinousTicks : Config -> AxisContinousDataTicks

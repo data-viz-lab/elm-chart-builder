@@ -22,6 +22,7 @@ import Chart.Internal.Type
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
+        , ColorResource(..)
         , Config
         , ConfigStruct
         , DataBand
@@ -76,6 +77,7 @@ import TypedSvg.Attributes
         ( class
         , dominantBaseline
         , shapeRendering
+        , style
         , textAnchor
         , title
         , transform
@@ -290,7 +292,7 @@ getRectTitleText tickFormat idx group labels value =
 
 
 verticalRectsStacked : ConfigStruct -> BandScale String -> ( String, StackedValues, List String ) -> List (Svg msg)
-verticalRectsStacked config bandGroupScale ( group, values, labels ) =
+verticalRectsStacked c bandGroupScale ( group, values, labels ) =
     let
         bandValue =
             Scale.convert bandGroupScale group
@@ -307,16 +309,17 @@ verticalRectsStacked config bandGroupScale ( group, values, labels ) =
                     , width <| Scale.bandwidth bandGroupScale
                     , height <| (abs <| upper - lower)
                     , shapeRendering RenderCrispEdges
+                    , colorStyle c idx
                     ]
                     []
-                , TypedSvg.title [] [ text <| getRectTitleText config.axisYContinousTickFormat idx group labels rawValue ]
+                , TypedSvg.title [] [ text <| getRectTitleText c.axisYContinousTickFormat idx group labels rawValue ]
                 ]
     in
     List.indexedMap (\idx -> block idx) values
 
 
 horizontalRectsStacked : ConfigStruct -> BandScale String -> ( String, StackedValues, List String ) -> List (Svg msg)
-horizontalRectsStacked config bandGroupScale ( group, values, labels ) =
+horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
     let
         block idx { rawValue, stackedValue } =
             let
@@ -330,13 +333,14 @@ horizontalRectsStacked config bandGroupScale ( group, values, labels ) =
                     , height <| Scale.bandwidth bandGroupScale
                     , width <| (abs <| upper - lower)
                     , shapeRendering RenderCrispEdges
+                    , colorStyle c idx
                     ]
                     []
-                , TypedSvg.title [] [ text <| getRectTitleText config.axisYContinousTickFormat idx group labels rawValue ]
+                , TypedSvg.title [] [ text <| getRectTitleText c.axisYContinousTickFormat idx group labels rawValue ]
                 ]
     in
     values
-        |> stackedValuesInverse config.width
+        |> stackedValuesInverse c.width
         |> List.indexedMap (\idx -> block idx)
 
 
@@ -482,7 +486,14 @@ column c iconOffset bandSingleScale linearScale idx point =
     g [ class [ "column", "column-" ++ String.fromInt idx ] ] rectangle
 
 
-verticalRect : ConfigStruct -> Float -> BandScale String -> ContinuousScale Float -> Int -> PointBand -> List (Svg msg)
+verticalRect :
+    ConfigStruct
+    -> Float
+    -> BandScale String
+    -> ContinuousScale Float
+    -> Int
+    -> PointBand
+    -> List (Svg msg)
 verticalRect c iconOffset bandSingleScale linearScale idx point =
     let
         ( x__, y__ ) =
@@ -517,6 +528,7 @@ verticalRect c iconOffset bandSingleScale linearScale idx point =
         , width <| w
         , height <| h
         , shapeRendering RenderCrispEdges
+        , colorStyle c idx
         ]
         []
         :: symbol
@@ -550,6 +562,7 @@ horizontalRect c bandSingleScale linearScale idx point =
         , width w
         , height h
         , shapeRendering RenderCrispEdges
+        , colorStyle c idx
         ]
         []
         :: symbol
@@ -601,6 +614,9 @@ horizontalSymbol c { idx, w, y_ } =
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
+
+        style =
+            colorStyle c idx
     in
     if showIconsFromLayout c.layout then
         case symbol of
@@ -608,6 +624,7 @@ horizontalSymbol c { idx, w, y_ } =
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
+                    , style
                     ]
                     symbolRef
                 ]
@@ -616,6 +633,7 @@ horizontalSymbol c { idx, w, y_ } =
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
+                    , style
                     ]
                     symbolRef
                 ]
@@ -624,6 +642,7 @@ horizontalSymbol c { idx, w, y_ } =
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
+                    , style
                     ]
                     symbolRef
                 ]
@@ -640,6 +659,7 @@ horizontalSymbol c { idx, w, y_ } =
                 [ g
                     [ transform [ Translate (w + gap) y_ ]
                     , class [ "symbol" ]
+                    , style
                     ]
                     symbolRef
                 ]
@@ -659,6 +679,9 @@ verticalSymbol c { idx, w, y_, x_ } =
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
+
+        style =
+            colorStyle c idx
     in
     if showIconsFromLayout c.layout then
         case symbol of
@@ -666,6 +689,7 @@ verticalSymbol c { idx, w, y_, x_ } =
                 [ g
                     [ transform [ Translate x_ (y_ - w - symbolGap) ]
                     , class [ "symbol" ]
+                    , style
                     ]
                     symbolRef
                 ]
@@ -674,6 +698,7 @@ verticalSymbol c { idx, w, y_, x_ } =
                 [ g
                     [ transform [ Translate x_ (y_ - w - symbolGap) ]
                     , class [ "symbol" ]
+                    , style
                     ]
                     symbolRef
                 ]
@@ -682,6 +707,7 @@ verticalSymbol c { idx, w, y_, x_ } =
                 [ g
                     [ transform [ Translate x_ (y_ - w - symbolGap) ]
                     , class [ "symbol" ]
+                    , style
                     ]
                     symbolRef
                 ]
@@ -701,6 +727,7 @@ verticalSymbol c { idx, w, y_, x_ } =
                 [ g
                     [ transform [ Translate x_ (y_ - space - gap) ]
                     , class [ "symbol" ]
+                    , style
                     ]
                     symbolRef
                 ]
@@ -885,3 +912,17 @@ bandGroupedYAxis c iconOffset linearScale =
 labelGap : Float
 labelGap =
     2
+
+
+
+--  HELPERS
+
+
+colorStyle : ConfigStruct -> Int -> TypedSvg.Core.Attribute msg
+colorStyle c idx =
+    case c.colorResource of
+        ColorPalette colors ->
+            style ("fill: " ++ Helpers.colorPaletteToColor colors idx)
+
+        _ ->
+            style ""

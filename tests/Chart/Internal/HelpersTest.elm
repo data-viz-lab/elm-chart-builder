@@ -2,7 +2,11 @@ module Chart.Internal.HelpersTest exposing (suite)
 
 import Chart.Internal.Helpers exposing (..)
 import Chart.Internal.Type exposing (..)
+import Color
 import Expect exposing (Expectation)
+import Fuzz
+import Scale.Color
+import Set
 import Test exposing (..)
 import Time exposing (Posix)
 
@@ -10,91 +14,25 @@ import Time exposing (Posix)
 suite : Test
 suite =
     describe "The Helpers module"
-        [ describe "dataBandToDataStacked"
-            [ test "simple" <|
-                \_ ->
+        [ describe "colorPaletteToColor"
+            [ fuzz (Fuzz.intRange 1 20) "simple" <|
+                \randomIndx ->
                     let
-                        data : DataBand
-                        data =
-                            toDataBand
-                                [ { groupLabel = Just "CA", points = [ ( "a", 10 ), ( "b", 20 ) ] }
-                                , { groupLabel = Just "TX", points = [ ( "a", 11 ), ( "b", 21 ) ] }
-                                ]
+                        palette =
+                            Scale.Color.tableau10
 
-                        expected : List ( String, List Float )
-                        expected =
-                            [ ( "a", [ 11, 10 ] ), ( "b", [ 21, 20 ] ) ]
+                        paletteSet =
+                            palette
+                                |> List.map Color.toCssString
+                                |> Set.fromList
+
+                        result =
+                            colorPaletteToColor palette randomIndx
                     in
-                    Expect.equal (dataBandToDataStacked data defaultConfig) expected
-            , test "complex" <|
-                \_ ->
-                    let
-                        data : DataBand
-                        data =
-                            toDataBand
-                                [ { groupLabel = Just "16-24"
-                                  , points =
-                                        [ ( "once per month", 21.1 )
-                                        , ( "once per week", 15 )
-                                        , ( "three times per week", 7.8 )
-                                        , ( "five times per week", 4.9 )
-                                        ]
-                                  }
-                                , { groupLabel = Just "25-34"
-                                  , points =
-                                        [ ( "once per month", 19 )
-                                        , ( "once per week", 13.1 )
-                                        , ( "three times per week", 7 )
-                                        , ( "five times per week", 4.5 )
-                                        ]
-                                  }
-                                , { groupLabel = Just "35-44"
-                                  , points =
-                                        [ ( "once per month", 21.9 )
-                                        , ( "once per week", 15.1 )
-                                        , ( "three times per week", 7.2 )
-                                        , ( "five times per week", 4.2 )
-                                        ]
-                                  }
-                                ]
+                    if Set.member result paletteSet then
+                        Expect.pass
 
-                        expected : List ( String, List Float )
-                        expected =
-                            [ ( "once per month", [ 21.9, 19, 21.1 ] )
-                            , ( "once per week", [ 15.1, 13.1, 15 ] )
-                            , ( "three times per week", [ 7.2, 7, 7.8 ] )
-                            , ( "five times per week", [ 4.2, 4.5, 4.9 ] )
-                            ]
-                    in
-                    Expect.equal (dataBandToDataStacked data defaultConfig) expected
-            ]
-        , describe "dataLinearGroupToDataStacked"
-            [ test "simple" <|
-                \_ ->
-                    let
-                        t1 =
-                            Time.millisToPosix 1579275175634
-
-                        t2 =
-                            Time.millisToPosix 1579285175634
-
-                        data : List DataGroupTime
-                        data =
-                            [ { groupLabel = Just "A"
-                              , points = [ ( t1, 10 ), ( t2, 16 ) ]
-                              }
-                            , { groupLabel = Just "B"
-                              , points = [ ( t1, 13 ), ( t2, 23 ) ]
-                              }
-                            , { groupLabel = Just "C"
-                              , points = [ ( t1, 14 ), ( t2, 24 ) ]
-                              }
-                            ]
-
-                        expected : List ( String, List Float )
-                        expected =
-                            [ ( "A", [ 10, 16 ] ), ( "B", [ 13, 23 ] ), ( "C", [ 14, 24 ] ) ]
-                    in
-                    Expect.equal (dataLinearGroupToDataTimeStacked data defaultConfig) expected
+                    else
+                        Expect.fail "The color generated is not in the input palette"
             ]
         ]

@@ -1,8 +1,11 @@
 module Chart.Internal.Helpers exposing
-    ( combineStakedValuesWithXValues
+    ( colorPaletteToColor
+    , combineStakedValuesWithXValues
     , floorFloat
     , floorValues
     )
+
+import Color exposing (Color)
 
 
 floorFloat : Float -> Float
@@ -33,3 +36,16 @@ combineStakedValuesWithXValues values xValues =
         )
         values
         xValues
+
+
+colorPaletteToColor : List Color -> Int -> String
+colorPaletteToColor palette idx =
+    let
+        moduleIndex =
+            modBy (List.length palette) idx
+    in
+    palette
+        |> List.drop moduleIndex
+        |> List.head
+        |> Maybe.withDefault Color.white
+        |> Color.toCssString

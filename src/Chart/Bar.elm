@@ -2,7 +2,7 @@ module Chart.Bar exposing
     ( Accessor
     , init
     , render
-    , setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setMargin, setOrientation, setShowAxisX, setShowAxisY, setTitle, setWidth
+    , setColorPalette, setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setMargin, setOrientation, setShowAxisX, setShowAxisY, setTitle, setWidth
     , defaultGroupedConfig, divergingDirection, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
     , setIcons, setShowIndividualLabels
     , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth
@@ -30,7 +30,7 @@ The Bar module expects the X axis to plot grouped ordinal data and the Y axis to
 
 # Configuration setters
 
-@docs setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setMargin, setOrientation, setShowAxisX, setShowAxisY, setTitle, setWidth
+@docs setColorPalette, setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setMargin, setOrientation, setShowAxisX, setShowAxisY, setTitle, setWidth
 
 
 # Configuration setters arguments
@@ -94,6 +94,7 @@ import Chart.Internal.Type as Type
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
+        , ColorResource(..)
         , Config
         , Direction(..)
         , GroupedConfig
@@ -103,11 +104,13 @@ import Chart.Internal.Type as Type
         , RenderContext(..)
         , defaultConfig
         , fromConfig
+        , setColorResource
         , setDimensions
         , setShowAxisX
         , setShowAxisY
         , setTitle
         )
+import Color exposing (Color)
 import Html exposing (Html)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
@@ -346,6 +349,21 @@ Prefer this method from the individual ones when you need to set all three value
 setDimensions : { margin : Margin, width : Float, height : Float } -> Config -> Config
 setDimensions value config =
     Type.setDimensions value config
+
+
+{-| Sets the color palette for the chart.
+
+    palette =
+        Scale.Color.tableau10
+
+    Bar.init
+        |> Bar.setColorPalette palette
+        |> Bar.render (data, accessor)
+
+-}
+setColorPalette : List Color -> Config -> Config
+setColorPalette palette config =
+    Type.setColorResource (ColorPalette palette) config
 
 
 {-| Sets the bandGroup value in the domain, in place of calculating it from the data.

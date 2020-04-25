@@ -8,6 +8,7 @@ import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
 import Html.Attributes exposing (class)
+import Scale.Color
 
 
 css : String
@@ -28,21 +29,6 @@ body {
 
 .chart-wrapper {
     border: 1px solid #c4c4c4;
-}
-
-.column-0 rect,
-.column-0 .symbol {
-    fill: #1776B6;
-}
-
-.column-1 rect,
-.column-1 .symbol {
-    fill: #FF7F00;
-}
-
-.column-2 rect,
-.column-2 .symbol {
-    fill: #D8241F;
 }
 
 .axis path,
@@ -184,6 +170,7 @@ attrs =
 verticalGrouped : Html msg
 verticalGrouped =
     Bar.init
+        |> Bar.setColorPalette Scale.Color.tableau10
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (iconsCustom "chart-a")))
         |> Bar.setAxisYTickCount 5
         |> Bar.setTitle "Vertical Grouped Chart"
@@ -199,6 +186,7 @@ verticalGrouped =
 verticalGroupedWithLabels : Html msg
 verticalGroupedWithLabels =
     Bar.init
+        |> Bar.setColorPalette Scale.Color.tableau10
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
         |> Bar.setAxisYTickCount 5
         |> Bar.setTitle "Vertical Grouped Chart"
@@ -214,6 +202,7 @@ verticalGroupedWithLabels =
 verticalStacked : Html msg
 verticalStacked =
     Bar.init
+        |> Bar.setColorPalette Scale.Color.tableau10
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.setTitle "Vertical Stacked Chart"
         |> Bar.setDesc "A vertical stacked chart example to demonstrate the charting library"
@@ -228,6 +217,7 @@ verticalStacked =
 horizontalGrouped : Html msg
 horizontalGrouped =
     Bar.init
+        |> Bar.setColorPalette Scale.Color.tableau10
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (icons "chart-b")))
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setAxisYTickCount 5
@@ -245,6 +235,7 @@ horizontalGrouped =
 horizontalGroupedWithLabels : Html msg
 horizontalGroupedWithLabels =
     Bar.init
+        |> Bar.setColorPalette Scale.Color.tableau10
         |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setAxisYTickCount 5
@@ -262,6 +253,7 @@ horizontalGroupedWithLabels =
 horizontalStacked : Html msg
 horizontalStacked =
     Bar.init
+        |> Bar.setColorPalette Scale.Color.tableau10
         |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setTitle "Horizontal Stacked Chart"
@@ -277,6 +269,7 @@ horizontalStacked =
 horizontalStackedDiverging : Html msg
 horizontalStackedDiverging =
     Bar.init
+        |> Bar.setColorPalette Scale.Color.tableau10
         |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setTitle "Horizontal Stacked Diverging Chart"
@@ -293,6 +286,7 @@ horizontalStackedDiverging =
 verticalStackedDiverging : Html msg
 verticalStackedDiverging =
     Bar.init
+        |> Bar.setColorPalette Scale.Color.tableau10
         |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
         |> Bar.setOrientation Bar.verticalOrientation
         |> Bar.setTitle "Vertical Stacked Diverging Chart"
