@@ -1,6 +1,7 @@
 module Chart.Internal.Bar exposing
     ( renderBandGrouped
     , renderBandStacked
+    , renderHistogram
     )
 
 import Axis
@@ -18,7 +19,8 @@ import Chart.Internal.Symbol
         )
 import Chart.Internal.Type
     exposing
-        ( AxisContinousDataTickCount(..)
+        ( AccessorHistogram
+        , AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
@@ -27,6 +29,7 @@ import Chart.Internal.Type
         , ConfigStruct
         , DataBand
         , DataGroupBand
+        , DataHistogram
         , Direction(..)
         , DomainBand(..)
         , DomainBandStruct
@@ -40,6 +43,7 @@ import Chart.Internal.Type
         , ariaLabelledby
         , bottomGap
         , dataBandToDataStacked
+        , externalToDataHistogram
         , fromConfig
         , fromDataBand
         , getAxisContinousDataFormatter
@@ -67,11 +71,13 @@ import Chart.Internal.Type
         , toConfig
         )
 import Color
+import Histogram exposing (Bin, HistogramGenerator)
 import Html exposing (Html)
 import Html.Attributes
 import List.Extra
 import Scale exposing (BandScale, ContinuousScale, defaultBandConfig)
 import Shape exposing (StackConfig)
+import Statistics exposing (extent)
 import TypedSvg exposing (g, rect, svg, text_)
 import TypedSvg.Attributes
     exposing
@@ -401,7 +407,9 @@ renderBandGrouped ( data, config ) =
 
         bandSingleScale : BandScale String
         bandSingleScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange (Maybe.withDefault [] domain.bandSingle)
+            Scale.band { defaultBandConfig | paddingInner = 0.05 }
+                bandSingleRange
+                (Maybe.withDefault [] domain.bandSingle)
 
         linearScale : ContinuousScale Float
         linearScale =
@@ -939,6 +947,102 @@ bandGroupedYAxis c iconOffset linearScale =
                 ]
 
     else
+        []
+
+
+
+-- HISTOGRAM
+
+
+histogramGenerator : ( Float, Float ) -> List Float -> List (Bin Float Float)
+histogramGenerator domain model =
+    Histogram.float
+        |> Histogram.withDomain domain
+        |> Histogram.compute model
+
+
+renderHistogram : ( List Float, Config ) -> Html msg
+renderHistogram ( data, config ) =
+    let
+        c =
+            fromConfig config
+
+        m =
+            getMargin config
+
+        w =
+            getWidth config
+
+        h =
+            getHeight config
+
+        outerW =
+            w + m.left + m.right
+
+        outerH =
+            h + m.top + m.bottom
+
+        domain : ( Float, Float )
+        domain =
+            data
+                |> extent
+                |> Maybe.withDefault ( 0, 0 )
+
+        histogram : List (Bin Float Float)
+        histogram =
+            histogramGenerator domain data
+
+        xRange =
+            getBandGroupRange config w h
+
+        xScale : ContinuousScale Float
+        xScale =
+            Scale.linear xRange domain
+
+        yRange =
+            ( h, 0 )
+
+        yScaleFromBins : List (Bin Float Float) -> ContinuousScale Float
+        yScaleFromBins bins =
+            List.map .length bins
+                |> List.maximum
+                |> Maybe.withDefault 0
+                |> toFloat
+                |> Tuple.pair 0
+                |> Scale.linear yRange
+    in
+    svg
+        [ viewBox 0 0 outerW outerH
+        , width outerW
+        , height outerH
+        , role "img"
+        , ariaLabelledby "title desc"
+        ]
+    <|
+        descAndTitle c
+            ++ [ g
+                    [ transform [ Translate m.left m.top ]
+                    , class [ "series" ]
+                    ]
+                 <|
+                    List.map (histogramColumn c h xScale (yScaleFromBins histogram)) histogram
+               ]
+
+
+histogramColumn :
+    ConfigStruct
+    -> Float
+    -> ContinuousScale Float
+    -> ContinuousScale Float
+    -> Bin Float Float
+    -> Svg msg
+histogramColumn c h xScale yScale { length, x0, x1 } =
+    rect
+        [ x <| Scale.convert xScale x0
+        , y <| Scale.convert yScale (toFloat length)
+        , width <| Scale.convert xScale x1 - Scale.convert xScale x0
+        , height <| h - Scale.convert yScale (toFloat length)
+        ]
         []
 
 

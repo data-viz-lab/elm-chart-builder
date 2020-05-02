@@ -1,5 +1,6 @@
 module Chart.Internal.Type exposing
     ( AccessorBand
+    , AccessorHistogram
     , AccessorLinearGroup(..)
     , AccessorLinearStruct
     , AccessorTimeStruct
@@ -15,6 +16,7 @@ module Chart.Internal.Type exposing
     , DataGroupBand
     , DataGroupLinear
     , DataGroupTime
+    , DataHistogram
     , DataLinearGroup(..)
     , Direction(..)
     , DomainBand
@@ -52,11 +54,13 @@ module Chart.Internal.Type exposing
     , defaultTicksCount
     , defaultWidth
     , externalToDataBand
+    , externalToDataHistogram
     , externalToDataLinearGroup
     , fromConfig
     , fromDataBand
     , fromDomainBand
     , fromDomainLinear
+    , fromExternalData
     , getAxisContinousDataFormatter
     , getAxisXContinousTickCount
     , getAxisXContinousTickFormat
@@ -164,6 +168,10 @@ type alias AccessorBand data =
     }
 
 
+type alias AccessorHistogram data =
+    data -> Float
+
+
 type AccessorLinearGroup data
     = AccessorLinear (AccessorLinearStruct data)
     | AccessorTime (AccessorTimeStruct data)
@@ -211,6 +219,10 @@ type alias PointTime =
 
 type alias PointStacked a =
     ( a, List Float )
+
+
+type alias DataHistogram =
+    List Float
 
 
 type alias DataGroupBand =
@@ -1371,6 +1383,13 @@ symbolCustomSpace orientation localDimension conf =
 
 
 -- DATA METHODS
+
+
+externalToDataHistogram : ExternalData data -> AccessorHistogram data -> DataHistogram
+externalToDataHistogram externalData accessor =
+    externalData
+        |> fromExternalData
+        |> List.map accessor
 
 
 externalToDataBand : ExternalData data -> AccessorBand data -> DataBand
