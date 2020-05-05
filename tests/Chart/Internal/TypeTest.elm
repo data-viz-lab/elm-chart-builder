@@ -27,7 +27,10 @@ suite =
 
                         expected : DomainBandStruct
                         expected =
-                            { bandGroup = Just [ "CA", "TX" ], bandSingle = Just [ "a", "b" ], linear = Just ( 0, 21 ) }
+                            { bandGroup = Just [ "CA", "TX" ]
+                            , bandSingle = Just [ "a", "b" ]
+                            , linear = Just ( 0, 21 )
+                            }
                     in
                     Expect.equal (getDomainBandFromData data defaultConfig) expected
             , test "with DomainBand complex example" <|
@@ -481,5 +484,108 @@ suite =
                             ]
                     in
                     Expect.equal (dataBandToDataStacked data defaultConfig) expected
+            ]
+        , describe "histogram tests"
+            [ test "generate histogram from external data" <|
+                \_ ->
+                    let
+                        data =
+                            toExternalData
+                                [ 0.01
+                                , 0.02
+                                , 0.09
+                                , 0.1
+                                , 0.12
+                                , 0.15
+                                ]
+
+                        config =
+                            defaultConfig
+                                |> setHistogramDomain ( 0, 1 )
+
+                        histogramConfig =
+                            defaultHistogramConfig
+                                |> toHistogramConfig
+                                |> setHistogramSteps [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
+
+                        accessor =
+                            AccessorGenerateHistogram histogramConfig identity
+
+                        expected =
+                            [ { length = 4, values = [ 0.1, 0.09, 0.02, 0.01 ], x0 = 0, x1 = 0.1 }
+                            , { length = 2, values = [ 0.15, 0.12 ], x0 = 0.1, x1 = 0.2 }
+                            , { length = 0, values = [], x0 = 0.2, x1 = 0.3 }
+                            , { length = 0, values = [], x0 = 0.3, x1 = 0.4 }
+                            , { length = 0, values = [], x0 = 0.4, x1 = 0.5 }
+                            , { length = 0, values = [], x0 = 0.5, x1 = 0.6 }
+                            , { length = 0, values = [], x0 = 0.6, x1 = 0.7 }
+                            , { length = 0, values = [], x0 = 0.7, x1 = 0.8 }
+                            , { length = 0, values = [], x0 = 0.8, x1 = 0.9 }
+                            , { length = 0, values = [], x0 = 0.9, x1 = 1 }
+                            ]
+                    in
+                    Expect.equal (externalToDataHistogram config data accessor) expected
+            , test "generate histogram with pre calculated data" <|
+                \_ ->
+                    let
+                        data =
+                            toExternalData
+                                [ { length = 4, values = [ 0.1, 0.09, 0.02, 0.01 ], x0 = 0, x1 = 0.1 }
+                                , { length = 2, values = [ 0.15, 0.12 ], x0 = 0.1, x1 = 0.2 }
+                                , { length = 0, values = [], x0 = 0.2, x1 = 0.3 }
+                                , { length = 0, values = [], x0 = 0.3, x1 = 0.4 }
+                                , { length = 0, values = [], x0 = 0.4, x1 = 0.5 }
+                                , { length = 0, values = [], x0 = 0.5, x1 = 0.6 }
+                                , { length = 0, values = [], x0 = 0.6, x1 = 0.7 }
+                                , { length = 0, values = [], x0 = 0.7, x1 = 0.8 }
+                                , { length = 0, values = [], x0 = 0.8, x1 = 0.9 }
+                                , { length = 0, values = [], x0 = 0.9, x1 = 1 }
+                                ]
+
+                        config =
+                            defaultConfig
+                                |> setHistogramDomain ( 0, 1 )
+
+                        histogramConfig =
+                            defaultHistogramConfig
+                                |> toHistogramConfig
+
+                        accessor =
+                            AccessorGeneratedHistogram identity
+
+                        expected =
+                            [ { length = 4, values = [ 0.1, 0.09, 0.02, 0.01 ], x0 = 0, x1 = 0.1 }
+                            , { length = 2, values = [ 0.15, 0.12 ], x0 = 0.1, x1 = 0.2 }
+                            , { length = 0, values = [], x0 = 0.2, x1 = 0.3 }
+                            , { length = 0, values = [], x0 = 0.3, x1 = 0.4 }
+                            , { length = 0, values = [], x0 = 0.4, x1 = 0.5 }
+                            , { length = 0, values = [], x0 = 0.5, x1 = 0.6 }
+                            , { length = 0, values = [], x0 = 0.6, x1 = 0.7 }
+                            , { length = 0, values = [], x0 = 0.7, x1 = 0.8 }
+                            , { length = 0, values = [], x0 = 0.8, x1 = 0.9 }
+                            , { length = 0, values = [], x0 = 0.9, x1 = 1 }
+                            ]
+                    in
+                    Expect.equal (externalToDataHistogram config data accessor) expected
+            , test "calculate histogram domain" <|
+                \_ ->
+                    let
+                        data =
+                            [ { length = 4, values = [ 0.1, 0.09, 0.02, 0.01 ], x0 = 0, x1 = 0.1 }
+                            , { length = 2, values = [ 0.15, 0.12 ], x0 = 0.1, x1 = 0.2 }
+                            , { length = 0, values = [], x0 = 0.2, x1 = 0.3 }
+                            , { length = 0, values = [], x0 = 0.3, x1 = 0.4 }
+                            , { length = 0, values = [], x0 = 0.4, x1 = 0.5 }
+                            , { length = 0, values = [], x0 = 0.5, x1 = 0.6 }
+                            , { length = 0, values = [], x0 = 0.6, x1 = 0.7 }
+                            , { length = 0, values = [], x0 = 0.7, x1 = 0.8 }
+                            , { length = 0, values = [], x0 = 0.8, x1 = 0.9 }
+                            , { length = 0, values = [], x0 = 0.9, x1 = 1 }
+                            ]
+
+                        expected =
+                            ( 0.01, 0.15 )
+                    in
+                    Expect.equal (calculateHistogramDomain data) expected
             ]
         ]

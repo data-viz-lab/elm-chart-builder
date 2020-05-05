@@ -19,8 +19,7 @@ import Chart.Internal.Symbol
         )
 import Chart.Internal.Type
     exposing
-        ( AccessorHistogram
-        , AxisContinousDataTickCount(..)
+        ( AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
@@ -29,7 +28,6 @@ import Chart.Internal.Type
         , ConfigStruct
         , DataBand
         , DataGroupBand
-        , DataHistogram
         , Direction(..)
         , DomainBand(..)
         , DomainBandStruct
@@ -42,6 +40,8 @@ import Chart.Internal.Type
         , adjustLinearRange
         , ariaLabelledby
         , bottomGap
+        , calculateHistogramDomain
+        , calculateHistogramValues
         , dataBandToDataStacked
         , externalToDataHistogram
         , fromConfig
@@ -71,7 +71,7 @@ import Chart.Internal.Type
         , toConfig
         )
 import Color
-import Histogram exposing (Bin, HistogramGenerator)
+import Histogram exposing (Bin, HistogramGenerator, Threshold)
 import Html exposing (Html)
 import Html.Attributes
 import List.Extra
@@ -954,15 +954,8 @@ bandGroupedYAxis c iconOffset linearScale =
 -- HISTOGRAM
 
 
-histogramGenerator : ( Float, Float ) -> List Float -> List (Bin Float Float)
-histogramGenerator domain model =
-    Histogram.float
-        |> Histogram.withDomain domain
-        |> Histogram.compute model
-
-
-renderHistogram : ( List Float, Config ) -> Html msg
-renderHistogram ( data, config ) =
+renderHistogram : ( List (Histogram.Bin Float Float), Config ) -> Html msg
+renderHistogram ( histogram, config ) =
     let
         c =
             fromConfig config
@@ -984,13 +977,7 @@ renderHistogram ( data, config ) =
 
         domain : ( Float, Float )
         domain =
-            data
-                |> extent
-                |> Maybe.withDefault ( 0, 0 )
-
-        histogram : List (Bin Float Float)
-        histogram =
-            histogramGenerator domain data
+            calculateHistogramDomain histogram
 
         xRange =
             getBandGroupRange config w h
@@ -1010,6 +997,24 @@ renderHistogram ( data, config ) =
                 |> toFloat
                 |> Tuple.pair 0
                 |> Scale.linear yRange
+
+        xAxis : List Float -> List (Svg msg)
+        xAxis d =
+            [ g
+                [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                , class [ "axis", "axis--horizontal" ]
+                ]
+                [ Axis.bottom [] xScale ]
+            ]
+
+        yAxis : List (Bin Float Float) -> List (Svg msg)
+        yAxis bins =
+            [ g
+                [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
+                , class [ "axis", "axis--vertical" ]
+                ]
+                [ Axis.left [ Axis.tickCount 5 ] (yScaleFromBins bins) ]
+            ]
     in
     svg
         [ viewBox 0 0 outerW outerH
@@ -1020,6 +1025,8 @@ renderHistogram ( data, config ) =
         ]
     <|
         descAndTitle c
+            ++ xAxis (calculateHistogramValues histogram)
+            ++ yAxis histogram
             ++ [ g
                     [ transform [ Translate m.left m.top ]
                     , class [ "series" ]

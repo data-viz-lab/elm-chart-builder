@@ -20,7 +20,7 @@ body {
 
 .wrapper {
   display: grid;
-  grid-template-columns: repeat(4, 250px);
+  grid-template-columns: repeat(2, 500px);
   grid-gap: 20px;
   background-color: #fff;
   color: #444;
@@ -43,59 +43,91 @@ text {
 
 
 type alias Data =
-    { x : String, y : Float, groupLabel : String }
+    Float
+
+
+bucketedData =
+    [ { buket = 0.8
+      , count = 10
+      }
+    , { buket = 0.7
+      , count = 0
+      }
+    , { buket = 0.9
+      , count = 0
+      }
+    , { buket = 0.0
+      , count = 5
+      }
+    , { buket = 0.2
+      , count = 0
+      }
+    , { buket = 1.0
+      , count = 7
+      }
+    , { buket = 0.1
+      , count = 0
+      }
+    , { buket = 0.4
+      , count = 0
+      }
+    , { buket = 0.3
+      , count = 0
+      }
+    , { buket = 0.6
+      , count = 0
+      }
+    , { buket = 0.5
+      , count = 0
+      }
+    ]
 
 
 data : List Data
 data =
-    [ { groupLabel = "A"
-      , x = "a"
-      , y = 10
-      }
-    , { groupLabel = "A"
-      , x = "b"
-      , y = 13
-      }
-    , { groupLabel = "A"
-      , x = "c"
-      , y = 16
-      }
-    , { groupLabel = "B"
-      , x = "a"
-      , y = 11
-      }
-    , { groupLabel = "B"
-      , x = "b"
-      , y = 23
-      }
-    , { groupLabel = "B"
-      , x = "c"
-      , y = 16
-      }
-    , { groupLabel = "B"
-      , x = "c"
-      , y = 16
-      }
-    , { groupLabel = "B"
-      , x = "c"
-      , y = 16
-      }
+    [ 0.01
+    , 0.02
+    , 0.09
+    , 0.1
+    , 0.12
+    , 0.15
+    , 0.21
+    , 0.3
+    , 0.31
+    , 0.35
+    , 0.5
+    , 0.55
+    , 0.55
+    , 0.56
+    , 0.61
+    , 0.62
+    , 0.63
+    , 0.65
+    , 0.75
+    , 0.81
+    , 0.9
+    , 0.91
+    , 0.99
     ]
 
 
 accessor : Bar.Accessor Data
 accessor =
-    .y
+    identity
 
 
 width : Float
 width =
-    250
+    500
 
 
 height : Float
 height =
-    250
+    500
+
+
+margin =
+    { top = 10, left = 20, bottom = 20, right = 10 }
 
 
 attrs : List (Html.Attribute msg)
@@ -109,8 +141,9 @@ attrs =
 verticalGrouped : Html msg
 verticalGrouped =
     Bar.init
-        |> Bar.setHeight height
-        |> Bar.setWidth width
+        |> Bar.setDimensions { margin = margin, width = width, height = height }
+        |> Bar.setDomain ( 0, 1 )
+        |> Bar.setSteps [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
         |> Bar.render ( data, accessor )
 
 
