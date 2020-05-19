@@ -181,8 +181,8 @@ type alias AccessorBand data =
 
 
 type AccessorHistogram data
-    = AccessorGenerateHistogram HistogramConfig (data -> Float)
-    | AccessorGeneratedHistogram (data -> Histogram.Bin Float Float)
+    = AccessorHistogram HistogramConfig (data -> Float)
+    | AccessorHistogramGenerated (data -> Histogram.Bin Float Float)
 
 
 type alias HistogramConfigStruct =
@@ -190,9 +190,11 @@ type alias HistogramConfigStruct =
     }
 
 
+defaultHistogramConfig : HistogramConfig
 defaultHistogramConfig =
-    { histogramSteps = []
-    }
+    toHistogramConfig
+        { histogramSteps = []
+        }
 
 
 type HistogramConfig
@@ -1477,7 +1479,8 @@ calculateHistogramValues histogram =
 calculateHistogramDomain : List (Histogram.Bin Float Float) -> ( Float, Float )
 calculateHistogramDomain histogram =
     histogram
-        |> calculateHistogramValues
+        |> List.map (\h -> [ h.x0, h.x1 ])
+        |> List.concat
         |> Statistics.extent
         |> Maybe.withDefault ( 0, 0 )
 
@@ -1496,7 +1499,7 @@ externalToDataHistogram config externalData accessor =
             fromExternalData externalData
     in
     case accessor of
-        AccessorGenerateHistogram histogramConfig toFloat ->
+        AccessorHistogram histogramConfig toFloat ->
             let
                 floatData =
                     data
@@ -1522,7 +1525,7 @@ externalToDataHistogram config externalData accessor =
             else
                 histogramDefaultGenerator domain floatData
 
-        AccessorGeneratedHistogram toData ->
+        AccessorHistogramGenerated toData ->
             data |> List.map toData
 
 

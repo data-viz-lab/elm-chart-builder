@@ -1,24 +1,45 @@
 module Chart.HistogramBar exposing
-    ( Accessor
+    ( dataAccessor, preProcessedDataAccessor, initHistogramConfig
     , init
-    ,  render
-       --, setAxisYTickCount
-       --, setAxisYTickFormat
-       --, setAxisYTicks
-       --, setColorInterpolator
-       --, setColorPalette
-       --, setDesc
-       --, setMargin
-       --, setShowAxisX
-       --, setShowAxisY
-       --, setTitle
-
-    , setDimensions
-    , setDomain
-    , setHeight
-    , setSteps
-    , setWidth
+    , render
+    , setDimensions, setDomain, setHeight, setSteps, setWidth
+    --, setAxisYTickCount
+    --, setAxisYTickFormat
+    --, setAxisYTicks
+    --, setColorInterpolator
+    --, setColorPalette
+    --, setDesc
+    --, setMargin
+    --, setShowAxisX
+    --, setShowAxisY
+    --, setTitle
     )
+
+{-| This is the histogram chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
+
+The histogram bar chart can both generate the histogram data or accept some preprocessed data.
+
+
+# Data Accessors
+
+@docs dataAccessor, preProcessedDataAccessor, initHistogramConfig
+
+
+# Chart Initialization
+
+@docs init
+
+
+# Chart Rendering
+
+@docs render
+
+
+# Configuration setters
+
+@docs setDimensions, setDomain, setHeight, setSteps, setWidth
+
+-}
 
 import Chart.Internal.Bar
     exposing
@@ -26,37 +47,102 @@ import Chart.Internal.Bar
         )
 import Chart.Internal.Type as Type
     exposing
-        ( AxisContinousDataTickCount(..)
+        ( AccessorHistogram(..)
+        , AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
         , ColorResource(..)
         , Config
+        , HistogramConfig
         , Margin
         , RenderContext(..)
         , defaultConfig
+        , defaultHistogramConfig
         , fromConfig
+        , fromHistogramConfig
         , setColorResource
         , setDimensions
         , setShowAxisX
         , setShowAxisY
         , setTitle
+        , toHistogramConfig
         )
 import Color exposing (Color)
+import Histogram
 import Html exposing (Html)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
-{-| The data accessor
+{-| The data accessor for generating a histogram.
+It takes a config that is separate from the general config, because it is only used when generating a histogram,
+not for pre-processed data that has been already bucketed.
+
+    histoConfig =
+        Histo.initHistogramConfig
+            |> Histo.setSteps [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
+
+    dataAccessor =
+        Histo.dataAccessor histoConfig accessor
+
 -}
-type alias Accessor data =
-    data -> Float
+dataAccessor : HistogramConfig -> (data -> Float) -> AccessorHistogram data
+dataAccessor config acc =
+    AccessorHistogram config acc
+
+
+{-| Initialises the config for the histogram data accessor.
+This is separate from the general config, because it is only used when generating a histogram,
+not for pre-processed data that has been already bucketed.
+
+    histoConfig =
+        Histo.initHistogramConfig
+
+-}
+initHistogramConfig : HistogramConfig
+initHistogramConfig =
+    defaultHistogramConfig
+
+
+{-| Set the histogram steps in the config for the histogram data accessor.
+
+    histoConfig =
+        Histo.initHistogramConfig
+            |> Histo.setSteps [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
+
+-}
+setSteps : List Float -> HistogramConfig -> HistogramConfig
+setSteps steps config =
+    config
+        |> fromHistogramConfig
+        |> (\c -> { c | histogramSteps = steps })
+        |> toHistogramConfig
+
+
+{-| The data accessor for generating a histogram from pre-processed data.
+Meaning the data has already been bucketed and counted.
+`values` here is not used and always passed as an empty array.
+
+    preProcessedDataAccessor =
+        Histo.preProcessedDataAccessor
+            (\d ->
+                { x0 = d.bucket
+                , x1 = d.bucket + 0.1
+                , values = []
+                , length = d.count
+                }
+            )
+
+-}
+preProcessedDataAccessor : (data -> Histogram.Bin Float Float) -> AccessorHistogram data
+preProcessedDataAccessor acc =
+    AccessorHistogramGenerated acc
 
 
 {-| Initializes the histogram bar chart with a default config.
 
-    Bar.init
-        |> Bar.render ( data, accessor )
+    Histo.init
+        |> Histo.render ( data, accessor )
 
 -}
 init : Config
@@ -64,16 +150,20 @@ init =
     defaultConfig
 
 
-render : ( List data, Accessor data ) -> Config -> Html msg
-render ( externalData, accessor ) config =
+{-| Renders the histogram
+
+    Histo.init
+        |> Histo.render ( data, accessor )
+
+-}
+render : ( List data, AccessorHistogram data ) -> Config -> Html msg
+render ( externalData, acc ) config =
     let
         c =
             fromConfig config
 
         data =
-            []
-
-        --Type.externalToDataHistogram (Type.toExternalData externalData) accessor
+            Type.externalToDataHistogram config (Type.toExternalData externalData) acc
     in
     renderHistogram ( data, config )
 
@@ -82,9 +172,9 @@ render ( externalData, accessor ) config =
 
 Default value: 400
 
-    Bar.init
-        |> Bar.setHeight 600
-        |> Bar.render ( data, accessor )
+    Histo.init
+        |> Histo.setHeight 600
+        |> Histo.render ( data, accessor )
 
 -}
 setHeight : Float -> Config -> Config
@@ -96,9 +186,9 @@ setHeight value config =
 
 Default value: 600
 
-    Bar.init
-        |> Bar.setWidth 800
-        |> Bar.render ( data, accessor )
+    Histo.init
+        |> Histo.setWidth 800
+        |> Histo.render ( data, accessor )
 
 -}
 setWidth : Float -> Config -> Config
@@ -112,13 +202,13 @@ Prefer this method from the individual ones when you need to set all three value
     margin =
         { top = 30, right = 20, bottom = 30, left = 0 }
 
-    Bar.init
-        |> Bar.setDimensions
+    Histo.init
+        |> Histo.setDimensions
             { margin = margin
             , width = 400
             , height = 400
             }
-        |> Bar.render (data, accessor)
+        |> Histo.render (data, accessor)
 
 -}
 setDimensions : { margin : Margin, width : Float, height : Float } -> Config -> Config
@@ -129,23 +219,11 @@ setDimensions value config =
 {-| Set the domain for the HistogramGenerator.
 All values falling outside the domain will be ignored.
 
-    HistogramBar.init
-        |> HistogramBar.setDomain ( 0, 1 )
-        |> Bar.render ( data, accessor )
+    Histo.init
+        |> Histo.setDomain ( 0, 1 )
+        |> Histo.render ( data, accessor )
 
 -}
 setDomain : ( Float, Float ) -> Config -> Config
 setDomain domain config =
     Type.setHistogramDomain domain config
-
-
-{-| For creating an appropriate Threshold value if you already have appropriate Threshold values.
-
-    HistogramBar.init
-        |> HistogramBar.setSteps [ 0.2, 0.4, 0.6, 0.8, 1 ]
-        |> Bar.render ( data, accessor )
-
--}
-setSteps : List Float -> Config -> Config
-setSteps steps config =
-    Type.setHistogramSteps steps config

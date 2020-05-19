@@ -977,7 +977,12 @@ renderHistogram ( histogram, config ) =
 
         domain : ( Float, Float )
         domain =
-            calculateHistogramDomain histogram
+            case c.histogramDomain of
+                Just d ->
+                    d
+
+                Nothing ->
+                    calculateHistogramDomain histogram
 
         xRange =
             getBandGroupRange config w h

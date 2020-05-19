@@ -3,7 +3,7 @@ module HistogramBarChart exposing (data, main)
 {-| This module shows how to build a simple bar chart.
 -}
 
-import Chart.HistogramBar as Bar
+import Chart.HistogramBar as Histo
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
@@ -42,45 +42,68 @@ text {
 """
 
 
-type alias Data =
-    Float
+width : Float
+width =
+    500
 
 
-bucketedData =
-    [ { buket = 0.8
+height : Float
+height =
+    500
+
+
+margin =
+    { top = 10, left = 20, bottom = 20, right = 10 }
+
+
+attrs : List (Html.Attribute msg)
+attrs =
+    [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
+    , Html.Attributes.style "width" (String.fromFloat width ++ "px")
+    , class "chart-wrapper"
+    ]
+
+
+preProcessedData =
+    [ { bucket = 0.8
       , count = 10
       }
-    , { buket = 0.7
+    , { bucket = 0.7
       , count = 0
       }
-    , { buket = 0.9
+    , { bucket = 0.9
       , count = 0
       }
-    , { buket = 0.0
+    , { bucket = 0.0
       , count = 5
       }
-    , { buket = 0.2
+    , { bucket = 0.2
       , count = 0
       }
-    , { buket = 1.0
+    , { bucket = 1.0
       , count = 7
       }
-    , { buket = 0.1
+    , { bucket = 0.1
       , count = 0
       }
-    , { buket = 0.4
+    , { bucket = 0.4
       , count = 0
       }
-    , { buket = 0.3
+    , { bucket = 0.3
       , count = 0
       }
-    , { buket = 0.6
+    , { bucket = 0.6
       , count = 0
       }
-    , { buket = 0.5
+    , { bucket = 0.5
       , count = 0
       }
     ]
+        |> List.sortBy .bucket
+
+
+type alias Data =
+    Float
 
 
 data : List Data
@@ -111,40 +134,44 @@ data =
     ]
 
 
-accessor : Bar.Accessor Data
+accessor : data -> data
 accessor =
     identity
 
 
-width : Float
-width =
-    500
+histoConfig =
+    Histo.initHistogramConfig
+        |> Histo.setSteps [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
 
 
-height : Float
-height =
-    500
+dataAccessor =
+    Histo.dataAccessor histoConfig accessor
 
 
-margin =
-    { top = 10, left = 20, bottom = 20, right = 10 }
+histo : Html msg
+histo =
+    Histo.init
+        |> Histo.setDimensions { margin = margin, width = width, height = height }
+        |> Histo.setDomain ( 0, 1 )
+        |> Histo.render ( data, dataAccessor )
 
 
-attrs : List (Html.Attribute msg)
-attrs =
-    [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
-    , Html.Attributes.style "width" (String.fromFloat width ++ "px")
-    , class "chart-wrapper"
-    ]
+preProcessedDataAccessor =
+    Histo.preProcessedDataAccessor
+        (\d ->
+            { x0 = d.bucket
+            , x1 = d.bucket + 0.1
+            , values = []
+            , length = d.count
+            }
+        )
 
 
-verticalGrouped : Html msg
-verticalGrouped =
-    Bar.init
-        |> Bar.setDimensions { margin = margin, width = width, height = height }
-        |> Bar.setDomain ( 0, 1 )
-        |> Bar.setSteps [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
-        |> Bar.render ( data, accessor )
+preProcessedHisto : Html msg
+preProcessedHisto =
+    Histo.init
+        |> Histo.setDimensions { margin = margin, width = width, height = height }
+        |> Histo.render ( preProcessedData, preProcessedDataAccessor )
 
 
 main : Html msg
@@ -153,6 +180,7 @@ main =
         [ Html.node "style" [] [ Html.text css ]
         , Html.div
             [ class "wrapper" ]
-            [ Html.div attrs [ verticalGrouped ]
+            [ Html.div attrs [ histo ]
+            , Html.div attrs [ preProcessedHisto ]
             ]
         ]
