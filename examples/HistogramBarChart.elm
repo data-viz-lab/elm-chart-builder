@@ -4,10 +4,12 @@ module HistogramBarChart exposing (data, main)
 -}
 
 import Chart.HistogramBar as Histo
+import Color
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
 import Html.Attributes exposing (class)
+import Numeral
 import Scale.Color
 
 
@@ -42,6 +44,11 @@ text {
 """
 
 
+color : Color.Color
+color =
+    Color.rgb255 254 178 76
+
+
 width : Float
 width =
     500
@@ -53,7 +60,7 @@ height =
 
 
 margin =
-    { top = 10, left = 20, bottom = 20, right = 10 }
+    { top = 10, left = 50, bottom = 25, right = 10 }
 
 
 attrs : List (Html.Attribute msg)
@@ -66,37 +73,37 @@ attrs =
 
 preProcessedData =
     [ { bucket = 0.8
-      , count = 10
+      , count = 10000
       }
     , { bucket = 0.7
-      , count = 0
+      , count = 2000
       }
     , { bucket = 0.9
-      , count = 0
+      , count = 1000
       }
     , { bucket = 0.0
-      , count = 5
+      , count = 500
       }
     , { bucket = 0.2
-      , count = 0
+      , count = 3000
       }
     , { bucket = 1.0
-      , count = 7
+      , count = 700
       }
     , { bucket = 0.1
-      , count = 0
+      , count = 3300
       }
     , { bucket = 0.4
-      , count = 0
+      , count = 1200
       }
     , { bucket = 0.3
-      , count = 0
+      , count = 3400
       }
     , { bucket = 0.6
-      , count = 0
+      , count = 8900
       }
     , { bucket = 0.5
-      , count = 0
+      , count = 6000
       }
     ]
         |> List.sortBy .bucket
@@ -153,6 +160,8 @@ histo =
     Histo.init
         |> Histo.setDimensions { margin = margin, width = width, height = height }
         |> Histo.setDomain ( 0, 1 )
+        |> Histo.setAxisYTickFormat (Numeral.format "0")
+        |> Histo.setColor color
         |> Histo.render ( data, dataAccessor )
 
 
@@ -171,6 +180,8 @@ preProcessedHisto : Html msg
 preProcessedHisto =
     Histo.init
         |> Histo.setDimensions { margin = margin, width = width, height = height }
+        |> Histo.setAxisYTickFormat (Numeral.format "0,0")
+        |> Histo.setColor color
         |> Histo.render ( preProcessedData, preProcessedDataAccessor )
 
 

@@ -399,6 +399,7 @@ type AxisContinousDataTickFormat
 type ColorResource
     = ColorPalette (List Color)
     | ColorInterpolator (Float -> Color)
+    | Color Color
     | ColorNone
 
 

@@ -531,8 +531,9 @@ verticalRect c iconOffset bandSingleScale linearScale colorScale idx point =
         ( x__, y__ ) =
             point
 
-        style =
-            colorStyle c idx (Scale.convert colorScale y__)
+        stl =
+            colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
+                |> style
 
         label =
             verticalLabel c (x_ + w / 2) (y_ - labelGap) point
@@ -555,7 +556,7 @@ verticalRect c iconOffset bandSingleScale linearScale colorScale idx point =
                 |> Helpers.floorFloat
 
         symbol =
-            verticalSymbol c { idx = idx, x_ = x_, y_ = y_, w = w, style = style }
+            verticalSymbol c { idx = idx, x_ = x_, y_ = y_, w = w, style = stl }
     in
     rect
         [ x <| x_
@@ -563,7 +564,7 @@ verticalRect c iconOffset bandSingleScale linearScale colorScale idx point =
         , width <| w
         , height <| h
         , shapeRendering RenderCrispEdges
-        , style
+        , stl
         ]
         []
         :: symbol
@@ -592,14 +593,15 @@ horizontalRect c bandSingleScale linearScale colorScale idx point =
         y_ =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
 
-        style =
-            colorStyle c idx (Scale.convert colorScale y__)
+        stl =
+            colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
+                |> style
 
         label =
             horizontalLabel c (w + labelGap) (y_ + h / 2) point
 
         symbol =
-            horizontalSymbol c { idx = idx, w = w, y_ = y_, h = h, style = style }
+            horizontalSymbol c { idx = idx, w = w, y_ = y_, h = h, style = stl }
     in
     rect
         [ x <| 0
@@ -607,7 +609,7 @@ horizontalRect c bandSingleScale linearScale colorScale idx point =
         , width w
         , height h
         , shapeRendering RenderCrispEdges
-        , style
+        , stl
         ]
         []
         :: symbol
@@ -1003,6 +1005,18 @@ renderHistogram ( histogram, config ) =
                 |> Tuple.pair 0
                 |> Scale.linear yRange
 
+        yTickFormat =
+            case c.axisYContinousTickFormat of
+                CustomTickFormat formatter ->
+                    Just (Axis.tickFormat formatter)
+
+                _ ->
+                    Nothing
+
+        yAttributes =
+            [ yTickFormat ]
+                |> List.filterMap identity
+
         xAxis : List Float -> List (Svg msg)
         xAxis d =
             [ g
@@ -1018,7 +1032,7 @@ renderHistogram ( histogram, config ) =
                 [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
                 , class [ "axis", "axis--vertical" ]
                 ]
-                [ Axis.left [ Axis.tickCount 5 ] (yScaleFromBins bins) ]
+                [ Axis.left yAttributes (yScaleFromBins bins) ]
             ]
     in
     svg
@@ -1049,11 +1063,17 @@ histogramColumn :
     -> Bin Float Float
     -> Svg msg
 histogramColumn c h xScale yScale { length, x0, x1 } =
+    let
+        styleStr =
+            colorStyle c Nothing Nothing
+                ++ "; stroke: #fff; stroke-width: 0.5px"
+    in
     rect
         [ x <| Scale.convert xScale x0
         , y <| Scale.convert yScale (toFloat length)
         , width <| Scale.convert xScale x1 - Scale.convert xScale x0
         , height <| h - Scale.convert yScale (toFloat length)
+        , style styleStr
         ]
         []
 
@@ -1073,17 +1093,20 @@ labelGap =
 
 {-| All possible color styles styles
 -}
-colorStyle : ConfigStruct -> Int -> Float -> TypedSvg.Core.Attribute msg
+colorStyle : ConfigStruct -> Maybe Int -> Maybe Float -> String
 colorStyle c idx interpolatorInput =
-    case c.colorResource of
-        ColorPalette colors ->
-            style ("fill: " ++ Helpers.colorPaletteToColor colors idx)
+    case ( c.colorResource, idx, interpolatorInput ) of
+        ( ColorPalette colors, Just i, _ ) ->
+            "fill: " ++ Helpers.colorPaletteToColor colors i
 
-        ColorInterpolator interpolator ->
-            style ("fill: " ++ (interpolator interpolatorInput |> Color.toCssString))
+        ( ColorInterpolator interpolator, _, Just i ) ->
+            "fill: " ++ (interpolator i |> Color.toCssString)
 
-        ColorNone ->
-            style ""
+        ( Color color, Nothing, Nothing ) ->
+            "fill: " ++ Color.toCssString color
+
+        _ ->
+            ""
 
 
 {-| Only categorical styles

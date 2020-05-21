@@ -2,17 +2,11 @@ module Chart.HistogramBar exposing
     ( dataAccessor, preProcessedDataAccessor, initHistogramConfig
     , init
     , render
-    , setDimensions, setDomain, setHeight, setSteps, setWidth
-    --, setAxisYTickCount
-    --, setAxisYTickFormat
+    , setDimensions, setDomain, setHeight, setSteps, setWidth, setColor, setTitle, setDesc, setMargin, setAxisYTickFormat
     --, setAxisYTicks
-    --, setColorInterpolator
-    --, setColorPalette
-    --, setDesc
-    --, setMargin
     --, setShowAxisX
     --, setShowAxisY
-    --, setTitle
+    --, setAxisYTickCount
     )
 
 {-| This is the histogram chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -37,7 +31,7 @@ The histogram bar chart can both generate the histogram data or accept some prep
 
 # Configuration setters
 
-@docs setDimensions, setDomain, setHeight, setSteps, setWidth
+@docs setDimensions, setDomain, setHeight, setSteps, setWidth, setColor, setTitle, setDesc, setMargin, setAxisYTickFormat
 
 -}
 
@@ -227,3 +221,77 @@ All values falling outside the domain will be ignored.
 setDomain : ( Float, Float ) -> Config -> Config
 setDomain domain config =
     Type.setHistogramDomain domain config
+
+
+{-| Set the histogram color
+
+    Histo.init
+        |> Histo.setColor (Color.rgb255 240 59 32)
+        |> Histo.render ( data, accessor )
+
+-}
+setColor : Color -> Config -> Config
+setColor color config =
+    Type.setColorResource (Color color) config
+
+
+{-| Sets an accessible, long-text description for the svg chart.
+
+Default value: ""
+
+    Histo.init
+        |> Histo.setDesc "This is an accessible chart, with a desc element"
+        |> Histo.render ( data, accessor )
+
+-}
+setDesc : String -> Config -> Config
+setDesc value config =
+    Type.setDesc value config
+
+
+{-| Sets an accessible title for the svg chart.
+
+Default value: ""
+
+    Histo.init
+        |> Histo.setTitle "This is a chart"
+        |> Histo.render ( data, accessor )
+
+-}
+setTitle : String -> Config -> Config
+setTitle value config =
+    Type.setTitle value config
+
+
+{-| Sets the margin values for the svg chart in the config.
+
+It follows d3s [margin convention](https://bl.ocks.org/mbostock/3019563).
+
+    margin =
+        { top = 30, right = 20, bottom = 30, left = 0 }
+
+    Histo.init
+    |> Histo.setMargin margin
+    |> Histo.render ( data, accessor )
+
+-}
+setMargin : Margin -> Config -> Config
+setMargin value config =
+    Type.setMargin value config
+
+
+{-| Sets the formatting for the y axis ticks.
+
+Defaults to `Scale.tickFormat`
+
+    formatter =
+        Numeral.format "0%"
+
+    Histo.init
+        |> Histo.setAxisYTickFormat formatter
+        |> Histo.render (data, accessor)
+
+-}
+setAxisYTickFormat : (Float -> String) -> Config -> Config
+setAxisYTickFormat f config =
+    Type.setAxisYContinousTickFormat (CustomTickFormat f) config
