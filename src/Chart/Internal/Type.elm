@@ -1,5 +1,6 @@
 module Chart.Internal.Type exposing
     ( AccessorBand
+    , AccessorHistogram(..)
     , AccessorLinearGroup(..)
     , AccessorLinearStruct
     , AccessorTimeStruct
@@ -26,6 +27,8 @@ module Chart.Internal.Type exposing
     , ExternalData
     , GroupedConfig
     , GroupedConfigStruct
+    , HistogramConfig
+    , HistogramConfigStruct
     , Layout(..)
     , LinearDomain
     , Margin
@@ -39,6 +42,8 @@ module Chart.Internal.Type exposing
     , adjustLinearRange
     , ariaLabelledby
     , bottomGap
+    , calculateHistogramDomain
+    , calculateHistogramValues
     , dataBandToDataStacked
     , dataLinearGroupToDataLinear
     , dataLinearGroupToDataLinearStacked
@@ -46,17 +51,21 @@ module Chart.Internal.Type exposing
     , defaultConfig
     , defaultGroupedConfig
     , defaultHeight
+    , defaultHistogramConfig
     , defaultLayout
     , defaultMargin
     , defaultOrientation
     , defaultTicksCount
     , defaultWidth
     , externalToDataBand
+    , externalToDataHistogram
     , externalToDataLinearGroup
     , fromConfig
     , fromDataBand
     , fromDomainBand
     , fromDomainLinear
+    , fromExternalData
+    , fromHistogramConfig
     , getAxisContinousDataFormatter
     , getAxisXContinousTickCount
     , getAxisXContinousTickFormat
@@ -77,6 +86,8 @@ module Chart.Internal.Type exposing
     , getDomainTime
     , getDomainTimeFromData
     , getHeight
+    , getHistogramDomain
+    , getHistogramSteps
     , getIcons
     , getIconsFromLayout
     , getLinearRange
@@ -109,6 +120,8 @@ module Chart.Internal.Type exposing
     , setDomainTime
     , setDomainTimeX
     , setHeight
+    , setHistogramDomain
+    , setHistogramSteps
     , setIcons
     , setLayout
     , setMargin
@@ -126,15 +139,18 @@ module Chart.Internal.Type exposing
     , toConfig
     , toDataBand
     , toExternalData
+    , toHistogramConfig
     )
 
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
 import Color exposing (Color)
+import Histogram
 import Html
 import Html.Attributes
 import List.Extra
 import Scale exposing (BandScale)
 import Shape
+import Statistics
 import SubPath exposing (SubPath)
 import Time exposing (Posix, Zone)
 
@@ -162,6 +178,37 @@ type alias AccessorBand data =
     , xValue : data -> String
     , yValue : data -> Float
     }
+
+
+type AccessorHistogram data
+    = AccessorHistogram HistogramConfig (data -> Float)
+    | AccessorHistogramPreProcessed (data -> Histogram.Bin Float Float)
+
+
+type alias HistogramConfigStruct =
+    { histogramSteps : List Float
+    }
+
+
+defaultHistogramConfig : HistogramConfig
+defaultHistogramConfig =
+    toHistogramConfig
+        { histogramSteps = []
+        }
+
+
+type HistogramConfig
+    = HistogramConfig HistogramConfigStruct
+
+
+toHistogramConfig : HistogramConfigStruct -> HistogramConfig
+toHistogramConfig config =
+    HistogramConfig config
+
+
+fromHistogramConfig : HistogramConfig -> HistogramConfigStruct
+fromHistogramConfig (HistogramConfig config) =
+    config
 
 
 type AccessorLinearGroup data
@@ -352,6 +399,7 @@ type AxisContinousDataTickFormat
 type ColorResource
     = ColorPalette (List Color)
     | ColorInterpolator (Float -> Color)
+    | Color Color
     | ColorNone
 
 
@@ -369,6 +417,7 @@ type alias ConfigStruct =
     , domainLinear : DomainLinear
     , domainTime : DomainTime
     , height : Float
+    , histogramDomain : Maybe ( Float, Float )
     , layout : Layout
     , margin : Margin
     , orientation : Orientation
@@ -396,6 +445,7 @@ defaultConfig =
         , domainLinear = DomainLinear initialDomainLinearStruct
         , domainTime = DomainTime initialDomainTimeStruct
         , height = defaultHeight
+        , histogramDomain = Nothing
         , layout = defaultLayout
         , margin = defaultMargin
         , orientation = defaultOrientation
@@ -704,6 +754,24 @@ setHeight height config =
     toConfig { c | height = height - m.top - m.bottom }
 
 
+setHistogramDomain : ( Float, Float ) -> Config -> Config
+setHistogramDomain domain config =
+    let
+        c =
+            fromConfig config
+    in
+    toConfig { c | histogramDomain = Just domain }
+
+
+setHistogramSteps : List Float -> HistogramConfig -> HistogramConfig
+setHistogramSteps steps config =
+    let
+        c =
+            fromHistogramConfig config
+    in
+    toHistogramConfig { c | histogramSteps = steps }
+
+
 setLayout : Layout -> Config -> Config
 setLayout layout config =
     let
@@ -993,6 +1061,16 @@ getMargin config =
 getHeight : Config -> Float
 getHeight config =
     fromConfig config |> .height
+
+
+getHistogramDomain : Config -> Maybe ( Float, Float )
+getHistogramDomain config =
+    fromConfig config |> .histogramDomain
+
+
+getHistogramSteps : HistogramConfig -> List Float
+getHistogramSteps config =
+    fromHistogramConfig config |> .histogramSteps
 
 
 getWidth : Config -> Float
@@ -1371,6 +1449,85 @@ symbolCustomSpace orientation localDimension conf =
 
 
 -- DATA METHODS
+
+
+histogramDefaultGenerator : ( Float, Float ) -> List Float -> List (Histogram.Bin Float Float)
+histogramDefaultGenerator domain model =
+    Histogram.float
+        |> Histogram.withDomain domain
+        |> Histogram.compute model
+
+
+histogramCustomGenerator :
+    ( Float, Float )
+    -> List Float
+    -> Histogram.Threshold Float Float
+    -> (Float -> Float)
+    -> List (Histogram.Bin Float Float)
+histogramCustomGenerator domain model threshold mapping =
+    Histogram.custom threshold mapping
+        |> Histogram.withDomain domain
+        |> Histogram.compute model
+
+
+calculateHistogramValues : List (Histogram.Bin Float Float) -> List Float
+calculateHistogramValues histogram =
+    histogram
+        |> List.map .values
+        |> List.concat
+
+
+calculateHistogramDomain : List (Histogram.Bin Float Float) -> ( Float, Float )
+calculateHistogramDomain histogram =
+    histogram
+        |> List.map (\h -> [ h.x0, h.x1 ])
+        |> List.concat
+        |> Statistics.extent
+        |> Maybe.withDefault ( 0, 0 )
+
+
+externalToDataHistogram :
+    Config
+    -> ExternalData data
+    -> AccessorHistogram data
+    -> List (Histogram.Bin Float Float)
+externalToDataHistogram config externalData accessor =
+    let
+        c =
+            fromConfig config
+
+        data =
+            fromExternalData externalData
+    in
+    case accessor of
+        AccessorHistogram histogramConfig toFloat ->
+            let
+                floatData =
+                    data
+                        |> List.map toFloat
+
+                domain : ( Float, Float )
+                domain =
+                    case c.histogramDomain of
+                        Nothing ->
+                            floatData
+                                |> Statistics.extent
+                                |> Maybe.withDefault ( 0, 0 )
+
+                        Just d ->
+                            d
+
+                hc =
+                    fromHistogramConfig histogramConfig
+            in
+            if List.length hc.histogramSteps > 0 then
+                histogramCustomGenerator domain floatData (Histogram.steps hc.histogramSteps) identity
+
+            else
+                histogramDefaultGenerator domain floatData
+
+        AccessorHistogramPreProcessed toData ->
+            data |> List.map toData
 
 
 externalToDataBand : ExternalData data -> AccessorBand data -> DataBand

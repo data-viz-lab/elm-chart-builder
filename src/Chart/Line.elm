@@ -1,9 +1,9 @@
 module Chart.Line exposing
     ( Accessor, AccessorTime, AccessorLinear, time, linear
+    , stackedLayout
     , init
     , render
-    , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setCurve, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeX, setDomainY, setDomainLinearX
-    , setLayout, stackedLayout
+    , setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setCurve, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeX, setDomainY, setDomainLinearX, setLayout
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -19,6 +19,11 @@ It expects the X axis to plot time data and the Y axis to plot linear data.
 @docs Accessor, AccessorTime, AccessorLinear, time, linear
 
 
+# Chart Layout
+
+@docs stackedLayout
+
+
 # Chart Initialization
 
 @docs init
@@ -31,7 +36,7 @@ It expects the X axis to plot time data and the Y axis to plot linear data.
 
 # Configuration setters
 
-@docs setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setCurve, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeX, setDomainY, setDomainLinearX
+@docs setAxisXContinousTickCount, setAxisXContinousTickFormat, setAxisXContinousTicks, setAxisYContinousTickCount, setAxisYContinousTickFormat, setAxisYContinousTicks, setCurve, setDesc, setDimensions, setHeight, setMargin, setShowAxisX, setShowAxisY, setTitle, setWidth, setDomainTimeX, setDomainY, setDomainLinearX, setLayout
 
 -}
 

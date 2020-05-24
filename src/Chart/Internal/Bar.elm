@@ -1,6 +1,7 @@
 module Chart.Internal.Bar exposing
     ( renderBandGrouped
     , renderBandStacked
+    , renderHistogram
     )
 
 import Axis
@@ -39,7 +40,10 @@ import Chart.Internal.Type
         , adjustLinearRange
         , ariaLabelledby
         , bottomGap
+        , calculateHistogramDomain
+        , calculateHistogramValues
         , dataBandToDataStacked
+        , externalToDataHistogram
         , fromConfig
         , fromDataBand
         , getAxisContinousDataFormatter
@@ -67,11 +71,13 @@ import Chart.Internal.Type
         , toConfig
         )
 import Color
+import Histogram exposing (Bin, HistogramGenerator, Threshold)
 import Html exposing (Html)
 import Html.Attributes
 import List.Extra
 import Scale exposing (BandScale, ContinuousScale, defaultBandConfig)
 import Shape exposing (StackConfig)
+import Statistics exposing (extent)
 import TypedSvg exposing (g, rect, svg, text_)
 import TypedSvg.Attributes
     exposing
@@ -401,7 +407,9 @@ renderBandGrouped ( data, config ) =
 
         bandSingleScale : BandScale String
         bandSingleScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange (Maybe.withDefault [] domain.bandSingle)
+            Scale.band { defaultBandConfig | paddingInner = 0.05 }
+                bandSingleRange
+                (Maybe.withDefault [] domain.bandSingle)
 
         linearScale : ContinuousScale Float
         linearScale =
@@ -523,8 +531,9 @@ verticalRect c iconOffset bandSingleScale linearScale colorScale idx point =
         ( x__, y__ ) =
             point
 
-        style =
-            colorStyle c idx (Scale.convert colorScale y__)
+        stl =
+            colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
+                |> style
 
         label =
             verticalLabel c (x_ + w / 2) (y_ - labelGap) point
@@ -547,7 +556,7 @@ verticalRect c iconOffset bandSingleScale linearScale colorScale idx point =
                 |> Helpers.floorFloat
 
         symbol =
-            verticalSymbol c { idx = idx, x_ = x_, y_ = y_, w = w, style = style }
+            verticalSymbol c { idx = idx, x_ = x_, y_ = y_, w = w, style = stl }
     in
     rect
         [ x <| x_
@@ -555,7 +564,7 @@ verticalRect c iconOffset bandSingleScale linearScale colorScale idx point =
         , width <| w
         , height <| h
         , shapeRendering RenderCrispEdges
-        , style
+        , stl
         ]
         []
         :: symbol
@@ -584,14 +593,15 @@ horizontalRect c bandSingleScale linearScale colorScale idx point =
         y_ =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
 
-        style =
-            colorStyle c idx (Scale.convert colorScale y__)
+        stl =
+            colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
+                |> style
 
         label =
             horizontalLabel c (w + labelGap) (y_ + h / 2) point
 
         symbol =
-            horizontalSymbol c { idx = idx, w = w, y_ = y_, h = h, style = style }
+            horizontalSymbol c { idx = idx, w = w, y_ = y_, h = h, style = stl }
     in
     rect
         [ x <| 0
@@ -599,7 +609,7 @@ horizontalRect c bandSingleScale linearScale colorScale idx point =
         , width w
         , height h
         , shapeRendering RenderCrispEdges
-        , style
+        , stl
         ]
         []
         :: symbol
@@ -943,6 +953,132 @@ bandGroupedYAxis c iconOffset linearScale =
 
 
 
+-- HISTOGRAM
+
+
+renderHistogram : ( List (Histogram.Bin Float Float), Config ) -> Html msg
+renderHistogram ( histogram, config ) =
+    let
+        c =
+            fromConfig config
+
+        m =
+            getMargin config
+
+        w =
+            getWidth config
+
+        h =
+            getHeight config
+
+        outerW =
+            w + m.left + m.right
+
+        outerH =
+            h + m.top + m.bottom
+
+        domain : ( Float, Float )
+        domain =
+            case c.histogramDomain of
+                Just d ->
+                    d
+
+                Nothing ->
+                    calculateHistogramDomain histogram
+
+        xRange =
+            getBandGroupRange config w h
+
+        xScale : ContinuousScale Float
+        xScale =
+            Scale.linear xRange domain
+
+        yRange =
+            ( h, 0 )
+
+        yScaleFromBins : List (Bin Float Float) -> ContinuousScale Float
+        yScaleFromBins bins =
+            List.map .length bins
+                |> List.maximum
+                |> Maybe.withDefault 0
+                |> toFloat
+                |> Tuple.pair 0
+                |> Scale.linear yRange
+
+        yTickFormat =
+            case c.axisYContinousTickFormat of
+                CustomTickFormat formatter ->
+                    Just (Axis.tickFormat formatter)
+
+                _ ->
+                    Nothing
+
+        yAttributes =
+            [ yTickFormat ]
+                |> List.filterMap identity
+
+        xAxis : List Float -> List (Svg msg)
+        xAxis d =
+            [ g
+                [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                , class [ "axis", "axis--horizontal" ]
+                ]
+                [ Axis.bottom [] xScale ]
+            ]
+
+        yAxis : List (Bin Float Float) -> List (Svg msg)
+        yAxis bins =
+            [ g
+                [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
+                , class [ "axis", "axis--vertical" ]
+                ]
+                [ Axis.left yAttributes (yScaleFromBins bins) ]
+            ]
+    in
+    svg
+        [ viewBox 0 0 outerW outerH
+        , width outerW
+        , height outerH
+        , role "img"
+        , ariaLabelledby "title desc"
+        ]
+    <|
+        descAndTitle c
+            ++ xAxis (calculateHistogramValues histogram)
+            ++ yAxis histogram
+            ++ [ g
+                    [ transform [ Translate m.left m.top ]
+                    , class [ "series" ]
+                    ]
+                 <|
+                    List.map (histogramColumn c h xScale (yScaleFromBins histogram)) histogram
+               ]
+
+
+histogramColumn :
+    ConfigStruct
+    -> Float
+    -> ContinuousScale Float
+    -> ContinuousScale Float
+    -> Bin Float Float
+    -> Svg msg
+histogramColumn c h xScale yScale { length, x0, x1 } =
+    let
+        styleStr =
+            colorStyle c Nothing Nothing
+                ++ "; stroke: #fff; stroke-width: 0.5px"
+    in
+    rect
+        [ x <| Scale.convert xScale x0
+        , y <| Scale.convert yScale (toFloat length)
+        , width <| Scale.convert xScale x1 - Scale.convert xScale x0
+        , height <| h - Scale.convert yScale (toFloat length)
+        , style styleStr
+        ]
+        []
+
+
+
 -- CONSTANTS
 
 
@@ -957,17 +1093,20 @@ labelGap =
 
 {-| All possible color styles styles
 -}
-colorStyle : ConfigStruct -> Int -> Float -> TypedSvg.Core.Attribute msg
+colorStyle : ConfigStruct -> Maybe Int -> Maybe Float -> String
 colorStyle c idx interpolatorInput =
-    case c.colorResource of
-        ColorPalette colors ->
-            style ("fill: " ++ Helpers.colorPaletteToColor colors idx)
+    case ( c.colorResource, idx, interpolatorInput ) of
+        ( ColorPalette colors, Just i, _ ) ->
+            "fill: " ++ Helpers.colorPaletteToColor colors i
 
-        ColorInterpolator interpolator ->
-            style ("fill: " ++ (interpolator interpolatorInput |> Color.toCssString))
+        ( ColorInterpolator interpolator, _, Just i ) ->
+            "fill: " ++ (interpolator i |> Color.toCssString)
 
-        ColorNone ->
-            style ""
+        ( Color color, Nothing, Nothing ) ->
+            "fill: " ++ Color.toCssString color
+
+        _ ->
+            ""
 
 
 {-| Only categorical styles
