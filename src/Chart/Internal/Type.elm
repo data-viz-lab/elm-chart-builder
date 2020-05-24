@@ -182,7 +182,7 @@ type alias AccessorBand data =
 
 type AccessorHistogram data
     = AccessorHistogram HistogramConfig (data -> Float)
-    | AccessorHistogramGenerated (data -> Histogram.Bin Float Float)
+    | AccessorHistogramPreProcessed (data -> Histogram.Bin Float Float)
 
 
 type alias HistogramConfigStruct =
@@ -1526,7 +1526,7 @@ externalToDataHistogram config externalData accessor =
             else
                 histogramDefaultGenerator domain floatData
 
-        AccessorHistogramGenerated toData ->
+        AccessorHistogramPreProcessed toData ->
             data |> List.map toData
 
 

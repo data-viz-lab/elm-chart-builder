@@ -546,7 +546,7 @@ suite =
                                 |> setHistogramDomain ( 0, 1 )
 
                         accessor =
-                            AccessorHistogramGenerated identity
+                            AccessorHistogramPreProcessed identity
 
                         expected =
                             [ { length = 4, values = [ 0.1, 0.09, 0.02, 0.01 ], x0 = 0, x1 = 0.1 }

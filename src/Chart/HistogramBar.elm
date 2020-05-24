@@ -130,7 +130,7 @@ Meaning the data has already been bucketed and counted.
 -}
 preProcessedDataAccessor : (data -> Histogram.Bin Float Float) -> AccessorHistogram data
 preProcessedDataAccessor acc =
-    AccessorHistogramGenerated acc
+    AccessorHistogramPreProcessed acc
 
 
 {-| Initializes the histogram bar chart with a default config.
