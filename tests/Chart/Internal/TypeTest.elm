@@ -505,11 +505,10 @@ suite =
 
                         histogramConfig =
                             defaultHistogramConfig
-                                |> toHistogramConfig
                                 |> setHistogramSteps [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
 
                         accessor =
-                            AccessorGenerateHistogram histogramConfig identity
+                            AccessorHistogram histogramConfig identity
 
                         expected =
                             [ { length = 4, values = [ 0.1, 0.09, 0.02, 0.01 ], x0 = 0, x1 = 0.1 }
@@ -546,12 +545,8 @@ suite =
                             defaultConfig
                                 |> setHistogramDomain ( 0, 1 )
 
-                        histogramConfig =
-                            defaultHistogramConfig
-                                |> toHistogramConfig
-
                         accessor =
-                            AccessorGeneratedHistogram identity
+                            AccessorHistogramGenerated identity
 
                         expected =
                             [ { length = 4, values = [ 0.1, 0.09, 0.02, 0.01 ], x0 = 0, x1 = 0.1 }
@@ -584,8 +579,8 @@ suite =
                             ]
 
                         expected =
-                            ( 0.01, 0.15 )
+                            ( 0, 1 )
                     in
-                    Expect.equal (calculateHistogramDomain data) expected
+                    Expect.equal expected (calculateHistogramDomain data)
             ]
         ]
