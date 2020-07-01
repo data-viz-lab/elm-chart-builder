@@ -27,7 +27,7 @@ ul {
     margin: 20px;
 }
 
-.footer {
+footer {
     font-size: 12px;
     margin: 20px;
 }

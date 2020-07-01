@@ -30,7 +30,8 @@ body {
 
 .wrapper {
   display: grid;
-  grid-template-columns: repeat(2, 600px);
+  grid-template-rows: repeat(5, 1fr);
+  grid-template-columns: repeat(1, 1fr);
   grid-gap: 20px;
   background-color: #fff;
   color: #444;
@@ -39,6 +40,14 @@ body {
 
 .chart-wrapper {
   border: 1px solid #c4c4c4;
+  grid-column: 1 / 1;
+  grid-row: 1 / 5;
+}
+
+.header-wrapper {
+  grid-column: 1 / 1;
+  grid-row: 1 / 2;
+  margin-left: 10px;
 }
 
 .axis text {
@@ -57,15 +66,20 @@ text {
 h1 {
   font-size: 24px;
 }
+
+footer {
+    font-size: 12px;
+    margin: 20px;
+}
 """
 
 
 transitionSpeed =
-    500
+    750
 
 
 transitionStep =
-    800
+    1000
 
 
 width : Float
@@ -75,7 +89,7 @@ width =
 
 height : Float
 height =
-    250
+    350
 
 
 valueFormatter : Float -> String
@@ -194,7 +208,6 @@ update msg model =
             , if model.idx == 0 then
                 Task.succeed (StartAnimation <| getDataByYear newIdx)
                     |> Task.perform identity
-                    |> Debug.log "first transition"
 
               else if lastIdx >= newIdx then
                 Process.sleep transitionStep
@@ -243,7 +256,7 @@ horizontalGrouped d =
         |> Bar.setAxisYTickCount 5
         |> Bar.setDomainLinear domain
         |> Bar.setDimensions
-            { margin = { top = 10, right = 20, bottom = 30, left = 125 }
+            { margin = { top = 60, right = 20, bottom = 30, left = 125 }
             , width = width
             , height = height
             }
@@ -265,10 +278,19 @@ view model =
         [ Html.node "style" [] [ Html.text css ]
         , Html.div
             [ class "wrapper" ]
-            [ Html.div attrs [ horizontalGrouped d ]
-            , Html.h1 []
-                [ Html.text ("World Population in " ++ year)
+            [ Html.div [ class "header-wrapper" ]
+                [ Html.h1 []
+                    [ Html.text ("World Population in " ++ year)
+                    ]
                 ]
+            , Html.div attrs [ horizontalGrouped d ]
+            ]
+        , Html.footer []
+            [ Html.a
+                [ Html.Attributes.href
+                    "https://en.wikipedia.org/wiki/World_population"
+                ]
+                [ Html.text "Data source" ]
             ]
 
         --https://en.wikipedia.org/wiki/World_population
