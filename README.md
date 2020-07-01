@@ -5,9 +5,9 @@ An opinionated and accessible charting library for Elm based on [gampleman/elm-v
 
 The aim of this package is to make it easy to create some basic chart types. 
 It is an opinionated library because every charting module represents a very specific charting choice, that also requires a specific data structure.
-For example, the `Line` module is a time-line chart, that expects time values on the X axis and float values on the Y axis.
+For example, the `Line` module can be a time-line chart, that expects time values on the X axis and float values on the Y axis.
 
-If your aim is to build some personalized charting types not covered here, then you should use `elm-visualization` directly.
+If your aim is to build some personalized charts not covered here, then you should use `elm-visualization` directly.
 
 All chart modules will be as much accessible as possible, but for now this is still a work in progress.
 
@@ -22,4 +22,14 @@ Then navigate the examples in the browser.
 
 ## Tests:
 `elm-test`
+
+## Roadmap:
+* Add areas to lines-charts (stacked and none)
+* Solve tooltips
+* Solve zooming
+* Add sampling
+* Add line-chart animation example
+* Revisit API
+* Add labelling
+* Add table representation
 
