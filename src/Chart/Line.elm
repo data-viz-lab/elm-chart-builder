@@ -377,8 +377,8 @@ if the layout is changed to y, then the X axis
 represents the y one.
 
     Line.init
-        |> Bar.setShowAxisX False
-        |> Bar.render data
+        |> Line.setShowAxisX False
+        |> Line.render data
 
 -}
 setShowAxisX : Bool -> Config -> Config
@@ -395,8 +395,8 @@ if the layout is changed to x, then the Y axis
 represents the x one.
 
     Line.init
-        |> Bar.setShowAxisY False
-        |> Bar.render data
+        |> Line.setShowAxisY False
+        |> Line.render data
 
 -}
 setShowAxisY : Bool -> Config -> Config
@@ -457,7 +457,7 @@ Values: `Line.stackedLayout` or `Line.groupedLayout`
 Default value: Line.groupedLayout
 
     Line.init
-        |> Line.setLayout (Line.stackedLayout Line.noDirection)
+        |> Line.setLayout Line.stackedLayout
         |> Line.render ( data, accessor )
 
 -}
@@ -468,13 +468,9 @@ setLayout value config =
 
 {-| Stacked layout type
 
-Beware that stacked layouts do not support icons
-
-`stackedLayout` expects a `noDirection` or a `divergingDirection` argument.
-
-    Bar.init
-        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
-        |> Bar.render ( data, accessor )
+    Line.init
+        |> Line.setLayout Line.stackedLayout
+        |> Line.render ( data, accessor )
 
 -}
 stackedLayout : Layout
