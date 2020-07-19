@@ -128,6 +128,7 @@ module Chart.Internal.Type exposing
     , setOrientation
     , setShowAxisX
     , setShowAxisY
+    , setShowDataPoints
     , setShowIndividualLabels
     , setTitle
     , setWidth
@@ -423,6 +424,7 @@ type alias ConfigStruct =
     , orientation : Orientation
     , showAxisX : Bool
     , showAxisY : Bool
+    , showDataPoints : Bool
     , title : String
     , width : Float
     , zone : Zone
@@ -451,6 +453,7 @@ defaultConfig =
         , orientation = defaultOrientation
         , showAxisX = True
         , showAxisY = True
+        , showDataPoints = False
         , title = ""
         , width = defaultWidth
         , zone = Time.utc
@@ -983,6 +986,15 @@ setShowAxisY bool config =
             fromConfig config
     in
     toConfig { c | showAxisY = bool }
+
+
+setShowDataPoints : Bool -> Config -> Config
+setShowDataPoints bool config =
+    let
+        c =
+            fromConfig config
+    in
+    toConfig { c | showDataPoints = bool }
 
 
 

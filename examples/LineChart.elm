@@ -205,6 +205,7 @@ main =
     Html.div []
         [ Html.node "style" [] [ Html.text css ]
         , Html.div [ class "wrapper" ] [ Html.h3 [] [ Html.text "time" ], Html.div attrs [ doubleLine ] ]
-        , Html.div [ class "wrapper" ] [ Html.h3 [] [ Html.text "Stacked time" ], Html.div attrs [ doubleLineStackedTime ] ]
-        , Html.div [ class "wrapper" ] [ Html.h3 [] [ Html.text "Stacked linear" ], Html.div attrs [ doubleLineStackedLinear ] ]
+
+        --, Html.div [ class "wrapper" ] [ Html.h3 [] [ Html.text "Stacked time" ], Html.div attrs [ doubleLineStackedTime ] ]
+        --, Html.div [ class "wrapper" ] [ Html.h3 [] [ Html.text "Stacked linear" ], Html.div attrs [ doubleLineStackedLinear ] ]
         ]

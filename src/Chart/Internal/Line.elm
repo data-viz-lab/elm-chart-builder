@@ -5,7 +5,17 @@ module Chart.Internal.Line exposing
 
 import Axis
 import Chart.Internal.Helpers as Helpers
-import Chart.Internal.Symbol exposing (Symbol(..))
+import Chart.Internal.Symbol
+    exposing
+        ( Symbol(..)
+        , circle_
+        , corner
+        , custom
+        , getSymbolByIndex
+        , symbolGap
+        , symbolToId
+        , triangle
+        )
 import Chart.Internal.Type
     exposing
         ( AccessorLinearGroup(..)
@@ -36,6 +46,7 @@ import Chart.Internal.Type
         , leftGap
         , role
         )
+import Color
 import Html exposing (Html)
 import Path exposing (Path)
 import Scale exposing (ContinuousScale)
@@ -45,12 +56,23 @@ import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes
     exposing
         ( class
+        , fill
+        , fillOpacity
+        , stroke
         , transform
         , viewBox
         )
 import TypedSvg.Attributes.InPx exposing (height, width)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
+import TypedSvg.Types
+    exposing
+        ( AlignmentBaseline(..)
+        , AnchorAlignment(..)
+        , Opacity(..)
+        , Paint(..)
+        , ShapeRendering(..)
+        , Transform(..)
+        )
 
 
 
@@ -124,16 +146,18 @@ renderLineGrouped ( data, config ) =
         yRange =
             ( h, 0 )
 
-        sortedLinearData =
+        ( sortedLinearData, sortedPoints ) =
             linearData
                 |> List.map
                     (\d ->
                         let
                             points =
                                 d.points
+                                    |> List.sortBy Tuple.first
                         in
-                        { d | points = List.sortBy Tuple.first points }
+                        ( { d | points = points }, points )
                     )
+                |> List.unzip
 
         xLinearScale : ContinuousScale Float
         xLinearScale =
@@ -195,6 +219,45 @@ renderLineGrouped ( data, config ) =
                                 ]
                         )
                         sortedLinearData
+               ]
+            ++ [ g
+                    [ transform [ Translate m.left m.top ]
+                    , class [ "points" ]
+                    ]
+                 <|
+                    List.indexedMap
+                        (\idx d ->
+                            g
+                                [ class
+                                    [ "line-point"
+                                    , "line-point-" ++ String.fromInt idx
+                                    ]
+                                ]
+                            <|
+                                List.map
+                                    (\( dx, dy ) ->
+                                        g
+                                            [ fillOpacity (Opacity 0)
+                                            , stroke (Paint Color.black)
+                                            , transform
+                                                [ Translate
+                                                    (Scale.convert
+                                                        xLinearScale
+                                                        dx
+                                                        - 6
+                                                    )
+                                                    (Scale.convert
+                                                        yScale
+                                                        dy
+                                                        - 6
+                                                    )
+                                                ]
+                                            ]
+                                            [ circle_ 6 ]
+                                    )
+                                    d
+                        )
+                        sortedPoints
                ]
 
 
