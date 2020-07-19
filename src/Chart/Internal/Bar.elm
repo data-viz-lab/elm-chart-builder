@@ -1,7 +1,16 @@
 module Chart.Internal.Bar exposing
-    ( renderBandGrouped
+    ( GroupedLayoutConfig
+    , StackedLayoutConfig
+    , defaultGroupedLayoutConfig
+    , defaultStackedLayoutConfig
+    , fromGroupedLayoutConfig
+    , fromStackedLayoutConfig
+    , renderBandGrouped
     , renderBandStacked
     , renderHistogram
+    , setGroupedLayout
+    , setIcons
+    , setStackedLayout
     )
 
 import Axis
@@ -33,6 +42,8 @@ import Chart.Internal.Type
         , DomainBandStruct
         , DomainLinear(..)
         , Layout(..)
+        , LayoutConfig(..)
+        , LayoutConfigStruct
         , Orientation(..)
         , PointBand
         , RenderContext(..)
@@ -46,6 +57,7 @@ import Chart.Internal.Type
         , externalToDataHistogram
         , fromConfig
         , fromDataBand
+        , fromLayoutConfig
         , getAxisContinousDataFormatter
         , getBandGroupRange
         , getBandSingleRange
@@ -54,21 +66,18 @@ import Chart.Internal.Type
         , getDomainBandFromData
         , getHeight
         , getIcons
-        , getIconsFromLayout
         , getLinearRange
         , getMargin
         , getOffset
-        , getShowIndividualLabels
         , getStackedValuesAndGroupes
         , getWidth
         , leftGap
         , role
-        , showIcons
-        , showIconsFromLayout
         , stackedValuesInverse
         , symbolCustomSpace
         , symbolSpace
         , toConfig
+        , toLayoutConfig
         )
 import Color
 import Histogram exposing (Bin, HistogramGenerator, Threshold)
@@ -163,7 +172,7 @@ renderBandStacked ( data, config ) =
             case linearDomain of
                 Just ld ->
                     case c.layout of
-                        Stacked Diverging ->
+                        Stacked _ ->
                             ( Tuple.second ld * -1, Tuple.second ld )
 
                         _ ->
@@ -421,13 +430,13 @@ renderBandGrouped ( data, config ) =
 
         iconOffset : Float
         iconOffset =
-            symbolSpace Vertical bandSingleScale (getIconsFromLayout c.layout) + symbolGap
+            symbolSpace Vertical bandSingleScale c.icons + symbolGap
 
         symbolElements =
             case c.layout of
-                Grouped groupedConfig ->
-                    if showIcons groupedConfig then
-                        symbolsToSymbolElements c.orientation bandSingleScale (getIcons groupedConfig)
+                Grouped ->
+                    if iconsAreNotEmpty c then
+                        symbolsToSymbolElements c.orientation bandSingleScale c.icons
 
                     else
                         []
@@ -634,8 +643,8 @@ verticalLabel c x_ y_ point =
 
         showIndividualLabels =
             case c.layout of
-                Grouped config ->
-                    getShowIndividualLabels config
+                Grouped ->
+                    c.showIndividualLabels
 
                 _ ->
                     False
@@ -660,12 +669,12 @@ horizontalSymbol :
 horizontalSymbol c { idx, w, y_, style } =
     let
         symbol =
-            getSymbolByIndex (getIconsFromLayout c.layout) idx
+            getSymbolByIndex c.icons idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
     in
-    if showIconsFromLayout c.layout then
+    if showIconsFromLayout c then
         case symbol of
             Triangle _ ->
                 [ g
@@ -725,12 +734,12 @@ verticalSymbol :
 verticalSymbol c { idx, w, y_, x_, style } =
     let
         symbol =
-            getSymbolByIndex (getIconsFromLayout c.layout) idx
+            getSymbolByIndex c.icons idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
     in
-    if showIconsFromLayout c.layout then
+    if showIconsFromLayout c then
         case symbol of
             Triangle _ ->
                 [ g
@@ -794,8 +803,8 @@ horizontalLabel c x_ y_ point =
 
         showIndividualLabels =
             case c.layout of
-                Grouped config ->
-                    getShowIndividualLabels config
+                Grouped ->
+                    c.showIndividualLabels
 
                 _ ->
                     False
@@ -1119,3 +1128,113 @@ colorCategoricalStyle c idx =
 
         _ ->
             style ""
+
+
+
+-- LAYOUT
+
+
+type GroupedLayoutConfig
+    = GroupedLayoutConfig (GroupedLayoutConfigStruct LayoutConfigStruct)
+
+
+type alias GroupedLayoutConfigStruct c =
+    { c
+        | icons : List (Symbol String)
+        , showIndividualLabels : Bool
+    }
+
+
+type StackedLayoutConfig
+    = StackedLayoutConfig (StackedLayoutConfigStruct LayoutConfigStruct)
+
+
+type alias StackedLayoutConfigStruct c =
+    { c
+        | direction : Direction
+    }
+
+
+defaultGroupedLayoutConfig : GroupedLayoutConfig
+defaultGroupedLayoutConfig =
+    toGroupedLayoutConfig
+        { icons = []
+        , showIndividualLabels = False
+        , direction = NoDirection
+        }
+
+
+defaultStackedLayoutConfig : StackedLayoutConfig
+defaultStackedLayoutConfig =
+    toStackedLayoutConfig
+        { icons = []
+        , showIndividualLabels = False
+        , direction = NoDirection
+        }
+
+
+fromGroupedLayoutConfig : GroupedLayoutConfig -> GroupedLayoutConfigStruct LayoutConfigStruct
+fromGroupedLayoutConfig (GroupedLayoutConfig config) =
+    config
+
+
+toGroupedLayoutConfig : GroupedLayoutConfigStruct LayoutConfigStruct -> GroupedLayoutConfig
+toGroupedLayoutConfig config =
+    GroupedLayoutConfig config
+
+
+fromStackedLayoutConfig : StackedLayoutConfig -> StackedLayoutConfigStruct LayoutConfigStruct
+fromStackedLayoutConfig (StackedLayoutConfig config) =
+    config
+
+
+toStackedLayoutConfig : StackedLayoutConfigStruct LayoutConfigStruct -> StackedLayoutConfig
+toStackedLayoutConfig config =
+    StackedLayoutConfig config
+
+
+setStackedLayout : StackedLayoutConfig -> Config -> Config
+setStackedLayout layoutConfig config =
+    layoutConfig
+        |> fromStackedLayoutConfig
+        |> (\layoutC -> config |> fromConfig |> (\c -> { c | layout = Stacked layoutC.direction }))
+        |> toConfig
+
+
+setGroupedLayout : GroupedLayoutConfig -> Config -> Config
+setGroupedLayout layoutConfig config =
+    layoutConfig
+        |> fromGroupedLayoutConfig
+        |> (\layoutC ->
+                config
+                    |> fromConfig
+                    |> (\c ->
+                            { c
+                                | layout = Grouped
+                                , icons = layoutC.icons
+                                , showIndividualLabels = layoutC.showIndividualLabels
+                            }
+                       )
+           )
+        |> toConfig
+
+
+setIcons : List (Symbol String) -> GroupedLayoutConfig -> GroupedLayoutConfig
+setIcons all config =
+    let
+        c =
+            fromGroupedLayoutConfig config
+    in
+    toGroupedLayoutConfig { c | icons = all }
+
+
+iconsAreNotEmpty : ConfigStruct -> Bool
+iconsAreNotEmpty config =
+    config
+        |> .icons
+        |> (List.isEmpty >> not)
+
+
+showIconsFromLayout : ConfigStruct -> Bool
+showIconsFromLayout config =
+    config.layout == Grouped && iconsAreNotEmpty config

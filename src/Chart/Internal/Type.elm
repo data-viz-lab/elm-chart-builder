@@ -25,11 +25,11 @@ module Chart.Internal.Type exposing
     , DomainTime
     , DomainTimeStruct
     , ExternalData
-    , GroupedConfig
-    , GroupedConfigStruct
     , HistogramConfig
     , HistogramConfigStruct
     , Layout(..)
+    , LayoutConfig
+    , LayoutConfigStruct
     , LinearDomain
     , Margin
     , Orientation(..)
@@ -49,10 +49,10 @@ module Chart.Internal.Type exposing
     , dataLinearGroupToDataLinearStacked
     , dataLinearGroupToDataTime
     , defaultConfig
-    , defaultGroupedConfig
     , defaultHeight
     , defaultHistogramConfig
     , defaultLayout
+    , defaultLayoutConfig
     , defaultMargin
     , defaultOrientation
     , defaultTicksCount
@@ -66,6 +66,7 @@ module Chart.Internal.Type exposing
     , fromDomainLinear
     , fromExternalData
     , fromHistogramConfig
+    , fromLayoutConfig
     , getAxisContinousDataFormatter
     , getAxisXContinousTickCount
     , getAxisXContinousTickFormat
@@ -89,11 +90,9 @@ module Chart.Internal.Type exposing
     , getHistogramDomain
     , getHistogramSteps
     , getIcons
-    , getIconsFromLayout
     , getLinearRange
     , getMargin
     , getOffset
-    , getShowIndividualLabels
     , getStackedValuesAndGroupes
     , getTitle
     , getWidth
@@ -132,8 +131,6 @@ module Chart.Internal.Type exposing
     , setShowIndividualLabels
     , setTitle
     , setWidth
-    , showIcons
-    , showIconsFromLayout
     , stackedValuesInverse
     , symbolCustomSpace
     , symbolSpace
@@ -141,6 +138,7 @@ module Chart.Internal.Type exposing
     , toDataBand
     , toExternalData
     , toHistogramConfig
+    , toLayoutConfig
     )
 
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
@@ -290,7 +288,7 @@ type Orientation
 
 type Layout
     = Stacked Direction
-    | Grouped GroupedConfig
+    | Grouped
 
 
 type Direction
@@ -419,12 +417,14 @@ type alias ConfigStruct =
     , domainTime : DomainTime
     , height : Float
     , histogramDomain : Maybe ( Float, Float )
+    , icons : List (Symbol String)
     , layout : Layout
     , margin : Margin
     , orientation : Orientation
     , showAxisX : Bool
     , showAxisY : Bool
     , showDataPoints : Bool
+    , showIndividualLabels : Bool
     , title : String
     , width : Float
     , zone : Zone
@@ -448,12 +448,14 @@ defaultConfig =
         , domainTime = DomainTime initialDomainTimeStruct
         , height = defaultHeight
         , histogramDomain = Nothing
+        , icons = []
         , layout = defaultLayout
         , margin = defaultMargin
         , orientation = defaultOrientation
         , showAxisX = True
         , showAxisY = True
         , showDataPoints = False
+        , showIndividualLabels = False
         , title = ""
         , width = defaultWidth
         , zone = Time.utc
@@ -490,7 +492,7 @@ ariaLabelledby label =
 
 defaultLayout : Layout
 defaultLayout =
-    Grouped defaultGroupedConfig
+    Grouped
 
 
 defaultOrientation : Orientation
@@ -541,99 +543,62 @@ bottomGap =
 
 
 
--- GROUPED CONFIG
+-- LAYOUT CONFIG
 
 
-type GroupedConfig
-    = GroupedConfig GroupedConfigStruct
+type LayoutConfig
+    = LayoutConfig LayoutConfigStruct
 
 
-type alias GroupedConfigStruct =
-    { icons : List (Symbol String)
+type alias LayoutConfigStruct =
+    { direction : Direction
+    , icons : List (Symbol String)
     , showIndividualLabels : Bool
     }
 
 
-toGroupedConfig : GroupedConfigStruct -> GroupedConfig
-toGroupedConfig config =
-    GroupedConfig config
+toLayoutConfig : LayoutConfigStruct -> LayoutConfig
+toLayoutConfig config =
+    LayoutConfig config
 
 
-fromGroupedConfig : GroupedConfig -> GroupedConfigStruct
-fromGroupedConfig (GroupedConfig config) =
+fromLayoutConfig : LayoutConfig -> LayoutConfigStruct
+fromLayoutConfig (LayoutConfig config) =
     config
 
 
-defaultGroupedConfig : GroupedConfig
-defaultGroupedConfig =
-    toGroupedConfig
-        { icons = []
+defaultLayoutConfig : LayoutConfig
+defaultLayoutConfig =
+    toLayoutConfig
+        { direction = NoDirection
+        , icons = []
         , showIndividualLabels = False
         }
 
 
-showIcons : GroupedConfig -> Bool
-showIcons c =
-    c
-        |> fromGroupedConfig
-        |> .icons
-        |> List.length
-        |> (\l -> l > 0)
-
-
-showIconsFromLayout : Layout -> Bool
-showIconsFromLayout l =
-    case l of
-        Grouped c ->
-            c
-                |> showIcons
-
-        Stacked _ ->
-            False
-
-
-getIcons : GroupedConfig -> List (Symbol String)
+getIcons : LayoutConfig -> List (Symbol String)
 getIcons c =
     c
-        |> fromGroupedConfig
+        |> fromLayoutConfig
         |> .icons
 
 
-getShowIndividualLabels : GroupedConfig -> Bool
-getShowIndividualLabels c =
-    c
-        |> fromGroupedConfig
-        |> .showIndividualLabels
-
-
-getIconsFromLayout : Layout -> List (Symbol String)
-getIconsFromLayout l =
-    case l of
-        Grouped c ->
-            c
-                |> fromGroupedConfig
-                |> .icons
-
-        Stacked _ ->
-            []
-
-
-setIcons : List (Symbol String) -> GroupedConfig -> GroupedConfig
+setIcons : List (Symbol String) -> LayoutConfig -> LayoutConfig
 setIcons all config =
     let
         c =
-            fromGroupedConfig config
+            fromLayoutConfig config
     in
-    toGroupedConfig { c | icons = all }
+    toLayoutConfig { c | icons = all }
 
 
-setShowIndividualLabels : Bool -> GroupedConfig -> GroupedConfig
-setShowIndividualLabels bool config =
+setDirection : Direction -> LayoutConfig -> LayoutConfig
+setDirection direction config =
     let
         c =
-            fromGroupedConfig config
+            fromLayoutConfig config
     in
-    toGroupedConfig { c | showIndividualLabels = bool }
+    toLayoutConfig { c | direction = direction }
 
 
 
@@ -988,6 +953,15 @@ setShowAxisY bool config =
     toConfig { c | showAxisY = bool }
 
 
+setShowIndividualLabels : Bool -> Config -> Config
+setShowIndividualLabels bool config =
+    let
+        c =
+            fromConfig config
+    in
+    toConfig { c | showIndividualLabels = bool }
+
+
 setShowDataPoints : Bool -> Config -> Config
 setShowDataPoints bool config =
     let
@@ -1335,14 +1309,18 @@ getLinearRange config renderContext width height bandScale =
 
         layout =
             c.layout
+
+        showIcons =
+            c.icons
+                |> (List.isEmpty >> not)
     in
     case orientation of
         Horizontal ->
             case layout of
-                Grouped groupedConfig ->
-                    if showIcons groupedConfig then
+                Grouped ->
+                    if showIcons then
                         -- Here we are leaving space for the symbol
-                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale (getIcons groupedConfig) )
+                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale c.icons )
 
                     else
                         ( 0, width )
@@ -1357,10 +1335,10 @@ getLinearRange config renderContext width height bandScale =
 
         Vertical ->
             case layout of
-                Grouped groupedConfig ->
-                    if showIcons groupedConfig then
+                Grouped ->
+                    if showIcons then
                         -- Here we are leaving space for the symbol
-                        ( height - symbolGap - symbolSpace c.orientation bandScale (getIcons groupedConfig), 0 )
+                        ( height - symbolGap - symbolSpace c.orientation bandScale c.icons, 0 )
 
                     else
                         ( height, 0 )
@@ -1385,7 +1363,7 @@ adjustLinearRange config stackedDepth ( a, b ) =
     case orientation of
         Horizontal ->
             case layout of
-                Grouped _ ->
+                Grouped ->
                     ( a, b )
 
                 Stacked _ ->
@@ -1406,7 +1384,7 @@ getOffset config =
                 NoDirection ->
                     Shape.stackOffsetNone
 
-        Grouped _ ->
+        Grouped ->
             Shape.stackOffsetNone
 
 

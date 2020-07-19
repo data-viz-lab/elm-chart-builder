@@ -2,10 +2,11 @@ module Chart.Bar exposing
     ( Accessor
     , init
     , render
-    , setColorPalette, setColorInterpolator, setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setLayout, setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setMargin, setOrientation, setShowAxisX, setShowAxisY, setTitle, setWidth
-    , defaultGroupedConfig, divergingDirection, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
+    , setColorPalette, setColorInterpolator, setDesc, setDimensions, setDomainBandGroup, setDomainBandSingle, setDomainLinear, setHeight, setAxisYTickCount, setAxisYTickFormat, setAxisYTicks, setMargin, setOrientation, setShowAxisX, setShowAxisY, setTitle, setWidth
+    , defaultGroupedLayoutConfig, divergingDirection, horizontalOrientation, noDirection, verticalOrientation
     , setIcons, setShowIndividualLabels
     , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, setSymbolHeight, setSymbolIdentifier, setSymbolPaths, setSymbolUseGap, setSymbolWidth
+    , defaultStackedLayoutConfig, setGroupedLayout, setStackedLayout
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -35,10 +36,10 @@ The Bar module expects the X axis to plot grouped ordinal data and the Y axis to
 
 # Configuration setters arguments
 
-@docs defaultGroupedConfig, divergingDirection, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
+@docs defaultGroupedLayoutConfig, divergingDirection, groupedLayout, horizontalOrientation, noDirection, stackedLayout, verticalOrientation
 
 
-# GroupedConfig setters
+# GroupedLayoutConfig setters
 
 These a specific configurations for the Grouped layout
 
@@ -70,7 +71,7 @@ Icons can be added to grouped bar charts to improve understanding and accessibil
 
     groupedLayout =
         Bar.groupedLayout
-            (Bar.defaultGroupedConfig
+            (Bar.defaultGroupedLayoutConfig
                 |> Bar.setIcons
             )
 
@@ -84,8 +85,13 @@ Icons can be added to grouped bar charts to improve understanding and accessibil
 
 import Chart.Internal.Bar
     exposing
-        ( renderBandGrouped
+        ( GroupedLayoutConfig
+        , StackedLayoutConfig
+        , fromGroupedLayoutConfig
+        , fromStackedLayoutConfig
+        , renderBandGrouped
         , renderBandStacked
+        , setIcons
         )
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..))
 import Chart.Internal.Type as Type
@@ -97,8 +103,8 @@ import Chart.Internal.Type as Type
         , ColorResource(..)
         , Config
         , Direction(..)
-        , GroupedConfig
         , Layout(..)
+        , LayoutConfig
         , Margin
         , Orientation(..)
         , RenderContext(..)
@@ -175,7 +181,7 @@ render ( externalData, accessor ) config =
             Type.externalToDataBand (Type.toExternalData externalData) accessor
     in
     case c.layout of
-        Grouped _ ->
+        Grouped ->
             renderBandGrouped ( data, config )
 
         Stacked _ ->
@@ -208,22 +214,6 @@ Default value: 600
 setWidth : Float -> Config -> Config
 setWidth value config =
     Type.setWidth value config
-
-
-{-| Sets the chart layout.
-
-Values: `Bar.stackedLayout` or `Bar.groupedLayout`
-
-Default value: Bar.groupedLayout
-
-    Bar.init
-        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
-        |> Bar.render ( data, accessor )
-
--}
-setLayout : Layout -> Config -> Config
-setLayout value config =
-    Type.setLayout value config
 
 
 {-| Sets an accessible, long-text description for the svg chart.
@@ -452,22 +442,22 @@ setShowAxisX value config =
     Type.setShowAxisX value config
 
 
-{-| Sets the Icon Symbols list in the `GroupedConfig`.
+{-| Sets the Icon Symbols list in the `GroupedLayoutConfig`.
 
 Default value: []
 
 These are additional symbols at the end of each bar in a group, for facilitating accessibility.
 
-    defaultGroupedConfig
+    defaultGroupedLayoutConfig
         |> setIcons [ Circle, Corner, Triangle ]
 
 -}
-setIcons : List (Symbol String) -> GroupedConfig -> GroupedConfig
+setIcons : List (Symbol String) -> GroupedLayoutConfig -> GroupedLayoutConfig
 setIcons =
-    Type.setIcons
+    Chart.Internal.Bar.setIcons
 
 
-{-| Sets the `showIndividualLabels` boolean value in the `GroupedConfig`.
+{-| Sets the `showIndividualLabels` boolean value in the `GroupedLayoutConfig`.
 
 Default value: `False`
 
@@ -481,11 +471,11 @@ With a vertical layout the available horizontal space is the width of the rects.
 
 With an horizontal layout the available horizontal space is the right margin.
 
-    defaultGroupedConfig
+    defaultGroupedLayoutConfig
         |> Bar.setShowIndividualLabels True
 
 -}
-setShowIndividualLabels : Bool -> GroupedConfig -> GroupedConfig
+setShowIndividualLabels : Bool -> Config -> Config
 setShowIndividualLabels =
     Type.setShowIndividualLabels
 
@@ -517,36 +507,33 @@ verticalOrientation =
     Vertical
 
 
-{-| Stacked layout type
+{-| Sets a Stacked layout for the bar chart
 
 Beware that stacked layouts do not support icons
 
 `stackedLayout` expects a `noDirection` or a `divergingDirection` argument.
 
     Bar.init
-        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
+        |> Bar.setStackedLayout (Bar.defaultStackedLayoutConfig |> Bar.setDirection |> Bar.noDirection)
         |> Bar.render ( data, accessor )
 
 -}
-stackedLayout : Direction -> Layout
-stackedLayout direction =
-    Stacked direction
+setStackedLayout : StackedLayoutConfig -> Config -> Config
+setStackedLayout layoutConfig config =
+    Chart.Internal.Bar.setStackedLayout layoutConfig config
 
 
-{-| Grouped layout type
+{-| Sets a Grouped layout for the bar chart
 This is the default layout type
 
-    groupedLayout =
-        Bar.groupedLayout Bar.defaultGroupedConfig
-
     Bar.init
-        |> Bar.setLayout groupedLayout
-        |> Bar.render (data, accessor)
+        |> Bar.setLayout Bar.defaultGroupedLayoutConfig
+        |> Bar.render ( data, accessor )
 
 -}
-groupedLayout : GroupedConfig -> Layout
-groupedLayout config =
-    Grouped config
+setGroupedLayout : GroupedLayoutConfig -> Config -> Config
+setGroupedLayout layoutConfig config =
+    Chart.Internal.Bar.setGroupedLayout layoutConfig config
 
 
 {-| Bar chart diverging layout
@@ -582,20 +569,39 @@ noDirection =
 {-| Default values for the Grouped Layout specific config
 Used for initialization purposes
 
-    groupedConfig : GroupedConfig
+    groupedConfig : GroupedLayoutConfig
     groupedConfig =
-        Bar.defaultGroupedConfig
+        Bar.defaultGroupedLayoutConfig
             |> ChartType.setIcons (icons "chart-a")
 
 
     Bar.init
-        |> Bar.setLayout (Bar.groupedLayout )
+        |> Bar.setGroupedLayout groupedConfig
         |> Bar.render (data, accessor)
 
 -}
-defaultGroupedConfig : GroupedConfig
-defaultGroupedConfig =
-    Type.defaultGroupedConfig
+defaultGroupedLayoutConfig : GroupedLayoutConfig
+defaultGroupedLayoutConfig =
+    Chart.Internal.Bar.defaultGroupedLayoutConfig
+
+
+{-| Default values for the Stacked Layout specific config
+Used for initialization purposes
+
+    groupedConfig : GroupedLayoutConfig
+    groupedConfig =
+        Bar.defaultStackedLayoutConfig
+            |> ChartType.setIcons (icons "chart-a")
+
+
+    Bar.init
+        |> Bar.setGroupedLayout groupedConfig
+        |> Bar.render (data, accessor)
+
+-}
+defaultStackedLayoutConfig : StackedLayoutConfig
+defaultStackedLayoutConfig =
+    Chart.Internal.Bar.defaultStackedLayoutConfig
 
 
 {-| Bar chart symbol type
