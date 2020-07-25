@@ -38,6 +38,8 @@ module Chart.Internal.Type exposing
     , PointStacked
     , PointTime
     , RenderContext(..)
+    , StackedConfig
+    , StackedConfigStruct
     , StackedValues
     , adjustLinearRange
     , ariaLabelledby
@@ -49,7 +51,6 @@ module Chart.Internal.Type exposing
     , dataLinearGroupToDataLinearStacked
     , dataLinearGroupToDataTime
     , defaultConfig
-    , defaultGroupedConfig
     , defaultHeight
     , defaultHistogramConfig
     , defaultLayout
@@ -98,6 +99,7 @@ module Chart.Internal.Type exposing
     , getTitle
     , getWidth
     , getZone
+    , groupedConfig
     , leftGap
     , role
     , setAxisXContinousTickCount
@@ -110,6 +112,7 @@ module Chart.Internal.Type exposing
     , setCurve
     , setDesc
     , setDimensions
+    , setDirection
     , setDomainBand
     , setDomainBandBandGroup
     , setDomainBandBandSingle
@@ -126,14 +129,15 @@ module Chart.Internal.Type exposing
     , setLayout
     , setMargin
     , setOrientation
-    , setShowAxisX
-    , setShowAxisY
-    , setShowDataPoints
-    , setShowIndividualLabels
     , setTitle
     , setWidth
+    , showAxisX
+    , showAxisY
+    , showDataPoints
     , showIcons
     , showIconsFromLayout
+    , showIndividualLabels
+    , stackedConfig
     , stackedValuesInverse
     , symbolCustomSpace
     , symbolSpace
@@ -289,7 +293,7 @@ type Orientation
 
 
 type Layout
-    = Stacked Direction
+    = Stacked StackedConfig
     | Grouped GroupedConfig
 
 
@@ -490,7 +494,7 @@ ariaLabelledby label =
 
 defaultLayout : Layout
 defaultLayout =
-    Grouped defaultGroupedConfig
+    Grouped groupedConfig
 
 
 defaultOrientation : Orientation
@@ -564,8 +568,8 @@ fromGroupedConfig (GroupedConfig config) =
     config
 
 
-defaultGroupedConfig : GroupedConfig
-defaultGroupedConfig =
+groupedConfig : GroupedConfig
+groupedConfig =
     toGroupedConfig
         { icons = []
         , showIndividualLabels = False
@@ -627,8 +631,8 @@ setIcons all config =
     toGroupedConfig { c | icons = all }
 
 
-setShowIndividualLabels : Bool -> GroupedConfig -> GroupedConfig
-setShowIndividualLabels bool config =
+showIndividualLabels : Bool -> GroupedConfig -> GroupedConfig
+showIndividualLabels bool config =
     let
         c =
             fromGroupedConfig config
@@ -638,6 +642,40 @@ setShowIndividualLabels bool config =
 
 
 -- STACKED
+
+
+type StackedConfig
+    = StackedConfig StackedConfigStruct
+
+
+type alias StackedConfigStruct =
+    { direction : Direction
+    }
+
+
+toStackedConfig : StackedConfigStruct -> StackedConfig
+toStackedConfig config =
+    StackedConfig config
+
+
+fromStackedConfig : StackedConfig -> StackedConfigStruct
+fromStackedConfig (StackedConfig config) =
+    config
+
+
+stackedConfig : StackedConfig
+stackedConfig =
+    toStackedConfig
+        { direction = NoDirection
+        }
+
+
+setDirection : Direction -> StackedConfig -> StackedConfig
+setDirection direction config =
+    config
+        |> fromStackedConfig
+        |> (\c -> { c | direction = direction })
+        |> toStackedConfig
 
 
 type alias StackedValues =
@@ -970,8 +1008,8 @@ setDomainLinearAndTimeY linearDomain config =
     toConfig { c | domainLinear = DomainLinear newDomain, domainTime = DomainTime newDomainTime }
 
 
-setShowAxisX : Bool -> Config -> Config
-setShowAxisX bool config =
+showAxisX : Bool -> Config -> Config
+showAxisX bool config =
     let
         c =
             fromConfig config
@@ -979,8 +1017,8 @@ setShowAxisX bool config =
     toConfig { c | showAxisX = bool }
 
 
-setShowAxisY : Bool -> Config -> Config
-setShowAxisY bool config =
+showAxisY : Bool -> Config -> Config
+showAxisY bool config =
     let
         c =
             fromConfig config
@@ -988,8 +1026,8 @@ setShowAxisY bool config =
     toConfig { c | showAxisY = bool }
 
 
-setShowDataPoints : Bool -> Config -> Config
-setShowDataPoints bool config =
+showDataPoints : Bool -> Config -> Config
+showDataPoints bool config =
     let
         c =
             fromConfig config
@@ -1339,10 +1377,10 @@ getLinearRange config renderContext width height bandScale =
     case orientation of
         Horizontal ->
             case layout of
-                Grouped groupedConfig ->
-                    if showIcons groupedConfig then
+                Grouped gc ->
+                    if showIcons gc then
                         -- Here we are leaving space for the symbol
-                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale (getIcons groupedConfig) )
+                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale (getIcons gc) )
 
                     else
                         ( 0, width )
@@ -1357,10 +1395,10 @@ getLinearRange config renderContext width height bandScale =
 
         Vertical ->
             case layout of
-                Grouped groupedConfig ->
-                    if showIcons groupedConfig then
+                Grouped gc ->
+                    if showIcons gc then
                         -- Here we are leaving space for the symbol
-                        ( height - symbolGap - symbolSpace c.orientation bandScale (getIcons groupedConfig), 0 )
+                        ( height - symbolGap - symbolSpace c.orientation bandScale (getIcons gc), 0 )
 
                     else
                         ( height, 0 )
@@ -1398,13 +1436,17 @@ adjustLinearRange config stackedDepth ( a, b ) =
 getOffset : Config -> List (List ( Float, Float )) -> List (List ( Float, Float ))
 getOffset config =
     case fromConfig config |> .layout of
-        Stacked direction ->
-            case direction of
-                Diverging ->
-                    Shape.stackOffsetDiverging
+        Stacked c ->
+            c
+                |> fromStackedConfig
+                |> (\{ direction } ->
+                        case direction of
+                            Diverging ->
+                                Shape.stackOffsetDiverging
 
-                NoDirection ->
-                    Shape.stackOffsetNone
+                            NoDirection ->
+                                Shape.stackOffsetNone
+                   )
 
         Grouped _ ->
             Shape.stackOffsetNone

@@ -172,7 +172,7 @@ verticalGrouped =
     Bar.init
         |> Bar.setColorInterpolator Scale.Color.plasmaInterpolator
         |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (iconsCustom "chart-a")))
+        |> Bar.setLayout (Bar.groupedLayout (Bar.groupedConfig |> Bar.setIcons (iconsCustom "chart-a")))
         |> Bar.setAxisYTickCount 5
         |> Bar.setTitle "Vertical Grouped Chart"
         |> Bar.setDesc "A vertical grouped chart example to demonstrate the charting library"
@@ -188,7 +188,7 @@ verticalGroupedWithLabels : Html msg
 verticalGroupedWithLabels =
     Bar.init
         |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
+        |> Bar.setLayout (Bar.groupedLayout (Bar.groupedConfig |> Bar.showIndividualLabels True))
         |> Bar.setAxisYTickCount 5
         |> Bar.setTitle "Vertical Grouped Chart"
         |> Bar.setDesc "A vertical grouped chart example to demonstrate the charting library"
@@ -204,7 +204,7 @@ verticalStacked : Html msg
 verticalStacked =
     Bar.init
         |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
+        |> Bar.setLayout (Bar.stackedLayout (Bar.stackedConfig |> Bar.noDirection))
         |> Bar.setTitle "Vertical Stacked Chart"
         |> Bar.setDesc "A vertical stacked chart example to demonstrate the charting library"
         |> Bar.setDimensions
@@ -220,7 +220,7 @@ horizontalGrouped =
     Bar.init
         |> Bar.setColorInterpolator Scale.Color.plasmaInterpolator
         |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (icons "chart-b")))
+        |> Bar.setLayout (Bar.groupedLayout (Bar.groupedConfig |> Bar.setIcons (icons "chart-b")))
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setAxisYTickCount 5
         |> Bar.setAxisYTickFormat valueFormatter
@@ -238,7 +238,7 @@ horizontalGroupedWithLabels : Html msg
 horizontalGroupedWithLabels =
     Bar.init
         |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
+        |> Bar.setLayout (Bar.groupedLayout (Bar.groupedConfig |> Bar.showIndividualLabels True))
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setAxisYTickCount 5
         |> Bar.setAxisYTickFormat valueFormatter
@@ -256,7 +256,7 @@ horizontalStacked : Html msg
 horizontalStacked =
     Bar.init
         |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
+        |> Bar.setLayout (Bar.stackedLayout (Bar.stackedConfig |> Bar.noDirection))
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setTitle "Horizontal Stacked Chart"
         |> Bar.setDesc "A horizontal stacked chart example to demonstrate the charting library"
@@ -272,7 +272,7 @@ horizontalStackedDiverging : Html msg
 horizontalStackedDiverging =
     Bar.init
         |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
+        |> Bar.setLayout (Bar.stackedLayout (Bar.stackedConfig |> Bar.diverging))
         |> Bar.setOrientation Bar.horizontalOrientation
         |> Bar.setTitle "Horizontal Stacked Diverging Chart"
         |> Bar.setDesc "A horizontal stacked diverging chart example to demonstrate the charting library"
@@ -289,7 +289,7 @@ verticalStackedDiverging : Html msg
 verticalStackedDiverging =
     Bar.init
         |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
+        |> Bar.setLayout (Bar.stackedLayout (Bar.stackedConfig |> Bar.diverging))
         |> Bar.setOrientation Bar.verticalOrientation
         |> Bar.setTitle "Vertical Stacked Diverging Chart"
         |> Bar.setDesc "A vertical stacked diverging chart example to demonstrate the charting library"
