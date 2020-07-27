@@ -163,7 +163,7 @@ renderBandStacked ( data, config ) =
             case linearDomain of
                 Just ld ->
                     case c.layout of
-                        Stacked Diverging ->
+                        Stacked _ ->
                             ( Tuple.second ld * -1, Tuple.second ld )
 
                         _ ->

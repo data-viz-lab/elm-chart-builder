@@ -38,6 +38,8 @@ module Chart.Internal.Type exposing
     , PointStacked
     , PointTime
     , RenderContext(..)
+    , StackedConfig
+    , StackedConfigStruct
     , StackedValues
     , adjustLinearRange
     , ariaLabelledby
@@ -55,6 +57,7 @@ module Chart.Internal.Type exposing
     , defaultLayout
     , defaultMargin
     , defaultOrientation
+    , defaultStackedConfig
     , defaultTicksCount
     , defaultWidth
     , externalToDataBand
@@ -110,6 +113,7 @@ module Chart.Internal.Type exposing
     , setCurve
     , setDesc
     , setDimensions
+    , setDirection
     , setDomainBand
     , setDomainBandBandGroup
     , setDomainBandBandSingle
@@ -289,7 +293,7 @@ type Orientation
 
 
 type Layout
-    = Stacked Direction
+    = Stacked StackedConfig
     | Grouped GroupedConfig
 
 
@@ -634,6 +638,52 @@ setShowIndividualLabels bool config =
             fromGroupedConfig config
     in
     toGroupedConfig { c | showIndividualLabels = bool }
+
+
+
+-- STACKED CONFIG
+
+
+type StackedConfig
+    = StackedConfig StackedConfigStruct
+
+
+type alias StackedConfigStruct =
+    { direction : Direction
+    }
+
+
+toStackedConfig : StackedConfigStruct -> StackedConfig
+toStackedConfig config =
+    StackedConfig config
+
+
+fromStackedConfig : StackedConfig -> StackedConfigStruct
+fromStackedConfig (StackedConfig config) =
+    config
+
+
+defaultStackedConfig : StackedConfig
+defaultStackedConfig =
+    toStackedConfig
+        { direction = NoDirection
+        }
+
+
+getDirection : StackedConfig -> Direction
+getDirection c =
+    c
+        |> fromStackedConfig
+        |> .direction
+
+
+setDirection : Direction -> StackedConfig -> StackedConfig
+setDirection direction config =
+    let
+        c =
+            fromStackedConfig config
+    in
+    toStackedConfig { c | direction = direction }
 
 
 
@@ -1398,8 +1448,8 @@ adjustLinearRange config stackedDepth ( a, b ) =
 getOffset : Config -> List (List ( Float, Float )) -> List (List ( Float, Float ))
 getOffset config =
     case fromConfig config |> .layout of
-        Stacked direction ->
-            case direction of
+        Stacked stackedConfig ->
+            case stackedConfig |> fromStackedConfig |> .direction of
                 Diverging ->
                     Shape.stackOffsetDiverging
 

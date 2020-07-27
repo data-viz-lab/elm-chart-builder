@@ -45,20 +45,20 @@ text {
 iconsCustom : String -> List (Bar.BarSymbol msg)
 iconsCustom prefix =
     [ Bar.symbolCustom
-        |> Bar.setSymbolIdentifier (prefix ++ "-bicycle-symbol")
-        |> Bar.setSymbolWidth 640
-        |> Bar.setSymbolHeight 512
-        |> Bar.setSymbolPaths [ bicycleSymbol ]
+        |> Bar.withSymbolIdentifier (prefix ++ "-bicycle-symbol")
+        |> Bar.withSymbolWidth 640
+        |> Bar.withSymbolHeight 512
+        |> Bar.withSymbolPaths [ bicycleSymbol ]
     , Bar.symbolCustom
-        |> Bar.setSymbolIdentifier (prefix ++ "-car-symbol")
-        |> Bar.setSymbolWidth 640
-        |> Bar.setSymbolHeight 512
-        |> Bar.setSymbolPaths [ carSymbol ]
+        |> Bar.withSymbolIdentifier (prefix ++ "-car-symbol")
+        |> Bar.withSymbolWidth 640
+        |> Bar.withSymbolHeight 512
+        |> Bar.withSymbolPaths [ carSymbol ]
     , Bar.symbolCustom
-        |> Bar.setSymbolIdentifier (prefix ++ "-plane-symbol")
-        |> Bar.setSymbolWidth 576
-        |> Bar.setSymbolHeight 512
-        |> Bar.setSymbolPaths [ planeSymbol ]
+        |> Bar.withSymbolIdentifier (prefix ++ "-plane-symbol")
+        |> Bar.withSymbolWidth 576
+        |> Bar.withSymbolHeight 512
+        |> Bar.withSymbolPaths [ planeSymbol ]
     ]
 
 
@@ -170,135 +170,126 @@ attrs =
 verticalGrouped : Html msg
 verticalGrouped =
     Bar.init
-        |> Bar.setColorInterpolator Scale.Color.plasmaInterpolator
-        |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (iconsCustom "chart-a")))
-        |> Bar.setAxisYTickCount 5
-        |> Bar.setTitle "Vertical Grouped Chart"
-        |> Bar.setDesc "A vertical grouped chart example to demonstrate the charting library"
-        |> Bar.setDimensions
-            { margin = { top = 10, right = 10, bottom = 25, left = 35 }
-            , width = width
-            , height = height
-            }
+        { title = "Vertical Grouped Chart"
+        , desc = "A vertical grouped chart example to demonstrate the charting library"
+        , margin = { top = 10, right = 10, bottom = 25, left = 35 }
+        , width = width
+        , height = height
+        }
+        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withLayout (Bar.grouped (Bar.groupedConfig |> Bar.withIcons (iconsCustom "chart-a")))
+        |> Bar.withYAxisTickCount 5
+        |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.render ( data, accessor )
 
 
 verticalGroupedWithLabels : Html msg
 verticalGroupedWithLabels =
     Bar.init
-        |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
-        |> Bar.setAxisYTickCount 5
-        |> Bar.setTitle "Vertical Grouped Chart"
-        |> Bar.setDesc "A vertical grouped chart example to demonstrate the charting library"
-        |> Bar.setDimensions
-            { margin = { top = 20, right = 10, bottom = 25, left = 35 }
-            , width = width
-            , height = height
-            }
+        { title = "Vertical Grouped Chart with labels"
+        , desc = "A vertical grouped chart example to demonstrate the charting library"
+        , margin = { top = 20, right = 10, bottom = 25, left = 35 }
+        , width = width
+        , height = height
+        }
+        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withLayout (Bar.grouped (Bar.groupedConfig |> Bar.withIndividualLabels))
+        |> Bar.withYAxisTickCount 5
         |> Bar.render ( data, accessor )
 
 
 verticalStacked : Html msg
 verticalStacked =
     Bar.init
-        |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
-        |> Bar.setTitle "Vertical Stacked Chart"
-        |> Bar.setDesc "A vertical stacked chart example to demonstrate the charting library"
-        |> Bar.setDimensions
-            { margin = { top = 10, right = 20, bottom = 25, left = 35 }
-            , width = width
-            , height = height
-            }
+        { title = "Vertical Stacked Chart"
+        , desc = "A vertical stacked chart example to demonstrate the charting library"
+        , margin = { top = 20, right = 10, bottom = 25, left = 35 }
+        , width = width
+        , height = height
+        }
+        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withLayout (Bar.stacked Bar.stackedConfig)
         |> Bar.render ( data, accessor )
 
 
 horizontalGrouped : Html msg
 horizontalGrouped =
     Bar.init
-        |> Bar.setColorInterpolator Scale.Color.plasmaInterpolator
-        |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setIcons (icons "chart-b")))
-        |> Bar.setOrientation Bar.horizontalOrientation
-        |> Bar.setAxisYTickCount 5
-        |> Bar.setAxisYTickFormat valueFormatter
-        |> Bar.setTitle "Horizontal Grouped Chart"
-        |> Bar.setDesc "A horizontal grouped chart example to demonstrate the charting library"
-        |> Bar.setDimensions
-            { margin = { top = 10, right = 10, bottom = 32, left = 35 }
-            , width = width
-            , height = height
-            }
+        { title = "Horizontal Grouped Chart"
+        , desc = "A horizontal grouped chart example to demonstrate the charting library"
+        , margin = { top = 10, right = 10, bottom = 32, left = 35 }
+        , width = width
+        , height = height
+        }
+        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withLayout (Bar.grouped (Bar.groupedConfig |> Bar.withIcons (icons "chart-b")))
+        |> Bar.withOrientation Bar.horizontal
+        |> Bar.withYAxisTickCount 5
+        |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.render ( data, accessor )
 
 
 horizontalGroupedWithLabels : Html msg
 horizontalGroupedWithLabels =
     Bar.init
-        |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.groupedLayout (Bar.defaultGroupedConfig |> Bar.setShowIndividualLabels True))
-        |> Bar.setOrientation Bar.horizontalOrientation
-        |> Bar.setAxisYTickCount 5
-        |> Bar.setAxisYTickFormat valueFormatter
-        |> Bar.setTitle "Horizontal Grouped Chart"
-        |> Bar.setDesc "A horizontal grouped chart example to demonstrate the charting library"
-        |> Bar.setDimensions
-            { margin = { top = 10, right = 20, bottom = 32, left = 35 }
-            , width = width
-            , height = height
-            }
+        { title = "Horizontal Grouped Chart"
+        , desc = "A horizontal grouped chart example to demonstrate the charting library"
+        , margin = { top = 10, right = 20, bottom = 32, left = 35 }
+        , width = width
+        , height = height
+        }
+        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withLayout (Bar.grouped (Bar.groupedConfig |> Bar.withIndividualLabels))
+        |> Bar.withOrientation Bar.horizontal
+        |> Bar.withYAxisTickCount 5
+        |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.render ( data, accessor )
 
 
 horizontalStacked : Html msg
 horizontalStacked =
     Bar.init
-        |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
-        |> Bar.setOrientation Bar.horizontalOrientation
-        |> Bar.setTitle "Horizontal Stacked Chart"
-        |> Bar.setDesc "A horizontal stacked chart example to demonstrate the charting library"
-        |> Bar.setDimensions
-            { margin = { top = 20, right = 20, bottom = 30, left = 30 }
-            , width = width
-            , height = height
-            }
+        { title = "Horizontal Stacked Chart"
+        , desc = "A horizontal stacked chart example to demonstrate the charting library"
+        , margin = { top = 20, right = 20, bottom = 30, left = 30 }
+        , width = width
+        , height = height
+        }
+        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withLayout (Bar.stacked Bar.stackedConfig)
+        |> Bar.withOrientation Bar.horizontal
         |> Bar.render ( data, accessor )
 
 
 horizontalStackedDiverging : Html msg
 horizontalStackedDiverging =
     Bar.init
-        |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
-        |> Bar.setOrientation Bar.horizontalOrientation
-        |> Bar.setTitle "Horizontal Stacked Diverging Chart"
-        |> Bar.setDesc "A horizontal stacked diverging chart example to demonstrate the charting library"
-        |> Bar.setDimensions
-            { margin = { top = 20, right = 20, bottom = 30, left = 30 }
-            , width = width
-            , height = height
-            }
-        |> Bar.setAxisYTickFormat (abs >> valueFormatter)
+        { title = "Horizontal Stacked Diverging Chart"
+        , desc = "A horizontal stacked diverging chart example to demonstrate the charting library"
+        , margin = { top = 20, right = 20, bottom = 30, left = 30 }
+        , width = width
+        , height = height
+        }
+        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withLayout (Bar.stacked (Bar.stackedConfig |> Bar.diverging))
+        |> Bar.withOrientation Bar.horizontal
+        |> Bar.withYAxisTickFormat (abs >> valueFormatter)
         |> Bar.render ( dataStacked, accessor )
 
 
 verticalStackedDiverging : Html msg
 verticalStackedDiverging =
     Bar.init
-        |> Bar.setColorPalette Scale.Color.tableau10
-        |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
-        |> Bar.setOrientation Bar.verticalOrientation
-        |> Bar.setTitle "Vertical Stacked Diverging Chart"
-        |> Bar.setDesc "A vertical stacked diverging chart example to demonstrate the charting library"
-        |> Bar.setDimensions
-            { margin = { top = 20, right = 10, bottom = 30, left = 35 }
-            , width = width
-            , height = height
-            }
-        |> Bar.setAxisYTickFormat (abs >> valueFormatter)
+        { title = "Vertical Stacked Diverging Chart"
+        , desc = "A vertical stacked diverging chart example to demonstrate the charting library"
+        , margin = { top = 20, right = 10, bottom = 30, left = 35 }
+        , width = width
+        , height = height
+        }
+        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withLayout (Bar.stacked (Bar.stackedConfig |> Bar.diverging))
+        |> Bar.withOrientation Bar.vertical
+        |> Bar.withYAxisTickFormat (abs >> valueFormatter)
         |> Bar.render ( dataStacked, accessor )
 
 
