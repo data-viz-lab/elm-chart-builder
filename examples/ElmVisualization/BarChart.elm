@@ -63,16 +63,14 @@ accessor =
 chart : Html msg
 chart =
     Bar.init
-        |> Bar.setHeight 400
-        |> Bar.setTitle "A simple bar chart"
-        |> Bar.setDesc "This module shows how to build a simple bar chart"
-        |> Bar.setDomainLinear ( 0, 5 )
-        |> Bar.setAxisYTickCount 5
-        |> Bar.setDimensions
-            { margin = { top = 10, right = 10, bottom = 30, left = 30 }
-            , width = 600
-            , height = 400
-            }
+        { title = "A simple bar chart"
+        , desc = "This module shows how to build a simple bar chart"
+        , margin = { top = 10, right = 10, bottom = 30, left = 30 }
+        , width = 600
+        , height = 400
+        }
+        |> Bar.withDomainLinear ( 0, 5 )
+        |> Bar.withYAxisTickCount 5
         |> Bar.render ( timeSeries, accessor )
 
 

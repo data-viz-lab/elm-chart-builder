@@ -109,15 +109,14 @@ attrs =
 doubleLine : Html msg
 doubleLine =
     Line.init
-        |> Line.setTitle "A two line chart"
-        |> Line.setDesc "A two line chart example to demonstrate the charting library"
-        |> Line.setAxisYContinousTickCount 5
-        |> Line.setAxisXContinousTickCount 5
-        |> Line.setDimensions
-            { margin = { top = 10, right = 20, bottom = 30, left = 30 }
-            , width = width
-            , height = height
-            }
+        { title = "A two line chart"
+        , desc = "A two line chart example to demonstrate the charting library"
+        , margin = { top = 10, right = 20, bottom = 30, left = 30 }
+        , width = width
+        , height = height
+        }
+        |> Line.withAxisYContinousTickCount 5
+        |> Line.withAxisXContinousTickCount 5
         |> Line.render ( data, accessor )
 
 
@@ -174,23 +173,22 @@ accessorLinear =
 
 doubleLineStacked =
     Line.init
-        |> Line.setTitle "A two line chart"
-        |> Line.setDesc "A two line chart example to demonstrate the charting library"
-        |> Line.setAxisYContinousTickCount 5
-        |> Line.setAxisXContinousTickCount 5
-        |> Line.setLayout Line.stackedLayout
-        |> Line.setDimensions
-            { margin = { top = 10, right = 20, bottom = 30, left = 30 }
-            , width = width
-            , height = height
-            }
+        { title = "A two line chart"
+        , desc = "A two line chart example to demonstrate the charting library"
+        , margin = { top = 10, right = 20, bottom = 30, left = 30 }
+        , width = width
+        , height = height
+        }
+        |> Line.withAxisYContinousTickCount 5
+        |> Line.withAxisXContinousTickCount 5
+        |> Line.withLayout (Line.stacked Line.stackedConfig)
 
 
 doubleLineStackedLinear : Html msg
 doubleLineStackedLinear =
     doubleLineStacked
-        |> Line.setAxisXContinousTicks xAxisTicks
-        |> Line.setAxisXContinousTickFormat (round >> String.fromInt)
+        |> Line.withAxisXContinousTicks xAxisTicks
+        |> Line.withAxisXContinousTickFormat (round >> String.fromInt)
         |> Line.render ( dataLinear, accessorLinear )
 
 

@@ -148,7 +148,7 @@ accessor =
 
 histoConfig =
     Histo.initHistogramConfig
-        |> Histo.setSteps [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
+        |> Histo.withSteps [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
 
 
 dataAccessor =
@@ -158,10 +158,14 @@ dataAccessor =
 histo : Html msg
 histo =
     Histo.init
-        |> Histo.setDimensions { margin = margin, width = width, height = height }
-        |> Histo.setDomain ( 0, 1 )
-        |> Histo.setAxisYTickFormat (Numeral.format "0")
-        |> Histo.setColor color
+        { title = "Histogram bar chart example"
+        , desc = ""
+        , margin = margin
+        , width = width
+        , height = height
+        }
+        |> Histo.withDomain ( 0, 1 )
+        |> Histo.withColor color
         |> Histo.render ( data, dataAccessor )
 
 
@@ -179,9 +183,14 @@ preProcessedDataAccessor =
 preProcessedHisto : Html msg
 preProcessedHisto =
     Histo.init
-        |> Histo.setDimensions { margin = margin, width = width, height = height }
-        |> Histo.setAxisYTickFormat (Numeral.format "0,0")
-        |> Histo.setColor color
+        { title = "Histogram bar chart example"
+        , desc = ""
+        , margin = margin
+        , width = width
+        , height = height
+        }
+        |> Histo.withYAxisTickFormat (Numeral.format "0,0")
+        |> Histo.withColor color
         |> Histo.render ( preProcessedData, preProcessedDataAccessor )
 
 

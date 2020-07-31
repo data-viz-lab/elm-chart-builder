@@ -250,16 +250,17 @@ attrs =
 horizontalGrouped : Data -> Html Msg
 horizontalGrouped d =
     Bar.init
-        |> Bar.setColorPalette [ Color.rgb255 166 189 219 ]
-        |> Bar.setOrientation Bar.horizontalOrientation
-        |> Bar.setAxisYTickFormat valueFormatter
-        |> Bar.setAxisYTickCount 5
-        |> Bar.setDomainLinear domain
-        |> Bar.setDimensions
-            { margin = { top = 60, right = 20, bottom = 30, left = 125 }
-            , width = width
-            , height = height
-            }
+        { title = "Animated bar chart example"
+        , desc = "Animated bar chart example"
+        , margin = { top = 60, right = 20, bottom = 30, left = 125 }
+        , width = width
+        , height = height
+        }
+        |> Bar.withColorPalette [ Color.rgb255 166 189 219 ]
+        |> Bar.withOrientation Bar.horizontal
+        |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.withYAxisTickCount 5
+        |> Bar.withDomainLinear domain
         |> Bar.render ( d, accessor )
 
 

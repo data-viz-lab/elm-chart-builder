@@ -95,18 +95,17 @@ accessor =
 
 line =
     Line.init
-        |> Line.setTitle "Smoking in England"
-        |> Line.setDesc "Smoking in England"
-        |> Line.setCurve (\d -> Shape.basisCurve d)
-        |> Line.setAxisYContinousTickCount 5
-        |> Line.setAxisXContinousTicks xAxisTicks
-        |> Line.setAxisXContinousTickFormat (round >> String.fromInt)
-        |> Line.setDomainY ( 0, 50 )
-        |> Line.setDimensions
-            { margin = { top = 10, right = 20, bottom = 30, left = 30 }
-            , width = 700
-            , height = 400
-            }
+        { title = "Smoking in England"
+        , desc = "Smoking in England"
+        , margin = { top = 10, right = 20, bottom = 30, left = 30 }
+        , width = 700
+        , height = 400
+        }
+        --|> Line.withCurve (\d -> Shape.basisCurve d)
+        |> Line.withAxisYContinousTickCount 5
+        |> Line.withAxisXContinousTicks xAxisTicks
+        |> Line.withAxisXContinousTickFormat (round >> String.fromInt)
+        |> Line.withDomainY ( 0, 50 )
 
 
 lineMale : Html msg

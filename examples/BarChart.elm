@@ -28,16 +28,20 @@ body {
 }
 
 .chart-wrapper {
-    border: 1px solid #c4c4c4;
+  border: 1px solid #c4c4c4;
 }
 
 .axis path,
 .axis line {
-    stroke: #b7b7b7;
+  stroke: #b7b7b7;
 }
 
 text {
-    fill: #333;
+  fill: #333;
+}
+
+h5 {
+  margin: 2px;
 }
 """
 
@@ -124,6 +128,27 @@ dataStacked =
     ]
 
 
+dataStackedDiverging : List Data
+dataStackedDiverging =
+    [ { groupLabel = "A"
+      , x = "a"
+      , y = -10
+      }
+    , { groupLabel = "A"
+      , x = "b"
+      , y = 13
+      }
+    , { groupLabel = "B"
+      , x = "a"
+      , y = -11
+      }
+    , { groupLabel = "B"
+      , x = "b"
+      , y = 23
+      }
+    ]
+
+
 accessor : Bar.Accessor Data
 accessor =
     Bar.Accessor .groupLabel .x .y
@@ -161,7 +186,7 @@ valueFormatter =
 
 attrs : List (Html.Attribute msg)
 attrs =
-    [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
+    [ Html.Attributes.style "height" (String.fromFloat (height + 20) ++ "px")
     , Html.Attributes.style "width" (String.fromFloat width ++ "px")
     , class "chart-wrapper"
     ]
@@ -273,8 +298,8 @@ horizontalStackedDiverging =
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withLayout (Bar.stacked (Bar.stackedConfig |> Bar.diverging))
         |> Bar.withOrientation Bar.horizontal
-        |> Bar.withYAxisTickFormat (abs >> valueFormatter)
-        |> Bar.render ( dataStacked, accessor )
+        |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.render ( dataStackedDiverging, accessor )
 
 
 verticalStackedDiverging : Html msg
@@ -289,8 +314,13 @@ verticalStackedDiverging =
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withLayout (Bar.stacked (Bar.stackedConfig |> Bar.diverging))
         |> Bar.withOrientation Bar.vertical
-        |> Bar.withYAxisTickFormat (abs >> valueFormatter)
-        |> Bar.render ( dataStacked, accessor )
+        |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.render ( dataStackedDiverging, accessor )
+
+
+chartLabel : String -> Html msg
+chartLabel label =
+    Html.div [] [ Html.h5 [] [ Html.text label ] ]
 
 
 main : Html msg
@@ -299,13 +329,13 @@ main =
         [ Html.node "style" [] [ Html.text css ]
         , Html.div
             [ class "wrapper" ]
-            [ Html.div attrs [ verticalGrouped ]
-            , Html.div attrs [ verticalGroupedWithLabels ]
-            , Html.div attrs [ horizontalGrouped ]
-            , Html.div attrs [ horizontalGroupedWithLabels ]
-            , Html.div attrs [ verticalStacked ]
-            , Html.div attrs [ horizontalStacked ]
-            , Html.div attrs [ horizontalStackedDiverging ]
-            , Html.div attrs [ verticalStackedDiverging ]
+            [ Html.div attrs [ chartLabel "vertical grouped with icons", verticalGrouped ]
+            , Html.div attrs [ chartLabel "vertical grouped with labels", verticalGroupedWithLabels ]
+            , Html.div attrs [ chartLabel "horizontal grouped with icons", horizontalGrouped ]
+            , Html.div attrs [ chartLabel "horizontal grouped with labels", horizontalGroupedWithLabels ]
+            , Html.div attrs [ chartLabel "vertical stacked", verticalStacked ]
+            , Html.div attrs [ chartLabel "horizontal stacked", horizontalStacked ]
+            , Html.div attrs [ chartLabel "horizontal stacked diverging", horizontalStackedDiverging ]
+            , Html.div attrs [ chartLabel "vertical stacked diverging", verticalStackedDiverging ]
             ]
         ]

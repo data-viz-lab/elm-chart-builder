@@ -3,7 +3,7 @@ module Chart.Bar exposing
     , init
     , render
     , withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withLayout, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowAxisX, withShowAxisY
-    , defaultGroupedConfig, diverging, grouped, horizontal, stacked, vertical
+    , diverging, grouped, horizontal, stacked, vertical
     , withIcons, withIndividualLabels
     , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolUseGap, withSymbolWidth
     , groupedConfig, stackedConfig
@@ -36,10 +36,10 @@ The Bar module expects the X axis to plot grouped ordinal data and the Y axis to
 
 # Configuration withters arguments
 
-@docs defaultGroupedConfig, diverging, grouped, horizontal, stacked, vertical
+@docs diverging, grouped, horizontal, stacked, vertical
 
 
-# GroupedConfig withters
+# LayoutConfig withters
 
 These a specific configurations for the Grouped layout
 
@@ -71,7 +71,7 @@ Icons can be added to grouped bar charts to improve understanding and accessibil
 
     grouped =
         Bar.grouped
-            (Bar.defaultGroupedConfig
+            (Bar.defaultLayoutConfig
                 |> Bar.withIcons
             )
 
@@ -97,13 +97,13 @@ import Chart.Internal.Type as Type
         , AxisOrientation(..)
         , ColorResource(..)
         , Config
+        , DirectedLayoutConfig
         , Direction(..)
-        , GroupedConfig
         , Layout(..)
+        , LayoutConfig
         , Margin
         , Orientation(..)
         , RenderContext(..)
-        , StackedConfig
         , defaultConfig
         , fromConfig
         , setColorResource
@@ -193,11 +193,15 @@ render ( externalData, accessor ) config =
             Type.externalToDataBand (Type.toExternalData externalData) accessor
     in
     case c.layout of
-        Grouped _ ->
+        GroupedBar _ ->
             renderBandGrouped ( data, config )
 
-        Stacked _ ->
+        StackedBar _ ->
             renderBandStacked ( data, config )
+
+        _ ->
+            -- TODO
+            Html.text ""
 
 
 {-| Sets the chart layout.
@@ -377,22 +381,22 @@ withShowAxisX value config =
     Type.setShowAxisX value config
 
 
-{-| Sets the Icon Symbols list in the `GroupedConfig`.
+{-| Sets the Icon Symbols list in the `LayoutConfig`.
 
 Default value: []
 
 These are additional symbols at the end of each bar in a group, for facilitating accessibility.
 
-    defaultGroupedConfig
+    defaultLayoutConfig
         |> withIcons [ Circle, Corner, Triangle ]
 
 -}
-withIcons : List (Symbol String) -> GroupedConfig -> GroupedConfig
+withIcons : List (Symbol String) -> LayoutConfig -> LayoutConfig
 withIcons =
     Type.setIcons
 
 
-{-| Sets the `showIndividualLabels` boolean value in the `GroupedConfig`.
+{-| Sets the `showIndividualLabels` boolean value in the `LayoutConfig`.
 
 Default value: `False`
 
@@ -406,11 +410,11 @@ With a vertical layout the available horizontal space is the width of the rects.
 
 With an horizontal layout the available horizontal space is the right margin.
 
-    defaultGroupedConfig
+    defaultLayoutConfig
         |> Bar.withIndividualLabels True
 
 -}
-withIndividualLabels : GroupedConfig -> GroupedConfig
+withIndividualLabels : LayoutConfig -> LayoutConfig
 withIndividualLabels config =
     Type.setShowIndividualLabels True config
 
@@ -442,14 +446,14 @@ vertical =
     Vertical
 
 
-stackedConfig : StackedConfig
+stackedConfig : DirectedLayoutConfig
 stackedConfig =
-    Type.defaultStackedConfig
+    Type.defaultDirectedLayoutConfig
 
 
-groupedConfig : GroupedConfig
+groupedConfig : LayoutConfig
 groupedConfig =
-    Type.defaultGroupedConfig
+    Type.defaultLayoutConfig
 
 
 {-| Stacked layout type
@@ -463,25 +467,25 @@ Beware that stacked layouts do not support icons
         |> Bar.render ( data, accessor )
 
 -}
-stacked : StackedConfig -> Layout
+stacked : DirectedLayoutConfig -> Layout
 stacked config =
-    Stacked config
+    StackedBar config
 
 
 {-| Grouped layout type
 This is the default layout type
 
     grouped =
-        Bar.grouped Bar.defaultGroupedConfig
+        Bar.grouped Bar.defaultLayoutConfig
 
     Bar.init
         |> Bar.withLayout grouped
         |> Bar.render (data, accessor)
 
 -}
-grouped : GroupedConfig -> Layout
+grouped : LayoutConfig -> Layout
 grouped config =
-    Grouped config
+    GroupedBar config
 
 
 {-| Bar chart diverging layout
@@ -496,28 +500,9 @@ An example can be a population pyramid chart.
         |> Bar.render (data, accessor)
 
 -}
-diverging : StackedConfig -> StackedConfig
+diverging : DirectedLayoutConfig -> DirectedLayoutConfig
 diverging config =
-    Type.defaultStackedConfig |> Type.setDirection Type.Diverging
-
-
-{-| Default values for the Grouped Layout specific config
-Used for initialization purposes
-
-    groupedConfig : GroupedConfig
-    groupedConfig =
-        Bar.defaultGroupedConfig
-            |> ChartType.withIcons (icons "chart-a")
-
-
-    Bar.init
-        |> Bar.withLayout (Bar.grouped )
-        |> Bar.render (data, accessor)
-
--}
-defaultGroupedConfig : GroupedConfig
-defaultGroupedConfig =
-    Type.defaultGroupedConfig
+    Type.defaultDirectedLayoutConfig |> Type.setDirection Type.Diverging
 
 
 {-| Bar chart symbol type

@@ -17,6 +17,8 @@ module Chart.Internal.Type exposing
     , DataGroupLinear
     , DataGroupTime
     , DataLinearGroup(..)
+    , DirectedLayoutConfig
+    , DirectedLayoutConfigStruct
     , Direction(..)
     , DomainBand
     , DomainBandStruct
@@ -25,11 +27,11 @@ module Chart.Internal.Type exposing
     , DomainTime
     , DomainTimeStruct
     , ExternalData
-    , GroupedConfig
-    , GroupedConfigStruct
     , HistogramConfig
     , HistogramConfigStruct
     , Layout(..)
+    , LayoutConfig
+    , LayoutConfigStruct
     , LinearDomain
     , Margin
     , Orientation(..)
@@ -38,8 +40,6 @@ module Chart.Internal.Type exposing
     , PointStacked
     , PointTime
     , RenderContext(..)
-    , StackedConfig
-    , StackedConfigStruct
     , StackedValues
     , adjustLinearRange
     , ariaLabelledby
@@ -51,13 +51,13 @@ module Chart.Internal.Type exposing
     , dataLinearGroupToDataLinearStacked
     , dataLinearGroupToDataTime
     , defaultConfig
-    , defaultGroupedConfig
+    , defaultDirectedLayoutConfig
     , defaultHeight
     , defaultHistogramConfig
     , defaultLayout
+    , defaultLayoutConfig
     , defaultMargin
     , defaultOrientation
-    , defaultStackedConfig
     , defaultTicksCount
     , defaultWidth
     , externalToDataBand
@@ -65,6 +65,7 @@ module Chart.Internal.Type exposing
     , externalToDataLinearGroup
     , fromConfig
     , fromDataBand
+    , fromDirectedLayoutConfig
     , fromDomainBand
     , fromDomainLinear
     , fromExternalData
@@ -293,8 +294,10 @@ type Orientation
 
 
 type Layout
-    = Stacked StackedConfig
-    | Grouped GroupedConfig
+    = StackedBar DirectedLayoutConfig
+    | StackedLine LayoutConfig
+    | GroupedBar LayoutConfig
+    | GroupedLine LayoutConfig
 
 
 type Direction
@@ -494,7 +497,7 @@ ariaLabelledby label =
 
 defaultLayout : Layout
 defaultLayout =
-    Grouped defaultGroupedConfig
+    GroupedBar defaultLayoutConfig
 
 
 defaultOrientation : Orientation
@@ -545,41 +548,41 @@ bottomGap =
 
 
 
--- GROUPED CONFIG
+-- LAYOUT CONFIG
 
 
-type GroupedConfig
-    = GroupedConfig GroupedConfigStruct
+type LayoutConfig
+    = LayoutConfig LayoutConfigStruct
 
 
-type alias GroupedConfigStruct =
+type alias LayoutConfigStruct =
     { icons : List (Symbol String)
     , showIndividualLabels : Bool
     }
 
 
-toGroupedConfig : GroupedConfigStruct -> GroupedConfig
-toGroupedConfig config =
-    GroupedConfig config
+toLayoutConfig : LayoutConfigStruct -> LayoutConfig
+toLayoutConfig config =
+    LayoutConfig config
 
 
-fromGroupedConfig : GroupedConfig -> GroupedConfigStruct
-fromGroupedConfig (GroupedConfig config) =
+fromLayoutConfig : LayoutConfig -> LayoutConfigStruct
+fromLayoutConfig (LayoutConfig config) =
     config
 
 
-defaultGroupedConfig : GroupedConfig
-defaultGroupedConfig =
-    toGroupedConfig
+defaultLayoutConfig : LayoutConfig
+defaultLayoutConfig =
+    toLayoutConfig
         { icons = []
         , showIndividualLabels = False
         }
 
 
-showIcons : GroupedConfig -> Bool
+showIcons : LayoutConfig -> Bool
 showIcons c =
     c
-        |> fromGroupedConfig
+        |> fromLayoutConfig
         |> .icons
         |> List.length
         |> (\l -> l > 0)
@@ -588,102 +591,117 @@ showIcons c =
 showIconsFromLayout : Layout -> Bool
 showIconsFromLayout l =
     case l of
-        Grouped c ->
-            c
-                |> showIcons
+        GroupedBar c ->
+            c |> showIcons
 
-        Stacked _ ->
+        GroupedLine c ->
+            c |> showIcons
+
+        StackedLine c ->
+            c |> showIcons
+
+        StackedBar _ ->
             False
 
 
-getIcons : GroupedConfig -> List (Symbol String)
+getIcons : LayoutConfig -> List (Symbol String)
 getIcons c =
     c
-        |> fromGroupedConfig
+        |> fromLayoutConfig
         |> .icons
 
 
-getShowIndividualLabels : GroupedConfig -> Bool
+getShowIndividualLabels : LayoutConfig -> Bool
 getShowIndividualLabels c =
     c
-        |> fromGroupedConfig
+        |> fromLayoutConfig
         |> .showIndividualLabels
 
 
 getIconsFromLayout : Layout -> List (Symbol String)
 getIconsFromLayout l =
     case l of
-        Grouped c ->
+        GroupedBar c ->
             c
-                |> fromGroupedConfig
+                |> fromLayoutConfig
                 |> .icons
 
-        Stacked _ ->
+        GroupedLine c ->
+            c
+                |> fromLayoutConfig
+                |> .icons
+
+        StackedLine c ->
+            c
+                |> fromLayoutConfig
+                |> .icons
+
+        StackedBar _ ->
             []
 
 
-setIcons : List (Symbol String) -> GroupedConfig -> GroupedConfig
+setIcons : List (Symbol String) -> LayoutConfig -> LayoutConfig
 setIcons all config =
     let
         c =
-            fromGroupedConfig config
+            fromLayoutConfig config
     in
-    toGroupedConfig { c | icons = all }
+    toLayoutConfig { c | icons = all }
 
 
-setShowIndividualLabels : Bool -> GroupedConfig -> GroupedConfig
+setShowIndividualLabels : Bool -> LayoutConfig -> LayoutConfig
 setShowIndividualLabels bool config =
     let
         c =
-            fromGroupedConfig config
+            fromLayoutConfig config
     in
-    toGroupedConfig { c | showIndividualLabels = bool }
+    toLayoutConfig { c | showIndividualLabels = bool }
 
 
 
--- STACKED CONFIG
+-- DIRECTED LAYOUT CONFIG
 
 
-type StackedConfig
-    = StackedConfig StackedConfigStruct
+type DirectedLayoutConfig
+    = DirectedLayoutConfig DirectedLayoutConfigStruct
 
 
-type alias StackedConfigStruct =
+type alias DirectedLayoutConfigStruct =
     { direction : Direction
     }
 
 
-toStackedConfig : StackedConfigStruct -> StackedConfig
-toStackedConfig config =
-    StackedConfig config
+toDirectedLayoutConfig : DirectedLayoutConfigStruct -> DirectedLayoutConfig
+toDirectedLayoutConfig config =
+    DirectedLayoutConfig config
 
 
-fromStackedConfig : StackedConfig -> StackedConfigStruct
-fromStackedConfig (StackedConfig config) =
+fromDirectedLayoutConfig : DirectedLayoutConfig -> DirectedLayoutConfigStruct
+fromDirectedLayoutConfig (DirectedLayoutConfig config) =
     config
 
 
-defaultStackedConfig : StackedConfig
-defaultStackedConfig =
-    toStackedConfig
+defaultDirectedLayoutConfig : DirectedLayoutConfig
+defaultDirectedLayoutConfig =
+    toDirectedLayoutConfig
         { direction = NoDirection
         }
 
 
-getDirection : StackedConfig -> Direction
+getDirection : DirectedLayoutConfig -> Direction
 getDirection c =
     c
-        |> fromStackedConfig
+        |> fromDirectedLayoutConfig
         |> .direction
 
 
-setDirection : Direction -> StackedConfig -> StackedConfig
+setDirection : Direction -> DirectedLayoutConfig -> DirectedLayoutConfig
 setDirection direction config =
     let
         c =
-            fromStackedConfig config
+            fromDirectedLayoutConfig config
     in
-    toStackedConfig { c | direction = direction }
+    toDirectedLayoutConfig { c | direction = direction }
 
 
 
@@ -1389,7 +1407,7 @@ getLinearRange config renderContext width height bandScale =
     case orientation of
         Horizontal ->
             case layout of
-                Grouped groupedConfig ->
+                GroupedBar groupedConfig ->
                     if showIcons groupedConfig then
                         -- Here we are leaving space for the symbol
                         ( 0, width - symbolGap - symbolSpace c.orientation bandScale (getIcons groupedConfig) )
@@ -1397,7 +1415,7 @@ getLinearRange config renderContext width height bandScale =
                     else
                         ( 0, width )
 
-                Stacked _ ->
+                _ ->
                     case renderContext of
                         RenderChart ->
                             ( width, 0 )
@@ -1407,15 +1425,17 @@ getLinearRange config renderContext width height bandScale =
 
         Vertical ->
             case layout of
-                Grouped groupedConfig ->
+                GroupedBar groupedConfig ->
                     if showIcons groupedConfig then
                         -- Here we are leaving space for the symbol
-                        ( height - symbolGap - symbolSpace c.orientation bandScale (getIcons groupedConfig), 0 )
+                        ( height - symbolGap - symbolSpace c.orientation bandScale (getIcons groupedConfig)
+                        , 0
+                        )
 
                     else
                         ( height, 0 )
 
-                Stacked _ ->
+                _ ->
                     ( height, 0 )
 
 
@@ -1435,10 +1455,10 @@ adjustLinearRange config stackedDepth ( a, b ) =
     case orientation of
         Horizontal ->
             case layout of
-                Grouped _ ->
+                GroupedBar _ ->
                     ( a, b )
 
-                Stacked _ ->
+                _ ->
                     ( a + toFloat stackedDepth, b )
 
         Vertical ->
@@ -1448,15 +1468,15 @@ adjustLinearRange config stackedDepth ( a, b ) =
 getOffset : Config -> List (List ( Float, Float )) -> List (List ( Float, Float ))
 getOffset config =
     case fromConfig config |> .layout of
-        Stacked stackedConfig ->
-            case stackedConfig |> fromStackedConfig |> .direction of
+        StackedBar c ->
+            case c |> fromDirectedLayoutConfig |> .direction of
                 Diverging ->
                     Shape.stackOffsetDiverging
 
                 NoDirection ->
                     Shape.stackOffsetNone
 
-        Grouped _ ->
+        _ ->
             Shape.stackOffsetNone
 
 

@@ -46,6 +46,7 @@ import Chart.Internal.Type
         , externalToDataHistogram
         , fromConfig
         , fromDataBand
+        , fromDirectedLayoutConfig
         , getAxisContinousDataFormatter
         , getBandGroupRange
         , getBandSingleRange
@@ -154,27 +155,31 @@ renderBandStacked ( data, config ) =
         stackDepth =
             getDataBandDepth data
 
+        domain : DomainBandStruct
+        domain =
+            getDomainBandFromData data config
+
+        linearDomain : Maybe Chart.Internal.Type.LinearDomain
         linearDomain =
-            config
-                |> getDomainBand
-                |> .linear
+            domain |> .linear
 
         linearExtent =
             case linearDomain of
                 Just ld ->
                     case c.layout of
-                        Stacked _ ->
-                            ( Tuple.second ld * -1, Tuple.second ld )
+                        StackedBar layoutConf ->
+                            case layoutConf |> fromDirectedLayoutConfig |> .direction of
+                                Diverging ->
+                                    ( Tuple.second ld * -1, Tuple.second ld )
+
+                                _ ->
+                                    extent
 
                         _ ->
-                            ld
+                            extent
 
                 Nothing ->
                     extent
-
-        domain : DomainBandStruct
-        domain =
-            getDomainBandFromData data config
 
         bandGroupRange =
             getBandGroupRange config w h
@@ -298,7 +303,11 @@ getRectTitleText tickFormat idx group labels value =
     group ++ " - " ++ getLabel idx labels ++ ": " ++ formatter value
 
 
-verticalRectsStacked : ConfigStruct -> BandScale String -> ( String, StackedValues, List String ) -> List (Svg msg)
+verticalRectsStacked :
+    ConfigStruct
+    -> BandScale String
+    -> ( String, StackedValues, List String )
+    -> List (Svg msg)
 verticalRectsStacked c bandGroupScale ( group, values, labels ) =
     let
         bandValue =
@@ -325,7 +334,11 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
     List.indexedMap (\idx -> block idx) values
 
 
-horizontalRectsStacked : ConfigStruct -> BandScale String -> ( String, StackedValues, List String ) -> List (Svg msg)
+horizontalRectsStacked :
+    ConfigStruct
+    -> BandScale String
+    -> ( String, StackedValues, List String )
+    -> List (Svg msg)
 horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
     let
         block idx { rawValue, stackedValue } =
@@ -425,14 +438,14 @@ renderBandGrouped ( data, config ) =
 
         symbolElements =
             case c.layout of
-                Grouped groupedConfig ->
+                GroupedBar groupedConfig ->
                     if showIcons groupedConfig then
                         symbolsToSymbolElements c.orientation bandSingleScale (getIcons groupedConfig)
 
                     else
                         []
 
-                Stacked _ ->
+                _ ->
                     []
 
         axisBandScale : BandScale String
@@ -634,7 +647,7 @@ verticalLabel c x_ y_ point =
 
         showIndividualLabels =
             case c.layout of
-                Grouped config ->
+                GroupedBar config ->
                     getShowIndividualLabels config
 
                 _ ->
@@ -794,7 +807,7 @@ horizontalLabel c x_ y_ point =
 
         showIndividualLabels =
             case c.layout of
-                Grouped config ->
+                GroupedBar config ->
                     getShowIndividualLabels config
 
                 _ ->

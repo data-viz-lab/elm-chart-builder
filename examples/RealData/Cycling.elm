@@ -168,49 +168,46 @@ valueFormatter =
 stackedByFrequency : Html msg
 stackedByFrequency =
     Bar.init
-        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
-        |> Bar.setTitle "Cycling frequency by age"
-        |> Bar.setDesc "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
-        |> Bar.setAxisYTickFormat valueFormatter
-        |> Bar.setShowAxisY False
-        |> Bar.setDimensions
-            { margin = { top = 30, right = 20, bottom = 30, left = 0 }
-            , width = width
-            , height = height
-            }
-        |> Bar.setDomainLinear ( 0, 0.55 )
+        { title = "Cycling frequency by age"
+        , desc = "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
+        , margin = { top = 30, right = 20, bottom = 30, left = 0 }
+        , width = width
+        , height = height
+        }
+        |> Bar.withLayout (Bar.stacked Bar.stackedConfig)
+        |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.withShowAxisY False
+        |> Bar.withDomainLinear ( 0, 0.55 )
         |> Bar.render ( data, accessor )
 
 
 stackedByFrequencyGender : Html msg
 stackedByFrequencyGender =
     Bar.init
-        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
-        |> Bar.setTitle "Cycling frequency by gender"
-        |> Bar.setDesc "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
-        |> Bar.setAxisYTickFormat valueFormatter
-        |> Bar.setDimensions
-            { margin = { top = 30, right = 20, bottom = 30, left = 50 }
-            , width = 240
-            , height = height
-            }
-        |> Bar.setDomainLinear ( 0, 0.55 )
+        { title = "Cycling frequency by gender"
+        , desc = "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
+        , margin = { top = 30, right = 20, bottom = 30, left = 50 }
+        , width = 240
+        , height = height
+        }
+        |> Bar.withLayout (Bar.stacked Bar.stackedConfig)
+        |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.withDomainLinear ( 0, 0.55 )
         |> Bar.render ( dataGender, accessor )
 
 
 stackedByFrequencyLegend : Html msg
 stackedByFrequencyLegend =
     Bar.init
-        |> Bar.setLayout (Bar.stackedLayout Bar.noDirection)
-        |> Bar.setShowAxisY False
-        |> Bar.setShowAxisX False
-        |> Bar.setTitle "Cycling frequency by age legend"
-        |> Bar.setDesc "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
-        |> Bar.setDimensions
-            { margin = { top = 0, right = 0, bottom = 0, left = 0 }
-            , width = 30
-            , height = 300
-            }
+        { title = "Cycling frequency by age legend"
+        , desc = "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
+        , margin = { top = 0, right = 0, bottom = 0, left = 0 }
+        , width = 30
+        , height = 300
+        }
+        |> Bar.withLayout (Bar.stacked Bar.stackedConfig)
+        |> Bar.withShowAxisY False
+        |> Bar.withShowAxisX False
         |> Bar.render ( dataLegend, accessor )
 
 

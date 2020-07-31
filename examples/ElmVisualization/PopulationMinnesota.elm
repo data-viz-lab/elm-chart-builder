@@ -182,18 +182,17 @@ accessor =
 chart : Html msg
 chart =
     Bar.init
-        |> Bar.setLayout (Bar.stackedLayout Bar.divergingDirection)
-        |> Bar.setOrientation Bar.horizontalOrientation
-        |> Bar.setTitle "Population distribution in Minnesota 1850"
-        |> Bar.setDesc "A horizontal stacked diverging chart example to demonstrate how to create a population pyramid with the charting library"
-        |> Bar.setAxisYTickCount 8
-        |> Bar.setAxisYTickFormat (abs >> valueFormatter)
-        |> Bar.setDomainLinear ( 0, 2000000 )
-        |> Bar.setDimensions
-            { margin = { top = 20, right = 40, bottom = 50, left = 40 }
-            , width = 800
-            , height = 500
-            }
+        { title = "Population distribution in Minnesota 1850"
+        , desc = "A horizontal stacked diverging chart example to demonstrate how to create a population pyramid with the charting library"
+        , margin = { top = 20, right = 40, bottom = 50, left = 40 }
+        , width = 800
+        , height = 500
+        }
+        |> Bar.withLayout (Bar.stacked (Bar.stackedConfig |> Bar.diverging))
+        |> Bar.withOrientation Bar.horizontal
+        |> Bar.withYAxisTickCount 8
+        |> Bar.withYAxisTickFormat (abs >> valueFormatter)
+        |> Bar.withDomainLinear ( 0, 2000000 )
         |> Bar.render ( data, accessor )
 
 

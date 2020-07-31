@@ -163,18 +163,17 @@ accessor =
 lineLinear : Data -> Html msg
 lineLinear d =
     Line.init
-        |> Line.setTitle "A line chart"
-        |> Line.setDesc "A line chart example to demonstrate the charting library"
-        |> Line.setAxisYContinousTickCount 5
-        |> Line.setAxisXContinousTickCount 5
-        |> Line.setDimensions
-            { margin = { top = 10, right = 20, bottom = 30, left = 30 }
-            , width = width
-            , height = height
-            }
-        |> Line.setDomainY ( 0, 20 )
-        |> Line.setAxisXContinousTicks xAxisTicks
-        |> Line.setAxisXContinousTickFormat (round >> String.fromInt)
+        { title = "A line chart"
+        , desc = "A line chart example to demonstrate the charting library"
+        , margin = { top = 10, right = 20, bottom = 30, left = 30 }
+        , width = width
+        , height = height
+        }
+        |> Line.withAxisYContinousTickCount 5
+        |> Line.withAxisXContinousTickCount 5
+        |> Line.withDomainY ( 0, 20 )
+        |> Line.withAxisXContinousTicks xAxisTicks
+        |> Line.withAxisXContinousTickFormat (round >> String.fromInt)
         |> Line.render ( d, accessor )
 
 
