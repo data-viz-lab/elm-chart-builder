@@ -195,9 +195,7 @@ attrs =
 verticalGrouped : Html msg
 verticalGrouped =
     Bar.init
-        { title = "Vertical Grouped Chart"
-        , desc = "A vertical grouped chart example to demonstrate the charting library"
-        , margin = { top = 10, right = 10, bottom = 25, left = 35 }
+        { margin = { top = 10, right = 10, bottom = 25, left = 35 }
         , width = width
         , height = height
         }
@@ -211,9 +209,7 @@ verticalGrouped =
 verticalGroupedWithLabels : Html msg
 verticalGroupedWithLabels =
     Bar.init
-        { title = "Vertical Grouped Chart with labels"
-        , desc = "A vertical grouped chart example to demonstrate the charting library"
-        , margin = { top = 20, right = 10, bottom = 25, left = 35 }
+        { margin = { top = 20, right = 10, bottom = 25, left = 35 }
         , width = width
         , height = height
         }
@@ -226,9 +222,7 @@ verticalGroupedWithLabels =
 verticalStacked : Html msg
 verticalStacked =
     Bar.init
-        { title = "Vertical Stacked Chart"
-        , desc = "A vertical stacked chart example to demonstrate the charting library"
-        , margin = { top = 20, right = 10, bottom = 25, left = 35 }
+        { margin = { top = 20, right = 10, bottom = 25, left = 35 }
         , width = width
         , height = height
         }
@@ -240,9 +234,7 @@ verticalStacked =
 horizontalGrouped : Html msg
 horizontalGrouped =
     Bar.init
-        { title = "Horizontal Grouped Chart"
-        , desc = "A horizontal grouped chart example to demonstrate the charting library"
-        , margin = { top = 10, right = 10, bottom = 32, left = 35 }
+        { margin = { top = 10, right = 10, bottom = 32, left = 35 }
         , width = width
         , height = height
         }
@@ -257,9 +249,7 @@ horizontalGrouped =
 horizontalGroupedWithLabels : Html msg
 horizontalGroupedWithLabels =
     Bar.init
-        { title = "Horizontal Grouped Chart"
-        , desc = "A horizontal grouped chart example to demonstrate the charting library"
-        , margin = { top = 10, right = 20, bottom = 32, left = 35 }
+        { margin = { top = 10, right = 20, bottom = 32, left = 35 }
         , width = width
         , height = height
         }
@@ -274,9 +264,7 @@ horizontalGroupedWithLabels =
 horizontalStacked : Html msg
 horizontalStacked =
     Bar.init
-        { title = "Horizontal Stacked Chart"
-        , desc = "A horizontal stacked chart example to demonstrate the charting library"
-        , margin = { top = 20, right = 20, bottom = 30, left = 30 }
+        { margin = { top = 20, right = 20, bottom = 30, left = 30 }
         , width = width
         , height = height
         }
@@ -289,9 +277,7 @@ horizontalStacked =
 horizontalStackedDiverging : Html msg
 horizontalStackedDiverging =
     Bar.init
-        { title = "Horizontal Stacked Diverging Chart"
-        , desc = "A horizontal stacked diverging chart example to demonstrate the charting library"
-        , margin = { top = 20, right = 20, bottom = 30, left = 30 }
+        { margin = { top = 20, right = 20, bottom = 30, left = 30 }
         , width = width
         , height = height
         }
@@ -305,9 +291,7 @@ horizontalStackedDiverging =
 verticalStackedDiverging : Html msg
 verticalStackedDiverging =
     Bar.init
-        { title = "Vertical Stacked Diverging Chart"
-        , desc = "A vertical stacked diverging chart example to demonstrate the charting library"
-        , margin = { top = 20, right = 10, bottom = 30, left = 35 }
+        { margin = { top = 20, right = 10, bottom = 30, left = 35 }
         , width = width
         , height = height
         }

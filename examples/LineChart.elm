@@ -109,9 +109,7 @@ attrs =
 doubleLine : Html msg
 doubleLine =
     Line.init
-        { title = "A two line chart"
-        , desc = "A two line chart example to demonstrate the charting library"
-        , margin = { top = 10, right = 20, bottom = 30, left = 30 }
+        { margin = { top = 10, right = 20, bottom = 30, left = 30 }
         , width = width
         , height = height
         }
@@ -173,9 +171,7 @@ accessorLinear =
 
 doubleLineStacked =
     Line.init
-        { title = "A two line chart"
-        , desc = "A two line chart example to demonstrate the charting library"
-        , margin = { top = 10, right = 20, bottom = 30, left = 30 }
+        { margin = { top = 10, right = 20, bottom = 30, left = 30 }
         , width = width
         , height = height
         }

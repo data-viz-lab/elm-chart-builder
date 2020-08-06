@@ -250,9 +250,7 @@ attrs =
 horizontalGrouped : Data -> Html Msg
 horizontalGrouped d =
     Bar.init
-        { title = "Animated bar chart example"
-        , desc = "Animated bar chart example"
-        , margin = { top = 60, right = 20, bottom = 30, left = 125 }
+        { margin = { top = 60, right = 20, bottom = 30, left = 125 }
         , width = width
         , height = height
         }

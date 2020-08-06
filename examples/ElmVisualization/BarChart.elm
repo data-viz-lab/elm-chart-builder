@@ -63,9 +63,7 @@ accessor =
 chart : Html msg
 chart =
     Bar.init
-        { title = "A simple bar chart"
-        , desc = "This module shows how to build a simple bar chart"
-        , margin = { top = 10, right = 10, bottom = 30, left = 30 }
+        { margin = { top = 10, right = 10, bottom = 30, left = 30 }
         , width = 600
         , height = 400
         }

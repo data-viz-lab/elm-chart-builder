@@ -2,7 +2,7 @@ module Chart.HistogramBar exposing
     ( dataAccessor, preProcessedDataAccessor, initHistogramConfig
     , init
     , render
-    , withDomain, withSteps, withColor
+    , withDomain, withSteps, withColor, withTitle, withDesc
     ,  withYAxisTickFormat
        --, withAxisYTicks
        --, withShowAxisX
@@ -58,11 +58,11 @@ import Chart.Internal.Type as Type
         , fromConfig
         , fromHistogramConfig
         , setColorResource
-        , setDesc
         , setDimensions
         , setShowAxisX
         , setShowAxisY
-        , setTitle
+        , setSvgDesc
+        , setSvgTitle
         , toHistogramConfig
         )
 import Color exposing (Color)
@@ -72,9 +72,7 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 
 
 type alias RequiredConfig =
-    { title : String
-    , desc : String
-    , margin : Margin
+    { margin : Margin
     , width : Float
     , height : Float
     }
@@ -155,8 +153,6 @@ init : RequiredConfig -> Config
 init c =
     defaultConfig
         |> setDimensions { margin = c.margin, width = c.width, height = c.height }
-        |> setTitle c.title
-        |> setDesc c.desc
 
 
 {-| Renders the histogram
@@ -217,3 +213,25 @@ Defaults to `Scale.tickFormat`
 withYAxisTickFormat : (Float -> String) -> Config -> Config
 withYAxisTickFormat f config =
     Type.setAxisYContinousTickFormat (CustomTickFormat f) config
+
+
+{-| Sets an accessible, long-text description for the svg chart.
+Default value: ""
+Histo.init
+|> Histo.withDesc "This is an accessible chart, with a desc element"
+|> Histo.render ( data, accessor )
+-}
+withDesc : String -> Config -> Config
+withDesc value config =
+    Type.setSvgDesc value config
+
+
+{-| Sets an accessible title for the svg chart.
+Default value: ""
+Histo.init
+|> Histo.withTitle "This is a chart"
+|> Histo.render ( data, accessor )
+-}
+withTitle : String -> Config -> Config
+withTitle value config =
+    Type.setSvgTitle value config

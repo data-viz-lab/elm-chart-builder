@@ -82,7 +82,6 @@ module Chart.Internal.Type exposing
     , getColorResource
     , getDataBandDepth
     , getDataLinearDepth
-    , getDesc
     , getDomainBand
     , getDomainBandFromData
     , getDomainLinear
@@ -99,7 +98,8 @@ module Chart.Internal.Type exposing
     , getOffset
     , getShowIndividualLabels
     , getStackedValuesAndGroupes
-    , getTitle
+    , getSvgDesc
+    , getSvgTitle
     , getWidth
     , getZone
     , leftGap
@@ -112,7 +112,6 @@ module Chart.Internal.Type exposing
     , setAxisYContinousTicks
     , setColorResource
     , setCurve
-    , setDesc
     , setDimensions
     , setDirection
     , setDomainBand
@@ -135,7 +134,8 @@ module Chart.Internal.Type exposing
     , setShowAxisY
     , setShowDataPoints
     , setShowIndividualLabels
-    , setTitle
+    , setSvgDesc
+    , setSvgTitle
     , setWidth
     , showIcons
     , showIconsFromLayout
@@ -420,7 +420,7 @@ type alias ConfigStruct =
     , axisYContinousTicks : AxisContinousDataTicks
     , colorResource : ColorResource
     , curve : List ( Float, Float ) -> SubPath
-    , desc : String
+    , svgDesc : String
     , domainBand : DomainBand
     , domainLinear : DomainLinear
     , domainTime : DomainTime
@@ -432,7 +432,7 @@ type alias ConfigStruct =
     , showAxisX : Bool
     , showAxisY : Bool
     , showDataPoints : Bool
-    , title : String
+    , svgTitle : String
     , width : Float
     , zone : Zone
     }
@@ -449,7 +449,7 @@ defaultConfig =
         , axisYContinousTicks = DefaultTicks
         , colorResource = ColorNone
         , curve = \d -> Shape.linearCurve d
-        , desc = ""
+        , svgDesc = ""
         , domainBand = DomainBand initialDomainBandStruct
         , domainLinear = DomainLinear initialDomainLinearStruct
         , domainTime = DomainTime initialDomainTimeStruct
@@ -461,7 +461,7 @@ defaultConfig =
         , showAxisX = True
         , showAxisY = True
         , showDataPoints = False
-        , title = ""
+        , svgTitle = ""
         , width = defaultWidth
         , zone = Time.utc
         }
@@ -750,22 +750,22 @@ setCurve curve config =
     toConfig { c | curve = curve }
 
 
-setDesc : String -> Config -> Config
-setDesc desc config =
+setSvgDesc : String -> Config -> Config
+setSvgDesc desc config =
     let
         c =
             fromConfig config
     in
-    toConfig { c | desc = desc }
+    toConfig { c | svgDesc = desc }
 
 
-setTitle : String -> Config -> Config
-setTitle title config =
+setSvgTitle : String -> Config -> Config
+setSvgTitle title config =
     let
         c =
             fromConfig config
     in
-    toConfig { c | title = title }
+    toConfig { c | svgTitle = title }
 
 
 setAxisXContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
@@ -1122,14 +1122,14 @@ getAxisContinousDataFormatter format =
             Nothing
 
 
-getDesc : Config -> String
-getDesc config =
-    fromConfig config |> .desc
+getSvgDesc : Config -> String
+getSvgDesc config =
+    fromConfig config |> .svgDesc
 
 
-getTitle : Config -> String
-getTitle config =
-    fromConfig config |> .title
+getSvgTitle : Config -> String
+getSvgTitle config =
+    fromConfig config |> .svgTitle
 
 
 getMargin : Config -> Margin

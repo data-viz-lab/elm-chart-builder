@@ -163,9 +163,7 @@ accessor =
 lineLinear : Data -> Html msg
 lineLinear d =
     Line.init
-        { title = "A line chart"
-        , desc = "A line chart example to demonstrate the charting library"
-        , margin = { top = 10, right = 20, bottom = 30, left = 30 }
+        { margin = { top = 10, right = 20, bottom = 30, left = 30 }
         , width = width
         , height = height
         }

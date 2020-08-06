@@ -197,10 +197,10 @@ suite =
         , describe "groupedLayoutConfig"
             [ test "showIcons is False" <|
                 \_ ->
-                    Expect.equal (showIcons defaultGroupedConfig) False
+                    Expect.equal (showIcons defaultLayoutConfig) False
             , test "showIcons is True" <|
                 \_ ->
-                    Expect.equal (showIcons (defaultGroupedConfig |> setIcons [ Triangle "id" ])) True
+                    Expect.equal (showIcons (defaultLayoutConfig |> setIcons [ Triangle "id" ])) True
             ]
         , describe "symbolCustomSpace"
             [ test "x, icon ratio < 1" <|

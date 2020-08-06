@@ -2,7 +2,7 @@ module Chart.Bar exposing
     ( Accessor
     , init
     , render
-    , withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withLayout, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowAxisX, withShowAxisY
+    , withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withLayout, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowAxisX, withShowAxisY
     , diverging, grouped, horizontal, stacked, vertical
     , withIcons, withIndividualLabels
     , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolUseGap, withSymbolWidth
@@ -31,7 +31,7 @@ The Bar module expects the X axis to plot grouped ordinal data and the Y axis to
 
 # Configuration withters
 
-@docs withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withLayout, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowAxisX, withShowAxisY
+@docs withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withLayout, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowAxisX, withShowAxisY
 
 
 # Configuration withters arguments
@@ -107,13 +107,13 @@ import Chart.Internal.Type as Type
         , defaultConfig
         , fromConfig
         , setColorResource
-        , setDesc
         , setDimensions
         , setHeight
         , setMargin
         , setShowAxisX
         , setShowAxisY
-        , setTitle
+        , setSvgDesc
+        , setSvgTitle
         , setWidth
         )
 import Color exposing (Color)
@@ -131,9 +131,7 @@ type alias Accessor data =
 
 
 type alias RequiredConfig =
-    { title : String
-    , desc : String
-    , margin : Margin
+    { margin : Margin
     , width : Float
     , height : Float
     }
@@ -149,8 +147,6 @@ init : RequiredConfig -> Config
 init c =
     defaultConfig
         |> setDimensions { margin = c.margin, width = c.width, height = c.height }
-        |> setTitle c.title
-        |> setDesc c.desc
 
 
 {-| Renders the bar chart, after initialisation and customisation.
@@ -417,6 +413,28 @@ With an horizontal layout the available horizontal space is the right margin.
 withIndividualLabels : LayoutConfig -> LayoutConfig
 withIndividualLabels config =
     Type.setShowIndividualLabels True config
+
+
+{-| Sets an accessible, long-text description for the svg chart.
+Default value: ""
+Bar.init
+|> Bar.withDesc "This is an accessible chart, with a desc element"
+|> Bar.render ( data, accessor )
+-}
+withDesc : String -> Config -> Config
+withDesc value config =
+    Type.setSvgDesc value config
+
+
+{-| Sets an accessible title for the svg chart.
+Default value: ""
+Bar.init
+|> Bar.withTitle "This is a chart"
+|> Bar.render ( data, accessor )
+-}
+withTitle : String -> Config -> Config
+withTitle value config =
+    Type.setSvgTitle value config
 
 
 {-| Horizontal layout type

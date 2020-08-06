@@ -6,10 +6,17 @@ import Expect exposing (Expectation)
 import Test exposing (..)
 
 
+requiredConfig =
+    { margin = { top = 0, right = 0, bottom = 0, left = 0 }
+    , width = 10
+    , height = 10
+    }
+
+
 suite : Test
 suite =
     describe "The Public Bar module"
-        [ describe "setDomainBandGroup"
+        [ describe "withDomainBandGroup"
             [ test "it should set the bandGroup value in the domain" <|
                 \_ ->
                     let
@@ -19,8 +26,8 @@ suite =
 
                         config : Type.Config
                         config =
-                            Bar.init
-                                |> Bar.setDomainBandGroup bandGroup
+                            Bar.init requiredConfig
+                                |> Bar.withDomainBandGroup bandGroup
 
                         newBandGroup =
                             config
@@ -29,7 +36,7 @@ suite =
                     in
                     Expect.equal (Just bandGroup) newBandGroup
             ]
-        , describe "setDomainBandSingle"
+        , describe "withDomainBandSingle"
             [ test "it should set the bandSingle value in the domain" <|
                 \_ ->
                     let
@@ -39,8 +46,8 @@ suite =
 
                         config : Type.Config
                         config =
-                            Bar.init
-                                |> Bar.setDomainBandSingle bandSingle
+                            Bar.init requiredConfig
+                                |> Bar.withDomainBandSingle bandSingle
 
                         newBandSingle =
                             config
@@ -49,7 +56,7 @@ suite =
                     in
                     Expect.equal (Just bandSingle) newBandSingle
             ]
-        , describe "setDomainLinear"
+        , describe "withDomainLinear"
             [ test "it should set the linear value in the domain" <|
                 \_ ->
                     let
@@ -58,8 +65,8 @@ suite =
 
                         config : Type.Config
                         config =
-                            Bar.init
-                                |> Bar.setDomainLinear linearDomain
+                            Bar.init requiredConfig
+                                |> Bar.withDomainLinear linearDomain
 
                         newLinearDomain =
                             config

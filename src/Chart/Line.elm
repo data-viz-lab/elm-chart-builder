@@ -2,7 +2,7 @@ module Chart.Line exposing
     ( Accessor, AccessorTime, AccessorLinear, time, linear
     , init
     , render
-    , withAxisXContinousTickCount, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
+    , withAxisXContinousTickCount, withTitle, withDesc, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
     , grouped, groupedConfig, stacked, stackedConfig
     )
 
@@ -36,7 +36,7 @@ I expects the X axis to plot time data and the Y axis to plot linear data.
 
 # Configuration setters
 
-@docs withAxisXContinousTickCount, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
+@docs withAxisXContinousTickCount, withTitle, withDesc, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
 
 -}
 
@@ -66,12 +66,12 @@ import Chart.Internal.Type as Type
         , setAxisYContinousTickCount
         , setAxisYContinousTickFormat
         , setAxisYContinousTicks
-        , setDesc
         , setDimensions
         , setLayout
         , setShowAxisX
         , setShowAxisY
-        , setTitle
+        , setSvgDesc
+        , setSvgTitle
         )
 import Html exposing (Html)
 import SubPath exposing (SubPath)
@@ -80,9 +80,7 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 
 
 type alias RequiredConfig =
-    { title : String
-    , desc : String
-    , margin : Margin
+    { margin : Margin
     , width : Float
     , height : Float
     }
@@ -172,10 +170,9 @@ linear acc =
 init : RequiredConfig -> Config
 init c =
     defaultConfig
+        -- TODO: why?
         |> withLayout (grouped stackedConfig)
         |> setDimensions { margin = c.margin, width = c.width, height = c.height }
-        |> setTitle c.title
-        |> setDesc c.desc
 
 
 {-| Renders the line chart, after initialisation and customisation
@@ -379,6 +376,28 @@ If set on a linear line chart this setting will have no effect.
 withDomainLinearX : ( Float, Float ) -> Config -> Config
 withDomainLinearX value config =
     Type.setDomainLinearX value config
+
+
+{-| Sets an accessible, long-text description for the svg chart.
+Default value: ""
+Line.init
+|> Line.withDesc "This is an accessible chart, with a desc element"
+|> Line.render ( data, accessor )
+-}
+withDesc : String -> Config -> Config
+withDesc value config =
+    Type.setSvgDesc value config
+
+
+{-| Sets an accessible title for the svg chart.
+Default value: ""
+Line.init
+|> Line.withTitle "This is a chart"
+|> Line.render ( data, accessor )
+-}
+withTitle : String -> Config -> Config
+withTitle value config =
+    Type.setSvgTitle value config
 
 
 {-| Sets the line layout.

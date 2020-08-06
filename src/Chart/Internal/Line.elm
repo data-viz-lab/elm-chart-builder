@@ -92,8 +92,8 @@ type AxisType
 descAndTitle : ConfigStruct -> List (Svg msg)
 descAndTitle c =
     -- https://developer.paciellogroup.com/blog/2013/12/using-aria-enhance-svg-accessibility/
-    [ TypedSvg.title [] [ text c.title ]
-    , TypedSvg.desc [] [ text c.desc ]
+    [ TypedSvg.title [] [ text c.svgTitle ]
+    , TypedSvg.desc [] [ text c.svgDesc ]
     ]
 
 

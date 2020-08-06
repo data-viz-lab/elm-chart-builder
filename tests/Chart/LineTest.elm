@@ -6,10 +6,17 @@ import Expect exposing (Expectation)
 import Test exposing (..)
 
 
+requiredConfig =
+    { margin = { top = 0, right = 0, bottom = 0, left = 0 }
+    , width = 10
+    , height = 10
+    }
+
+
 suite : Test
 suite =
     describe "The Public Line module"
-        [ describe "setDomainTimeY"
+        [ describe "withDomainTimeY"
             [ test "it should set the X LinearDomain value in the domain" <|
                 \_ ->
                     let
@@ -19,8 +26,8 @@ suite =
 
                         config : Type.Config
                         config =
-                            Line.init
-                                |> Line.setDomainY linearDomain
+                            Line.init requiredConfig
+                                |> Line.withDomainY linearDomain
 
                         newDomain =
                             config

@@ -182,9 +182,7 @@ accessor =
 chart : Html msg
 chart =
     Bar.init
-        { title = "Population distribution in Minnesota 1850"
-        , desc = "A horizontal stacked diverging chart example to demonstrate how to create a population pyramid with the charting library"
-        , margin = { top = 20, right = 40, bottom = 50, left = 40 }
+        { margin = { top = 20, right = 40, bottom = 50, left = 40 }
         , width = 800
         , height = 500
         }

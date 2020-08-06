@@ -168,9 +168,7 @@ valueFormatter =
 stackedByFrequency : Html msg
 stackedByFrequency =
     Bar.init
-        { title = "Cycling frequency by age"
-        , desc = "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
-        , margin = { top = 30, right = 20, bottom = 30, left = 0 }
+        { margin = { top = 30, right = 20, bottom = 30, left = 0 }
         , width = width
         , height = height
         }
@@ -184,9 +182,7 @@ stackedByFrequency =
 stackedByFrequencyGender : Html msg
 stackedByFrequencyGender =
     Bar.init
-        { title = "Cycling frequency by gender"
-        , desc = "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
-        , margin = { top = 30, right = 20, bottom = 30, left = 50 }
+        { margin = { top = 30, right = 20, bottom = 30, left = 50 }
         , width = 240
         , height = height
         }
@@ -199,9 +195,7 @@ stackedByFrequencyGender =
 stackedByFrequencyLegend : Html msg
 stackedByFrequencyLegend =
     Bar.init
-        { title = "Cycling frequency by age legend"
-        , desc = "Proportion of adults that cycle, by frequency and demographic, England, 2015-2016"
-        , margin = { top = 0, right = 0, bottom = 0, left = 0 }
+        { margin = { top = 0, right = 0, bottom = 0, left = 0 }
         , width = 30
         , height = 300
         }

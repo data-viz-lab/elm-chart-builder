@@ -158,9 +158,7 @@ dataAccessor =
 histo : Html msg
 histo =
     Histo.init
-        { title = "Histogram bar chart example"
-        , desc = ""
-        , margin = margin
+        { margin = margin
         , width = width
         , height = height
         }
@@ -183,9 +181,7 @@ preProcessedDataAccessor =
 preProcessedHisto : Html msg
 preProcessedHisto =
     Histo.init
-        { title = "Histogram bar chart example"
-        , desc = ""
-        , margin = margin
+        { margin = margin
         , width = width
         , height = height
         }

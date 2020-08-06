@@ -95,9 +95,7 @@ accessor =
 
 line =
     Line.init
-        { title = "Smoking in England"
-        , desc = "Smoking in England"
-        , margin = { top = 10, right = 20, bottom = 30, left = 30 }
+        { margin = { top = 10, right = 20, bottom = 30, left = 30 }
         , width = 700
         , height = 400
         }
