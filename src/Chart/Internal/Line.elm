@@ -40,14 +40,19 @@ import Chart.Internal.Type
         , getDomainLinearFromData
         , getDomainTimeFromData
         , getHeight
+        , getIcons
+        , getIconsFromLayout
         , getMargin
         , getOffset
         , getWidth
         , leftGap
         , role
+        , showIcons
+        , showIconsFromLayout
         )
 import Color
 import Html exposing (Html)
+import Html.Attributes
 import Path exposing (Path)
 import Scale exposing (ContinuousScale)
 import Shape exposing (StackConfig)
@@ -59,8 +64,10 @@ import TypedSvg.Attributes
         , fill
         , fillOpacity
         , stroke
+        , style
         , transform
         , viewBox
+        , xlinkHref
         )
 import TypedSvg.Attributes.InPx exposing (height, width)
 import TypedSvg.Core exposing (Svg, text)
@@ -159,6 +166,25 @@ renderLineGrouped ( data, config ) =
                     )
                 |> List.unzip
 
+        symbolElements =
+            case c.layout of
+                StackedLine layoutConfig ->
+                    if showIcons layoutConfig then
+                        symbolsToSymbolElements (getIcons layoutConfig)
+
+                    else
+                        []
+
+                GroupedLine layoutConfig ->
+                    if showIcons layoutConfig then
+                        symbolsToSymbolElements (getIcons layoutConfig)
+
+                    else
+                        []
+
+                _ ->
+                    []
+
         xLinearScale : ContinuousScale Float
         xLinearScale =
             Scale.linear
@@ -204,7 +230,8 @@ renderLineGrouped ( data, config ) =
         , ariaLabelledby "title desc"
         ]
     <|
-        descAndTitle c
+        symbolElements
+            ++ descAndTitle c
             ++ linearAxisGenerator c Y yScale
             ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
             ++ [ g
@@ -222,46 +249,68 @@ renderLineGrouped ( data, config ) =
                ]
             ++ [ g
                     [ transform [ Translate m.left m.top ]
-                    , class [ "points" ]
+                    , class [ "series" ]
                     ]
-                 <|
-                    List.indexedMap
-                        (\idx d ->
-                            g
-                                [ class
-                                    [ "line-point"
-                                    , "line-point-" ++ String.fromInt idx
-                                    ]
-                                ]
-                            <|
-                                List.map
-                                    (\( dx, dy ) ->
-                                        g
-                                            [ fillOpacity (Opacity 0)
-                                            , stroke (Paint Color.black)
-                                            , transform
-                                                [ Translate
-                                                    (Scale.convert
-                                                        xLinearScale
-                                                        dx
-                                                        - 6
-                                                    )
-                                                    (Scale.convert
-                                                        yScale
-                                                        dy
-                                                        - 6
-                                                    )
-                                                ]
-                                            ]
-                                            [ circle_ 6 ]
-                                    )
-                                    d
-                        )
-                        sortedPoints
+                    (sortedLinearData
+                        |> List.indexedMap
+                            (\idx d ->
+                                d.points
+                                    |> List.map
+                                        (\( x, y ) ->
+                                            drawSymbol c
+                                                { idx = idx
+                                                , x = Scale.convert xLinearScale x
+                                                , y = Scale.convert yScale y
+                                                , style = style ""
+                                                }
+                                        )
+                            )
+                        |> List.concat
+                        |> List.concat
+                    )
                ]
 
 
 
+--++ [ g
+--        [ transform [ Translate m.left m.top ]
+--        , class [ "points" ]
+--        ]
+--     <|
+--        List.indexedMap
+--            (\idx d ->
+--                g
+--                    [ class
+--                        [ "line-point"
+--                        , "line-point-" ++ String.fromInt idx
+--                        ]
+--                    ]
+--                <|
+--                    List.map
+--                        (\( dx, dy ) ->
+--                            g
+--                                [ fillOpacity (Opacity 0)
+--                                , stroke (Paint Color.black)
+--                                , transform
+--                                    [ Translate
+--                                        (Scale.convert
+--                                            xLinearScale
+--                                            dx
+--                                            - 6
+--                                        )
+--                                        (Scale.convert
+--                                            yScale
+--                                            dy
+--                                            - 6
+--                                        )
+--                                    ]
+--                                ]
+--                                [ circle_ 6 ]
+--                        )
+--                        d
+--            )
+--            sortedPoints
+--   ]
 -- STACKED
 
 
@@ -556,3 +605,97 @@ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config ) =
 
         DataLinear _ ->
             linearAxisGenerator c X xLinearScale
+
+
+symbolsToSymbolElements : List (Symbol String) -> List (Svg msg)
+symbolsToSymbolElements symbols =
+    symbols
+        |> List.map
+            (\symbol ->
+                let
+                    s =
+                        TypedSvg.symbol
+                            [ Html.Attributes.id (symbolToId symbol) ]
+                in
+                case symbol of
+                    Circle r _ ->
+                        s [ circle_ r ]
+
+                    Custom conf ->
+                        --TODO
+                        s [ custom 1 conf ]
+
+                    Corner d _ ->
+                        s [ corner d ]
+
+                    Triangle d _ ->
+                        s [ triangle d ]
+
+                    NoSymbol ->
+                        s []
+            )
+
+
+drawSymbol :
+    ConfigStruct
+    -> { idx : Int, x : Float, y : Float, style : TypedSvg.Core.Attribute msg }
+    -> List (Svg msg)
+drawSymbol c { idx, x, y, style } =
+    let
+        symbol =
+            getSymbolByIndex (getIconsFromLayout c.layout) idx
+
+        symbolRef =
+            [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
+    in
+    if showIconsFromLayout c.layout then
+        case symbol of
+            Triangle s _ ->
+                [ g
+                    [ transform [ Translate (x - s / 2) (y - s / 2) ]
+                    , class [ "symbol" ]
+                    , style
+                    ]
+                    symbolRef
+                ]
+
+            Circle s _ ->
+                [ g
+                    [ transform [ Translate (x - s / 2) (y - s / 2) ]
+                    , class [ "symbol" ]
+                    , style
+                    ]
+                    symbolRef
+                ]
+
+            Corner s _ ->
+                [ g
+                    [ transform [ Translate (x - s / 2) (y - s / 2) ]
+                    , class [ "symbol" ]
+                    , style
+                    ]
+                    symbolRef
+                ]
+
+            Custom c_ ->
+                let
+                    gap =
+                        if c_.useGap then
+                            symbolGap
+
+                        else
+                            0
+                in
+                [ g
+                    [ transform [ Translate x y ]
+                    , class [ "symbol" ]
+                    , style
+                    ]
+                    symbolRef
+                ]
+
+            NoSymbol ->
+                []
+
+    else
+        []

@@ -3,7 +3,8 @@ module Chart.Line exposing
     , init
     , render
     , withAxisXContinousTickCount, withTitle, withDesc, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
-    , grouped, groupedConfig, stacked, stackedConfig
+    , symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolWidth
+    , Symbol, grouped, groupedConfig, stacked, stackedConfig, withIcons
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -38,6 +39,8 @@ I expects the X axis to plot time data and the Y axis to plot linear data.
 
 @docs withAxisXContinousTickCount, withTitle, withDesc, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
 
+@docs BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolUseGap, withSymbolWidth
+
 -}
 
 import Chart.Internal.Line
@@ -45,7 +48,7 @@ import Chart.Internal.Line
         ( renderLineGrouped
         , renderLineStacked
         )
-import Chart.Internal.Symbol exposing (Symbol(..))
+import Chart.Internal.Symbol as InternalSymbol exposing (Symbol(..))
 import Chart.Internal.Type as Type
     exposing
         ( AxisContinousDataTickCount(..)
@@ -441,3 +444,107 @@ stackedConfig =
 groupedConfig : LayoutConfig
 groupedConfig =
     Type.defaultLayoutConfig
+
+
+
+--SYMBOLS
+
+
+{-| Sets the Icon Symbols list in the `LayoutConfig`.
+
+Default value: []
+
+These are additional symbols at the end of each line in a group, for facilitating accessibility.
+
+    defaultLayoutConfig
+        |> withIcons [ Circle, Corner, Triangle ]
+
+-}
+withIcons : List (Symbol String) -> LayoutConfig -> LayoutConfig
+withIcons =
+    Type.setIcons
+
+
+{-| Line chart symbol type
+-}
+type alias Symbol msg =
+    InternalSymbol.Symbol msg
+
+
+{-| A custom line chart symbol type
+-}
+symbolCustom : Symbol msg
+symbolCustom =
+    Custom InternalSymbol.initialCustomSymbolConf
+
+
+{-| Set the custom symbol identifier
+-}
+withSymbolIdentifier : String -> Symbol msg -> Symbol msg
+withSymbolIdentifier identifier symbol =
+    case symbol of
+        Custom conf ->
+            Custom { conf | identifier = identifier }
+
+        _ ->
+            symbol
+
+
+{-| Set the custom symbol width
+When using a custom svg icon this is the 3rd argument of its viewBox attribute
+-}
+withSymbolWidth : Float -> Symbol msg -> Symbol msg
+withSymbolWidth width symbol =
+    case symbol of
+        Custom conf ->
+            Custom { conf | width = width }
+
+        _ ->
+            symbol
+
+
+{-| Set the custom symbol height
+When using a custom svg icon this is the 4th argument of its viewBox attribute
+-}
+withSymbolHeight : Float -> Symbol msg -> Symbol msg
+withSymbolHeight height symbol =
+    case symbol of
+        Custom conf ->
+            Custom { conf | height = height }
+
+        _ ->
+            symbol
+
+
+{-| Set the custom symbol paths
+When using a custom svg icon these are the d attribute of the path elements
+-}
+withSymbolPaths : List String -> Symbol msg -> Symbol msg
+withSymbolPaths paths symbol =
+    case symbol of
+        Custom conf ->
+            Custom { conf | paths = paths }
+
+        _ ->
+            symbol
+
+
+{-| Circle symbol type
+-}
+symbolCircle : Float -> String -> Symbol msg
+symbolCircle radius id =
+    Circle radius id
+
+
+{-| Triangle symbol type
+-}
+symbolTriangle : Float -> String -> Symbol msg
+symbolTriangle size id =
+    Triangle size id
+
+
+{-| Corner symbol type
+-}
+symbolCorner : Float -> String -> Symbol msg
+symbolCorner size id =
+    Corner size id

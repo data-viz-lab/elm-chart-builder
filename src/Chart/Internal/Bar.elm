@@ -680,7 +680,7 @@ horizontalSymbol c { idx, w, y_, style } =
     in
     if showIconsFromLayout c.layout then
         case symbol of
-            Triangle _ ->
+            Triangle _ _ ->
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
@@ -689,7 +689,7 @@ horizontalSymbol c { idx, w, y_, style } =
                     symbolRef
                 ]
 
-            Circle _ ->
+            Circle _ _ ->
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
@@ -698,7 +698,7 @@ horizontalSymbol c { idx, w, y_, style } =
                     symbolRef
                 ]
 
-            Corner _ ->
+            Corner _ _ ->
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
@@ -745,7 +745,7 @@ verticalSymbol c { idx, w, y_, x_, style } =
     in
     if showIconsFromLayout c.layout then
         case symbol of
-            Triangle _ ->
+            Triangle _ _ ->
                 [ g
                     [ transform [ Translate x_ (y_ - w - symbolGap) ]
                     , class [ "symbol" ]
@@ -754,7 +754,7 @@ verticalSymbol c { idx, w, y_, x_, style } =
                     symbolRef
                 ]
 
-            Circle _ ->
+            Circle _ _ ->
                 [ g
                     [ transform [ Translate x_ (y_ - w - symbolGap) ]
                     , class [ "symbol" ]
@@ -763,7 +763,7 @@ verticalSymbol c { idx, w, y_, x_, style } =
                     symbolRef
                 ]
 
-            Corner _ ->
+            Corner _ _ ->
                 [ g
                     [ transform [ Translate x_ (y_ - w - symbolGap) ]
                     , class [ "symbol" ]
@@ -842,12 +842,9 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
                             [ Html.Attributes.id (symbolToId symbol) ]
                 in
                 case symbol of
-                    Circle _ ->
+                    Circle _ _ ->
                         --FIXME
-                        TypedSvg.symbol
-                            [ Html.Attributes.id (symbolToId symbol)
-                            ]
-                            [ circle_ (localDimension / 2) ]
+                        s [ circle_ (localDimension / 2) ]
 
                     Custom conf ->
                         let
@@ -861,10 +858,10 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
                         in
                         s [ custom scaleFactor conf ]
 
-                    Corner _ ->
+                    Corner _ _ ->
                         s [ corner localDimension ]
 
-                    Triangle _ ->
+                    Triangle _ _ ->
                         s [ triangle localDimension ]
 
                     NoSymbol ->

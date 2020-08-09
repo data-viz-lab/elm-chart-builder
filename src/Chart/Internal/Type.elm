@@ -1490,16 +1490,16 @@ symbolSpace orientation bandSingleScale symbols =
         |> List.map
             (\symbol ->
                 case symbol of
-                    Circle _ ->
+                    Circle _ _ ->
                         localDimension / 2
 
                     Custom conf ->
                         symbolCustomSpace orientation localDimension conf
 
-                    Corner _ ->
+                    Corner _ _ ->
                         localDimension
 
-                    Triangle _ ->
+                    Triangle _ _ ->
                         localDimension
 
                     NoSymbol ->

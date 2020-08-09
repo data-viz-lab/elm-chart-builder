@@ -5,8 +5,8 @@ module Chart.Bar exposing
     , withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withLayout, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowAxisX, withShowAxisY
     , diverging, grouped, horizontal, stacked, vertical
     , withIcons, withIndividualLabels
-    , BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolUseGap, withSymbolWidth
-    , groupedConfig, stackedConfig
+    , symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolUseGap, withSymbolWidth
+    , Symbol, groupedConfig, stackedConfig
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -88,7 +88,7 @@ import Chart.Internal.Bar
         ( renderBandGrouped
         , renderBandStacked
         )
-import Chart.Internal.Symbol as Symbol exposing (Symbol(..))
+import Chart.Internal.Symbol as InternalSymbol exposing (Symbol(..))
 import Chart.Internal.Type as Type
     exposing
         ( AxisContinousDataTickCount(..)
@@ -523,22 +523,26 @@ diverging config =
     Type.defaultDirectedLayoutConfig |> Type.setDirection Type.Diverging
 
 
+
+--SYMBOLS
+
+
 {-| Bar chart symbol type
 -}
-type alias BarSymbol msg =
-    Symbol msg
+type alias Symbol msg =
+    InternalSymbol.Symbol msg
 
 
 {-| A custom bar chart symbol type
 -}
-symbolCustom : BarSymbol msg
+symbolCustom : Symbol msg
 symbolCustom =
-    Custom Symbol.initialCustomSymbolConf
+    Custom InternalSymbol.initialCustomSymbolConf
 
 
 {-| Set the custom symbol identifier
 -}
-withSymbolIdentifier : String -> BarSymbol msg -> BarSymbol msg
+withSymbolIdentifier : String -> Symbol msg -> Symbol msg
 withSymbolIdentifier identifier symbol =
     case symbol of
         Custom conf ->
@@ -551,7 +555,7 @@ withSymbolIdentifier identifier symbol =
 {-| Set the custom symbol width
 When using a custom svg icon this is the 3rd argument of its viewBox attribute
 -}
-withSymbolWidth : Float -> BarSymbol msg -> BarSymbol msg
+withSymbolWidth : Float -> Symbol msg -> Symbol msg
 withSymbolWidth width symbol =
     case symbol of
         Custom conf ->
@@ -564,7 +568,7 @@ withSymbolWidth width symbol =
 {-| Set the custom symbol height
 When using a custom svg icon this is the 4th argument of its viewBox attribute
 -}
-withSymbolHeight : Float -> BarSymbol msg -> BarSymbol msg
+withSymbolHeight : Float -> Symbol msg -> Symbol msg
 withSymbolHeight height symbol =
     case symbol of
         Custom conf ->
@@ -577,7 +581,7 @@ withSymbolHeight height symbol =
 {-| Set the custom symbol paths
 When using a custom svg icon these are the d attribute of the path elements
 -}
-withSymbolPaths : List String -> BarSymbol msg -> BarSymbol msg
+withSymbolPaths : List String -> Symbol msg -> Symbol msg
 withSymbolPaths paths symbol =
     case symbol of
         Custom conf ->
@@ -594,7 +598,7 @@ but, depending on the custom icon shape and on the orientation of the chart,
 the icon could already have a gap and we do not want to add other space.
 
 -}
-withSymbolUseGap : Bool -> BarSymbol msg -> BarSymbol msg
+withSymbolUseGap : Bool -> Symbol msg -> Symbol msg
 withSymbolUseGap bool symbol =
     case symbol of
         Custom conf ->
@@ -606,20 +610,20 @@ withSymbolUseGap bool symbol =
 
 {-| Circle symbol type
 -}
-symbolCircle : String -> BarSymbol msg
+symbolCircle : String -> Symbol msg
 symbolCircle id =
-    Circle id
+    Circle 0 id
 
 
 {-| Triangle symbol type
 -}
-symbolTriangle : String -> BarSymbol msg
+symbolTriangle : String -> Symbol msg
 symbolTriangle id =
-    Triangle id
+    Triangle 0 id
 
 
 {-| Corner symbol type
 -}
-symbolCorner : String -> BarSymbol msg
+symbolCorner : String -> Symbol msg
 symbolCorner id =
-    Corner id
+    Corner 0 id

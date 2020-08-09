@@ -50,6 +50,14 @@ css =
 """
 
 
+icons : String -> List (Line.Symbol msg)
+icons prefix =
+    [ Line.symbolTriangle 10 (prefix ++ "-triangle-symbol")
+    , Line.symbolCircle 5 (prefix ++ "-circle-symbol")
+    , Line.symbolCorner 10 (prefix ++ "-corner-symbol")
+    ]
+
+
 width : Float
 width =
     350
@@ -115,6 +123,7 @@ doubleLine =
         }
         |> Line.withAxisYContinousTickCount 5
         |> Line.withAxisXContinousTickCount 5
+        |> Line.withLayout (Line.grouped (Line.groupedConfig |> Line.withIcons (icons "chart-b")))
         |> Line.render ( data, accessor )
 
 

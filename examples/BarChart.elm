@@ -46,7 +46,7 @@ h5 {
 """
 
 
-iconsCustom : String -> List (Bar.BarSymbol msg)
+iconsCustom : String -> List (Bar.Symbol msg)
 iconsCustom prefix =
     [ Bar.symbolCustom
         |> Bar.withSymbolIdentifier (prefix ++ "-bicycle-symbol")
@@ -66,7 +66,7 @@ iconsCustom prefix =
     ]
 
 
-icons : String -> List (Bar.BarSymbol msg)
+icons : String -> List (Bar.Symbol msg)
 icons prefix =
     [ Bar.symbolTriangle (prefix ++ "-triangle-symbol")
     , Bar.symbolCircle (prefix ++ "-circle-symbol")

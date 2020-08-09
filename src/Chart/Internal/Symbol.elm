@@ -19,6 +19,10 @@ import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Transform(..))
 
 
+
+--FIXME: take width, height instead of size
+
+
 type alias CustomSymbolConf =
     { identifier : String
     , width : Float
@@ -39,26 +43,26 @@ initialCustomSymbolConf =
 
 
 type Symbol msg
-    = Circle String
+    = Circle Float String
     | Custom CustomSymbolConf
-    | Corner String
-    | Triangle String
+    | Corner Float String
+    | Triangle Float String
     | NoSymbol
 
 
 symbolToId : Symbol msg -> String
 symbolToId symbol =
     case symbol of
-        Circle id ->
+        Circle _ id ->
             id
 
         Custom { identifier } ->
             identifier
 
-        Corner id ->
+        Corner _ id ->
             id
 
-        Triangle id ->
+        Triangle _ id ->
             id
 
         NoSymbol ->
