@@ -23,6 +23,7 @@ import Chart.Internal.Type
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
+        , ColorResource(..)
         , Config
         , ConfigStruct
         , DataGroupLinear
@@ -139,6 +140,10 @@ renderLineGrouped ( data, config ) =
             linearData
                 |> getDomainLinearFromData config
 
+        colorScale : ContinuousScale Float
+        colorScale =
+            Scale.linear ( 0, 1 ) (Maybe.withDefault ( 0, 0 ) linearDomain.y)
+
         timeData =
             data
                 |> dataLinearGroupToDataTime
@@ -165,25 +170,6 @@ renderLineGrouped ( data, config ) =
                         ( { d | points = points }, points )
                     )
                 |> List.unzip
-
-        symbolElements =
-            case c.layout of
-                StackedLine layoutConfig ->
-                    if showIcons layoutConfig then
-                        symbolsToSymbolElements (getIcons layoutConfig)
-
-                    else
-                        []
-
-                GroupedLine layoutConfig ->
-                    if showIcons layoutConfig then
-                        symbolsToSymbolElements (getIcons layoutConfig)
-
-                    else
-                        []
-
-                _ ->
-                    []
 
         xLinearScale : ContinuousScale Float
         xLinearScale =
@@ -221,6 +207,11 @@ renderLineGrouped ( data, config ) =
             dataGroup.points
                 |> List.map lineGenerator
                 |> Shape.line c.curve
+
+        color idx =
+            colorStyle c (Just idx) Nothing
+                |> (++) "fill: none;"
+                |> style
     in
     svg
         [ viewBox 0 0 outerW outerH
@@ -230,7 +221,7 @@ renderLineGrouped ( data, config ) =
         , ariaLabelledby "title desc"
         ]
     <|
-        symbolElements
+        symbolElements c
             ++ descAndTitle c
             ++ linearAxisGenerator c Y yScale
             ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
@@ -243,6 +234,7 @@ renderLineGrouped ( data, config ) =
                         (\idx d ->
                             Path.element (line d)
                                 [ class [ "line", "line-" ++ String.fromInt idx ]
+                                , color idx
                                 ]
                         )
                         sortedLinearData
@@ -261,7 +253,7 @@ renderLineGrouped ( data, config ) =
                                                 { idx = idx
                                                 , x = Scale.convert xLinearScale x
                                                 , y = Scale.convert yScale y
-                                                , style = style ""
+                                                , style = color idx
                                                 }
                                         )
                             )
@@ -350,6 +342,15 @@ renderLineStacked ( data, config ) =
             linearData
                 |> getDomainLinearFromData config
 
+        colorScale : ContinuousScale Float
+        colorScale =
+            Scale.linear ( 0, 1 ) (Maybe.withDefault ( 0, 0 ) linearDomain.y)
+
+        color idx =
+            colorStyle c (Just idx) Nothing
+                |> (++) "fill: none;"
+                |> style
+
         dataStacked : List ( String, List Float )
         dataStacked =
             dataLinearGroupToDataLinearStacked linearData
@@ -427,7 +428,8 @@ renderLineStacked ( data, config ) =
         , ariaLabelledby "title desc"
         ]
     <|
-        descAndTitle c
+        symbolElements c
+            ++ descAndTitle c
             ++ linearAxisGenerator c Y yScale
             ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
             ++ [ g
@@ -439,9 +441,32 @@ renderLineStacked ( data, config ) =
                         (\idx d ->
                             Path.element (line d)
                                 [ class [ "line", "line-" ++ String.fromInt idx ]
+                                , color idx
                                 ]
                         )
                         combinedData
+               ]
+            ++ [ g
+                    [ transform [ Translate m.left m.top ]
+                    , class [ "series" ]
+                    ]
+                    (combinedData
+                        |> List.indexedMap
+                            (\idx d ->
+                                d
+                                    |> List.map
+                                        (\( x, y ) ->
+                                            drawSymbol c
+                                                { idx = idx
+                                                , x = Scale.convert xLinearScale x
+                                                , y = Scale.convert yScale y
+                                                , style = color idx
+                                                }
+                                        )
+                            )
+                        |> List.concat
+                        |> List.concat
+                    )
                ]
 
 
@@ -699,3 +724,46 @@ drawSymbol c { idx, x, y, style } =
 
     else
         []
+
+
+
+--  HELPERS
+
+
+{-| All possible color styles styles
+-}
+colorStyle : ConfigStruct -> Maybe Int -> Maybe Float -> String
+colorStyle c idx interpolatorInput =
+    case ( c.colorResource, idx, interpolatorInput ) of
+        ( ColorPalette colors, Just i, _ ) ->
+            "stroke: " ++ Helpers.colorPaletteToColor colors i
+
+        ( ColorInterpolator interpolator, _, Just i ) ->
+            "stroke: " ++ (interpolator i |> Color.toCssString)
+
+        ( Color color, Nothing, Nothing ) ->
+            "stroke: " ++ Color.toCssString color
+
+        _ ->
+            ""
+
+
+symbolElements : ConfigStruct -> List (Svg msg)
+symbolElements c =
+    case c.layout of
+        StackedLine layoutConfig ->
+            if showIcons layoutConfig then
+                symbolsToSymbolElements (getIcons layoutConfig)
+
+            else
+                []
+
+        GroupedLine layoutConfig ->
+            if showIcons layoutConfig then
+                symbolsToSymbolElements (getIcons layoutConfig)
+
+            else
+                []
+
+        _ ->
+            []

@@ -2,7 +2,7 @@ module Chart.Line exposing
     ( Accessor, AccessorTime, AccessorLinear, time, linear
     , init
     , render
-    , withAxisXContinousTickCount, withTitle, withDesc, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
+    , withAxisXContinousTickCount, withColorPalette, withTitle, withDesc, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
     , symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolWidth
     , Symbol, grouped, groupedConfig, stacked, stackedConfig, withIcons
     )
@@ -37,7 +37,7 @@ I expects the X axis to plot time data and the Y axis to plot linear data.
 
 # Configuration setters
 
-@docs withAxisXContinousTickCount, withTitle, withDesc, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
+@docs withAxisXContinousTickCount, withColorPalette, withTitle, withDesc, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
 
 @docs BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolUseGap, withSymbolWidth
 
@@ -55,6 +55,7 @@ import Chart.Internal.Type as Type
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
+        , ColorResource(..)
         , Config
         , Direction(..)
         , Layout(..)
@@ -76,6 +77,7 @@ import Chart.Internal.Type as Type
         , setSvgDesc
         , setSvgTitle
         )
+import Color exposing (Color)
 import Html exposing (Html)
 import SubPath exposing (SubPath)
 import Time exposing (Posix)
@@ -401,6 +403,21 @@ Line.init
 withTitle : String -> Config -> Config
 withTitle value config =
     Type.setSvgTitle value config
+
+
+{-| Sets the color palette for the chart.
+
+    palette =
+        Scale.Color.tableau10
+
+    Line.init
+        |> Line.withColorPalette palette
+        |> Line.render (data, accessor)
+
+-}
+withColorPalette : List Color -> Config -> Config
+withColorPalette palette config =
+    Type.setColorResource (ColorPalette palette) config
 
 
 {-| Sets the line layout.

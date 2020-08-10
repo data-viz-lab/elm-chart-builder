@@ -6,6 +6,7 @@ module LineChart exposing (data, main)
 import Chart.Line as Line
 import Html exposing (Html)
 import Html.Attributes exposing (class)
+import Scale.Color
 import Set
 import Time exposing (Posix)
 
@@ -37,15 +38,6 @@ css =
 
 .line {
     stroke-width: 2px;
-    fill: none;
-}
-
-.line-0 {
-    stroke: crimson;
-}
-
-.line-1 {
-    stroke: #3949ab;
 }
 """
 
@@ -53,7 +45,7 @@ css =
 icons : String -> List (Line.Symbol msg)
 icons prefix =
     [ Line.symbolTriangle 10 (prefix ++ "-triangle-symbol")
-    , Line.symbolCircle 5 (prefix ++ "-circle-symbol")
+    , Line.symbolCircle 10 (prefix ++ "-circle-symbol")
     , Line.symbolCorner 10 (prefix ++ "-corner-symbol")
     ]
 
@@ -121,6 +113,7 @@ doubleLine =
         , width = width
         , height = height
         }
+        |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withAxisYContinousTickCount 5
         |> Line.withAxisXContinousTickCount 5
         |> Line.withLayout (Line.grouped (Line.groupedConfig |> Line.withIcons (icons "chart-b")))
@@ -186,7 +179,8 @@ doubleLineStacked =
         }
         |> Line.withAxisYContinousTickCount 5
         |> Line.withAxisXContinousTickCount 5
-        |> Line.withLayout (Line.stacked Line.stackedConfig)
+        |> Line.withColorPalette Scale.Color.tableau10
+        |> Line.withLayout (Line.stacked (Line.stackedConfig |> Line.withIcons (icons "chart-b")))
 
 
 doubleLineStackedLinear : Html msg
@@ -207,8 +201,10 @@ main : Html msg
 main =
     Html.div []
         [ Html.node "style" [] [ Html.text css ]
-        , Html.div [ class "wrapper" ] [ Html.h3 [] [ Html.text "time" ], Html.div attrs [ doubleLine ] ]
-
-        --, Html.div [ class "wrapper" ] [ Html.h3 [] [ Html.text "Stacked time" ], Html.div attrs [ doubleLineStackedTime ] ]
-        --, Html.div [ class "wrapper" ] [ Html.h3 [] [ Html.text "Stacked linear" ], Html.div attrs [ doubleLineStackedLinear ] ]
+        , Html.div [ class "wrapper" ]
+            [ Html.h3 [] [ Html.text "time" ], Html.div attrs [ doubleLine ] ]
+        , Html.div [ class "wrapper" ]
+            [ Html.h3 [] [ Html.text "Stacked time" ], Html.div attrs [ doubleLineStackedTime ] ]
+        , Html.div [ class "wrapper" ]
+            [ Html.h3 [] [ Html.text "Stacked linear" ], Html.div attrs [ doubleLineStackedLinear ] ]
         ]

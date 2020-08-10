@@ -87,8 +87,8 @@ triangle size =
 
 
 circle_ : Float -> Svg msg
-circle_ radius =
-    circle [ InPx.cx radius, InPx.cy radius, InPx.r radius ] []
+circle_ diameter =
+    circle [ InPx.cx <| diameter / 2, InPx.cy <| diameter / 2, InPx.r <| diameter / 2 ] []
 
 
 corner : Float -> Svg msg
