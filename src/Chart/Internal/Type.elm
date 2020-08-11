@@ -724,101 +724,58 @@ type alias StackedValuesAndGroupes =
 
 
 setAxisXContinousTickCount : AxisContinousDataTickCount -> Config -> Config
-setAxisXContinousTickCount count config =
-    let
-        c =
-            fromConfig config
-    in
+setAxisXContinousTickCount count (Config c) =
     toConfig { c | axisXContinousTickCount = count }
 
 
 setAxisYContinousTickCount : AxisContinousDataTickCount -> Config -> Config
-setAxisYContinousTickCount count config =
-    let
-        c =
-            fromConfig config
-    in
+setAxisYContinousTickCount count (Config c) =
     toConfig { c | axisYContinousTickCount = count }
 
 
 setCurve : (List ( Float, Float ) -> SubPath) -> Config -> Config
-setCurve curve config =
-    let
-        c =
-            fromConfig config
-    in
+setCurve curve (Config c) =
     toConfig { c | curve = curve }
 
 
 setSvgDesc : String -> Config -> Config
-setSvgDesc desc config =
-    let
-        c =
-            fromConfig config
-    in
+setSvgDesc desc (Config c) =
     toConfig { c | svgDesc = desc }
 
 
 setSvgTitle : String -> Config -> Config
-setSvgTitle title config =
-    let
-        c =
-            fromConfig config
-    in
+setSvgTitle title (Config c) =
     toConfig { c | svgTitle = title }
 
 
 setAxisXContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
-setAxisXContinousTickFormat format config =
-    let
-        c =
-            fromConfig config
-    in
+setAxisXContinousTickFormat format (Config c) =
     toConfig { c | axisXContinousTickFormat = format }
 
 
 setAxisYContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
-setAxisYContinousTickFormat format config =
-    let
-        c =
-            fromConfig config
-    in
+setAxisYContinousTickFormat format (Config c) =
     toConfig { c | axisYContinousTickFormat = format }
 
 
 setAxisXContinousTicks : AxisContinousDataTicks -> Config -> Config
-setAxisXContinousTicks ticks config =
-    let
-        c =
-            fromConfig config
-    in
+setAxisXContinousTicks ticks (Config c) =
     toConfig { c | axisXContinousTicks = ticks }
 
 
 setAxisYContinousTicks : AxisContinousDataTicks -> Config -> Config
-setAxisYContinousTicks ticks config =
-    let
-        c =
-            fromConfig config
-    in
+setAxisYContinousTicks ticks (Config c) =
     toConfig { c | axisYContinousTicks = ticks }
 
 
 setColorResource : ColorResource -> Config -> Config
-setColorResource resource config =
-    let
-        c =
-            fromConfig config
-    in
+setColorResource resource (Config c) =
     toConfig { c | colorResource = resource }
 
 
 setHeight : Float -> Config -> Config
-setHeight height config =
+setHeight height (Config c) =
     let
-        c =
-            fromConfig config
-
         m =
             c.margin
     in
@@ -826,11 +783,7 @@ setHeight height config =
 
 
 setHistogramDomain : ( Float, Float ) -> Config -> Config
-setHistogramDomain domain config =
-    let
-        c =
-            fromConfig config
-    in
+setHistogramDomain domain (Config c) =
     toConfig { c | histogramDomain = Just domain }
 
 
@@ -844,29 +797,18 @@ setHistogramSteps steps config =
 
 
 setLayout : Layout -> Config -> Config
-setLayout layout config =
-    let
-        c =
-            fromConfig config
-    in
+setLayout layout (Config c) =
     toConfig { c | layout = layout }
 
 
 setOrientation : Orientation -> Config -> Config
-setOrientation orientation config =
-    let
-        c =
-            fromConfig config
-    in
+setOrientation orientation (Config c) =
     toConfig { c | orientation = orientation }
 
 
 setWidth : Float -> Config -> Config
-setWidth width config =
+setWidth width (Config c) =
     let
-        c =
-            fromConfig config
-
         m =
             c.margin
     in
@@ -874,11 +816,8 @@ setWidth width config =
 
 
 setMargin : Margin -> Config -> Config
-setMargin margin config =
+setMargin margin (Config c) =
     let
-        c =
-            fromConfig config
-
         left =
             margin.left + leftGap
 
@@ -889,11 +828,8 @@ setMargin margin config =
 
 
 setDimensions : { margin : Margin, width : Float, height : Float } -> Config -> Config
-setDimensions { margin, width, height } config =
+setDimensions { margin, width, height } (Config c) =
     let
-        c =
-            fromConfig config
-
         left =
             margin.left + leftGap
 
@@ -909,38 +845,23 @@ setDimensions { margin, width, height } config =
 
 
 setDomainLinear : DomainLinear -> Config -> Config
-setDomainLinear domain config =
-    let
-        c =
-            fromConfig config
-    in
+setDomainLinear domain (Config c) =
     toConfig { c | domainLinear = domain }
 
 
 setDomainTime : DomainTime -> Config -> Config
-setDomainTime domain config =
-    let
-        c =
-            fromConfig config
-    in
+setDomainTime domain (Config c) =
     toConfig { c | domainTime = domain }
 
 
 setDomainBand : DomainBand -> Config -> Config
-setDomainBand domain config =
-    let
-        c =
-            fromConfig config
-    in
+setDomainBand domain (Config c) =
     toConfig { c | domainBand = domain }
 
 
 setDomainBandBandGroup : BandDomain -> Config -> Config
-setDomainBandBandGroup bandDomain config =
+setDomainBandBandGroup bandDomain (Config c) =
     let
-        c =
-            fromConfig config
-
         domain =
             c.domainBand
                 |> fromDomainBand
@@ -952,11 +873,8 @@ setDomainBandBandGroup bandDomain config =
 
 
 setDomainBandBandSingle : BandDomain -> Config -> Config
-setDomainBandBandSingle bandDomain config =
+setDomainBandBandSingle bandDomain (Config c) =
     let
-        c =
-            fromConfig config
-
         domain =
             c.domainBand
                 |> fromDomainBand
@@ -968,11 +886,8 @@ setDomainBandBandSingle bandDomain config =
 
 
 setDomainBandLinear : LinearDomain -> Config -> Config
-setDomainBandLinear linearDomain config =
+setDomainBandLinear linearDomain (Config c) =
     let
-        c =
-            fromConfig config
-
         domain =
             c.domainBand
                 |> fromDomainBand
@@ -984,11 +899,8 @@ setDomainBandLinear linearDomain config =
 
 
 setDomainTimeX : TimeDomain -> Config -> Config
-setDomainTimeX timeDomain config =
+setDomainTimeX timeDomain (Config c) =
     let
-        c =
-            fromConfig config
-
         domain =
             c.domainTime
                 |> fromDomainTime
@@ -1000,11 +912,8 @@ setDomainTimeX timeDomain config =
 
 
 setDomainLinearX : LinearDomain -> Config -> Config
-setDomainLinearX linearDomain config =
+setDomainLinearX linearDomain (Config c) =
     let
-        c =
-            fromConfig config
-
         domain =
             c.domainLinear
                 |> fromDomainLinear
@@ -1016,11 +925,8 @@ setDomainLinearX linearDomain config =
 
 
 setDomainLinearAndTimeY : LinearDomain -> Config -> Config
-setDomainLinearAndTimeY linearDomain config =
+setDomainLinearAndTimeY linearDomain (Config c) =
     let
-        c =
-            fromConfig config
-
         domain =
             c.domainLinear
                 |> fromDomainLinear
@@ -1039,29 +945,17 @@ setDomainLinearAndTimeY linearDomain config =
 
 
 setShowAxisX : Bool -> Config -> Config
-setShowAxisX bool config =
-    let
-        c =
-            fromConfig config
-    in
+setShowAxisX bool (Config c) =
     toConfig { c | showAxisX = bool }
 
 
 setShowAxisY : Bool -> Config -> Config
-setShowAxisY bool config =
-    let
-        c =
-            fromConfig config
-    in
+setShowAxisY bool (Config c) =
     toConfig { c | showAxisY = bool }
 
 
 setShowDataPoints : Bool -> Config -> Config
-setShowDataPoints bool config =
-    let
-        c =
-            fromConfig config
-    in
+setShowDataPoints bool (Config c) =
     toConfig { c | showDataPoints = bool }
 
 
