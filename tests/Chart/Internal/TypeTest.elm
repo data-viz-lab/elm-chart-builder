@@ -194,124 +194,113 @@ suite =
                     in
                     Expect.equal (getDomainTimeFromData config data) expected
             ]
-        , describe "groupedLayoutConfig"
-            [ test "showIcons is False" <|
-                \_ ->
-                    Expect.equal (showIcons defaultLayoutConfig) False
-            , test "showIcons is True" <|
-                \_ ->
-                    Expect.equal (showIcons (defaultLayoutConfig |> setIcons [ Triangle "id" ])) True
-            ]
-        , describe "symbolCustomSpace"
-            [ test "x, icon ratio < 1" <|
-                \_ ->
-                    let
-                        orientation : Orientation
-                        orientation =
-                            Horizontal
 
-                        localDimension : Float
-                        localDimension =
-                            5.0
-
-                        customSymbolConf : Chart.Internal.Symbol.CustomSymbolConf
-                        customSymbolConf =
-                            { identifier = "x"
-                            , width = 110
-                            , height = 100
-                            , paths = []
-                            , useGap = False
-                            }
-
-                        expected : Float
-                        expected =
-                            5.5
-                    in
-                    Expect.within (Expect.Absolute 0.001)
-                        (symbolCustomSpace orientation localDimension customSymbolConf)
-                        expected
-            , test "x, icon ratio >= 1" <|
-                \_ ->
-                    let
-                        orientation : Orientation
-                        orientation =
-                            Horizontal
-
-                        localDimension : Float
-                        localDimension =
-                            5.0
-
-                        customSymbolConf : Chart.Internal.Symbol.CustomSymbolConf
-                        customSymbolConf =
-                            { identifier = "x"
-                            , width = 100
-                            , height = 110
-                            , paths = []
-                            , useGap = False
-                            }
-
-                        expected : Float
-                        expected =
-                            4.5454
-                    in
-                    Expect.within (Expect.Absolute 0.001)
-                        (symbolCustomSpace orientation localDimension customSymbolConf)
-                        expected
-            , test "y" <|
-                \_ ->
-                    let
-                        orientation : Orientation
-                        orientation =
-                            Vertical
-
-                        localDimension : Float
-                        localDimension =
-                            5.0
-
-                        customSymbolConf : Chart.Internal.Symbol.CustomSymbolConf
-                        customSymbolConf =
-                            { identifier = "x"
-                            , width = 110
-                            , height = 100
-                            , paths = []
-                            , useGap = False
-                            }
-
-                        expected : Float
-                        expected =
-                            4.5454
-                    in
-                    Expect.within (Expect.Absolute 0.001)
-                        (symbolCustomSpace orientation localDimension customSymbolConf)
-                        expected
-            , test "y 2" <|
-                \_ ->
-                    let
-                        orientation : Orientation
-                        orientation =
-                            Vertical
-
-                        localDimension : Float
-                        localDimension =
-                            5.0
-
-                        customSymbolConf : Chart.Internal.Symbol.CustomSymbolConf
-                        customSymbolConf =
-                            { identifier = "x"
-                            , width = 100
-                            , height = 110
-                            , paths = []
-                            , useGap = False
-                            }
-
-                        expected : Float
-                        expected =
-                            5.5
-                    in
-                    Expect.within (Expect.Absolute 0.001)
-                        (symbolCustomSpace orientation localDimension customSymbolConf)
-                        expected
-            ]
+        --, describe "groupedLayoutConfig"
+        --    [ test "showIcons is False" <|
+        --        \_ ->
+        --            Expect.equal (showIcons defaultLayoutConfig) False
+        --    , test "showIcons is True" <|
+        --        \_ ->
+        --            Expect.equal (showIcons (defaultLayoutConfig |> setIcons [ Triangle "id" ])) True
+        --    ]
+        ---, describe "symbolCustomSpace"
+        ---    [ test "x, icon ratio < 1" <|
+        ---        \_ ->
+        ---            let
+        ---                orientation : Orientation
+        ---                orientation =
+        ---                    Horizontal
+        ---                localDimension : Float
+        ---                localDimension =
+        ---                    5.0
+        ---                customSymbolConf : Chart.Internal.Symbol.CustomSymbolConf
+        ---                customSymbolConf =
+        ---                    { identifier = "x"
+        ---                    , width = 110
+        ---                    , height = 100
+        ---                    , paths = []
+        ---                    , useGap = False
+        ---                    }
+        ---                expected : Float
+        ---                expected =
+        ---                    5.5
+        ---            in
+        ---            Expect.within (Expect.Absolute 0.001)
+        ---                (symbolCustomSpace orientation localDimension customSymbolConf)
+        ---                expected
+        ---    , test "x, icon ratio >= 1" <|
+        ---        \_ ->
+        ---            let
+        ---                orientation : Orientation
+        ---                orientation =
+        ---                    Horizontal
+        ---                localDimension : Float
+        ---                localDimension =
+        ---                    5.0
+        ---                customSymbolConf : Chart.Internal.Symbol.CustomSymbolConf
+        ---                customSymbolConf =
+        ---                    { identifier = "x"
+        ---                    , width = 100
+        ---                    , height = 110
+        ---                    , paths = []
+        ---                    , useGap = False
+        ---                    }
+        ---                expected : Float
+        ---                expected =
+        ---                    4.5454
+        ---            in
+        ---            Expect.within (Expect.Absolute 0.001)
+        ---                (symbolCustomSpace orientation localDimension customSymbolConf)
+        ---                expected
+        ---    , test "y" <|
+        ---        \_ ->
+        ---            let
+        ---                orientation : Orientation
+        ---                orientation =
+        ---                    Vertical
+        ---                localDimension : Float
+        ---                localDimension =
+        ---                    5.0
+        ---                customSymbolConf : Chart.Internal.Symbol.CustomSymbolConf
+        ---                customSymbolConf =
+        ---                    { identifier = "x"
+        ---                    , width = 110
+        ---                    , height = 100
+        ---                    , paths = []
+        ---                    , useGap = False
+        ---                    }
+        ---                expected : Float
+        ---                expected =
+        ---                    4.5454
+        ---            in
+        ---            Expect.within (Expect.Absolute 0.001)
+        ---                (symbolCustomSpace orientation localDimension customSymbolConf)
+        ---                expected
+        ---    , test "y 2" <|
+        ---        \_ ->
+        ---            let
+        ---                orientation : Orientation
+        ---                orientation =
+        ---                    Vertical
+        ---                localDimension : Float
+        ---                localDimension =
+        ---                    5.0
+        ---                customSymbolConf : Chart.Internal.Symbol.CustomSymbolConf
+        ---                customSymbolConf =
+        ---                    { identifier = "x"
+        ---                    , width = 100
+        ---                    , height = 110
+        ---                    , paths = []
+        ---                    , useGap = False
+        ---                    }
+        ---                expected : Float
+        ---                expected =
+        ---                    5.5
+        ---            in
+        ---            Expect.within (Expect.Absolute 0.001)
+        ---                (symbolCustomSpace orientation localDimension customSymbolConf)
+        ---                expected
+        ---    ]
         , describe "externalToDataLinearGroup"
             [ test "with time data" <|
                 \_ ->

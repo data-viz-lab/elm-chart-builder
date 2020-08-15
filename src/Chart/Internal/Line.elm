@@ -34,6 +34,8 @@ import Chart.Internal.Type
         , RenderContext(..)
         , ariaLabelledby
         , bottomGap
+        , colorCategoricalStyle
+        , colorStyle
         , dataLinearGroupToDataLinear
         , dataLinearGroupToDataLinearStacked
         , dataLinearGroupToDataTime
@@ -207,9 +209,12 @@ renderLineGrouped ( data, config ) =
                 |> Shape.line c.curve
 
         color idx =
+            Helpers.mergeStyles
+                [ ( "fill", "none" ) ]
+                (colorStyle c (Just idx) Nothing)
+
+        colorSymbol idx =
             colorStyle c (Just idx) Nothing
-                |> (++) "fill: none;"
-                |> style
     in
     svg
         [ viewBox 0 0 outerW outerH
@@ -233,6 +238,7 @@ renderLineGrouped ( data, config ) =
                             Path.element (line d)
                                 [ class [ "line", "line-" ++ String.fromInt idx ]
                                 , color idx
+                                    |> style
                                 ]
                         )
                         sortedLinearData
@@ -251,7 +257,7 @@ renderLineGrouped ( data, config ) =
                                                 { idx = idx
                                                 , x = Scale.convert xLinearScale x
                                                 , y = Scale.convert yScale y
-                                                , style = color idx
+                                                , styleStr = colorSymbol idx
                                                 }
                                         )
                             )
@@ -345,9 +351,12 @@ renderLineStacked ( data, config ) =
             Scale.linear ( 0, 1 ) (Maybe.withDefault ( 0, 0 ) linearDomain.y)
 
         color idx =
+            Helpers.mergeStyles
+                [ ( "fill", "none" ) ]
+                (colorStyle c (Just idx) Nothing)
+
+        colorSymbol idx =
             colorStyle c (Just idx) Nothing
-                |> (++) "fill: none;"
-                |> style
 
         dataStacked : List ( String, List Float )
         dataStacked =
@@ -440,6 +449,7 @@ renderLineStacked ( data, config ) =
                             Path.element (line d)
                                 [ class [ "line", "line-" ++ String.fromInt idx ]
                                 , color idx
+                                    |> style
                                 ]
                         )
                         combinedData
@@ -458,7 +468,7 @@ renderLineStacked ( data, config ) =
                                                 { idx = idx
                                                 , x = Scale.convert xLinearScale x
                                                 , y = Scale.convert yScale y
-                                                , style = color idx
+                                                , styleStr = colorSymbol idx
                                                 }
                                         )
                             )
@@ -641,18 +651,18 @@ symbolsToSymbolElements symbols =
                             [ Html.Attributes.id (symbolToId symbol) ]
                 in
                 case symbol of
-                    Circle r _ ->
-                        s [ circle_ r ]
+                    Circle c ->
+                        s [ circle_ (c.size |> Maybe.withDefault defaultSymbolSize) ]
 
-                    Custom conf ->
+                    Custom c ->
                         --TODO
-                        s [ custom 1 conf ]
+                        s [ custom 1 c ]
 
-                    Corner d _ ->
-                        s [ corner d ]
+                    Corner c ->
+                        s [ corner (c.size |> Maybe.withDefault defaultSymbolSize) ]
 
-                    Triangle d _ ->
-                        s [ triangle d ]
+                    Triangle c ->
+                        s [ triangle (c.size |> Maybe.withDefault defaultSymbolSize) ]
 
                     NoSymbol ->
                         s []
@@ -661,52 +671,63 @@ symbolsToSymbolElements symbols =
 
 drawSymbol :
     Config
-    -> { idx : Int, x : Float, y : Float, style : TypedSvg.Core.Attribute msg }
+    -> { idx : Int, x : Float, y : Float, styleStr : String }
     -> List (Svg msg)
-drawSymbol config { idx, x, y, style } =
+drawSymbol config { idx, x, y, styleStr } =
     let
-        c =
+        conf =
             fromConfig config
 
         symbol =
-            getSymbolByIndex c.icons idx
+            getSymbolByIndex conf.icons idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
+
+        size c =
+            c.size |> Maybe.withDefault defaultSymbolSize
+
+        circleSize c =
+            c.size |> Maybe.withDefault defaultSymbolSize
+
+        st styles =
+            Helpers.mergeStyles styles styleStr
+                |> style
     in
     if showIcons config then
         case symbol of
-            Triangle s _ ->
+            Triangle c ->
                 [ g
-                    [ transform [ Translate (x - s / 2) (y - s / 2) ]
+                    [ transform
+                        [ Translate (x - size c / 2) (y - size c / 2) ]
                     , class [ "symbol" ]
-                    , style
+                    , st c.styles
                     ]
                     symbolRef
                 ]
 
-            Circle s _ ->
+            Circle c ->
                 [ g
-                    [ transform [ Translate (x - s / 2) (y - s / 2) ]
+                    [ transform [ Translate (x - circleSize c / 2) (y - circleSize c / 2) ]
                     , class [ "symbol" ]
-                    , style
+                    , st c.styles
                     ]
                     symbolRef
                 ]
 
-            Corner s _ ->
+            Corner c ->
                 [ g
-                    [ transform [ Translate (x - s / 2) (y - s / 2) ]
+                    [ transform [ Translate (x - size c / 2) (y - size c / 2) ]
                     , class [ "symbol" ]
-                    , style
+                    , st c.styles
                     ]
                     symbolRef
                 ]
 
-            Custom c_ ->
+            Custom c ->
                 let
                     gap =
-                        if c_.useGap then
+                        if c.useGap then
                             symbolGap
 
                         else
@@ -715,7 +736,7 @@ drawSymbol config { idx, x, y, style } =
                 [ g
                     [ transform [ Translate x y ]
                     , class [ "symbol" ]
-                    , style
+                    , st c.styles
                     ]
                     symbolRef
                 ]
@@ -729,24 +750,6 @@ drawSymbol config { idx, x, y, style } =
 
 
 --  HELPERS
-
-
-{-| All possible color styles styles
--}
-colorStyle : ConfigStruct -> Maybe Int -> Maybe Float -> String
-colorStyle c idx interpolatorInput =
-    case ( c.colorResource, idx, interpolatorInput ) of
-        ( ColorPalette colors, Just i, _ ) ->
-            "stroke: " ++ Helpers.colorPaletteToColor colors i
-
-        ( ColorInterpolator interpolator, _, Just i ) ->
-            "stroke: " ++ (interpolator i |> Color.toCssString)
-
-        ( Color color, Nothing, Nothing ) ->
-            "stroke: " ++ Color.toCssString color
-
-        _ ->
-            ""
 
 
 symbolElements : Config -> List (Svg msg)
@@ -768,3 +771,8 @@ symbolElements config =
 
         _ ->
             []
+
+
+defaultSymbolSize : Float
+defaultSymbolSize =
+    10

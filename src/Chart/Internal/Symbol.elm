@@ -1,11 +1,13 @@
 module Chart.Internal.Symbol exposing
     ( CustomSymbolConf
     , Symbol(..)
+    , SymbolConf
     , circle_
     , corner
     , custom
     , getSymbolByIndex
-    , initialCustomSymbolConf
+    , initialConf
+    , initialCustomConf
     , symbolGap
     , symbolToId
     , triangle
@@ -19,51 +21,68 @@ import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Transform(..))
 
 
+type Symbol msg
+    = Circle SymbolConf
+    | Custom CustomSymbolConf
+    | Corner SymbolConf
+    | Triangle SymbolConf
+    | NoSymbol
+
+
 
 --FIXME: take width, height instead of size
 
 
+type alias SymbolConf =
+    { identifier : String
+    , size : Maybe Float
+    , styles : List ( String, String )
+    }
+
+
 type alias CustomSymbolConf =
     { identifier : String
-    , width : Float
-    , height : Float
+    , viewBoxWidth : Float
+    , viewBoxHeight : Float
     , paths : List String
     , useGap : Bool
+    , styles : List ( String, String )
     }
 
 
-initialCustomSymbolConf : CustomSymbolConf
-initialCustomSymbolConf =
+initialConf : SymbolConf
+initialConf =
+    { identifier = "symbol"
+    , size = Nothing
+    , styles = []
+    }
+
+
+initialCustomConf : CustomSymbolConf
+initialCustomConf =
     { identifier = "custom-symbol"
-    , width = 0
-    , height = 0
+    , viewBoxWidth = 0
+    , viewBoxHeight = 0
     , paths = []
     , useGap = True
+    , styles = []
     }
-
-
-type Symbol msg
-    = Circle Float String
-    | Custom CustomSymbolConf
-    | Corner Float String
-    | Triangle Float String
-    | NoSymbol
 
 
 symbolToId : Symbol msg -> String
 symbolToId symbol =
     case symbol of
-        Circle _ id ->
-            id
+        Circle { identifier } ->
+            identifier
 
         Custom { identifier } ->
             identifier
 
-        Corner _ id ->
-            id
+        Corner { identifier } ->
+            identifier
 
-        Triangle _ id ->
-            id
+        Triangle { identifier } ->
+            identifier
 
         NoSymbol ->
             ""
@@ -87,8 +106,8 @@ triangle size =
 
 
 circle_ : Float -> Svg msg
-circle_ diameter =
-    circle [ InPx.cx <| diameter / 2, InPx.cy <| diameter / 2, InPx.r <| diameter / 2 ] []
+circle_ size =
+    circle [ InPx.cx <| size / 2, InPx.cy <| size / 2, InPx.r <| size / 2 ] []
 
 
 corner : Float -> Svg msg

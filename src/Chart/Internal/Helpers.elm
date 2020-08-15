@@ -3,6 +3,7 @@ module Chart.Internal.Helpers exposing
     , combineStakedValuesWithXValues
     , floorFloat
     , floorValues
+    , mergeStyles
     )
 
 import Color exposing (Color)
@@ -49,3 +50,35 @@ colorPaletteToColor palette idx =
         |> List.head
         |> Maybe.withDefault Color.white
         |> Color.toCssString
+
+
+mergeStyles : List ( String, String ) -> String -> String
+mergeStyles new existing =
+    new
+        |> List.foldl
+            (\newTuple existingStrings ->
+                let
+                    existingString =
+                        String.join ";" existingStrings
+
+                    newString =
+                        Tuple.first newTuple ++ ":" ++ Tuple.second newTuple
+                in
+                if String.contains (Tuple.first newTuple) existingString then
+                    --override
+                    existingStrings
+                        |> List.filter
+                            (\s ->
+                                s
+                                    |> String.split ":"
+                                    |> List.head
+                                    |> Maybe.withDefault ""
+                                    |> (\v -> v /= Tuple.first newTuple)
+                            )
+                        |> (::) newString
+
+                else
+                    newString :: existingStrings
+            )
+            (String.split ";" existing)
+        |> String.join ";"

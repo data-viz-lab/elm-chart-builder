@@ -42,6 +42,8 @@ import Chart.Internal.Type
         , bottomGap
         , calculateHistogramDomain
         , calculateHistogramValues
+        , colorCategoricalStyle
+        , colorStyle
         , dataBandToDataStacked
         , externalToDataHistogram
         , fromConfig
@@ -547,7 +549,6 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
 
         stl =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
-                |> style
 
         label =
             verticalLabel config (x_ + w / 2) (y_ - labelGap) point
@@ -570,7 +571,7 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
                 |> Helpers.floorFloat
 
         symbol =
-            verticalSymbol config { idx = idx, x_ = x_, y_ = y_, w = w, style = stl }
+            verticalSymbol config { idx = idx, x_ = x_, y_ = y_, w = w, styleStr = stl }
     in
     rect
         [ x <| x_
@@ -578,7 +579,7 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
         , width <| w
         , height <| h
         , shapeRendering RenderCrispEdges
-        , stl
+        , style stl
         ]
         []
         :: symbol
@@ -612,13 +613,12 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
 
         stl =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
-                |> style
 
         label =
             horizontalLabel config (w + labelGap) (y_ + h / 2) point
 
         symbol =
-            horizontalSymbol config { idx = idx, w = w, y_ = y_, h = h, style = stl }
+            horizontalSymbol config { idx = idx, w = w, y_ = y_, h = h, styleStr = stl }
     in
     rect
         [ x <| 0
@@ -627,6 +627,7 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
         , height h
         , shapeRendering RenderCrispEdges
         , stl
+            |> style
         ]
         []
         :: symbol
@@ -675,49 +676,53 @@ verticalLabel config x_ y_ point =
 
 horizontalSymbol :
     Config
-    -> { idx : Int, w : Float, y_ : Float, h : Float, style : TypedSvg.Core.Attribute msg }
+    -> { idx : Int, w : Float, y_ : Float, h : Float, styleStr : String }
     -> List (Svg msg)
-horizontalSymbol config { idx, w, y_, style } =
+horizontalSymbol config { idx, w, y_, styleStr } =
     let
         symbol =
             getSymbolByIndex (getIcons config) idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
+
+        st styles =
+            Helpers.mergeStyles styles styleStr
+                |> style
     in
     if showIcons config then
         case symbol of
-            Triangle _ _ ->
+            Triangle c ->
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
-                    , style
+                    , st c.styles
                     ]
                     symbolRef
                 ]
 
-            Circle _ _ ->
+            Circle c ->
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
-                    , style
+                    , st c.styles
                     ]
                     symbolRef
                 ]
 
-            Corner _ _ ->
+            Corner c ->
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
                     , class [ "symbol" ]
-                    , style
+                    , st c.styles
                     ]
                     symbolRef
                 ]
 
-            Custom c_ ->
+            Custom c ->
                 let
                     gap =
-                        if c_.useGap then
+                        if c.useGap then
                             symbolGap
 
                         else
@@ -726,7 +731,7 @@ horizontalSymbol config { idx, w, y_, style } =
                 [ g
                     [ transform [ Translate (w + gap) y_ ]
                     , class [ "symbol" ]
-                    , style
+                    , st c.styles
                     ]
                     symbolRef
                 ]
@@ -740,52 +745,57 @@ horizontalSymbol config { idx, w, y_, style } =
 
 verticalSymbol :
     Config
-    -> { idx : Int, w : Float, y_ : Float, x_ : Float, style : TypedSvg.Core.Attribute msg }
+    -> { idx : Int, w : Float, y_ : Float, x_ : Float, styleStr : String }
     -> List (Svg msg)
-verticalSymbol config { idx, w, y_, x_, style } =
+verticalSymbol config { idx, w, y_, x_, styleStr } =
+    --TODO: merge styles
     let
         symbol =
             getSymbolByIndex (getIcons config) idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
+
+        st styles =
+            Helpers.mergeStyles styles styleStr
+                |> style
     in
     if showIcons config then
         case symbol of
-            Triangle _ _ ->
+            Triangle c ->
                 [ g
                     [ transform [ Translate x_ (y_ - w - symbolGap) ]
                     , class [ "symbol" ]
-                    , style
+                    , st c.styles
                     ]
                     symbolRef
                 ]
 
-            Circle _ _ ->
+            Circle c ->
                 [ g
                     [ transform [ Translate x_ (y_ - w - symbolGap) ]
                     , class [ "symbol" ]
-                    , style
+                    , st c.styles
                     ]
                     symbolRef
                 ]
 
-            Corner _ _ ->
+            Corner c ->
                 [ g
                     [ transform [ Translate x_ (y_ - w - symbolGap) ]
                     , class [ "symbol" ]
-                    , style
+                    , st c.styles
                     ]
                     symbolRef
                 ]
 
-            Custom c_ ->
+            Custom c ->
                 let
                     space =
-                        symbolCustomSpace Vertical w c_
+                        symbolCustomSpace Vertical w c
 
                     gap =
-                        if c_.useGap then
+                        if c.useGap then
                             symbolGap
 
                         else
@@ -794,7 +804,7 @@ verticalSymbol config { idx, w, y_, x_, style } =
                 [ g
                     [ transform [ Translate x_ (y_ - space - gap) ]
                     , class [ "symbol" ]
-                    , style
+                    , st c.styles
                     ]
                     symbolRef
                 ]
@@ -841,7 +851,8 @@ symbolsToSymbolElements : Orientation -> BandScale String -> List (Symbol String
 symbolsToSymbolElements orientation bandSingleScale symbols =
     let
         localDimension =
-            Helpers.floorFloat <| Scale.bandwidth bandSingleScale
+            Helpers.floorFloat <|
+                Scale.bandwidth bandSingleScale
     in
     symbols
         |> List.map
@@ -852,27 +863,27 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
                             [ Html.Attributes.id (symbolToId symbol) ]
                 in
                 case symbol of
-                    Circle _ _ ->
+                    Circle conf ->
                         --FIXME
-                        s [ circle_ (localDimension / 2) ]
+                        s [ circle_ (conf.size |> Maybe.withDefault localDimension) ]
 
                     Custom conf ->
                         let
                             scaleFactor =
                                 case orientation of
                                     Vertical ->
-                                        localDimension / conf.width
+                                        localDimension / conf.viewBoxWidth
 
                                     Horizontal ->
-                                        localDimension / conf.height
+                                        localDimension / conf.viewBoxHeight
                         in
                         s [ custom scaleFactor conf ]
 
-                    Corner _ _ ->
-                        s [ corner localDimension ]
+                    Corner conf ->
+                        s [ corner (conf.size |> Maybe.withDefault localDimension) ]
 
-                    Triangle _ _ ->
-                        s [ triangle localDimension ]
+                    Triangle conf ->
+                        s [ triangle (conf.size |> Maybe.withDefault localDimension) ]
 
                     NoSymbol ->
                         s []
@@ -1085,8 +1096,9 @@ histogramColumn :
 histogramColumn c h xScale yScale { length, x0, x1 } =
     let
         styleStr =
-            colorStyle c Nothing Nothing
-                ++ "; stroke: #fff; stroke-width: 0.5px"
+            Helpers.mergeStyles
+                [ ( "stroke", "#fff" ), ( "stroke-width", String.fromFloat strokeWidth ++ "px" ) ]
+                (colorStyle c Nothing Nothing)
     in
     rect
         [ x <| Scale.convert xScale x0
@@ -1107,35 +1119,6 @@ labelGap =
     2
 
 
-
---  HELPERS
-
-
-{-| All possible color styles styles
--}
-colorStyle : ConfigStruct -> Maybe Int -> Maybe Float -> String
-colorStyle c idx interpolatorInput =
-    case ( c.colorResource, idx, interpolatorInput ) of
-        ( ColorPalette colors, Just i, _ ) ->
-            "fill: " ++ Helpers.colorPaletteToColor colors i
-
-        ( ColorInterpolator interpolator, _, Just i ) ->
-            "fill: " ++ (interpolator i |> Color.toCssString)
-
-        ( Color color, Nothing, Nothing ) ->
-            "fill: " ++ Color.toCssString color
-
-        _ ->
-            ""
-
-
-{-| Only categorical styles
--}
-colorCategoricalStyle : ConfigStruct -> Int -> TypedSvg.Core.Attribute msg
-colorCategoricalStyle c idx =
-    case c.colorResource of
-        ColorPalette colors ->
-            style ("fill: " ++ Helpers.colorPaletteToColor colors idx)
-
-        _ ->
-            style ""
+strokeWidth : Float
+strokeWidth =
+    0.5

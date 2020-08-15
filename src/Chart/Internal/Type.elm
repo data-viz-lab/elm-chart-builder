@@ -42,6 +42,8 @@ module Chart.Internal.Type exposing
     , bottomGap
     , calculateHistogramDomain
     , calculateHistogramValues
+    , colorCategoricalStyle
+    , colorStyle
     , dataBandToDataStacked
     , dataLinearGroupToDataLinear
     , dataLinearGroupToDataLinearStacked
@@ -139,6 +141,7 @@ module Chart.Internal.Type exposing
     , toHistogramConfig
     )
 
+import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
 import Color exposing (Color)
 import Histogram
@@ -150,6 +153,8 @@ import Shape
 import Statistics
 import SubPath exposing (SubPath)
 import Time exposing (Posix, Zone)
+import TypedSvg.Attributes
+import TypedSvg.Core
 
 
 
@@ -1276,16 +1281,16 @@ symbolSpace orientation bandSingleScale symbols =
         |> List.map
             (\symbol ->
                 case symbol of
-                    Circle _ _ ->
+                    Circle _ ->
                         localDimension / 2
 
                     Custom conf ->
                         symbolCustomSpace orientation localDimension conf
 
-                    Corner _ _ ->
+                    Corner _ ->
                         localDimension
 
-                    Triangle _ _ ->
+                    Triangle _ ->
                         localDimension
 
                     NoSymbol ->
@@ -1303,16 +1308,16 @@ symbolCustomSpace orientation localDimension conf =
         Horizontal ->
             let
                 scalingFactor =
-                    localDimension / conf.height
+                    localDimension / conf.viewBoxHeight
             in
-            scalingFactor * conf.width
+            scalingFactor * conf.viewBoxWidth
 
         Vertical ->
             let
                 scalingFactor =
-                    localDimension / conf.width
+                    localDimension / conf.viewBoxWidth
             in
-            scalingFactor * conf.height
+            scalingFactor * conf.viewBoxHeight
 
 
 
@@ -1611,6 +1616,49 @@ stackedValuesInverse width values =
                 in
                 { v | stackedValue = ( abs <| left - width, abs <| right - width ) }
             )
+
+
+
+--  HELPERS
+
+
+{-| All possible color styles styles
+-}
+colorStyle : ConfigStruct -> Maybe Int -> Maybe Float -> String
+colorStyle c idx interpolatorInput =
+    case ( c.colorResource, idx, interpolatorInput ) of
+        ( ColorPalette colors, Just i, _ ) ->
+            "fill: "
+                ++ Helpers.colorPaletteToColor colors i
+                ++ ";stroke: "
+                ++ Helpers.colorPaletteToColor colors i
+
+        ( ColorInterpolator interpolator, _, Just i ) ->
+            "fill: "
+                ++ (interpolator i |> Color.toCssString)
+                ++ ";stroke: "
+                ++ (interpolator i |> Color.toCssString)
+
+        ( Color color, Nothing, Nothing ) ->
+            "fill: "
+                ++ Color.toCssString color
+                ++ ";stroke: "
+                ++ Color.toCssString color
+
+        _ ->
+            ""
+
+
+{-| Only categorical styles
+-}
+colorCategoricalStyle : ConfigStruct -> Int -> TypedSvg.Core.Attribute msg
+colorCategoricalStyle c idx =
+    case c.colorResource of
+        ColorPalette colors ->
+            TypedSvg.Attributes.style ("fill: " ++ Helpers.colorPaletteToColor colors idx)
+
+        _ ->
+            TypedSvg.Attributes.style ""
 
 
 

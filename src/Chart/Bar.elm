@@ -5,8 +5,7 @@ module Chart.Bar exposing
     , withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowAxisX, withShowAxisY
     , diverging, grouped, horizontal, stacked, vertical
     , withIcons, withIndividualLabels
-    , symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolUseGap, withSymbolWidth
-    , Symbol, noDirection, withGroupedLayout, withStackedLayout
+    , noDirection, withGroupedLayout, withStackedLayout
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -78,8 +77,6 @@ Icons can be added to grouped bar charts to improve understanding and accessibil
     Bar.init
         |> Bar.withLayout grouped
         |> Bar.render ( data, accessor )
-
-@docs BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolUseGap, withSymbolWidth
 
 -}
 
@@ -527,109 +524,3 @@ diverging =
 noDirection : Direction
 noDirection =
     Type.NoDirection
-
-
-
---SYMBOLS
-
-
-{-| Bar chart symbol type
--}
-type alias Symbol msg =
-    InternalSymbol.Symbol msg
-
-
-{-| A custom bar chart symbol type
--}
-symbolCustom : Symbol msg
-symbolCustom =
-    Custom InternalSymbol.initialCustomSymbolConf
-
-
-{-| Set the custom symbol identifier
--}
-withSymbolIdentifier : String -> Symbol msg -> Symbol msg
-withSymbolIdentifier identifier symbol =
-    case symbol of
-        Custom conf ->
-            Custom { conf | identifier = identifier }
-
-        _ ->
-            symbol
-
-
-{-| Set the custom symbol width
-When using a custom svg icon this is the 3rd argument of its viewBox attribute
--}
-withSymbolWidth : Float -> Symbol msg -> Symbol msg
-withSymbolWidth width symbol =
-    case symbol of
-        Custom conf ->
-            Custom { conf | width = width }
-
-        _ ->
-            symbol
-
-
-{-| Set the custom symbol height
-When using a custom svg icon this is the 4th argument of its viewBox attribute
--}
-withSymbolHeight : Float -> Symbol msg -> Symbol msg
-withSymbolHeight height symbol =
-    case symbol of
-        Custom conf ->
-            Custom { conf | height = height }
-
-        _ ->
-            symbol
-
-
-{-| Set the custom symbol paths
-When using a custom svg icon these are the d attribute of the path elements
--}
-withSymbolPaths : List String -> Symbol msg -> Symbol msg
-withSymbolPaths paths symbol =
-    case symbol of
-        Custom conf ->
-            Custom { conf | paths = paths }
-
-        _ ->
-            symbol
-
-
-{-| Set the useGap boolean flag.
-
-All bar chart icons are drawn with a gap from the bar rectangles,
-but, depending on the custom icon shape and on the orientation of the chart,
-the icon could already have a gap and we do not want to add other space.
-
--}
-withSymbolUseGap : Bool -> Symbol msg -> Symbol msg
-withSymbolUseGap bool symbol =
-    case symbol of
-        Custom conf ->
-            Custom { conf | useGap = bool }
-
-        _ ->
-            symbol
-
-
-{-| Circle symbol type
--}
-symbolCircle : String -> Symbol msg
-symbolCircle id =
-    Circle 0 id
-
-
-{-| Triangle symbol type
--}
-symbolTriangle : String -> Symbol msg
-symbolTriangle id =
-    Triangle 0 id
-
-
-{-| Corner symbol type
--}
-symbolCorner : String -> Symbol msg
-symbolCorner id =
-    Corner 0 id

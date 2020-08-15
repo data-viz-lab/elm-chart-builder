@@ -4,6 +4,7 @@ module BarChart exposing (data, main)
 -}
 
 import Chart.Bar as Bar
+import Chart.Symbol as Symbol exposing (Symbol)
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
@@ -46,31 +47,27 @@ h5 {
 """
 
 
-iconsCustom : String -> List (Bar.Symbol msg)
+iconsCustom : String -> List (Symbol msg)
 iconsCustom prefix =
-    [ Bar.symbolCustom
-        |> Bar.withSymbolIdentifier (prefix ++ "-bicycle-symbol")
-        |> Bar.withSymbolWidth 640
-        |> Bar.withSymbolHeight 512
-        |> Bar.withSymbolPaths [ bicycleSymbol ]
-    , Bar.symbolCustom
-        |> Bar.withSymbolIdentifier (prefix ++ "-car-symbol")
-        |> Bar.withSymbolWidth 640
-        |> Bar.withSymbolHeight 512
-        |> Bar.withSymbolPaths [ carSymbol ]
-    , Bar.symbolCustom
-        |> Bar.withSymbolIdentifier (prefix ++ "-plane-symbol")
-        |> Bar.withSymbolWidth 576
-        |> Bar.withSymbolHeight 512
-        |> Bar.withSymbolPaths [ planeSymbol ]
+    [ Symbol.custom { viewBoxDimensions = ( 640, 512 ), paths = [ bicycleSymbol ] }
+        |> Symbol.withIdentifier (prefix ++ "-bicycle-symbol")
+    , Symbol.custom { viewBoxDimensions = ( 640, 512 ), paths = [ carSymbol ] }
+        |> Symbol.withIdentifier (prefix ++ "-car-symbol")
+    , Symbol.custom { viewBoxDimensions = ( 576, 512 ), paths = [ planeSymbol ] }
+        |> Symbol.withIdentifier (prefix ++ "-plane-symbol")
     ]
 
 
-icons : String -> List (Bar.Symbol msg)
+icons : String -> List (Symbol msg)
 icons prefix =
-    [ Bar.symbolTriangle (prefix ++ "-triangle-symbol")
-    , Bar.symbolCircle (prefix ++ "-circle-symbol")
-    , Bar.symbolCorner (prefix ++ "-corner-symbol")
+    [ Symbol.triangle
+        |> Symbol.withIdentifier (prefix ++ "-triangle-symbol")
+        |> Symbol.withStyle [ ( "fill", "none" ) ]
+    , Symbol.circle
+        |> Symbol.withIdentifier (prefix ++ "-circle-symbol")
+        |> Symbol.withStyle [ ( "fill", "none" ) ]
+    , Symbol.corner
+        |> Symbol.withIdentifier (prefix ++ "-corner-symbol")
     ]
 
 

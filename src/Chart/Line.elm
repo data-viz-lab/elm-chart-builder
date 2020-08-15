@@ -3,7 +3,6 @@ module Chart.Line exposing
     , init
     , render
     , withAxisXContinousTickCount, withColorPalette, withTitle, withDesc, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
-    , symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolWidth
     , Symbol, grouped, stacked, withIcons
     )
 
@@ -475,82 +474,3 @@ withIcons =
 -}
 type alias Symbol msg =
     InternalSymbol.Symbol msg
-
-
-{-| A custom line chart symbol type
--}
-symbolCustom : Symbol msg
-symbolCustom =
-    Custom InternalSymbol.initialCustomSymbolConf
-
-
-{-| Set the custom symbol identifier
--}
-withSymbolIdentifier : String -> Symbol msg -> Symbol msg
-withSymbolIdentifier identifier symbol =
-    case symbol of
-        Custom conf ->
-            Custom { conf | identifier = identifier }
-
-        _ ->
-            symbol
-
-
-{-| Set the custom symbol width
-When using a custom svg icon this is the 3rd argument of its viewBox attribute
--}
-withSymbolWidth : Float -> Symbol msg -> Symbol msg
-withSymbolWidth width symbol =
-    case symbol of
-        Custom conf ->
-            Custom { conf | width = width }
-
-        _ ->
-            symbol
-
-
-{-| Set the custom symbol height
-When using a custom svg icon this is the 4th argument of its viewBox attribute
--}
-withSymbolHeight : Float -> Symbol msg -> Symbol msg
-withSymbolHeight height symbol =
-    case symbol of
-        Custom conf ->
-            Custom { conf | height = height }
-
-        _ ->
-            symbol
-
-
-{-| Set the custom symbol paths
-When using a custom svg icon these are the d attribute of the path elements
--}
-withSymbolPaths : List String -> Symbol msg -> Symbol msg
-withSymbolPaths paths symbol =
-    case symbol of
-        Custom conf ->
-            Custom { conf | paths = paths }
-
-        _ ->
-            symbol
-
-
-{-| Circle symbol type
--}
-symbolCircle : Float -> String -> Symbol msg
-symbolCircle radius id =
-    Circle radius id
-
-
-{-| Triangle symbol type
--}
-symbolTriangle : Float -> String -> Symbol msg
-symbolTriangle size id =
-    Triangle size id
-
-
-{-| Corner symbol type
--}
-symbolCorner : Float -> String -> Symbol msg
-symbolCorner size id =
-    Corner size id

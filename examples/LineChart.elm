@@ -4,6 +4,7 @@ module LineChart exposing (data, main)
 -}
 
 import Chart.Line as Line
+import Chart.Symbol as Symbol exposing (Symbol)
 import Html exposing (Html)
 import Html.Attributes exposing (class)
 import Scale.Color
@@ -42,11 +43,15 @@ css =
 """
 
 
-icons : String -> List (Line.Symbol msg)
+icons : String -> List (Symbol msg)
 icons prefix =
-    [ Line.symbolTriangle 10 (prefix ++ "-triangle-symbol")
-    , Line.symbolCircle 10 (prefix ++ "-circle-symbol")
-    , Line.symbolCorner 10 (prefix ++ "-corner-symbol")
+    [ Symbol.triangle
+        |> Symbol.withIdentifier (prefix ++ "-triangle-symbol")
+    , Symbol.circle
+        |> Symbol.withIdentifier (prefix ++ "-circle-symbol")
+        |> Symbol.withStyle [ ( "fill", "none" ) ]
+    , Symbol.corner
+        |> Symbol.withIdentifier (prefix ++ "-corner-symbol")
     ]
 
 
