@@ -640,7 +640,7 @@ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config ) =
             linearAxisGenerator c X xLinearScale
 
 
-symbolsToSymbolElements : List (Symbol String) -> List (Svg msg)
+symbolsToSymbolElements : List Symbol -> List (Svg msg)
 symbolsToSymbolElements symbols =
     symbols
         |> List.map

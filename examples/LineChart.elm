@@ -43,7 +43,7 @@ css =
 """
 
 
-icons : String -> List (Symbol msg)
+icons : String -> List Symbol
 icons prefix =
     [ Symbol.triangle
         |> Symbol.withIdentifier (prefix ++ "-triangle-symbol")

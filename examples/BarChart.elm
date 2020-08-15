@@ -47,7 +47,7 @@ h5 {
 """
 
 
-iconsCustom : String -> List (Symbol msg)
+iconsCustom : String -> List Symbol
 iconsCustom prefix =
     [ Symbol.custom { viewBoxDimensions = ( 640, 512 ), paths = [ bicycleSymbol ] }
         |> Symbol.withIdentifier (prefix ++ "-bicycle-symbol")
@@ -58,7 +58,7 @@ iconsCustom prefix =
     ]
 
 
-icons : String -> List (Symbol msg)
+icons : String -> List Symbol
 icons prefix =
     [ Symbol.triangle
         |> Symbol.withIdentifier (prefix ++ "-triangle-symbol")

@@ -35,46 +35,45 @@ suite =
                     else
                         Expect.fail "The color generated is not in the input palette"
             ]
-        , only <|
-            describe "mergeStyles"
-                [ test "It should add a new style" <|
-                    \_ ->
-                        let
-                            existing =
-                                "fill:red"
+        , describe "mergeStyles"
+            [ test "It should add a new style" <|
+                \_ ->
+                    let
+                        existing =
+                            "fill:red"
 
-                            new =
-                                [ ( "stroke", "green" ) ]
+                        new =
+                            [ ( "stroke", "green" ) ]
 
-                            expected =
-                                mergeStyles new existing
-                        in
-                        Expect.equal "stroke:green;fill:red" expected
-                , test "It should override with a new style" <|
-                    \_ ->
-                        let
-                            existing =
-                                "fill:red;stroke:2px"
+                        expected =
+                            mergeStyles new existing
+                    in
+                    Expect.equal "stroke:green;fill:red" expected
+            , test "It should override with a new style" <|
+                \_ ->
+                    let
+                        existing =
+                            "fill:red;stroke:2px"
 
-                            new =
-                                [ ( "fill", "green" ) ]
+                        new =
+                            [ ( "fill", "green" ) ]
 
-                            expected =
-                                mergeStyles new existing
-                        in
-                        Expect.equal "fill:green;stroke:2px" expected
-                , test "It should override with a new style 2" <|
-                    \_ ->
-                        let
-                            existing =
-                                "fill: rgba(88.24%,34.12%,34.9%,1)"
+                        expected =
+                            mergeStyles new existing
+                    in
+                    Expect.equal "fill:green;stroke:2px" expected
+            , test "It should override with a new style 2" <|
+                \_ ->
+                    let
+                        existing =
+                            "fill: rgba(88.24%,34.12%,34.9%,1)"
 
-                            new =
-                                [ ( "fill", "none" ) ]
+                        new =
+                            [ ( "fill", "none" ) ]
 
-                            expected =
-                                mergeStyles new existing
-                        in
-                        Expect.equal "fill:none" expected
-                ]
+                        expected =
+                            mergeStyles new existing
+                    in
+                    Expect.equal "fill:none" expected
+            ]
         ]

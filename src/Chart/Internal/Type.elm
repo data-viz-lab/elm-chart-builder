@@ -421,7 +421,7 @@ type alias ConfigStruct =
     , domainTime : DomainTime
     , height : Float
     , histogramDomain : Maybe ( Float, Float )
-    , icons : List (Symbol String)
+    , icons : List Symbol
     , layout : Layout
     , margin : Margin
     , orientation : Orientation
@@ -555,7 +555,7 @@ showIcons (Config c) =
         |> (\l -> l > 0)
 
 
-getIcons : Config -> List (Symbol String)
+getIcons : Config -> List Symbol
 getIcons (Config c) =
     c
         |> .icons
@@ -581,7 +581,7 @@ setLayoutRestricted layout (Config c) =
 
 
 setIcons :
-    List (Symbol String)
+    List Symbol
     -> Config
     -> Config
 setIcons all (Config c) =
@@ -1271,7 +1271,7 @@ getOffset config =
             Shape.stackOffsetNone
 
 
-symbolSpace : Orientation -> BandScale String -> List (Symbol String) -> Float
+symbolSpace : Orientation -> BandScale String -> List Symbol -> Float
 symbolSpace orientation bandSingleScale symbols =
     let
         localDimension =

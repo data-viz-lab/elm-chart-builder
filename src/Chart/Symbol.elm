@@ -14,8 +14,8 @@ module Chart.Symbol exposing
 import Chart.Internal.Symbol as InternalSymbol exposing (Symbol(..))
 
 
-type alias Symbol msg =
-    InternalSymbol.Symbol msg
+type alias Symbol =
+    InternalSymbol.Symbol
 
 
 type alias RequiredCustomConfig =
@@ -26,7 +26,7 @@ type alias RequiredCustomConfig =
 
 {-| A custom bar chart symbol type
 -}
-custom : RequiredCustomConfig -> Symbol msg
+custom : RequiredCustomConfig -> Symbol
 custom c =
     let
         conf =
@@ -42,21 +42,21 @@ custom c =
 
 {-| Circle symbol type
 -}
-circle : Symbol msg
+circle : Symbol
 circle =
     Circle InternalSymbol.initialConf
 
 
 {-| Triangle symbol type
 -}
-triangle : Symbol msg
+triangle : Symbol
 triangle =
     Triangle InternalSymbol.initialConf
 
 
 {-| Corner symbol type
 -}
-corner : Symbol msg
+corner : Symbol
 corner =
     Corner InternalSymbol.initialConf
 
@@ -67,7 +67,7 @@ corner =
 
 {-| Set the custom symbol identifier
 -}
-withIdentifier : String -> Symbol msg -> Symbol msg
+withIdentifier : String -> Symbol -> Symbol
 withIdentifier identifier symbol =
     case symbol of
         Custom conf ->
@@ -89,7 +89,7 @@ withIdentifier identifier symbol =
 {-| Set the custom symbol height
 When using a custom svg icon this is the 4th argument of its viewBox attribute
 -}
-withSize : Float -> Symbol msg -> Symbol msg
+withSize : Float -> Symbol -> Symbol
 withSize size symbol =
     case symbol of
         Custom conf ->
@@ -111,7 +111,7 @@ withSize size symbol =
 {-| Set the custom symbol height
 When using a custom svg icon this is the 4th argument of its viewBox attribute
 -}
-withStyle : List ( String, String ) -> Symbol msg -> Symbol msg
+withStyle : List ( String, String ) -> Symbol -> Symbol
 withStyle style symbol =
     case symbol of
         Custom conf ->
@@ -137,7 +137,7 @@ but, depending on the custom icon shape and on the orientation of the chart,
 the icon could already have a gap and we do not want to add other space.
 
 -}
-withGap : Bool -> Symbol msg -> Symbol msg
+withGap : Bool -> Symbol -> Symbol
 withGap bool symbol =
     case symbol of
         Custom conf ->

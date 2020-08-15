@@ -847,7 +847,7 @@ horizontalLabel config x_ y_ point =
         []
 
 
-symbolsToSymbolElements : Orientation -> BandScale String -> List (Symbol String) -> List (Svg msg)
+symbolsToSymbolElements : Orientation -> BandScale String -> List Symbol -> List (Svg msg)
 symbolsToSymbolElements orientation bandSingleScale symbols =
     let
         localDimension =

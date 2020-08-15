@@ -21,7 +21,7 @@ import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Transform(..))
 
 
-type Symbol msg
+type Symbol
     = Circle SymbolConf
     | Custom CustomSymbolConf
     | Corner SymbolConf
@@ -69,7 +69,7 @@ initialCustomConf =
     }
 
 
-symbolToId : Symbol msg -> String
+symbolToId : Symbol -> String
 symbolToId symbol =
     case symbol of
         Circle { identifier } ->
@@ -128,7 +128,7 @@ custom scaleFactor conf =
         List.map (\d_ -> path [ d d_ ] []) conf.paths
 
 
-getSymbolByIndex : List (Symbol msg) -> Int -> Symbol msg
+getSymbolByIndex : List Symbol -> Int -> Symbol
 getSymbolByIndex all idx =
     if List.length all > 0 then
         all

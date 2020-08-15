@@ -393,7 +393,7 @@ These are additional symbols at the end of each bar in a group, for facilitating
 
 -}
 withIcons :
-    List (Symbol String)
+    List Symbol
     -> Config
     -> Config
 withIcons =

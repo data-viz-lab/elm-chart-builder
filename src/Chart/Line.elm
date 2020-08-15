@@ -465,12 +465,12 @@ These are additional symbols at the end of each line in a group, for facilitatin
         |> withIcons [ Circle, Corner, Triangle ]
 
 -}
-withIcons : List (Symbol String) -> Config -> Config
+withIcons : List Symbol -> Config -> Config
 withIcons =
     Type.setIcons
 
 
 {-| Line chart symbol type
 -}
-type alias Symbol msg =
-    InternalSymbol.Symbol msg
+type alias Symbol =
+    InternalSymbol.Symbol
