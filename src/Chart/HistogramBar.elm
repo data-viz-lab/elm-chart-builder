@@ -5,8 +5,8 @@ module Chart.HistogramBar exposing
     , withDomain, withSteps, withColor, withTitle, withDesc
     ,  withYAxisTickFormat
        --, withYAxisTicks
-       --, withShowXAxis
-       --, withShowYAxis
+       --, withXAxis
+       --, withYAxis
        --, withYAxisTickCount
 
     )
@@ -59,8 +59,8 @@ import Chart.Internal.Type as Type
         , fromHistogramConfig
         , setColorResource
         , setDimensions
-        , setShowXAxis
-        , setShowYAxis
+        , setXAxis
+        , setYAxis
         , setSvgDesc
         , setSvgTitle
         , toHistogramConfig

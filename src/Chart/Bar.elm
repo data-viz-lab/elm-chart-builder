@@ -2,7 +2,7 @@ module Chart.Bar exposing
     ( Accessor
     , init
     , render
-    , withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowXAxis, withShowYAxis
+    , withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withXAxis, withYAxis
     , diverging, grouped, horizontal, stacked, vertical
     , withSymbols, withIndividualLabels
     , noDirection, withGroupedLayout, withStackedLayout
@@ -30,7 +30,7 @@ The Bar module expects the X axis to plot grouped ordinal data and the Y axis to
 
 # Configuration withters
 
-@docs withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withLayout, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowXAxis, withShowYAxis
+@docs withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withLayout, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withXAxis, withYAxis
 
 
 # Configuration withters arguments
@@ -105,8 +105,8 @@ import Chart.Internal.Type as Type
         , setDimensions
         , setHeight
         , setMargin
-        , setShowXAxis
-        , setShowYAxis
+        , setXAxis
+        , setYAxis
         , setSvgDesc
         , setSvgTitle
         , setWidth
@@ -355,13 +355,13 @@ if the layout is changed to horizontal, then the Y axis
 represents the horizontal one.
 
     Bar.init
-        |> Bar.withShowYAxis False
+        |> Bar.withYAxis False
         |> Bar.render ( data, accessor )
 
 -}
-withShowYAxis : Bool -> Config -> Config
-withShowYAxis value config =
-    Type.setShowYAxis value config
+withYAxis : Bool -> Config -> Config
+withYAxis value config =
+    Type.setYAxis value config
 
 
 {-| Sets the showOrdinalAxis boolean value in the config
@@ -377,9 +377,9 @@ represents the vertical one.
         |> Bar.render ( data, accessor )
 
 -}
-withShowXAxis : Bool -> Config -> Config
-withShowXAxis value config =
-    Type.setShowXAxis value config
+withXAxis : Bool -> Config -> Config
+withXAxis value config =
+    Type.setXAxis value config
 
 
 {-| Sets the Icon Symbols list in the `LayoutConfig`.

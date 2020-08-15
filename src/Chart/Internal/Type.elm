@@ -119,8 +119,8 @@ module Chart.Internal.Type exposing
     , setMargin
     , setOrientation
     , setShowDataPoints
-    , setShowXAxis
-    , setShowYAxis
+    , setXAxis
+    , setYAxis
     , setSvgDesc
     , setSvgTitle
     , setWidth
@@ -841,13 +841,13 @@ setDomainLinearAndTimeY linearDomain (Config c) =
     toConfig { c | domainLinear = DomainLinear newDomain, domainTime = DomainTime newDomainTime }
 
 
-setShowXAxis : Bool -> Config -> Config
-setShowXAxis bool (Config c) =
+setXAxis : Bool -> Config -> Config
+setXAxis bool (Config c) =
     toConfig { c | showXAxis = bool }
 
 
-setShowYAxis : Bool -> Config -> Config
-setShowYAxis bool (Config c) =
+setYAxis : Bool -> Config -> Config
+setYAxis bool (Config c) =
     toConfig { c | showYAxis = bool }
 
 

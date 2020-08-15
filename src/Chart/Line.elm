@@ -2,7 +2,7 @@ module Chart.Line exposing
     ( Accessor, AccessorTime, AccessorLinear, time, linear
     , init
     , render
-    , withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withShowXAxis, withShowYAxis, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
+    , withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withXAxis, withYAxis, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
     , Symbol, grouped, stacked, withSymbols
     )
 
@@ -33,7 +33,7 @@ I expects the X axis to plot time or linear data and the Y axis to plot linear d
 
 # Configuration setters
 
-@docs withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withShowXAxis, withShowYAxis, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
+@docs withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withXAxis, withYAxis, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
 
 @docs BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolUseGap, withSymbolWidth
 
@@ -61,13 +61,13 @@ import Chart.Internal.Type as Type
         , fromConfig
         , setDimensions
         , setLayout
-        , setShowXAxis
-        , setShowYAxis
         , setSvgDesc
         , setSvgTitle
+        , setXAxis
         , setXAxisContinousTickCount
         , setXAxisContinousTickFormat
         , setXAxisContinousTicks
+        , setYAxis
         , setYAxisContinousTickCount
         , setYAxisContinousTickFormat
         , setYAxisContinousTicks
@@ -304,13 +304,13 @@ if the layout is changed to y, then the X axis
 represents the y one.
 
     Line.init
-        |> Line.withShowXAxis False
+        |> Line.withXAxis False
         |> Line.render data
 
 -}
-withShowXAxis : Bool -> Config -> Config
-withShowXAxis value config =
-    Type.setShowXAxis value config
+withXAxis : Bool -> Config -> Config
+withXAxis value config =
+    Type.setXAxis value config
 
 
 {-| Show or hide the Y axis.
@@ -318,13 +318,13 @@ withShowXAxis value config =
 Default value: True
 
     Line.init
-        |> Line.withShowYAxis False
+        |> Line.withYAxis False
         |> Line.render data
 
 -}
-withShowYAxis : Bool -> Config -> Config
-withShowYAxis value config =
-    Type.setShowYAxis value config
+withYAxis : Bool -> Config -> Config
+withYAxis value config =
+    Type.setYAxis value config
 
 
 {-| Sets the x domain of a time line chart
