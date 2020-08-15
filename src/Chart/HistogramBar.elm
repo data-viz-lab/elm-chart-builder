@@ -2,13 +2,11 @@ module Chart.HistogramBar exposing
     ( dataAccessor, preProcessedDataAccessor, initHistogramConfig
     , init
     , render
-    , withDomain, withSteps, withColor, withTitle, withDesc
-    ,  withYAxisTickFormat
-       --, withYAxisTicks
-       --, withXAxis
-       --, withYAxis
-       --, withYAxisTickCount
-
+    , withDomain, withSteps, withColor, withTitle, withDesc, withYAxisTickFormat
+    --, withYAxisTicks
+    --, withXAxis
+    --, withYAxis
+    --, withYAxisTickCount
     )
 
 {-| This is the histogram chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -59,10 +57,10 @@ import Chart.Internal.Type as Type
         , fromHistogramConfig
         , setColorResource
         , setDimensions
-        , setXAxis
-        , setYAxis
         , setSvgDesc
         , setSvgTitle
+        , setXAxis
+        , setYAxis
         , toHistogramConfig
         )
 import Color exposing (Color)
@@ -79,8 +77,8 @@ type alias RequiredConfig =
 
 
 {-| The data accessor for generating a histogram.
-It takes a config that is separate from the general config, because it is only used when generating a histogram,
-not for pre-processed data that has been already bucketed.
+It takes a config that is separate from the general config, because it is only used when generating a histogram and
+not for bucketed pre-processed data.
 
     histoConfig =
         Histo.initHistogramConfig
@@ -217,9 +215,11 @@ withYAxisTickFormat f config =
 
 {-| Sets an accessible, long-text description for the svg chart.
 Default value: ""
-Histo.init
-|> Histo.withDesc "This is an accessible chart, with a desc element"
-|> Histo.render ( data, accessor )
+
+    Histo.init
+        |> Histo.withDesc "This is an accessible chart, with a desc element"
+        |> Histo.render ( data, accessor )
+
 -}
 withDesc : String -> Config -> Config
 withDesc value config =
@@ -228,9 +228,11 @@ withDesc value config =
 
 {-| Sets an accessible title for the svg chart.
 Default value: ""
-Histo.init
-|> Histo.withTitle "This is a chart"
-|> Histo.render ( data, accessor )
+
+    Histo.init
+        |> Histo.withTitle "This is a chart"
+        |> Histo.render ( data, accessor )
+
 -}
 withTitle : String -> Config -> Config
 withTitle value config =
