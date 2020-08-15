@@ -4,10 +4,10 @@ module Chart.HistogramBar exposing
     , render
     , withDomain, withSteps, withColor, withTitle, withDesc
     ,  withYAxisTickFormat
-       --, withAxisYTicks
-       --, withShowAxisX
-       --, withShowAxisY
-       --, withAxisYTickCount
+       --, withYAxisTicks
+       --, withShowXAxis
+       --, withShowYAxis
+       --, withYAxisTickCount
 
     )
 
@@ -33,7 +33,7 @@ The histogram bar chart can both generate the histogram data or accept some prep
 
 # Configuration setters
 
-@docs withDimensions, withDomain, withHeight, withSteps, withWidth, withColor, withTitle, withDesc, withMargin, withAxisYTickFormat
+@docs withDimensions, withDomain, withHeight, withSteps, withWidth, withColor, withTitle, withDesc, withMargin, withYAxisTickFormat
 
 -}
 
@@ -59,8 +59,8 @@ import Chart.Internal.Type as Type
         , fromHistogramConfig
         , setColorResource
         , setDimensions
-        , setShowAxisX
-        , setShowAxisY
+        , setShowXAxis
+        , setShowYAxis
         , setSvgDesc
         , setSvgTitle
         , toHistogramConfig
@@ -206,13 +206,13 @@ Defaults to `Scale.tickFormat`
         Numeral.format "0%"
 
     Histo.init
-        |> Histo.withAxisYTickFormat formatter
+        |> Histo.withYAxisTickFormat formatter
         |> Histo.render (data, accessor)
 
 -}
 withYAxisTickFormat : (Float -> String) -> Config -> Config
 withYAxisTickFormat f config =
-    Type.setAxisYContinousTickFormat (CustomTickFormat f) config
+    Type.setYAxisContinousTickFormat (CustomTickFormat f) config
 
 
 {-| Sets an accessible, long-text description for the svg chart.

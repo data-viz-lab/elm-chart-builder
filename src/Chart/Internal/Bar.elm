@@ -892,7 +892,7 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
 
 bandXAxis : ConfigStruct -> BandScale String -> List (Svg msg)
 bandXAxis c bandScale =
-    if c.showAxisX == True then
+    if c.showXAxis == True then
         case c.orientation of
             Vertical ->
                 let
@@ -924,7 +924,7 @@ bandXAxis c bandScale =
 
 bandGroupedYAxis : ConfigStruct -> Float -> ContinuousScale Float -> List (Svg msg)
 bandGroupedYAxis c iconOffset linearScale =
-    if c.showAxisY == True then
+    if c.showYAxis == True then
         let
             ticks =
                 case c.axisYContinousTicks of

@@ -167,11 +167,11 @@ lineLinear d =
         , width = width
         , height = height
         }
-        |> Line.withAxisYContinousTickCount 5
-        |> Line.withAxisXContinousTickCount 5
+        |> Line.withYAxisContinousTickCount 5
+        |> Line.withXAxisContinousTickCount 5
         |> Line.withDomainY ( 0, 20 )
-        |> Line.withAxisXContinousTicks xAxisTicks
-        |> Line.withAxisXContinousTickFormat (round >> String.fromInt)
+        |> Line.withXAxisContinousTicks xAxisTicks
+        |> Line.withXAxisContinousTickFormat (round >> String.fromInt)
         |> Line.render ( d, accessor )
 
 

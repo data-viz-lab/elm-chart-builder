@@ -100,9 +100,9 @@ line =
         , height = 400
         }
         --|> Line.withCurve (\d -> Shape.basisCurve d)
-        |> Line.withAxisYContinousTickCount 5
-        |> Line.withAxisXContinousTicks xAxisTicks
-        |> Line.withAxisXContinousTickFormat (round >> String.fromInt)
+        |> Line.withYAxisContinousTickCount 5
+        |> Line.withXAxisContinousTicks xAxisTicks
+        |> Line.withXAxisContinousTickFormat (round >> String.fromInt)
         |> Line.withDomainY ( 0, 50 )
 
 

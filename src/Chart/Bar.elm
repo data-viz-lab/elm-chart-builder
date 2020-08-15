@@ -2,7 +2,7 @@ module Chart.Bar exposing
     ( Accessor
     , init
     , render
-    , withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowAxisX, withShowAxisY
+    , withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowXAxis, withShowYAxis
     , diverging, grouped, horizontal, stacked, vertical
     , withSymbols, withIndividualLabels
     , noDirection, withGroupedLayout, withStackedLayout
@@ -30,7 +30,7 @@ The Bar module expects the X axis to plot grouped ordinal data and the Y axis to
 
 # Configuration withters
 
-@docs withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withLayout, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowAxisX, withShowAxisY
+@docs withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withLayout, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowXAxis, withShowYAxis
 
 
 # Configuration withters arguments
@@ -105,8 +105,8 @@ import Chart.Internal.Type as Type
         , setDimensions
         , setHeight
         , setMargin
-        , setShowAxisX
-        , setShowAxisY
+        , setShowXAxis
+        , setShowYAxis
         , setSvgDesc
         , setSvgTitle
         , setWidth
@@ -247,7 +247,7 @@ Defaults to `Scale.ticks`
 -}
 withYAxisTicks : List Float -> Config -> Config
 withYAxisTicks ticks config =
-    Type.setAxisYContinousTicks (Type.CustomTicks ticks) config
+    Type.setYAxisContinousTicks (Type.CustomTicks ticks) config
 
 
 {-| Sets the approximate number of ticks for a grouped bar chart continous axis.
@@ -261,7 +261,7 @@ Defaults to `Scale.tickCount`
 -}
 withYAxisTickCount : Int -> Config -> Config
 withYAxisTickCount count config =
-    Type.setAxisYContinousTickCount (Type.CustomTickCount count) config
+    Type.setYAxisContinousTickCount (Type.CustomTickCount count) config
 
 
 {-| Sets the formatting for the ticks in a grouped bar chart continous axis.
@@ -278,7 +278,7 @@ Defaults to `Scale.tickFormat`
 -}
 withYAxisTickFormat : (Float -> String) -> Config -> Config
 withYAxisTickFormat f config =
-    Type.setAxisYContinousTickFormat (CustomTickFormat f) config
+    Type.setYAxisContinousTickFormat (CustomTickFormat f) config
 
 
 {-| Sets the color palette for the chart.
@@ -346,7 +346,7 @@ withDomainLinear value config =
     Type.setDomainBandLinear value config
 
 
-{-| Sets the showAxisY boolean value in the config
+{-| Sets the showYAxis boolean value in the config
 
 Default value: True
 
@@ -355,13 +355,13 @@ if the layout is changed to horizontal, then the Y axis
 represents the horizontal one.
 
     Bar.init
-        |> Bar.withShowAxisY False
+        |> Bar.withShowYAxis False
         |> Bar.render ( data, accessor )
 
 -}
-withShowAxisY : Bool -> Config -> Config
-withShowAxisY value config =
-    Type.setShowAxisY value config
+withShowYAxis : Bool -> Config -> Config
+withShowYAxis value config =
+    Type.setShowYAxis value config
 
 
 {-| Sets the showOrdinalAxis boolean value in the config
@@ -377,9 +377,9 @@ represents the vertical one.
         |> Bar.render ( data, accessor )
 
 -}
-withShowAxisX : Bool -> Config -> Config
-withShowAxisX value config =
-    Type.setShowAxisX value config
+withShowXAxis : Bool -> Config -> Config
+withShowXAxis value config =
+    Type.setShowXAxis value config
 
 
 {-| Sets the Icon Symbols list in the `LayoutConfig`.

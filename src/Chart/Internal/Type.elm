@@ -1,8 +1,8 @@
 module Chart.Internal.Type exposing
     ( AccessorBand
     , AccessorHistogram(..)
-    , AccessorLinearGroup(..)
     , AccessorLinearStruct
+    , AccessorLinearTime(..)
     , AccessorTimeStruct
     , AxisContinousDataTickCount(..)
     , AxisContinousDataTickFormat(..)
@@ -66,12 +66,6 @@ module Chart.Internal.Type exposing
     , fromExternalData
     , fromHistogramConfig
     , getAxisContinousDataFormatter
-    , getAxisXContinousTickCount
-    , getAxisXContinousTickFormat
-    , getAxisXContinousTicks
-    , getAxisYContinousTickCount
-    , getAxisYContinousTickFormat
-    , getAxisYContinousTicks
     , getBandGroupRange
     , getBandSingleRange
     , getColorResource
@@ -95,15 +89,15 @@ module Chart.Internal.Type exposing
     , getSvgDesc
     , getSvgTitle
     , getWidth
+    , getXAxisContinousTickCount
+    , getXAxisContinousTickFormat
+    , getXAxisContinousTicks
+    , getYAxisContinousTickCount
+    , getYAxisContinousTickFormat
+    , getYAxisContinousTicks
     , getZone
     , leftGap
     , role
-    , setAxisXContinousTickCount
-    , setAxisXContinousTickFormat
-    , setAxisXContinousTicks
-    , setAxisYContinousTickCount
-    , setAxisYContinousTickFormat
-    , setAxisYContinousTicks
     , setColorResource
     , setCurve
     , setDimensions
@@ -124,12 +118,18 @@ module Chart.Internal.Type exposing
     , setLayoutRestricted
     , setMargin
     , setOrientation
-    , setShowAxisX
-    , setShowAxisY
     , setShowDataPoints
+    , setShowXAxis
+    , setShowYAxis
     , setSvgDesc
     , setSvgTitle
     , setWidth
+    , setXAxisContinousTickCount
+    , setXAxisContinousTickFormat
+    , setXAxisContinousTicks
+    , setYAxisContinousTickCount
+    , setYAxisContinousTickFormat
+    , setYAxisContinousTicks
     , showIcons
     , showIndividualLabels
     , stackedValuesInverse
@@ -213,7 +213,7 @@ fromHistogramConfig (HistogramConfig config) =
     config
 
 
-type AccessorLinearGroup data
+type AccessorLinearTime data
     = AccessorLinear (AccessorLinearStruct data)
     | AccessorTime (AccessorTimeStruct data)
 
@@ -425,8 +425,8 @@ type alias ConfigStruct =
     , layout : Layout
     , margin : Margin
     , orientation : Orientation
-    , showAxisX : Bool
-    , showAxisY : Bool
+    , showXAxis : Bool
+    , showYAxis : Bool
     , showDataPoints : Bool
     , showIndividualLabels : Bool
     , svgDesc : String
@@ -456,8 +456,8 @@ defaultConfig =
         , layout = defaultLayout
         , margin = defaultMargin
         , orientation = defaultOrientation
-        , showAxisX = True
-        , showAxisY = True
+        , showXAxis = True
+        , showYAxis = True
         , showIndividualLabels = False
         , showDataPoints = False
         , svgDesc = ""
@@ -625,13 +625,13 @@ type alias StackedValuesAndGroupes =
 -- SETTERS
 
 
-setAxisXContinousTickCount : AxisContinousDataTickCount -> Config -> Config
-setAxisXContinousTickCount count (Config c) =
+setXAxisContinousTickCount : AxisContinousDataTickCount -> Config -> Config
+setXAxisContinousTickCount count (Config c) =
     toConfig { c | axisXContinousTickCount = count }
 
 
-setAxisYContinousTickCount : AxisContinousDataTickCount -> Config -> Config
-setAxisYContinousTickCount count (Config c) =
+setYAxisContinousTickCount : AxisContinousDataTickCount -> Config -> Config
+setYAxisContinousTickCount count (Config c) =
     toConfig { c | axisYContinousTickCount = count }
 
 
@@ -650,23 +650,23 @@ setSvgTitle title (Config c) =
     toConfig { c | svgTitle = title }
 
 
-setAxisXContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
-setAxisXContinousTickFormat format (Config c) =
+setXAxisContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
+setXAxisContinousTickFormat format (Config c) =
     toConfig { c | axisXContinousTickFormat = format }
 
 
-setAxisYContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
-setAxisYContinousTickFormat format (Config c) =
+setYAxisContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
+setYAxisContinousTickFormat format (Config c) =
     toConfig { c | axisYContinousTickFormat = format }
 
 
-setAxisXContinousTicks : AxisContinousDataTicks -> Config -> Config
-setAxisXContinousTicks ticks (Config c) =
+setXAxisContinousTicks : AxisContinousDataTicks -> Config -> Config
+setXAxisContinousTicks ticks (Config c) =
     toConfig { c | axisXContinousTicks = ticks }
 
 
-setAxisYContinousTicks : AxisContinousDataTicks -> Config -> Config
-setAxisYContinousTicks ticks (Config c) =
+setYAxisContinousTicks : AxisContinousDataTicks -> Config -> Config
+setYAxisContinousTicks ticks (Config c) =
     toConfig { c | axisYContinousTicks = ticks }
 
 
@@ -841,14 +841,14 @@ setDomainLinearAndTimeY linearDomain (Config c) =
     toConfig { c | domainLinear = DomainLinear newDomain, domainTime = DomainTime newDomainTime }
 
 
-setShowAxisX : Bool -> Config -> Config
-setShowAxisX bool (Config c) =
-    toConfig { c | showAxisX = bool }
+setShowXAxis : Bool -> Config -> Config
+setShowXAxis bool (Config c) =
+    toConfig { c | showXAxis = bool }
 
 
-setShowAxisY : Bool -> Config -> Config
-setShowAxisY bool (Config c) =
-    toConfig { c | showAxisY = bool }
+setShowYAxis : Bool -> Config -> Config
+setShowYAxis bool (Config c) =
+    toConfig { c | showYAxis = bool }
 
 
 setShowDataPoints : Bool -> Config -> Config
@@ -865,28 +865,28 @@ getZone config =
     fromConfig config |> .zone
 
 
-getAxisXContinousTickCount : Config -> AxisContinousDataTickCount
-getAxisXContinousTickCount config =
+getXAxisContinousTickCount : Config -> AxisContinousDataTickCount
+getXAxisContinousTickCount config =
     fromConfig config |> .axisXContinousTickCount
 
 
-getAxisYContinousTickCount : Config -> AxisContinousDataTickCount
-getAxisYContinousTickCount config =
+getYAxisContinousTickCount : Config -> AxisContinousDataTickCount
+getYAxisContinousTickCount config =
     fromConfig config |> .axisYContinousTickCount
 
 
-getAxisXContinousTickFormat : Config -> AxisContinousDataTickFormat
-getAxisXContinousTickFormat config =
+getXAxisContinousTickFormat : Config -> AxisContinousDataTickFormat
+getXAxisContinousTickFormat config =
     fromConfig config |> .axisXContinousTickFormat
 
 
-getAxisYContinousTickFormat : Config -> AxisContinousDataTickFormat
-getAxisYContinousTickFormat config =
+getYAxisContinousTickFormat : Config -> AxisContinousDataTickFormat
+getYAxisContinousTickFormat config =
     fromConfig config |> .axisYContinousTickFormat
 
 
-getAxisYContinousTicks : Config -> AxisContinousDataTicks
-getAxisYContinousTicks config =
+getYAxisContinousTicks : Config -> AxisContinousDataTicks
+getYAxisContinousTicks config =
     fromConfig config |> .axisYContinousTicks
 
 
@@ -895,8 +895,8 @@ getColorResource config =
     fromConfig config |> .colorResource
 
 
-getAxisXContinousTicks : Config -> AxisContinousDataTicks
-getAxisXContinousTicks config =
+getXAxisContinousTicks : Config -> AxisContinousDataTicks
+getXAxisContinousTicks config =
     fromConfig config |> .axisXContinousTicks
 
 
@@ -1439,7 +1439,7 @@ externalToDataBand externalData accessor =
         |> DataBand
 
 
-externalToDataLinearGroup : ExternalData data -> AccessorLinearGroup data -> DataLinearGroup
+externalToDataLinearGroup : ExternalData data -> AccessorLinearTime data -> DataLinearGroup
 externalToDataLinearGroup externalData accessorGroup =
     let
         data =

@@ -119,8 +119,8 @@ doubleLine =
         , height = height
         }
         |> Line.withColorPalette Scale.Color.tableau10
-        |> Line.withAxisYContinousTickCount 5
-        |> Line.withAxisXContinousTickCount 5
+        |> Line.withYAxisContinousTickCount 5
+        |> Line.withXAxisContinousTickCount 5
         |> Line.withLayout Line.grouped
         |> Line.withSymbols (icons "chart-b")
         |> Line.render ( data, accessor )
@@ -183,8 +183,8 @@ doubleLineStacked =
         , width = width
         , height = height
         }
-        |> Line.withAxisYContinousTickCount 5
-        |> Line.withAxisXContinousTickCount 5
+        |> Line.withYAxisContinousTickCount 5
+        |> Line.withXAxisContinousTickCount 5
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withLayout Line.stacked
         |> Line.withSymbols (icons "chart-b")
@@ -193,8 +193,8 @@ doubleLineStacked =
 doubleLineStackedLinear : Html msg
 doubleLineStackedLinear =
     doubleLineStacked
-        |> Line.withAxisXContinousTicks xAxisTicks
-        |> Line.withAxisXContinousTickFormat (round >> String.fromInt)
+        |> Line.withXAxisContinousTicks xAxisTicks
+        |> Line.withXAxisContinousTickFormat (round >> String.fromInt)
         |> Line.render ( dataLinear, accessorLinear )
 
 

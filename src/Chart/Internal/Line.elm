@@ -18,7 +18,7 @@ import Chart.Internal.Symbol
         )
 import Chart.Internal.Type
     exposing
-        ( AccessorLinearGroup(..)
+        ( AccessorLinearTime(..)
         , AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
@@ -480,7 +480,7 @@ renderLineStacked ( data, config ) =
 
 timeAxisGenerator : ConfigStruct -> AxisType -> Maybe (ContinuousScale Posix) -> List (Svg msg)
 timeAxisGenerator c axisType scale =
-    if c.showAxisX == True then
+    if c.showXAxis == True then
         case scale of
             Just s ->
                 case axisType of
@@ -536,7 +536,7 @@ timeAxisGenerator c axisType scale =
 
 linearAxisGenerator : ConfigStruct -> AxisType -> ContinuousScale Float -> List (Svg msg)
 linearAxisGenerator c axisType scale =
-    if c.showAxisY == True then
+    if c.showYAxis == True then
         case axisType of
             Y ->
                 let

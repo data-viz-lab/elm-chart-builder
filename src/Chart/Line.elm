@@ -2,16 +2,13 @@ module Chart.Line exposing
     ( Accessor, AccessorTime, AccessorLinear, time, linear
     , init
     , render
-    , withAxisXContinousTickCount, withColorPalette, withTitle, withDesc, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
+    , withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withShowXAxis, withShowYAxis, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
     , Symbol, grouped, stacked, withSymbols
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
 
-The Line module draws time lines.
-I expects the X axis to plot time data and the Y axis to plot linear data.
-
-&#9888; This module is still a work in progress and it has limited funcionality!
+I expects the X axis to plot time or linear data and the Y axis to plot linear data.
 
 
 # Chart Data Format
@@ -36,7 +33,7 @@ I expects the X axis to plot time data and the Y axis to plot linear data.
 
 # Configuration setters
 
-@docs withAxisXContinousTickCount, withColorPalette, withTitle, withDesc, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
+@docs withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withShowXAxis, withShowYAxis, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
 
 @docs BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolUseGap, withSymbolWidth
 
@@ -62,18 +59,18 @@ import Chart.Internal.Type as Type
         , RenderContext(..)
         , defaultConfig
         , fromConfig
-        , setAxisXContinousTickCount
-        , setAxisXContinousTickFormat
-        , setAxisXContinousTicks
-        , setAxisYContinousTickCount
-        , setAxisYContinousTickFormat
-        , setAxisYContinousTicks
         , setDimensions
         , setLayout
-        , setShowAxisX
-        , setShowAxisY
+        , setShowXAxis
+        , setShowYAxis
         , setSvgDesc
         , setSvgTitle
+        , setXAxisContinousTickCount
+        , setXAxisContinousTickFormat
+        , setXAxisContinousTicks
+        , setYAxisContinousTickCount
+        , setYAxisContinousTickFormat
+        , setYAxisContinousTicks
         )
 import Color exposing (Color)
 import Html exposing (Html)
@@ -91,7 +88,7 @@ type alias RequiredConfig =
 
 {-| The data accessors
 
-A line chart can have the x axis as linear or time data.
+A line chart can have the X axis as linear or time data.
 
     type Accessor data
         = AccessorLinear (accessorLinear data)
@@ -99,7 +96,7 @@ A line chart can have the x axis as linear or time data.
 
 -}
 type alias Accessor data =
-    Type.AccessorLinearGroup data
+    Type.AccessorLinearTime data
 
 
 {-| The accessor structure for x time lines.
@@ -173,7 +170,6 @@ linear acc =
 init : RequiredConfig -> Config
 init c =
     defaultConfig
-        -- TODO: why?
         |> withLayout grouped
         |> setDimensions { margin = c.margin, width = c.width, height = c.height }
 
@@ -184,7 +180,7 @@ init c =
         |> Line.render ( data, accessor )
 
 -}
-render : ( List data, Type.AccessorLinearGroup data ) -> Config -> Html msg
+render : ( List data, Type.AccessorLinearTime data ) -> Config -> Html msg
 render ( externalData, accessor ) config =
     let
         c =
@@ -205,7 +201,7 @@ render ( externalData, accessor ) config =
             Html.text ""
 
 
-{-| Set the ticks for the time axis
+{-| Explicitly sets the ticks for the X axis
 Defaults to `Scale.ticks`
 
     Line.init
@@ -213,9 +209,9 @@ Defaults to `Scale.ticks`
         |> Line.render ( data, accessor )
 
 -}
-withAxisXContinousTicks : List Float -> Config -> Config
-withAxisXContinousTicks ticks config =
-    Type.setAxisXContinousTicks (Type.CustomTicks ticks) config
+withXAxisContinousTicks : List Float -> Config -> Config
+withXAxisContinousTicks ticks config =
+    Type.setXAxisContinousTicks (Type.CustomTicks ticks) config
 
 
 {-| Sets the line curve shape
@@ -234,7 +230,7 @@ withCurve curve config =
     Type.setCurve curve config
 
 
-{-| Sets the approximate number of ticks for the time axis
+{-| Sets the approximate number of ticks for the X axis
 Defaults to `Scale.ticks`
 
     Line.init
@@ -242,35 +238,35 @@ Defaults to `Scale.ticks`
         |> Line.render ( data, accessor )
 
 -}
-withAxisXContinousTickCount : Int -> Config -> Config
-withAxisXContinousTickCount count config =
-    Type.setAxisXContinousTickCount (Type.CustomTickCount count) config
+withXAxisContinousTickCount : Int -> Config -> Config
+withXAxisContinousTickCount count config =
+    Type.setXAxisContinousTickCount (Type.CustomTickCount count) config
 
 
-{-| Sets the formatting for ticks for the time axis
-Defaults to `Scale.tickFormat`
+{-| Sets the tick formatting for the X axis
+Defaults to elm-visualization `Scale.tickFormat`
 
     Line.init
-        |> Line.withContinousDataTicks (FormatNumber.format { usLocale | decimals = 0 })
+        |> Line.setXAxisContinousTickFormat (FormatNumber.format { usLocale | decimals = 0 })
         |> Line.render ( data, accessor )
 
 -}
-withAxisXContinousTickFormat : (Float -> String) -> Config -> Config
-withAxisXContinousTickFormat f config =
-    Type.setAxisXContinousTickFormat (Type.CustomTickFormat f) config
+withXAxisContinousTickFormat : (Float -> String) -> Config -> Config
+withXAxisContinousTickFormat f config =
+    Type.setXAxisContinousTickFormat (Type.CustomTickFormat f) config
 
 
-{-| Set the ticks for the y axis
+{-| Explicitly sets the ticks for the Y axis
 Defaults to `Scale.ticks`
 
     Line.init
-        |> Line.withAxisYContinousDataTicks [ 1, 2, 3 ]
+        |> Line.withYAxisContinousDataTicks [ 1, 2, 3 ]
         |> Line.render ( data, accessor )
 
 -}
-withAxisYContinousTicks : List Float -> Config -> Config
-withAxisYContinousTicks ticks config =
-    Type.setAxisYContinousTicks (Type.CustomTicks ticks) config
+withYAxisContinousTicks : List Float -> Config -> Config
+withYAxisContinousTicks ticks config =
+    Type.setYAxisContinousTicks (Type.CustomTicks ticks) config
 
 
 {-| Sets the approximate number of ticks for the y axis
@@ -281,9 +277,9 @@ Defaults to `Scale.ticks`
         |> Line.render ( data, accessor )
 
 -}
-withAxisYContinousTickCount : Int -> Config -> Config
-withAxisYContinousTickCount count config =
-    Type.setAxisYContinousTickCount (Type.CustomTickCount count) config
+withYAxisContinousTickCount : Int -> Config -> Config
+withYAxisContinousTickCount count config =
+    Type.setYAxisContinousTickCount (Type.CustomTickCount count) config
 
 
 {-| Sets the formatting for ticks in the y axis
@@ -294,12 +290,12 @@ Defaults to `Scale.tickFormat`
         |> Line.render ( data, accessor )
 
 -}
-withAxisYContinousTickFormat : (Float -> String) -> Config -> Config
-withAxisYContinousTickFormat f config =
-    Type.setAxisYContinousTickFormat (Type.CustomTickFormat f) config
+withYAxisContinousTickFormat : (Float -> String) -> Config -> Config
+withYAxisContinousTickFormat f config =
+    Type.setYAxisContinousTickFormat (Type.CustomTickFormat f) config
 
 
-{-| Sets the showAxisX boolean value in the config.
+{-| Sets the showXAxis boolean value in the config.
 
 Default value: True
 
@@ -308,31 +304,27 @@ if the layout is changed to y, then the X axis
 represents the y one.
 
     Line.init
-        |> Line.withShowAxisX False
+        |> Line.withShowXAxis False
         |> Line.render data
 
 -}
-withShowAxisX : Bool -> Config -> Config
-withShowAxisX value config =
-    Type.setShowAxisX value config
+withShowXAxis : Bool -> Config -> Config
+withShowXAxis value config =
+    Type.setShowXAxis value config
 
 
-{-| Sets the showAxisY boolean value in the config.
+{-| Show or hide the Y axis.
 
 Default value: True
 
-By convention the Y axix is the y one, but
-if the layout is changed to x, then the Y axis
-represents the x one.
-
     Line.init
-        |> Line.withShowAxisY False
+        |> Line.withShowYAxis False
         |> Line.render data
 
 -}
-withShowAxisY : Bool -> Config -> Config
-withShowAxisY value config =
-    Type.setShowAxisY value config
+withShowYAxis : Bool -> Config -> Config
+withShowYAxis value config =
+    Type.setShowYAxis value config
 
 
 {-| Sets the x domain of a time line chart
