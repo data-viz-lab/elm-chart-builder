@@ -169,7 +169,7 @@ lineLinear d =
         }
         |> Line.withYAxisContinousTickCount 5
         |> Line.withXAxisContinousTickCount 5
-        |> Line.withDomainY ( 0, 20 )
+        |> Line.withYDomain ( 0, 20 )
         |> Line.withXAxisContinousTicks xAxisTicks
         |> Line.withXAxisContinousTickFormat (round >> String.fromInt)
         |> Line.render ( d, accessor )

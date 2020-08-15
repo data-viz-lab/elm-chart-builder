@@ -103,7 +103,7 @@ line =
         |> Line.withYAxisContinousTickCount 5
         |> Line.withXAxisContinousTicks xAxisTicks
         |> Line.withXAxisContinousTickFormat (round >> String.fromInt)
-        |> Line.withDomainY ( 0, 50 )
+        |> Line.withYDomain ( 0, 50 )
 
 
 lineMale : Html msg

@@ -16,7 +16,7 @@ requiredConfig =
 suite : Test
 suite =
     describe "The Public Line module"
-        [ describe "withDomainTimeY"
+        [ describe "withYDomainTime"
             [ test "it should set the X LinearDomain value in the domain" <|
                 \_ ->
                     let
@@ -27,7 +27,7 @@ suite =
                         config : Type.Config
                         config =
                             Line.init requiredConfig
-                                |> Line.withDomainY linearDomain
+                                |> Line.withYDomain linearDomain
 
                         newDomain =
                             config

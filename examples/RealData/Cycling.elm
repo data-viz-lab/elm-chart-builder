@@ -174,7 +174,7 @@ stackedByFrequency =
         }
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withYAxisTickFormat valueFormatter
-        |> Bar.withShowYAxis False
+        |> Bar.withYAxis False
         |> Bar.withDomainLinear ( 0, 0.55 )
         |> Bar.render ( data, accessor )
 
@@ -200,8 +200,8 @@ stackedByFrequencyLegend =
         , height = 300
         }
         |> Bar.withStackedLayout Bar.noDirection
-        |> Bar.withShowYAxis False
-        |> Bar.withShowXAxis False
+        |> Bar.withYAxis False
+        |> Bar.withXAxis False
         |> Bar.render ( dataLegend, accessor )
 
 

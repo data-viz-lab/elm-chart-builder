@@ -2,8 +2,8 @@ module Chart.Line exposing
     ( Accessor, AccessorTime, AccessorLinear, time, linear
     , init
     , render
-    , withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withXAxis, withYAxis, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
-    , Symbol, grouped, stacked, withSymbols
+    , withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withXAxis, withYAxis, withXDomainTime, withYDomain, withDomainLinearX, withLayout
+    , grouped, stacked, withSymbols
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -33,7 +33,7 @@ I expects the X axis to plot time or linear data and the Y axis to plot linear d
 
 # Configuration setters
 
-@docs withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withXAxis, withYAxis, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
+@docs withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withXAxis, withYAxis, withXDomainTime, withYDomain, withDomainLinearX, withLayout
 
 @docs BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolUseGap, withSymbolWidth
 
@@ -323,38 +323,38 @@ withYAxis value config =
     Type.setYAxis value config
 
 
-{-| Sets the x domain of a time line chart
+{-| Sets the Y domain of a time line chart
 
 If not set, the domain is calculated from the data.
 If set on a linear line chart this setting will have no effect.
 
     Line.init
-        |> Line.withDomainTimeX ( Time.millisToPosix 1579275175634, 10 )
+        |> Line.withXDomainTime ( Time.millisToPosix 1579275175634, 10 )
         |> Line.render ( data, accessor )
 
 -}
-withDomainTimeX : ( Posix, Posix ) -> Config -> Config
-withDomainTimeX value config =
+withXDomainTime : ( Posix, Posix ) -> Config -> Config
+withXDomainTime value config =
     Type.setDomainTimeX value config
 
 
-{-| Sets the y domain of a line chart
+{-| Sets the Y domain of a line chart
 
 This is always a linear domain, not a time domain.
 If not set, the domain is calculated from the data.
 If set on a linear line chart this setting will have no effect.
 
     Line.init
-        |> Line.withDomainY ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579375175634 )
+        |> Line.withYDomain ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579375175634 )
         |> Line.render ( data, accessor )
 
 -}
-withDomainY : ( Float, Float ) -> Config -> Config
-withDomainY value config =
+withYDomain : ( Float, Float ) -> Config -> Config
+withYDomain value config =
     Type.setDomainLinearAndTimeY value config
 
 
-{-| Sets the x domain of a linear line chart
+{-| Sets the Y domain of a linear line chart
 
 If not set, the domain is calculated from the data.
 If set on a linear line chart this setting will have no effect.
@@ -370,10 +370,13 @@ withDomainLinearX value config =
 
 
 {-| Sets an accessible, long-text description for the svg chart.
-Default value: ""
-Line.init
-|> Line.withDesc "This is an accessible chart, with a desc element"
-|> Line.render ( data, accessor )
+It defaults to an empty string.
+This shuld be set if no title nor description exists for the chart, for example in a sparkline.
+
+    Line.init
+        |> Line.withDesc "This is an accessible chart, with a desc element"
+        |> Line.render ( data, accessor )
+
 -}
 withDesc : String -> Config -> Config
 withDesc value config =
@@ -381,10 +384,13 @@ withDesc value config =
 
 
 {-| Sets an accessible title for the svg chart.
-Default value: ""
-Line.init
-|> Line.withTitle "This is a chart"
-|> Line.render ( data, accessor )
+It defaults to an empty string.
+This shuld be set if no title nor description exists for the chart, for example in a sparkline.
+
+    Line.init
+        |> Line.withTitle "Line chart"
+        |> Line.render ( data, accessor )
+
 -}
 withTitle : String -> Config -> Config
 withTitle value config =
@@ -394,6 +400,7 @@ withTitle value config =
 {-| Sets the color palette for the chart.
 
     palette =
+        -- From elm-visualization
         Scale.Color.tableau10
 
     Line.init
@@ -410,7 +417,7 @@ withColorPalette palette config =
 
 Values: `Line.stackedLayout` or `Line.groupedLayout`
 
-Default value: Line.groupedLayout
+Default value: `Line.groupedLayout`
 
     Line.init
         |> Line.withLayout Line.stackedLayout
@@ -424,9 +431,7 @@ withLayout value config =
 
 {-| Stacked layout type
 
-    Line.init
-        |> Line.withLayout Line.stackedLayout
-        |> Line.render ( data, accessor )
+        layout = Line.stackedLayout
 
 -}
 stacked : Layout
@@ -434,6 +439,11 @@ stacked =
     StackedLine
 
 
+{-| Grouped layout type
+
+        layout = Line.groupedLayout
+
+-}
 grouped : Layout
 grouped =
     GroupedLine
@@ -443,11 +453,10 @@ grouped =
 --SYMBOLS
 
 
-{-| Sets the Icon Symbols list in the `LayoutConfig`.
+{-| Pass a list of symbols to the line chart, one per data group.
+If the list is empty, no symbols are rendered.
 
 Default value: []
-
-These are additional symbols at the end of each line in a group, for facilitating accessibility.
 
     defaultLayoutConfig
         |> withSymbols [ Circle, Corner, Triangle ]
@@ -456,9 +465,3 @@ These are additional symbols at the end of each line in a group, for facilitatin
 withSymbols : List Symbol -> Config -> Config
 withSymbols =
     Type.setIcons
-
-
-{-| Line chart symbol type
--}
-type alias Symbol =
-    InternalSymbol.Symbol
