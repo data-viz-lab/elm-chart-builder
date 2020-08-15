@@ -295,13 +295,9 @@ withYAxisContinousTickFormat f config =
     Type.setYAxisContinousTickFormat (Type.CustomTickFormat f) config
 
 
-{-| Sets the showXAxis boolean value in the config.
+{-| Show or Hide the X axis
 
 Default value: True
-
-By convention the X axix is the x one, but
-if the layout is changed to y, then the X axis
-represents the y one.
 
     Line.init
         |> Line.withXAxis False
