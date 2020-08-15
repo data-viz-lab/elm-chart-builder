@@ -4,7 +4,7 @@ module Chart.Line exposing
     , render
     , withAxisXContinousTickCount, withColorPalette, withTitle, withDesc, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
     , symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolWidth
-    , Symbol, grouped, groupedConfig, stacked, stackedConfig, withIcons
+    , Symbol, grouped, stacked, withIcons
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -59,7 +59,6 @@ import Chart.Internal.Type as Type
         , Config
         , Direction(..)
         , Layout(..)
-        , LayoutConfig
         , Margin
         , RenderContext(..)
         , defaultConfig
@@ -176,7 +175,7 @@ init : RequiredConfig -> Config
 init c =
     defaultConfig
         -- TODO: why?
-        |> withLayout (grouped stackedConfig)
+        |> withLayout grouped
         |> setDimensions { margin = c.margin, width = c.width, height = c.height }
 
 
@@ -196,10 +195,10 @@ render ( externalData, accessor ) config =
             Type.externalToDataLinearGroup (Type.toExternalData externalData) accessor
     in
     case c.layout of
-        GroupedLine _ ->
+        GroupedLine ->
             renderLineGrouped ( data, config )
 
-        StackedLine _ ->
+        StackedLine ->
             renderLineStacked ( data, config )
 
         _ ->
@@ -443,24 +442,14 @@ withLayout value config =
         |> Line.render ( data, accessor )
 
 -}
-stacked : LayoutConfig -> Layout
-stacked config =
-    StackedLine config
+stacked : Layout
+stacked =
+    StackedLine
 
 
-grouped : LayoutConfig -> Layout
-grouped config =
-    GroupedLine config
-
-
-stackedConfig : LayoutConfig
-stackedConfig =
-    Type.defaultLayoutConfig
-
-
-groupedConfig : LayoutConfig
-groupedConfig =
-    Type.defaultLayoutConfig
+grouped : Layout
+grouped =
+    GroupedLine
 
 
 
@@ -477,7 +466,7 @@ These are additional symbols at the end of each line in a group, for facilitatin
         |> withIcons [ Circle, Corner, Triangle ]
 
 -}
-withIcons : List (Symbol String) -> LayoutConfig -> LayoutConfig
+withIcons : List (Symbol String) -> Config -> Config
 withIcons =
     Type.setIcons
 

@@ -2,11 +2,11 @@ module Chart.Bar exposing
     ( Accessor
     , init
     , render
-    , withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withLayout, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowAxisX, withShowAxisY
+    , withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowAxisX, withShowAxisY
     , diverging, grouped, horizontal, stacked, vertical
     , withIcons, withIndividualLabels
     , symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolUseGap, withSymbolWidth
-    , Symbol, groupedConfig, stackedConfig
+    , Symbol, noDirection, withGroupedLayout, withStackedLayout
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -97,10 +97,8 @@ import Chart.Internal.Type as Type
         , AxisOrientation(..)
         , ColorResource(..)
         , Config
-        , DirectedLayoutConfig
         , Direction(..)
         , Layout(..)
-        , LayoutConfig
         , Margin
         , Orientation(..)
         , RenderContext(..)
@@ -189,7 +187,7 @@ render ( externalData, accessor ) config =
             Type.externalToDataBand (Type.toExternalData externalData) accessor
     in
     case c.layout of
-        GroupedBar _ ->
+        GroupedBar ->
             renderBandGrouped ( data, config )
 
         StackedBar _ ->
@@ -211,9 +209,19 @@ Default value: Bar.grouped
         |> Bar.render ( data, accessor )
 
 -}
-withLayout : Layout -> Config -> Config
-withLayout value config =
-    Type.setLayout value config
+withStackedLayout :
+    Direction
+    -> Config
+    -> Config
+withStackedLayout direction config =
+    Type.setLayoutRestricted (StackedBar direction) config
+
+
+withGroupedLayout :
+    Config
+    -> Config
+withGroupedLayout config =
+    Type.setLayout GroupedBar config
 
 
 {-| Sets the orientation value in the config.
@@ -387,7 +395,10 @@ These are additional symbols at the end of each bar in a group, for facilitating
         |> withIcons [ Circle, Corner, Triangle ]
 
 -}
-withIcons : List (Symbol String) -> LayoutConfig -> LayoutConfig
+withIcons :
+    List (Symbol String)
+    -> Config
+    -> Config
 withIcons =
     Type.setIcons
 
@@ -410,9 +421,9 @@ With an horizontal layout the available horizontal space is the right margin.
         |> Bar.withIndividualLabels True
 
 -}
-withIndividualLabels : LayoutConfig -> LayoutConfig
+withIndividualLabels : Config -> Config
 withIndividualLabels config =
-    Type.setShowIndividualLabels True config
+    Type.showIndividualLabels True config
 
 
 {-| Sets an accessible, long-text description for the svg chart.
@@ -464,16 +475,6 @@ vertical =
     Vertical
 
 
-stackedConfig : DirectedLayoutConfig
-stackedConfig =
-    Type.defaultDirectedLayoutConfig
-
-
-groupedConfig : LayoutConfig
-groupedConfig =
-    Type.defaultLayoutConfig
-
-
 {-| Stacked layout type
 
 Beware that stacked layouts do not support icons
@@ -485,9 +486,9 @@ Beware that stacked layouts do not support icons
         |> Bar.render ( data, accessor )
 
 -}
-stacked : DirectedLayoutConfig -> Layout
-stacked config =
-    StackedBar config
+stacked : Direction -> Layout
+stacked direction =
+    StackedBar direction
 
 
 {-| Grouped layout type
@@ -501,9 +502,9 @@ This is the default layout type
         |> Bar.render (data, accessor)
 
 -}
-grouped : LayoutConfig -> Layout
-grouped config =
-    GroupedBar config
+grouped : Layout
+grouped =
+    GroupedBar
 
 
 {-| Bar chart diverging layout
@@ -518,9 +519,14 @@ An example can be a population pyramid chart.
         |> Bar.render (data, accessor)
 
 -}
-diverging : DirectedLayoutConfig -> DirectedLayoutConfig
-diverging config =
-    Type.defaultDirectedLayoutConfig |> Type.setDirection Type.Diverging
+diverging : Direction
+diverging =
+    Type.Diverging
+
+
+noDirection : Direction
+noDirection =
+    Type.NoDirection
 
 
 

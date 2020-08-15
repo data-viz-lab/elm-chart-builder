@@ -46,7 +46,6 @@ import Chart.Internal.Type
         , externalToDataHistogram
         , fromConfig
         , fromDataBand
-        , fromDirectedLayoutConfig
         , getAxisContinousDataFormatter
         , getBandGroupRange
         , getBandSingleRange
@@ -55,7 +54,6 @@ import Chart.Internal.Type
         , getDomainBandFromData
         , getHeight
         , getIcons
-        , getIconsFromLayout
         , getLinearRange
         , getMargin
         , getOffset
@@ -65,7 +63,7 @@ import Chart.Internal.Type
         , leftGap
         , role
         , showIcons
-        , showIconsFromLayout
+        , showIndividualLabels
         , stackedValuesInverse
         , symbolCustomSpace
         , symbolSpace
@@ -167,8 +165,8 @@ renderBandStacked ( data, config ) =
             case linearDomain of
                 Just ld ->
                     case c.layout of
-                        StackedBar layoutConf ->
-                            case layoutConf |> fromDirectedLayoutConfig |> .direction of
+                        StackedBar direction ->
+                            case direction of
                                 Diverging ->
                                     ( Tuple.second ld * -1, Tuple.second ld )
 
@@ -434,13 +432,13 @@ renderBandGrouped ( data, config ) =
 
         iconOffset : Float
         iconOffset =
-            symbolSpace Vertical bandSingleScale (getIconsFromLayout c.layout) + symbolGap
+            symbolSpace Vertical bandSingleScale (getIcons config) + symbolGap
 
         symbolElements =
             case c.layout of
-                GroupedBar groupedConfig ->
-                    if showIcons groupedConfig then
-                        symbolsToSymbolElements c.orientation bandSingleScale (getIcons groupedConfig)
+                GroupedBar ->
+                    if showIcons config then
+                        symbolsToSymbolElements c.orientation bandSingleScale (getIcons config)
 
                     else
                         []
@@ -474,13 +472,13 @@ renderBandGrouped ( data, config ) =
                     ]
                  <|
                     List.map
-                        (columns c iconOffset bandGroupScale bandSingleScale linearScale colorScale)
+                        (columns config iconOffset bandGroupScale bandSingleScale linearScale colorScale)
                         (fromDataBand data)
                ]
 
 
 columns :
-    ConfigStruct
+    Config
     -> Float
     -> BandScale String
     -> BandScale String
@@ -488,10 +486,10 @@ columns :
     -> ContinuousScale Float
     -> DataGroupBand
     -> Svg msg
-columns c iconOffset bandGroupScale bandSingleScale linearScale colorScale dataGroup =
+columns config iconOffset bandGroupScale bandSingleScale linearScale colorScale dataGroup =
     let
         tr =
-            case c.orientation of
+            case config |> fromConfig |> .orientation of
                 Vertical ->
                     -- https://observablehq.com/@d3/grouped-bar-chart
                     -- .attr("transform", d => `translate(${x0(d[groupKey])},0)`)
@@ -505,11 +503,11 @@ columns c iconOffset bandGroupScale bandSingleScale linearScale colorScale dataG
         , class [ "data-group" ]
         ]
     <|
-        List.indexedMap (column c iconOffset bandSingleScale linearScale colorScale) dataGroup.points
+        List.indexedMap (column config iconOffset bandSingleScale linearScale colorScale) dataGroup.points
 
 
 column :
-    ConfigStruct
+    Config
     -> Float
     -> BandScale String
     -> ContinuousScale Float
@@ -517,21 +515,21 @@ column :
     -> Int
     -> PointBand
     -> Svg msg
-column c iconOffset bandSingleScale linearScale colorScale idx point =
+column config iconOffset bandSingleScale linearScale colorScale idx point =
     let
         rectangle =
-            case c.orientation of
+            case config |> fromConfig |> .orientation of
                 Vertical ->
-                    verticalRect c iconOffset bandSingleScale linearScale colorScale idx point
+                    verticalRect config iconOffset bandSingleScale linearScale colorScale idx point
 
                 Horizontal ->
-                    horizontalRect c bandSingleScale linearScale colorScale idx point
+                    horizontalRect config bandSingleScale linearScale colorScale idx point
     in
     g [ class [ "column", "column-" ++ String.fromInt idx ] ] rectangle
 
 
 verticalRect :
-    ConfigStruct
+    Config
     -> Float
     -> BandScale String
     -> ContinuousScale Float
@@ -539,17 +537,20 @@ verticalRect :
     -> Int
     -> PointBand
     -> List (Svg msg)
-verticalRect c iconOffset bandSingleScale linearScale colorScale idx point =
+verticalRect config iconOffset bandSingleScale linearScale colorScale idx point =
     let
         ( x__, y__ ) =
             point
+
+        c =
+            fromConfig config
 
         stl =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
                 |> style
 
         label =
-            verticalLabel c (x_ + w / 2) (y_ - labelGap) point
+            verticalLabel config (x_ + w / 2) (y_ - labelGap) point
 
         x_ =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
@@ -569,7 +570,7 @@ verticalRect c iconOffset bandSingleScale linearScale colorScale idx point =
                 |> Helpers.floorFloat
 
         symbol =
-            verticalSymbol c { idx = idx, x_ = x_, y_ = y_, w = w, style = stl }
+            verticalSymbol config { idx = idx, x_ = x_, y_ = y_, w = w, style = stl }
     in
     rect
         [ x <| x_
@@ -585,15 +586,18 @@ verticalRect c iconOffset bandSingleScale linearScale colorScale idx point =
 
 
 horizontalRect :
-    ConfigStruct
+    Config
     -> BandScale String
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> Int
     -> PointBand
     -> List (Svg msg)
-horizontalRect c bandSingleScale linearScale colorScale idx point =
+horizontalRect config bandSingleScale linearScale colorScale idx point =
     let
+        c =
+            fromConfig config
+
         ( x__, y__ ) =
             point
 
@@ -611,10 +615,10 @@ horizontalRect c bandSingleScale linearScale colorScale idx point =
                 |> style
 
         label =
-            horizontalLabel c (w + labelGap) (y_ + h / 2) point
+            horizontalLabel config (w + labelGap) (y_ + h / 2) point
 
         symbol =
-            horizontalSymbol c { idx = idx, w = w, y_ = y_, h = h, style = stl }
+            horizontalSymbol config { idx = idx, w = w, y_ = y_, h = h, style = stl }
     in
     rect
         [ x <| 0
@@ -639,21 +643,24 @@ dataGroupTranslation bandGroupScale dataGroup =
             Scale.convert bandGroupScale l
 
 
-verticalLabel : ConfigStruct -> Float -> Float -> PointBand -> List (Svg msg)
-verticalLabel c x_ y_ point =
+verticalLabel : Config -> Float -> Float -> PointBand -> List (Svg msg)
+verticalLabel config x_ y_ point =
     let
+        c =
+            fromConfig config
+
         ( x__, _ ) =
             point
 
-        showIndividualLabels =
+        showLabels =
             case c.layout of
-                GroupedBar config ->
+                GroupedBar ->
                     getShowIndividualLabels config
 
                 _ ->
                     False
     in
-    if showIndividualLabels then
+    if showLabels then
         [ text_
             [ x x_
             , y y_
@@ -667,18 +674,18 @@ verticalLabel c x_ y_ point =
 
 
 horizontalSymbol :
-    ConfigStruct
+    Config
     -> { idx : Int, w : Float, y_ : Float, h : Float, style : TypedSvg.Core.Attribute msg }
     -> List (Svg msg)
-horizontalSymbol c { idx, w, y_, style } =
+horizontalSymbol config { idx, w, y_, style } =
     let
         symbol =
-            getSymbolByIndex (getIconsFromLayout c.layout) idx
+            getSymbolByIndex (getIcons config) idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
     in
-    if showIconsFromLayout c.layout then
+    if showIcons config then
         case symbol of
             Triangle _ _ ->
                 [ g
@@ -732,18 +739,18 @@ horizontalSymbol c { idx, w, y_, style } =
 
 
 verticalSymbol :
-    ConfigStruct
+    Config
     -> { idx : Int, w : Float, y_ : Float, x_ : Float, style : TypedSvg.Core.Attribute msg }
     -> List (Svg msg)
-verticalSymbol c { idx, w, y_, x_, style } =
+verticalSymbol config { idx, w, y_, x_, style } =
     let
         symbol =
-            getSymbolByIndex (getIconsFromLayout c.layout) idx
+            getSymbolByIndex (getIcons config) idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
     in
-    if showIconsFromLayout c.layout then
+    if showIcons config then
         case symbol of
             Triangle _ _ ->
                 [ g
@@ -799,21 +806,24 @@ verticalSymbol c { idx, w, y_, x_, style } =
         []
 
 
-horizontalLabel : ConfigStruct -> Float -> Float -> PointBand -> List (Svg msg)
-horizontalLabel c x_ y_ point =
+horizontalLabel : Config -> Float -> Float -> PointBand -> List (Svg msg)
+horizontalLabel config x_ y_ point =
     let
+        c =
+            fromConfig config
+
         ( x__, _ ) =
             point
 
-        showIndividualLabels =
+        showLabels =
             case c.layout of
-                GroupedBar config ->
+                GroupedBar ->
                     getShowIndividualLabels config
 
                 _ ->
                     False
     in
-    if showIndividualLabels then
+    if showLabels then
         [ text_
             [ y y_
             , x x_

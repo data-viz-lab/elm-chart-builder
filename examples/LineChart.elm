@@ -116,7 +116,8 @@ doubleLine =
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withAxisYContinousTickCount 5
         |> Line.withAxisXContinousTickCount 5
-        |> Line.withLayout (Line.grouped (Line.groupedConfig |> Line.withIcons (icons "chart-b")))
+        |> Line.withLayout Line.grouped
+        |> Line.withIcons (icons "chart-b")
         |> Line.render ( data, accessor )
 
 
@@ -180,7 +181,8 @@ doubleLineStacked =
         |> Line.withAxisYContinousTickCount 5
         |> Line.withAxisXContinousTickCount 5
         |> Line.withColorPalette Scale.Color.tableau10
-        |> Line.withLayout (Line.stacked (Line.stackedConfig |> Line.withIcons (icons "chart-b")))
+        |> Line.withLayout Line.stacked
+        |> Line.withIcons (icons "chart-b")
 
 
 doubleLineStackedLinear : Html msg

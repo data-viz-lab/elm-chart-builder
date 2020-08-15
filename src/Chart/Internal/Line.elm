@@ -42,14 +42,12 @@ import Chart.Internal.Type
         , getDomainTimeFromData
         , getHeight
         , getIcons
-        , getIconsFromLayout
         , getMargin
         , getOffset
         , getWidth
         , leftGap
         , role
         , showIcons
-        , showIconsFromLayout
         )
 import Color
 import Html exposing (Html)
@@ -221,7 +219,7 @@ renderLineGrouped ( data, config ) =
         , ariaLabelledby "title desc"
         ]
     <|
-        symbolElements c
+        symbolElements config
             ++ descAndTitle c
             ++ linearAxisGenerator c Y yScale
             ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
@@ -249,7 +247,7 @@ renderLineGrouped ( data, config ) =
                                 d.points
                                     |> List.map
                                         (\( x, y ) ->
-                                            drawSymbol c
+                                            drawSymbol config
                                                 { idx = idx
                                                 , x = Scale.convert xLinearScale x
                                                 , y = Scale.convert yScale y
@@ -428,7 +426,7 @@ renderLineStacked ( data, config ) =
         , ariaLabelledby "title desc"
         ]
     <|
-        symbolElements c
+        symbolElements config
             ++ descAndTitle c
             ++ linearAxisGenerator c Y yScale
             ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
@@ -456,7 +454,7 @@ renderLineStacked ( data, config ) =
                                 d
                                     |> List.map
                                         (\( x, y ) ->
-                                            drawSymbol c
+                                            drawSymbol config
                                                 { idx = idx
                                                 , x = Scale.convert xLinearScale x
                                                 , y = Scale.convert yScale y
@@ -662,18 +660,21 @@ symbolsToSymbolElements symbols =
 
 
 drawSymbol :
-    ConfigStruct
+    Config
     -> { idx : Int, x : Float, y : Float, style : TypedSvg.Core.Attribute msg }
     -> List (Svg msg)
-drawSymbol c { idx, x, y, style } =
+drawSymbol config { idx, x, y, style } =
     let
+        c =
+            fromConfig config
+
         symbol =
-            getSymbolByIndex (getIconsFromLayout c.layout) idx
+            getSymbolByIndex c.icons idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
     in
-    if showIconsFromLayout c.layout then
+    if showIcons config then
         case symbol of
             Triangle s _ ->
                 [ g
@@ -748,19 +749,19 @@ colorStyle c idx interpolatorInput =
             ""
 
 
-symbolElements : ConfigStruct -> List (Svg msg)
-symbolElements c =
-    case c.layout of
-        StackedLine layoutConfig ->
-            if showIcons layoutConfig then
-                symbolsToSymbolElements (getIcons layoutConfig)
+symbolElements : Config -> List (Svg msg)
+symbolElements config =
+    case fromConfig config |> .layout of
+        StackedLine ->
+            if showIcons config then
+                symbolsToSymbolElements (getIcons config)
 
             else
                 []
 
-        GroupedLine layoutConfig ->
-            if showIcons layoutConfig then
-                symbolsToSymbolElements (getIcons layoutConfig)
+        GroupedLine ->
+            if showIcons config then
+                symbolsToSymbolElements (getIcons config)
 
             else
                 []

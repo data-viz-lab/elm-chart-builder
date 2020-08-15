@@ -172,7 +172,7 @@ stackedByFrequency =
         , width = width
         , height = height
         }
-        |> Bar.withLayout (Bar.stacked Bar.stackedConfig)
+        |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.withShowAxisY False
         |> Bar.withDomainLinear ( 0, 0.55 )
@@ -186,7 +186,7 @@ stackedByFrequencyGender =
         , width = 240
         , height = height
         }
-        |> Bar.withLayout (Bar.stacked Bar.stackedConfig)
+        |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.withDomainLinear ( 0, 0.55 )
         |> Bar.render ( dataGender, accessor )
@@ -199,7 +199,7 @@ stackedByFrequencyLegend =
         , width = 30
         , height = 300
         }
-        |> Bar.withLayout (Bar.stacked Bar.stackedConfig)
+        |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withShowAxisY False
         |> Bar.withShowAxisX False
         |> Bar.render ( dataLegend, accessor )

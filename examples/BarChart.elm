@@ -200,7 +200,8 @@ verticalGrouped =
         , height = height
         }
         |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withLayout (Bar.grouped (Bar.groupedConfig |> Bar.withIcons (iconsCustom "chart-a")))
+        |> Bar.withGroupedLayout
+        |> Bar.withIcons (iconsCustom "chart-a")
         |> Bar.withYAxisTickCount 5
         |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.render ( data, accessor )
@@ -214,7 +215,8 @@ verticalGroupedWithLabels =
         , height = height
         }
         |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withLayout (Bar.grouped (Bar.groupedConfig |> Bar.withIndividualLabels))
+        |> Bar.withGroupedLayout
+        |> Bar.withIndividualLabels
         |> Bar.withYAxisTickCount 5
         |> Bar.render ( data, accessor )
 
@@ -227,7 +229,8 @@ verticalStacked =
         , height = height
         }
         |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withLayout (Bar.stacked Bar.stackedConfig)
+        |> Bar.withStackedLayout Bar.noDirection
+        |> Bar.withIcons (icons "chart-b")
         |> Bar.render ( data, accessor )
 
 
@@ -239,7 +242,8 @@ horizontalGrouped =
         , height = height
         }
         |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withLayout (Bar.grouped (Bar.groupedConfig |> Bar.withIcons (icons "chart-b")))
+        |> Bar.withGroupedLayout
+        |> Bar.withIcons (icons "chart-b")
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withYAxisTickCount 5
         |> Bar.withYAxisTickFormat valueFormatter
@@ -254,8 +258,9 @@ horizontalGroupedWithLabels =
         , height = height
         }
         |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withLayout (Bar.grouped (Bar.groupedConfig |> Bar.withIndividualLabels))
+        |> Bar.withGroupedLayout
         |> Bar.withOrientation Bar.horizontal
+        |> Bar.withIndividualLabels
         |> Bar.withYAxisTickCount 5
         |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.render ( data, accessor )
@@ -269,7 +274,7 @@ horizontalStacked =
         , height = height
         }
         |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withLayout (Bar.stacked Bar.stackedConfig)
+        |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withOrientation Bar.horizontal
         |> Bar.render ( data, accessor )
 
@@ -282,7 +287,8 @@ horizontalStackedDiverging =
         , height = height
         }
         |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withLayout (Bar.stacked (Bar.stackedConfig |> Bar.diverging))
+        |> Bar.withStackedLayout Bar.diverging
+        |> Bar.withIcons (icons "chart-b")
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.render ( dataStackedDiverging, accessor )
@@ -296,7 +302,7 @@ verticalStackedDiverging =
         , height = height
         }
         |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withLayout (Bar.stacked (Bar.stackedConfig |> Bar.diverging))
+        |> Bar.withStackedLayout Bar.diverging
         |> Bar.withOrientation Bar.vertical
         |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.render ( dataStackedDiverging, accessor )

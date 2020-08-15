@@ -186,7 +186,7 @@ chart =
         , width = 800
         , height = 500
         }
-        |> Bar.withLayout (Bar.stacked (Bar.stackedConfig |> Bar.diverging))
+        |> Bar.withStackedLayout Bar.diverging
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withYAxisTickCount 8
         |> Bar.withYAxisTickFormat (abs >> valueFormatter)

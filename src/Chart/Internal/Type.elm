@@ -17,8 +17,6 @@ module Chart.Internal.Type exposing
     , DataGroupLinear
     , DataGroupTime
     , DataLinearGroup(..)
-    , DirectedLayoutConfig
-    , DirectedLayoutConfigStruct
     , Direction(..)
     , DomainBand
     , DomainBandStruct
@@ -30,8 +28,6 @@ module Chart.Internal.Type exposing
     , HistogramConfig
     , HistogramConfigStruct
     , Layout(..)
-    , LayoutConfig
-    , LayoutConfigStruct
     , LinearDomain
     , Margin
     , Orientation(..)
@@ -51,11 +47,9 @@ module Chart.Internal.Type exposing
     , dataLinearGroupToDataLinearStacked
     , dataLinearGroupToDataTime
     , defaultConfig
-    , defaultDirectedLayoutConfig
     , defaultHeight
     , defaultHistogramConfig
     , defaultLayout
-    , defaultLayoutConfig
     , defaultMargin
     , defaultOrientation
     , defaultTicksCount
@@ -65,7 +59,6 @@ module Chart.Internal.Type exposing
     , externalToDataLinearGroup
     , fromConfig
     , fromDataBand
-    , fromDirectedLayoutConfig
     , fromDomainBand
     , fromDomainLinear
     , fromExternalData
@@ -92,7 +85,6 @@ module Chart.Internal.Type exposing
     , getHistogramDomain
     , getHistogramSteps
     , getIcons
-    , getIconsFromLayout
     , getLinearRange
     , getMargin
     , getOffset
@@ -113,7 +105,6 @@ module Chart.Internal.Type exposing
     , setColorResource
     , setCurve
     , setDimensions
-    , setDirection
     , setDomainBand
     , setDomainBandBandGroup
     , setDomainBandBandSingle
@@ -128,17 +119,17 @@ module Chart.Internal.Type exposing
     , setHistogramSteps
     , setIcons
     , setLayout
+    , setLayoutRestricted
     , setMargin
     , setOrientation
     , setShowAxisX
     , setShowAxisY
     , setShowDataPoints
-    , setShowIndividualLabels
     , setSvgDesc
     , setSvgTitle
     , setWidth
     , showIcons
-    , showIconsFromLayout
+    , showIndividualLabels
     , stackedValuesInverse
     , symbolCustomSpace
     , symbolSpace
@@ -294,10 +285,10 @@ type Orientation
 
 
 type Layout
-    = StackedBar DirectedLayoutConfig
-    | StackedLine LayoutConfig
-    | GroupedBar LayoutConfig
-    | GroupedLine LayoutConfig
+    = StackedBar Direction
+    | StackedLine
+    | GroupedBar
+    | GroupedLine
 
 
 type Direction
@@ -420,18 +411,20 @@ type alias ConfigStruct =
     , axisYContinousTicks : AxisContinousDataTicks
     , colorResource : ColorResource
     , curve : List ( Float, Float ) -> SubPath
-    , svgDesc : String
     , domainBand : DomainBand
     , domainLinear : DomainLinear
     , domainTime : DomainTime
     , height : Float
     , histogramDomain : Maybe ( Float, Float )
+    , icons : List (Symbol String)
     , layout : Layout
     , margin : Margin
     , orientation : Orientation
     , showAxisX : Bool
     , showAxisY : Bool
     , showDataPoints : Bool
+    , showIndividualLabels : Bool
+    , svgDesc : String
     , svgTitle : String
     , width : Float
     , zone : Zone
@@ -449,18 +442,20 @@ defaultConfig =
         , axisYContinousTicks = DefaultTicks
         , colorResource = ColorNone
         , curve = \d -> Shape.linearCurve d
-        , svgDesc = ""
         , domainBand = DomainBand initialDomainBandStruct
         , domainLinear = DomainLinear initialDomainLinearStruct
         , domainTime = DomainTime initialDomainTimeStruct
         , height = defaultHeight
         , histogramDomain = Nothing
+        , icons = []
         , layout = defaultLayout
         , margin = defaultMargin
         , orientation = defaultOrientation
         , showAxisX = True
         , showAxisY = True
+        , showIndividualLabels = False
         , showDataPoints = False
+        , svgDesc = ""
         , svgTitle = ""
         , width = defaultWidth
         , zone = Time.utc
@@ -497,7 +492,7 @@ ariaLabelledby label =
 
 defaultLayout : Layout
 defaultLayout =
-    GroupedBar defaultLayoutConfig
+    GroupedBar
 
 
 defaultOrientation : Orientation
@@ -547,161 +542,63 @@ bottomGap =
     2
 
 
-
--- LAYOUT CONFIG
-
-
-type LayoutConfig
-    = LayoutConfig LayoutConfigStruct
-
-
-type alias LayoutConfigStruct =
-    { icons : List (Symbol String)
-    , showIndividualLabels : Bool
-    }
-
-
-toLayoutConfig : LayoutConfigStruct -> LayoutConfig
-toLayoutConfig config =
-    LayoutConfig config
-
-
-fromLayoutConfig : LayoutConfig -> LayoutConfigStruct
-fromLayoutConfig (LayoutConfig config) =
-    config
-
-
-defaultLayoutConfig : LayoutConfig
-defaultLayoutConfig =
-    toLayoutConfig
-        { icons = []
-        , showIndividualLabels = False
-        }
-
-
-showIcons : LayoutConfig -> Bool
-showIcons c =
+showIcons : Config -> Bool
+showIcons (Config c) =
     c
-        |> fromLayoutConfig
         |> .icons
         |> List.length
         |> (\l -> l > 0)
 
 
-showIconsFromLayout : Layout -> Bool
-showIconsFromLayout l =
-    case l of
-        GroupedBar c ->
-            c |> showIcons
-
-        GroupedLine c ->
-            c |> showIcons
-
-        StackedLine c ->
-            c |> showIcons
-
-        StackedBar _ ->
-            False
-
-
-getIcons : LayoutConfig -> List (Symbol String)
-getIcons c =
+getIcons : Config -> List (Symbol String)
+getIcons (Config c) =
     c
-        |> fromLayoutConfig
         |> .icons
 
 
-getShowIndividualLabels : LayoutConfig -> Bool
-getShowIndividualLabels c =
+getShowIndividualLabels : Config -> Bool
+getShowIndividualLabels (Config c) =
     c
-        |> fromLayoutConfig
         |> .showIndividualLabels
 
 
-getIconsFromLayout : Layout -> List (Symbol String)
-getIconsFromLayout l =
-    case l of
-        GroupedBar c ->
-            c
-                |> fromLayoutConfig
-                |> .icons
-
-        GroupedLine c ->
-            c
-                |> fromLayoutConfig
-                |> .icons
-
-        StackedLine c ->
-            c
-                |> fromLayoutConfig
-                |> .icons
-
-        StackedBar _ ->
-            []
+setLayout : Layout -> Config -> Config
+setLayout layout (Config c) =
+    toConfig { c | layout = layout }
 
 
-setIcons : List (Symbol String) -> LayoutConfig -> LayoutConfig
-setIcons all config =
-    let
-        c =
-            fromLayoutConfig config
-    in
-    toLayoutConfig { c | icons = all }
+setLayoutRestricted :
+    Layout
+    -> Config
+    -> Config
+setLayoutRestricted layout (Config c) =
+    toConfig { c | layout = layout }
 
 
-setShowIndividualLabels : Bool -> LayoutConfig -> LayoutConfig
-setShowIndividualLabels bool config =
-    let
-        c =
-            fromLayoutConfig config
-    in
-    toLayoutConfig { c | showIndividualLabels = bool }
+setIcons :
+    List (Symbol String)
+    -> Config
+    -> Config
+setIcons all (Config c) =
+    Config { c | icons = all }
 
 
-
--- DIRECTED LAYOUT CONFIG
-
-
-type DirectedLayoutConfig
-    = DirectedLayoutConfig DirectedLayoutConfigStruct
-
-
-type alias DirectedLayoutConfigStruct =
-    { direction : Direction
-    }
+showIndividualLabels :
+    Bool
+    -> Config
+    -> Config
+showIndividualLabels bool (Config c) =
+    Config { c | showIndividualLabels = bool }
 
 
-toDirectedLayoutConfig : DirectedLayoutConfigStruct -> DirectedLayoutConfig
-toDirectedLayoutConfig config =
-    DirectedLayoutConfig config
+getDirection : Config -> Direction
+getDirection (Config c) =
+    case c.layout of
+        StackedBar direction ->
+            direction
 
-
-fromDirectedLayoutConfig : DirectedLayoutConfig -> DirectedLayoutConfigStruct
-fromDirectedLayoutConfig (DirectedLayoutConfig config) =
-    config
-
-
-defaultDirectedLayoutConfig : DirectedLayoutConfig
-defaultDirectedLayoutConfig =
-    toDirectedLayoutConfig
-        { direction = NoDirection
-        }
-
-
-getDirection : DirectedLayoutConfig -> Direction
-getDirection c =
-    c
-        |> fromDirectedLayoutConfig
-        |> .direction
-
-
-setDirection : Direction -> DirectedLayoutConfig -> DirectedLayoutConfig
-setDirection direction config =
-    let
-        c =
-            fromDirectedLayoutConfig config
-    in
-    toDirectedLayoutConfig { c | direction = direction }
+        _ ->
+            NoDirection
 
 
 
@@ -794,11 +691,6 @@ setHistogramSteps steps config =
             fromHistogramConfig config
     in
     toHistogramConfig { c | histogramSteps = steps }
-
-
-setLayout : Layout -> Config -> Config
-setLayout layout (Config c) =
-    toConfig { c | layout = layout }
 
 
 setOrientation : Orientation -> Config -> Config
@@ -1301,10 +1193,10 @@ getLinearRange config renderContext width height bandScale =
     case orientation of
         Horizontal ->
             case layout of
-                GroupedBar groupedConfig ->
-                    if showIcons groupedConfig then
+                GroupedBar ->
+                    if showIcons config then
                         -- Here we are leaving space for the symbol
-                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale (getIcons groupedConfig) )
+                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale (getIcons config) )
 
                     else
                         ( 0, width )
@@ -1319,10 +1211,10 @@ getLinearRange config renderContext width height bandScale =
 
         Vertical ->
             case layout of
-                GroupedBar groupedConfig ->
-                    if showIcons groupedConfig then
+                GroupedBar ->
+                    if showIcons config then
                         -- Here we are leaving space for the symbol
-                        ( height - symbolGap - symbolSpace c.orientation bandScale (getIcons groupedConfig)
+                        ( height - symbolGap - symbolSpace c.orientation bandScale (getIcons config)
                         , 0
                         )
 
@@ -1349,7 +1241,7 @@ adjustLinearRange config stackedDepth ( a, b ) =
     case orientation of
         Horizontal ->
             case layout of
-                GroupedBar _ ->
+                GroupedBar ->
                     ( a, b )
 
                 _ ->
@@ -1362,8 +1254,8 @@ adjustLinearRange config stackedDepth ( a, b ) =
 getOffset : Config -> List (List ( Float, Float )) -> List (List ( Float, Float ))
 getOffset config =
     case fromConfig config |> .layout of
-        StackedBar c ->
-            case c |> fromDirectedLayoutConfig |> .direction of
+        StackedBar direction ->
+            case direction of
                 Diverging ->
                     Shape.stackOffsetDiverging
 
