@@ -3,7 +3,7 @@ module Chart.Line exposing
     , init
     , render
     , withAxisXContinousTickCount, withColorPalette, withTitle, withDesc, withAxisXContinousTickFormat, withAxisXContinousTicks, withAxisYContinousTickCount, withAxisYContinousTickFormat, withAxisYContinousTicks, withCurve, withShowAxisX, withShowAxisY, withDomainTimeX, withDomainY, withDomainLinearX, withLayout
-    , Symbol, grouped, stacked, withIcons
+    , Symbol, grouped, stacked, withSymbols
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -462,11 +462,11 @@ Default value: []
 These are additional symbols at the end of each line in a group, for facilitating accessibility.
 
     defaultLayoutConfig
-        |> withIcons [ Circle, Corner, Triangle ]
+        |> withSymbols [ Circle, Corner, Triangle ]
 
 -}
-withIcons : List Symbol -> Config -> Config
-withIcons =
+withSymbols : List Symbol -> Config -> Config
+withSymbols =
     Type.setIcons
 
 

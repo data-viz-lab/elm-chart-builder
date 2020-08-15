@@ -4,7 +4,7 @@ module Chart.Bar exposing
     , render
     , withTitle, withDesc, withColorPalette, withColorInterpolator, withDomainBandGroup, withDomainBandSingle, withDomainLinear, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withShowAxisX, withShowAxisY
     , diverging, grouped, horizontal, stacked, vertical
-    , withIcons, withIndividualLabels
+    , withSymbols, withIndividualLabels
     , noDirection, withGroupedLayout, withStackedLayout
     )
 
@@ -42,7 +42,7 @@ The Bar module expects the X axis to plot grouped ordinal data and the Y axis to
 
 These a specific configurations for the Grouped layout
 
-@docs withIcons, withIndividualLabels
+@docs withSymbols, withIndividualLabels
 
 
 # Chart icons
@@ -71,7 +71,7 @@ Icons can be added to grouped bar charts to improve understanding and accessibil
     grouped =
         Bar.grouped
             (Bar.defaultLayoutConfig
-                |> Bar.withIcons
+                |> Bar.withSymbols
             )
 
     Bar.init
@@ -389,14 +389,14 @@ Default value: []
 These are additional symbols at the end of each bar in a group, for facilitating accessibility.
 
     defaultLayoutConfig
-        |> withIcons [ Circle, Corner, Triangle ]
+        |> withSymbols [ Circle, Corner, Triangle ]
 
 -}
-withIcons :
+withSymbols :
     List Symbol
     -> Config
     -> Config
-withIcons =
+withSymbols =
     Type.setIcons
 
 

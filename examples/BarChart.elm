@@ -198,7 +198,7 @@ verticalGrouped =
         }
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withGroupedLayout
-        |> Bar.withIcons (iconsCustom "chart-a")
+        |> Bar.withSymbols (iconsCustom "chart-a")
         |> Bar.withYAxisTickCount 5
         |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.render ( data, accessor )
@@ -227,7 +227,7 @@ verticalStacked =
         }
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withStackedLayout Bar.noDirection
-        |> Bar.withIcons (icons "chart-b")
+        |> Bar.withSymbols (icons "chart-b")
         |> Bar.render ( data, accessor )
 
 
@@ -240,7 +240,7 @@ horizontalGrouped =
         }
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withGroupedLayout
-        |> Bar.withIcons (icons "chart-b")
+        |> Bar.withSymbols (icons "chart-b")
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withYAxisTickCount 5
         |> Bar.withYAxisTickFormat valueFormatter
@@ -285,7 +285,7 @@ horizontalStackedDiverging =
         }
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withStackedLayout Bar.diverging
-        |> Bar.withIcons (icons "chart-b")
+        |> Bar.withSymbols (icons "chart-b")
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.render ( dataStackedDiverging, accessor )
