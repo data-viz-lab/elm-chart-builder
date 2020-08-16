@@ -1,6 +1,7 @@
 module Chart.Symbol exposing
-    ( circle, corner, custom, triangle
-    , Symbol, withGap, withIdentifier, withSize, withStyle
+    ( Symbol
+    , circle, corner, custom, triangle
+    , withGap, withIdentifier, withSize, withStyle
     )
 
 {-| Symbols can be added to charts to improve understanding and accessibility.
@@ -9,12 +10,13 @@ Currently stacked bar charts do not support symbols.
 
 # Symbols
 
+@docs Symbol
 @docs circle, corner, custom, triangle
 
 
 # Customisation
 
-@doxs withGap, withIdentifier, withSize, withStyle,
+@docs withGap, withIdentifier, withSize, withStyle
 
 -}
 
@@ -23,6 +25,8 @@ Currently stacked bar charts do not support symbols.
 import Chart.Internal.Symbol as InternalSymbol exposing (Symbol(..))
 
 
+{-| The Symbol type
+-}
 type alias Symbol =
     InternalSymbol.Symbol
 

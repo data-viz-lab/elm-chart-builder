@@ -7,7 +7,8 @@
     "exposed-modules": [
         "Chart.Bar",
         "Chart.HistogramBar",
-        "Chart.Line"
+        "Chart.Line",
+        "Chart.Symbol"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {

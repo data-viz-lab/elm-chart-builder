@@ -27,17 +27,17 @@ The Bar module expects the X axis to plot grouped ordinal data and the Y axis to
 @docs render
 
 
-# Configuration withters
+# Configuration
 
 @docs withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandSingleDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withXAxis, withYAxis, withGroupedLayout, withStackedLayout
 
 
-# Configuration withters arguments
+# Configuration arguments
 
 @docs noDirection, diverging, horizontal, vertical
 
 
-# LayoutConfig withters
+# LayoutConfig
 
 These a specific configurations for the Grouped layout
 
