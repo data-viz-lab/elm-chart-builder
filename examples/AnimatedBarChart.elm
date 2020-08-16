@@ -258,7 +258,7 @@ horizontalGrouped d =
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.withYAxisTickCount 5
-        |> Bar.withDomainLinear domain
+        |> Bar.withLinearDomain domain
         |> Bar.render ( d, accessor )
 
 

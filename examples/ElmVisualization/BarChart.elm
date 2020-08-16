@@ -67,7 +67,7 @@ chart =
         , width = 600
         , height = 400
         }
-        |> Bar.withDomainLinear ( 0, 5 )
+        |> Bar.withLinearDomain ( 0, 5 )
         |> Bar.withYAxisTickCount 5
         |> Bar.render ( timeSeries, accessor )
 

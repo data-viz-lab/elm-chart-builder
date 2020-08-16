@@ -31,7 +31,7 @@ The histogram bar chart can both generate the histogram data or accept some prep
 
 # Configuration setters
 
-@docs withDimensions, withDomain, withHeight, withSteps, withWidth, withColor, withTitle, withDesc, withMargin, withYAxisTickFormat
+@docs withDomain, withSteps, withColor, withTitle, withDesc, withYAxisTickFormat
 
 -}
 

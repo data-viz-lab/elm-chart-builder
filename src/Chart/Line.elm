@@ -2,8 +2,8 @@ module Chart.Line exposing
     ( Accessor, AccessorTime, AccessorLinear, time, linear
     , init
     , render
-    , withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withXAxis, withYAxis, withXDomainTime, withYDomain, withDomainLinearX, withLayout
-    , grouped, stacked, withSymbols
+    , withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withXAxis, withYAxis, withXDomainTime, withYDomain, withLinearDomainX, withStackedLayout, withGroupedLayout
+    , withSymbols
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -14,11 +14,6 @@ I expects the X axis to plot time or linear data and the Y axis to plot linear d
 # Chart Data Format
 
 @docs Accessor, AccessorTime, AccessorLinear, time, linear
-
-
-# Chart Layout
-
-@docs stackedLayout
 
 
 # Chart Initialization
@@ -33,9 +28,9 @@ I expects the X axis to plot time or linear data and the Y axis to plot linear d
 
 # Configuration setters
 
-@docs withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withXAxis, withYAxis, withXDomainTime, withYDomain, withDomainLinearX, withLayout
+@docs withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withXAxis, withYAxis, withXDomainTime, withYDomain, withLinearDomainX, withStackedLayout, withGroupedLayout
 
-@docs BarSymbol, symbolCircle, symbolCorner, symbolCustom, symbolTriangle, withSymbolHeight, withSymbolIdentifier, withSymbolPaths, withSymbolUseGap, withSymbolWidth
+@docs withSymbols
 
 -}
 
@@ -164,13 +159,17 @@ linear acc =
         Line.time (Line.accessorTime .groupLabel .x .y)
 
     Line.init
+        { margin = margin
+        , width = width
+        , height = height
+        }
         |> Line.render (data, accessor)
 
 -}
 init : RequiredConfig -> Config
 init c =
     defaultConfig
-        |> withLayout grouped
+        |> withGroupedLayout
         |> setDimensions { margin = c.margin, width = c.width, height = c.height }
 
 
@@ -202,7 +201,8 @@ render ( externalData, accessor ) config =
 
 
 {-| Explicitly sets the ticks for the X axis
-Defaults to `Scale.ticks`
+
+Defaults to elm-visualization `Scale.ticks`
 
     Line.init
         |> Line.withContinousXTicks [ 1, 2, 3 ]
@@ -215,6 +215,7 @@ withXAxisContinousTicks ticks config =
 
 
 {-| Sets the line curve shape
+
 Defaults to `Shape.linearCurve`
 
 See [https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Shape](elm-visualization/latest/Shape)
@@ -231,7 +232,8 @@ withCurve curve config =
 
 
 {-| Sets the approximate number of ticks for the X axis
-Defaults to `Scale.ticks`
+
+Defaults to elm-visualization `Scale.ticks`
 
     Line.init
         |> Line.withContinousDataTickCount 5
@@ -244,6 +246,7 @@ withXAxisContinousTickCount count config =
 
 
 {-| Sets the tick formatting for the X axis
+
 Defaults to elm-visualization `Scale.tickFormat`
 
     Line.init
@@ -257,6 +260,7 @@ withXAxisContinousTickFormat f config =
 
 
 {-| Explicitly sets the ticks for the Y axis
+
 Defaults to `Scale.ticks`
 
     Line.init
@@ -270,6 +274,7 @@ withYAxisContinousTicks ticks config =
 
 
 {-| Sets the approximate number of ticks for the y axis
+
 Defaults to `Scale.ticks`
 
     Line.init
@@ -283,6 +288,7 @@ withYAxisContinousTickCount count config =
 
 
 {-| Sets the formatting for ticks in the y axis
+
 Defaults to `Scale.tickFormat`
 
     Line.init
@@ -360,16 +366,17 @@ If not set, the domain is calculated from the data.
 If set on a linear line chart this setting will have no effect.
 
     Line.init
-        |> Line.withDomainLinearX ( 0, 10 )
+        |> Line.withLinearDomainX ( 0, 10 )
         |> Line.render ( data, accessor )
 
 -}
-withDomainLinearX : ( Float, Float ) -> Config -> Config
-withDomainLinearX value config =
+withLinearDomainX : ( Float, Float ) -> Config -> Config
+withLinearDomainX value config =
     Type.setDomainLinearX value config
 
 
 {-| Sets an accessible, long-text description for the svg chart.
+
 It defaults to an empty string.
 This shuld be set if no title nor description exists for the chart, for example in a sparkline.
 
@@ -384,6 +391,7 @@ withDesc value config =
 
 
 {-| Sets an accessible title for the svg chart.
+
 It defaults to an empty string.
 This shuld be set if no title nor description exists for the chart, for example in a sparkline.
 
@@ -413,40 +421,30 @@ withColorPalette palette config =
     Type.setColorResource (ColorPalette palette) config
 
 
-{-| Sets the line layout.
+{-| Creates a stacked line chart.
 
-Values: `Line.stackedLayout` or `Line.groupedLayout`
-
-Default value: `Line.groupedLayout`
+It takes a direction: `diverging` or `noDirection`
 
     Line.init
-        |> Line.withLayout Line.stackedLayout
+        |> Line.withStackedLayout
         |> Line.render ( data, accessor )
 
 -}
-withLayout : Layout -> Config -> Config
-withLayout value config =
-    Type.setLayout value config
+withStackedLayout : Config -> Config
+withStackedLayout config =
+    Type.setLayout Type.StackedLine config
 
 
-{-| Stacked layout type
+{-| Creates a grouped line chart.
 
-        layout = Line.stackedLayout
-
--}
-stacked : Layout
-stacked =
-    StackedLine
-
-
-{-| Grouped layout type
-
-        layout = Line.groupedLayout
+    Line.init
+        |> Line.withGroupedLayout
+        |> Line.render ( data, accessor )
 
 -}
-grouped : Layout
-grouped =
-    GroupedLine
+withGroupedLayout : Config -> Config
+withGroupedLayout config =
+    Type.setLayout GroupedLine config
 
 
 

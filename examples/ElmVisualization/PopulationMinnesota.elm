@@ -190,7 +190,7 @@ chart =
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withYAxisTickCount 8
         |> Bar.withYAxisTickFormat (abs >> valueFormatter)
-        |> Bar.withDomainLinear ( 0, 2000000 )
+        |> Bar.withLinearDomain ( 0, 2000000 )
         |> Bar.render ( data, accessor )
 
 

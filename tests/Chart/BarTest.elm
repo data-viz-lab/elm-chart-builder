@@ -16,7 +16,7 @@ requiredConfig =
 suite : Test
 suite =
     describe "The Public Bar module"
-        [ describe "withDomainBandGroup"
+        [ describe "withBandGroupDomain"
             [ test "it should set the bandGroup value in the domain" <|
                 \_ ->
                     let
@@ -27,7 +27,7 @@ suite =
                         config : Type.Config
                         config =
                             Bar.init requiredConfig
-                                |> Bar.withDomainBandGroup bandGroup
+                                |> Bar.withBandGroupDomain bandGroup
 
                         newBandGroup =
                             config
@@ -36,7 +36,7 @@ suite =
                     in
                     Expect.equal (Just bandGroup) newBandGroup
             ]
-        , describe "withDomainBandSingle"
+        , describe "withBandSingleDomain"
             [ test "it should set the bandSingle value in the domain" <|
                 \_ ->
                     let
@@ -47,7 +47,7 @@ suite =
                         config : Type.Config
                         config =
                             Bar.init requiredConfig
-                                |> Bar.withDomainBandSingle bandSingle
+                                |> Bar.withBandSingleDomain bandSingle
 
                         newBandSingle =
                             config
@@ -56,7 +56,7 @@ suite =
                     in
                     Expect.equal (Just bandSingle) newBandSingle
             ]
-        , describe "withDomainLinear"
+        , describe "withLinearDomain"
             [ test "it should set the linear value in the domain" <|
                 \_ ->
                     let
@@ -66,7 +66,7 @@ suite =
                         config : Type.Config
                         config =
                             Bar.init requiredConfig
-                                |> Bar.withDomainLinear linearDomain
+                                |> Bar.withLinearDomain linearDomain
 
                         newLinearDomain =
                             config

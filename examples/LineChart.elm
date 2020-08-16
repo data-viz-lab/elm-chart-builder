@@ -121,7 +121,7 @@ doubleLine =
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withYAxisContinousTickCount 5
         |> Line.withXAxisContinousTickCount 5
-        |> Line.withLayout Line.grouped
+        |> Line.withGroupedLayout
         |> Line.withSymbols (icons "chart-b")
         |> Line.render ( data, accessor )
 
@@ -186,7 +186,7 @@ doubleLineStacked =
         |> Line.withYAxisContinousTickCount 5
         |> Line.withXAxisContinousTickCount 5
         |> Line.withColorPalette Scale.Color.tableau10
-        |> Line.withLayout Line.stacked
+        |> Line.withStackedLayout
         |> Line.withSymbols (icons "chart-b")
 
 
