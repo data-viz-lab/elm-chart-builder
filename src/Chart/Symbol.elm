@@ -40,9 +40,16 @@ type alias RequiredCustomConfig =
 {-| A custom symbol type
 It requires a config where viewBoxDimensions is a tuple with viewBox width and height and paths is a list of strings for the d attribute of an svg path element. These values are usually copied from the 3rd and 4th arguments of the viewBox attribute on the svg icon.
 
-    symbol : { viewBoxDimensions : ( Float, Float ), paths : List String } -> Symbol
+    symbol :
+        { viewBoxDimensions : ( Float, Float )
+        , paths : List String
+        }
+        -> Symbol
     symbol =
-        Symbol.custom { viewBoxDimensions = ( 640, 512 ), paths = [ bicycleSymbol ] }
+        Symbol.custom
+            { viewBoxDimensions = ( 640, 512 )
+            , paths = [ bicycleSymbol ]
+            }
 
 -}
 custom : RequiredCustomConfig -> Symbol
