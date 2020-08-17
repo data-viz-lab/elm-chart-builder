@@ -2,7 +2,7 @@ module Chart.Line exposing
     ( Accessor, AccessorTime, AccessorLinear, time, linear
     , init
     , render
-    , withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withXAxis, withYAxis, withXDomainTime, withYDomain, withLinearDomainX, withStackedLayout, withGroupedLayout
+    , withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXDomainTime, withYDomain, withLinearDomainX, withStackedLayout, withGroupedLayout
     , withSymbols
     )
 
@@ -28,7 +28,7 @@ I expects the X axis to plot time or linear data and the Y axis to plot linear d
 
 # Configuration setters
 
-@docs withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, withXAxis, withYAxis, withXDomainTime, withYDomain, withLinearDomainX, withStackedLayout, withGroupedLayout
+@docs withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXDomainTime, withYDomain, withLinearDomainX, withStackedLayout, withGroupedLayout
 
 @docs withSymbols
 
@@ -301,32 +301,49 @@ withYAxisContinousTickFormat f config =
     Type.setYAxisContinousTickFormat (Type.CustomTickFormat f) config
 
 
-{-| Show or Hide the X axis
-
-Default value: True
+{-| Hide all axis
 
     Line.init
-        |> Line.withXAxis False
-        |> Line.render data
+        |> Line.hideAxis
+        |> Line.render ( data, accessor )
 
 -}
-withXAxis : Bool -> Config -> Config
-withXAxis value config =
-    Type.setXAxis value config
+hideAxis : Config -> Config
+hideAxis config =
+    Type.setXAxis False config
+        |> Type.setYAxis False
 
 
-{-| Show or hide the Y axis.
+{-| Hide the Y aixs
 
-Default value: True
+The Y axis depends from the layout:
+With a vertical layout the Y axis is the vertical axis.
+With a horizontal layout the Y axis is the horizontal axis.
 
     Line.init
-        |> Line.withYAxis False
-        |> Line.render data
+        |> Line.hideYAxis
+        |> Line.render ( data, accessor )
 
 -}
-withYAxis : Bool -> Config -> Config
-withYAxis value config =
-    Type.setYAxis value config
+hideYAxis : Config -> Config
+hideYAxis config =
+    Type.setYAxis False config
+
+
+{-| Hide the X aixs
+
+The X axis depends from the layout:
+With a vertical layout the X axis is the horizontal axis.
+With a horizontal layout the X axis is the vertical axis.
+
+    Line.init
+        |> Line.hideXAxis
+        |> Line.render ( data, accessor )
+
+-}
+hideXAxis : Config -> Config
+hideXAxis config =
+    Type.setXAxis False config
 
 
 {-| Sets the Y domain of a time line chart

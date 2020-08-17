@@ -2,9 +2,10 @@ module Chart.Bar exposing
     ( Accessor
     , init
     , render
-    , withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandSingleDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withXAxis, withYAxis, withGroupedLayout, withStackedLayout
+    , withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandSingleDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, withGroupedLayout, withStackedLayout
     , noDirection, diverging, horizontal, vertical
     , withSymbols, withIndividualLabels
+    , hideAxis
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -29,7 +30,7 @@ The Bar module expects the X axis to plot grouped ordinal data and the Y axis to
 
 # Configuration
 
-@docs withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandSingleDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, withXAxis, withYAxis, withGroupedLayout, withStackedLayout
+@docs withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandSingleDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hiseAxis, withGroupedLayout, withStackedLayout
 
 
 # Configuration arguments
@@ -311,40 +312,49 @@ withLinearDomain value config =
     Type.setDomainBandLinear value config
 
 
-{-| Show or hide the Y aixs
+{-| Hide all axis
 
-Default value: True
+    Bar.init
+        |> Bar.hideAxis
+        |> Bar.render ( data, accessor )
+
+-}
+hideAxis : Config -> Config
+hideAxis config =
+    Type.setXAxis False config
+        |> Type.setYAxis False
+
+
+{-| Hide the Y aixs
 
 The Y axis depends from the layout:
 With a vertical layout the Y axis is the vertical axis.
 With a horizontal layout the Y axis is the horizontal axis.
 
     Bar.init
-        |> Bar.withYAxis False
+        |> Bar.hideYAxis
         |> Bar.render ( data, accessor )
 
 -}
-withYAxis : Bool -> Config -> Config
-withYAxis value config =
-    Type.setYAxis value config
+hideYAxis : Config -> Config
+hideYAxis config =
+    Type.setYAxis False config
 
 
-{-| Show or hide the X aixs
-
-Default value: True
+{-| Hide the X aixs
 
 The X axis depends from the layout:
 With a vertical layout the X axis is the horizontal axis.
 With a horizontal layout the X axis is the vertical axis.
 
     Bar.init
-        |> Bar.withXAxis False
+        |> Bar.hideXAxis
         |> Bar.render ( data, accessor )
 
 -}
-withXAxis : Bool -> Config -> Config
-withXAxis value config =
-    Type.setXAxis value config
+hideXAxis : Config -> Config
+hideXAxis config =
+    Type.setXAxis False config
 
 
 {-| Sets the Icon Symbols list in the `LayoutConfig`.
@@ -357,10 +367,7 @@ These are additional symbols at the end of each bar in a group, for facilitating
         |> withSymbols [ Circle, Corner, Triangle ]
 
 -}
-withSymbols :
-    List Symbol
-    -> Config
-    -> Config
+withSymbols : List Symbol -> Config -> Config
 withSymbols =
     Type.setIcons
 
