@@ -236,7 +236,7 @@ interpolateValue from to =
 
 accessor : Bar.Accessor Datum
 accessor =
-    Bar.Accessor .year .country .population
+    Bar.Accessor (.year >> Just) .country .population
 
 
 attrs : List (Html.Attribute Msg)

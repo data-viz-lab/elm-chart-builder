@@ -353,9 +353,9 @@ suite =
                             ]
                                 |> toExternalData
 
-                        accessor : AccessorLinearGroup Data
+                        accessor : AccessorLinearTime Data
                         accessor =
-                            AccessorTime (AccessorTimeStruct .groupLabel .x .y)
+                            AccessorTime (AccessorTimeStruct (.groupLabel >> Just) .x .y)
 
                         expected : DataLinearGroup
                         expected =

@@ -90,7 +90,7 @@ xAxisTicks =
 
 accessor : Line.Accessor Data.SmokeStats
 accessor =
-    Line.linear (Line.AccessorLinear .regionPerGender .year .percentage)
+    Line.linear (Line.AccessorLinear (.regionPerGender >> Just) .year .percentage)
 
 
 line =

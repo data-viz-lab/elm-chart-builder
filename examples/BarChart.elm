@@ -148,7 +148,7 @@ dataStackedDiverging =
 
 accessor : Bar.Accessor Data
 accessor =
-    Bar.Accessor .groupLabel .x .y
+    Bar.Accessor (.groupLabel >> Just) .x .y
 
 
 width : Float

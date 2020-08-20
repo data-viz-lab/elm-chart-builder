@@ -97,7 +97,7 @@ type alias Accessor data =
 {-| The accessor structure for x time lines.
 -}
 type alias AccessorTime data =
-    { xGroup : data -> String
+    { xGroup : data -> Maybe String
     , xValue : data -> Posix
     , yValue : data -> Float
     }
@@ -116,7 +116,7 @@ time acc =
 {-| The accessor structure for x linear lines.
 -}
 type alias AccessorLinear data =
-    { xGroup : data -> String
+    { xGroup : data -> Maybe String
     , xValue : data -> Float
     , yValue : data -> Float
     }

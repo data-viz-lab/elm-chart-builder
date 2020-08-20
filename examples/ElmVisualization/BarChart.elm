@@ -57,7 +57,7 @@ dateFormat =
 
 accessor : Bar.Accessor ( String, Float )
 accessor =
-    Bar.Accessor (always "") Tuple.first Tuple.second
+    Bar.Accessor (always Nothing) Tuple.first Tuple.second
 
 
 chart : Html msg

@@ -119,14 +119,14 @@ module Chart.Internal.Type exposing
     , setMargin
     , setOrientation
     , setShowDataPoints
-    , setXAxis
-    , setYAxis
     , setSvgDesc
     , setSvgTitle
     , setWidth
+    , setXAxis
     , setXAxisContinousTickCount
     , setXAxisContinousTickFormat
     , setXAxisContinousTicks
+    , setYAxis
     , setYAxisContinousTickCount
     , setYAxisContinousTickFormat
     , setYAxisContinousTicks
@@ -176,7 +176,7 @@ toExternalData data =
 
 
 type alias AccessorBand data =
-    { xGroup : data -> String
+    { xGroup : data -> Maybe String
     , xValue : data -> String
     , yValue : data -> Float
     }
@@ -219,14 +219,14 @@ type AccessorLinearTime data
 
 
 type alias AccessorLinearStruct data =
-    { xGroup : data -> String
+    { xGroup : data -> Maybe String
     , xValue : data -> Float
     , yValue : data -> Float
     }
 
 
 type alias AccessorTimeStruct data =
-    { xGroup : data -> String
+    { xGroup : data -> Maybe String
     , xValue : data -> Posix
     , yValue : data -> Float
     }
@@ -1419,7 +1419,6 @@ externalToDataBand externalData accessor =
                         d
                             |> Tuple.first
                             |> accessor.xGroup
-                            |> Just
 
                     firstPoint =
                         d
@@ -1448,7 +1447,7 @@ externalToDataLinearGroup externalData accessorGroup =
     case accessorGroup of
         AccessorLinear accessor ->
             data
-                |> List.sortBy accessor.xGroup
+                |> List.sortBy (accessor.xGroup >> Maybe.withDefault "")
                 |> List.Extra.groupWhile
                     (\a b -> accessor.xGroup a == accessor.xGroup b)
                 |> List.map
@@ -1458,7 +1457,6 @@ externalToDataLinearGroup externalData accessorGroup =
                                 d
                                     |> Tuple.first
                                     |> accessor.xGroup
-                                    |> Just
 
                             firstPoint =
                                 d
@@ -1479,7 +1477,7 @@ externalToDataLinearGroup externalData accessorGroup =
 
         AccessorTime accessor ->
             data
-                |> List.sortBy accessor.xGroup
+                |> List.sortBy (accessor.xGroup >> Maybe.withDefault "")
                 |> List.Extra.groupWhile
                     (\a b -> accessor.xGroup a == accessor.xGroup b)
                 |> List.map
@@ -1489,7 +1487,6 @@ externalToDataLinearGroup externalData accessorGroup =
                                 d
                                     |> Tuple.first
                                     |> accessor.xGroup
-                                    |> Just
 
                             firstPoint =
                                 d
