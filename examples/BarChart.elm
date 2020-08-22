@@ -213,7 +213,7 @@ verticalGroupedWithLabels =
         }
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withGroupedLayout
-        |> Bar.withIndividualLabels
+        |> Bar.withYLabels String.fromFloat
         |> Bar.withYAxisTickCount 5
         |> Bar.render ( data, accessor )
 
@@ -257,7 +257,7 @@ horizontalGroupedWithLabels =
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withGroupedLayout
         |> Bar.withOrientation Bar.horizontal
-        |> Bar.withIndividualLabels
+        |> Bar.withXLabels
         |> Bar.withYAxisTickCount 5
         |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.render ( data, accessor )

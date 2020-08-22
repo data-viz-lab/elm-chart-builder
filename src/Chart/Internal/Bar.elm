@@ -36,6 +36,7 @@ import Chart.Internal.Type
         , Orientation(..)
         , PointBand
         , RenderContext(..)
+        , ShowLabel(..)
         , StackedValues
         , adjustLinearRange
         , ariaLabelledby
@@ -59,13 +60,12 @@ import Chart.Internal.Type
         , getLinearRange
         , getMargin
         , getOffset
-        , getShowIndividualLabels
+        , getShowLabels
         , getStackedValuesAndGroupes
         , getWidth
         , leftGap
         , role
         , showIcons
-        , showIndividualLabels
         , stackedValuesInverse
         , symbolCustomSpace
         , symbolSpace
@@ -450,11 +450,11 @@ renderBandGrouped ( data, config ) =
 
         axisBandScale : BandScale String
         axisBandScale =
-            if dataLength == 1 then
-                bandSingleScale
+            if c.forceGroupScale || dataLength > 1 then
+                bandGroupScale
 
             else
-                bandGroupScale
+                bandSingleScale
     in
     svg
         [ viewBox 0 0 outerW outerH
@@ -650,28 +650,28 @@ verticalLabel config x_ y_ point =
         c =
             fromConfig config
 
-        ( x__, _ ) =
+        ( x__, y__ ) =
             point
 
         showLabels =
-            case c.layout of
-                GroupedBar ->
-                    getShowIndividualLabels config
+            getShowLabels config
 
-                _ ->
-                    False
+        txt =
+            text_
+                [ x x_
+                , y y_
+                , textAnchor AnchorMiddle
+                ]
     in
-    if showLabels then
-        [ text_
-            [ x x_
-            , y y_
-            , textAnchor AnchorMiddle
-            ]
-            [ text <| x__ ]
-        ]
+    case showLabels of
+        YLabel formatter ->
+            [ txt [ text (y__ |> formatter) ] ]
 
-    else
-        []
+        XOrdinalLabel ->
+            [ txt [ text x__ ] ]
+
+        _ ->
+            []
 
 
 horizontalSymbol :
@@ -822,29 +822,29 @@ horizontalLabel config x_ y_ point =
         c =
             fromConfig config
 
-        ( x__, _ ) =
+        ( x__, y__ ) =
             point
 
         showLabels =
-            case c.layout of
-                GroupedBar ->
-                    getShowIndividualLabels config
+            getShowLabels config
 
-                _ ->
-                    False
+        txt =
+            text_
+                [ y y_
+                , x x_
+                , textAnchor AnchorStart
+                , dominantBaseline DominantBaselineMiddle
+                ]
     in
-    if showLabels then
-        [ text_
-            [ y y_
-            , x x_
-            , textAnchor AnchorStart
-            , dominantBaseline DominantBaselineMiddle
-            ]
-            [ text <| x__ ]
-        ]
+    case showLabels of
+        YLabel formatter ->
+            [ txt [ text (y__ |> formatter) ] ]
 
-    else
-        []
+        XOrdinalLabel ->
+            [ txt [ text x__ ] ]
+
+        _ ->
+            []
 
 
 symbolsToSymbolElements : Orientation -> BandScale String -> List Symbol -> List (Svg msg)

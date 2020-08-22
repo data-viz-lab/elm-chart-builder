@@ -2,10 +2,10 @@ module Chart.Bar exposing
     ( Accessor
     , init
     , render
-    , withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandSingleDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, withGroupedLayout, withStackedLayout
+    , withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandSingleDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, withGroupedLayout, withStackedLayout
     , noDirection, diverging, horizontal, vertical
-    , withSymbols, withIndividualLabels
-    , hideAxis
+    , withSymbols
+    , forceGroupScale, hideAxis
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -30,7 +30,7 @@ The Bar module expects the X axis to plot grouped ordinal data and the Y axis to
 
 # Configuration
 
-@docs withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandSingleDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hiseAxis, withGroupedLayout, withStackedLayout
+@docs withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandSingleDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hiseAxis, withGroupedLayout, withStackedLayout
 
 
 # Configuration arguments
@@ -372,11 +372,7 @@ withSymbols =
     Type.setIcons
 
 
-{-| Show or hide bar labels in the bar chart groups.
-
-Default value: `False`
-
-This shows the bar's ordinal value at the end of the rect, not the linear value.
+{-| Show the X ordinal values at the end of the bars
 
 If used together with symbols, the label will be drawn on top of the symbol.
 
@@ -387,12 +383,39 @@ With a vertical layout the available horizontal space is the width of the rects.
 With an horizontal layout the available horizontal space is the right margin.
 
     defaultLayoutConfig
-        |> Bar.withIndividualLabels True
+        |> Bar.withXLabels
 
 -}
-withIndividualLabels : Config -> Config
-withIndividualLabels config =
-    Type.showIndividualLabels True config
+withXLabels : Config -> Config
+withXLabels =
+    Type.showXOrdinalLabel
+
+
+{-| Show the Y numerical values at the end of the bars
+
+It takes a formatter function
+
+If used together with symbols, the label will be drawn on top of the symbol.
+
+&#9888; Use with caution, there is no knowledge of text wrapping!
+
+With a vertical layout the available horizontal space is the width of the rects.
+
+With an horizontal layout the available horizontal space is the right margin.
+
+    defaultLayoutConfig
+        |> Bar.withYLabels String.fromFloat
+
+-}
+withYLabels : (Float -> String) -> Config -> Config
+withYLabels =
+    Type.showYLabel
+
+
+{-| -}
+forceGroupScale : Config -> Config
+forceGroupScale config =
+    Type.setForceGroupScale True config
 
 
 {-| Sets an accessible, long-text description for the svg chart.

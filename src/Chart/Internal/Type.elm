@@ -36,6 +36,7 @@ module Chart.Internal.Type exposing
     , PointStacked
     , PointTime
     , RenderContext(..)
+    , ShowLabel(..)
     , StackedValues
     , adjustLinearRange
     , ariaLabelledby
@@ -84,7 +85,7 @@ module Chart.Internal.Type exposing
     , getLinearRange
     , getMargin
     , getOffset
-    , getShowIndividualLabels
+    , getShowLabels
     , getStackedValuesAndGroupes
     , getSvgDesc
     , getSvgTitle
@@ -110,6 +111,7 @@ module Chart.Internal.Type exposing
     , setDomainLinearX
     , setDomainTime
     , setDomainTimeX
+    , setForceGroupScale
     , setHeight
     , setHistogramDomain
     , setHistogramSteps
@@ -119,19 +121,21 @@ module Chart.Internal.Type exposing
     , setMargin
     , setOrientation
     , setShowDataPoints
-    , setXAxis
-    , setYAxis
     , setSvgDesc
     , setSvgTitle
     , setWidth
+    , setXAxis
     , setXAxisContinousTickCount
     , setXAxisContinousTickFormat
     , setXAxisContinousTicks
+    , setYAxis
     , setYAxisContinousTickCount
     , setYAxisContinousTickFormat
     , setYAxisContinousTicks
     , showIcons
-    , showIndividualLabels
+    , showXLinearLabel
+    , showXOrdinalLabel
+    , showYLabel
     , stackedValuesInverse
     , symbolCustomSpace
     , symbolSpace
@@ -407,6 +411,10 @@ type ColorResource
     | ColorNone
 
 
+
+-- CONFIG
+
+
 type alias ConfigStruct =
     { axisXContinousTickCount : AxisContinousDataTickCount
     , axisXContinousTickFormat : AxisContinousDataTickFormat
@@ -419,16 +427,18 @@ type alias ConfigStruct =
     , domainBand : DomainBand
     , domainLinear : DomainLinear
     , domainTime : DomainTime
+    , forceGroupScale : Bool
     , height : Float
     , histogramDomain : Maybe ( Float, Float )
     , icons : List Symbol
     , layout : Layout
     , margin : Margin
     , orientation : Orientation
+    , showDataPoints : Bool
+    , showGroupLabels : Bool
+    , showLabels : ShowLabel
     , showXAxis : Bool
     , showYAxis : Bool
-    , showDataPoints : Bool
-    , showIndividualLabels : Bool
     , svgDesc : String
     , svgTitle : String
     , width : Float
@@ -450,6 +460,7 @@ defaultConfig =
         , domainBand = DomainBand initialDomainBandStruct
         , domainLinear = DomainLinear initialDomainLinearStruct
         , domainTime = DomainTime initialDomainTimeStruct
+        , forceGroupScale = False
         , height = defaultHeight
         , histogramDomain = Nothing
         , icons = []
@@ -458,8 +469,9 @@ defaultConfig =
         , orientation = defaultOrientation
         , showXAxis = True
         , showYAxis = True
-        , showIndividualLabels = False
         , showDataPoints = False
+        , showLabels = NoLabel
+        , showGroupLabels = False
         , svgDesc = ""
         , svgTitle = ""
         , width = defaultWidth
@@ -557,14 +569,12 @@ showIcons (Config c) =
 
 getIcons : Config -> List Symbol
 getIcons (Config c) =
-    c
-        |> .icons
+    c |> .icons
 
 
-getShowIndividualLabels : Config -> Bool
-getShowIndividualLabels (Config c) =
-    c
-        |> .showIndividualLabels
+getShowLabels : Config -> ShowLabel
+getShowLabels (Config c) =
+    c |> .showLabels
 
 
 setLayout : Layout -> Config -> Config
@@ -586,14 +596,6 @@ setIcons :
     -> Config
 setIcons all (Config c) =
     Config { c | icons = all }
-
-
-showIndividualLabels :
-    Bool
-    -> Config
-    -> Config
-showIndividualLabels bool (Config c) =
-    Config { c | showIndividualLabels = bool }
 
 
 getDirection : Config -> Direction
@@ -854,6 +856,37 @@ setYAxis bool (Config c) =
 setShowDataPoints : Bool -> Config -> Config
 setShowDataPoints bool (Config c) =
     toConfig { c | showDataPoints = bool }
+
+
+setForceGroupScale : Bool -> Config -> Config
+setForceGroupScale bool (Config c) =
+    toConfig { c | forceGroupScale = bool }
+
+
+
+-- LABELS
+
+
+type ShowLabel
+    = YLabel (Float -> String)
+    | XLinearLabel (Float -> String)
+    | XOrdinalLabel
+    | NoLabel
+
+
+showXOrdinalLabel : Config -> Config
+showXOrdinalLabel (Config c) =
+    toConfig { c | showLabels = XOrdinalLabel }
+
+
+showXLinearLabel : (Float -> String) -> Config -> Config
+showXLinearLabel formatter (Config c) =
+    toConfig { c | showLabels = XLinearLabel formatter }
+
+
+showYLabel : (Float -> String) -> Config -> Config
+showYLabel formatter (Config c) =
+    toConfig { c | showLabels = YLabel formatter }
 
 
 
