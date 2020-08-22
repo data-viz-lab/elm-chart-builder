@@ -28,7 +28,8 @@ Then navigate the examples in the browser.
 * Solve tooltips
 * Solve zooming
 * Add sampling
-* Move bar chart labels out of rects, so they have potentially more space to be rendered (on top of the rects)
+* Move bar chart labels out of rects, so they have potentially more space to be rendered (on top of the rects), but no longer one element group?
+* Add title value to rects?
 * Add line chart labels
 * Add table representation
 
