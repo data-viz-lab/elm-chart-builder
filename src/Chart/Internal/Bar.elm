@@ -188,10 +188,14 @@ renderBandStacked ( data, config ) =
             getBandSingleRange config (Scale.bandwidth bandGroupScale)
 
         bandGroupScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1 } bandGroupRange (Maybe.withDefault [] domain.bandGroup)
+            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.05 }
+                bandGroupRange
+                (Maybe.withDefault [] domain.bandGroup)
 
         bandSingleScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.05 } bandSingleRange (Maybe.withDefault [] domain.bandSingle)
+            Scale.band defaultBandConfig
+                bandSingleRange
+                (Maybe.withDefault [] domain.bandSingle)
 
         linearRange =
             getLinearRange config RenderChart w h bandSingleScale
@@ -414,13 +418,13 @@ renderBandGrouped ( data, config ) =
 
         bandGroupScale : BandScale String
         bandGroupScale =
-            Scale.band { defaultBandConfig | paddingInner = paddingInnerGroup }
+            Scale.band { defaultBandConfig | paddingInner = paddingInnerGroup, paddingOuter = paddingInnerGroup }
                 bandGroupRange
                 (domain.bandGroup |> Maybe.withDefault [])
 
         bandSingleScale : BandScale String
         bandSingleScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.05 }
+            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.05 }
                 bandSingleRange
                 (Maybe.withDefault [] domain.bandSingle)
 
