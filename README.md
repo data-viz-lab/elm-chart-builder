@@ -28,8 +28,7 @@ Then navigate the examples in the browser.
 * Solve tooltips
 * Solve zooming
 * Add sampling
-* Add line-chart animation example
-* Revisit API
-* Add labelling
+* Move bar chart labels out of rects, so they have potentially more space to be rendered (on top of the rects)
+* Add line chart labels
 * Add table representation
 

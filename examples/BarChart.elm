@@ -9,6 +9,7 @@ import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
 import Html.Attributes exposing (class)
+import Numeral
 import Scale.Color
 
 
@@ -43,6 +44,10 @@ text {
 
 h5 {
   margin: 2px;
+}
+
+.column text {
+  font-size: 12px;
 }
 """
 
@@ -79,27 +84,27 @@ data : List Data
 data =
     [ { groupLabel = "A"
       , x = "a"
-      , y = 10
+      , y = 1000
       }
     , { groupLabel = "A"
       , x = "b"
-      , y = 13
+      , y = 1300
       }
     , { groupLabel = "A"
       , x = "c"
-      , y = 16
+      , y = 1600
       }
     , { groupLabel = "B"
       , x = "a"
-      , y = 11
+      , y = 1100
       }
     , { groupLabel = "B"
       , x = "b"
-      , y = 23
+      , y = 2300
       }
     , { groupLabel = "B"
       , x = "c"
-      , y = 16
+      , y = 1600
       }
     ]
 
@@ -181,6 +186,11 @@ valueFormatter =
     FormatNumber.format { usLocale | decimals = 0 }
 
 
+yLabelFormatter : Float -> String
+yLabelFormatter =
+    Numeral.format "0.0a"
+
+
 attrs : List (Html.Attribute msg)
 attrs =
     [ Html.Attributes.style "height" (String.fromFloat (height + 20) ++ "px")
@@ -192,7 +202,7 @@ attrs =
 verticalGrouped : Html msg
 verticalGrouped =
     Bar.init
-        { margin = { top = 10, right = 10, bottom = 25, left = 35 }
+        { margin = { top = 10, right = 10, bottom = 25, left = 40 }
         , width = width
         , height = height
         }
@@ -207,26 +217,28 @@ verticalGrouped =
 verticalGroupedWithLabels : Html msg
 verticalGroupedWithLabels =
     Bar.init
-        { margin = { top = 20, right = 10, bottom = 25, left = 35 }
+        { margin = { top = 20, right = 10, bottom = 25, left = 40 }
         , width = width
         , height = height
         }
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withGroupedLayout
-        |> Bar.withYLabels String.fromFloat
+        |> Bar.withYLabels yLabelFormatter
         |> Bar.withYAxisTickCount 5
+        |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.render ( data, accessor )
 
 
 verticalStacked : Html msg
 verticalStacked =
     Bar.init
-        { margin = { top = 20, right = 10, bottom = 25, left = 35 }
+        { margin = { top = 20, right = 10, bottom = 25, left = 40 }
         , width = width
         , height = height
         }
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withStackedLayout Bar.noDirection
+        |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.withSymbols (icons "chart-b")
         |> Bar.render ( data, accessor )
 
@@ -234,7 +246,7 @@ verticalStacked =
 horizontalGrouped : Html msg
 horizontalGrouped =
     Bar.init
-        { margin = { top = 10, right = 10, bottom = 32, left = 35 }
+        { margin = { top = 10, right = 10, bottom = 32, left = 40 }
         , width = width
         , height = height
         }
@@ -250,7 +262,7 @@ horizontalGrouped =
 horizontalGroupedWithLabels : Html msg
 horizontalGroupedWithLabels =
     Bar.init
-        { margin = { top = 10, right = 20, bottom = 32, left = 35 }
+        { margin = { top = 10, right = 20, bottom = 32, left = 40 }
         , width = width
         , height = height
         }
@@ -273,6 +285,8 @@ horizontalStacked =
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withOrientation Bar.horizontal
+        |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.withYAxisTickCount 5
         |> Bar.render ( data, accessor )
 
 
@@ -285,16 +299,16 @@ horizontalStackedDiverging =
         }
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withStackedLayout Bar.diverging
-        |> Bar.withSymbols (icons "chart-b")
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.withYAxisTickCount 5
         |> Bar.render ( dataStackedDiverging, accessor )
 
 
 verticalStackedDiverging : Html msg
 verticalStackedDiverging =
     Bar.init
-        { margin = { top = 20, right = 10, bottom = 30, left = 35 }
+        { margin = { top = 20, right = 10, bottom = 30, left = 40 }
         , width = width
         , height = height
         }
