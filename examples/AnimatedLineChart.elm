@@ -157,7 +157,7 @@ xAxisTicks =
 
 accessor : Line.Accessor Datum
 accessor =
-    Line.linear (Line.AccessorLinear .groupLabel .x .y)
+    Line.linear (Line.AccessorLinear (.groupLabel >> Just) .x .y)
 
 
 lineLinear : Data -> Html msg

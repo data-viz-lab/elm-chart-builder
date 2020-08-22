@@ -106,7 +106,7 @@ type alias Data =
 
 accessor : Bar.Accessor Data
 accessor =
-    Bar.Accessor .groupLabel .x .y
+    Bar.Accessor (.groupLabel >> Just) .x .y
 
 
 data : List Data

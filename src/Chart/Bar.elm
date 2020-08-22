@@ -85,7 +85,7 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 {-| The data accessors
 -}
 type alias Accessor data =
-    { xGroup : data -> String
+    { xGroup : data -> Maybe String
     , xValue : data -> String
     , yValue : data -> Float
     }
