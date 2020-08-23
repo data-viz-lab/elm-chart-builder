@@ -176,7 +176,7 @@ valueFormatter =
 
 accessor : Bar.Accessor ChartData
 accessor =
-    Bar.Accessor .age .gender .people
+    Bar.Accessor (.age >> Just) .gender .people
 
 
 chart : Html msg

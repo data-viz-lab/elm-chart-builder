@@ -111,7 +111,7 @@ module Chart.Internal.Type exposing
     , setDomainLinearX
     , setDomainTime
     , setDomainTimeX
-    , setForceGroupScale
+    , setForceGroupAxis
     , setHeight
     , setHistogramDomain
     , setHistogramSteps
@@ -427,7 +427,7 @@ type alias ConfigStruct =
     , domainBand : DomainBand
     , domainLinear : DomainLinear
     , domainTime : DomainTime
-    , forceGroupScale : Bool
+    , forceGroupAxis : Bool
     , height : Float
     , histogramDomain : Maybe ( Float, Float )
     , icons : List Symbol
@@ -460,7 +460,7 @@ defaultConfig =
         , domainBand = DomainBand initialDomainBandStruct
         , domainLinear = DomainLinear initialDomainLinearStruct
         , domainTime = DomainTime initialDomainTimeStruct
-        , forceGroupScale = False
+        , forceGroupAxis = False
         , height = defaultHeight
         , histogramDomain = Nothing
         , icons = []
@@ -858,9 +858,9 @@ setShowDataPoints bool (Config c) =
     toConfig { c | showDataPoints = bool }
 
 
-setForceGroupScale : Bool -> Config -> Config
-setForceGroupScale bool (Config c) =
-    toConfig { c | forceGroupScale = bool }
+setForceGroupAxis : Bool -> Config -> Config
+setForceGroupAxis bool (Config c) =
+    toConfig { c | forceGroupAxis = bool }
 
 
 

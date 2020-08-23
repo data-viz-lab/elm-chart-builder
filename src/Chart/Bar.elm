@@ -2,47 +2,46 @@ module Chart.Bar exposing
     ( Accessor
     , init
     , render
-    , withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandSingleDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, withGroupedLayout, withStackedLayout
+    , RequiredConfig
+    , withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, forceGroupAxis, withSymbols
     , noDirection, diverging, horizontal, vertical
-    , withSymbols
-    , forceGroupScale, hideAxis
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
 
-The Bar module expects the X axis to plot grouped ordinal data and the Y axis to plot linear data.
+The Bar module expects the X axis to plot ordinal data and the Y axis to plot linear data. The data can be grouped by passing an `xGroup` accessor, or it can be flat by making the accessor `always Nothing`.
+
+The X and Y axis are determined by the default vertical orientation. If the orientatin changes, X and Y also change.
 
 
-# Chart Data Format
+# Data Format
 
 @docs Accessor
 
 
-# Chart Initialization
+# Initialization
 
 @docs init
 
 
-# Chart Rendering
+# Rendering
 
 @docs render
 
 
-# Configuration
+# Required Configuration
 
-@docs withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandSingleDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hiseAxis, withGroupedLayout, withStackedLayout
+@docs RequiredConfig
+
+
+# Optional Configuration Setters
+
+@docs withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, forceGroupAxis, withSymbols
 
 
 # Configuration arguments
 
 @docs noDirection, diverging, horizontal, vertical
-
-
-# LayoutConfig
-
-These a specific configurations for the Grouped layout
-
-@docs withSymbols, withIndividualLabels
 
 -}
 
@@ -62,7 +61,6 @@ import Chart.Internal.Type as Type
         , Config
         , Direction(..)
         , Layout(..)
-        , Margin
         , Orientation(..)
         , RenderContext(..)
         , defaultConfig
@@ -91,14 +89,16 @@ type alias Accessor data =
     }
 
 
+{-| The required config, passed as an argument to the `init` function
+-}
 type alias RequiredConfig =
-    { margin : Margin
+    { margin : { top : Float, right : Float, bottom : Float, left : Float }
     , width : Float
     , height : Float
     }
 
 
-{-| Initializes the bar chart passing margin, width and height, whith a default config.
+{-| Initializes the bar chart with the required config.
 
     data : List {groupLabel : String, x : String, y : Float  }
     data =
@@ -117,9 +117,9 @@ type alias RequiredConfig =
         Bar.Accessor .groupLabel .x .y
 
     Bar.init
-        { margin = margin
-        , width = width
-        , height = height
+        { margin = { top = 10, right = 10, bottom = 30, left = 30 }
+        , width = 500
+        , height = 200
         }
         |> Bar.render ( data, accessor )
 
@@ -130,9 +130,13 @@ init c =
         |> setDimensions { margin = c.margin, width = c.width, height = c.height }
 
 
-{-| Renders the bar chart, after initialisation and customisation.
+{-| Renders the bar chart, after initialisation and optional customisations.
 
     Bar.init
+        { margin = margin
+        , width = width
+        , height = height
+        }
         |> Bar.render ( data, accessor )
 
 -}
@@ -158,15 +162,12 @@ render ( externalData, accessor ) config =
 
 
 {-| Creates a stacked bar chart.
+Stacked Charts do not support symbols.
 
-It takes a direction: `diverging` or `noDirection`
+It takes a direction: `diverging` or `noDirection`.
 
-    layout : Config -> Config
-    layout =
-        Bar.withStackedLayout Bar.diverging
-
-    Bar.init
-        |> layout
+    Bar.init requiredConfig
+        |> Bar.withStackedLayout Bar.diverging
         |> Bar.render ( data, accessor )
 
 -}
@@ -177,7 +178,7 @@ withStackedLayout direction config =
 
 {-| Creates a grouped bar chart.
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.withGroupedLayout
         |> Bar.render ( data, accessor )
 
@@ -189,11 +190,11 @@ withGroupedLayout config =
 
 {-| Sets the orientation value.
 
-Accepts: horizontal or vertical
-Default value: vertical
+Accepts: `horizontal` or `vertical`.
+Default value: `vertical`.
 
-    Bar.init
-        |> Bar.withOrientation horizontal
+    Bar.init requiredConfig
+        |> Bar.withOrientation Bar.horizontal
         |> Bar.render ( data, accessor )
 
 -}
@@ -202,11 +203,11 @@ withOrientation value config =
     Type.setOrientation value config
 
 
-{-| Passes the tick values for a grouped bar chart continous axis.
+{-| Passes the tick values for a bar chart continous axis.
 
-Defaults to elm-visualization `Scale.ticks`
+Defaults to elm-visualization `Scale.ticks`.
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.withYAxisTicks [ 1, 2, 3 ]
         |> Bar.render ( data, accessor )
 
@@ -216,11 +217,11 @@ withYAxisTicks ticks config =
     Type.setYAxisContinousTicks (Type.CustomTicks ticks) config
 
 
-{-| Sets the approximate number of ticks for a grouped bar chart continous axis.
+{-| Sets the approximate number of ticks for a bar chart continous axis.
 
-Defaults to elm-visualization `Scale.tickCount`
+Defaults to elm-visualization `Scale.tickCount`.
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.withYAxisTickCount 5
         |> Bar.render ( data, accessor )
 
@@ -230,14 +231,14 @@ withYAxisTickCount count config =
     Type.setYAxisContinousTickCount (Type.CustomTickCount count) config
 
 
-{-| Sets the formatting for the ticks in a grouped bar chart continous axis.
+{-| Sets the formatting for the ticks in a bar chart continous axis.
 
-Defaults to elm-visualization `Scale.tickFormat`
+Defaults to elm-visualization `Scale.tickFormat`.
 
     formatter =
         FormatNumber.format { usLocale | decimals = 0 }
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.withYAxisTickFormat formatter
         |> Bar.render (data, accessor)
 
@@ -248,11 +249,13 @@ withYAxisTickFormat f config =
 
 
 {-| Sets the color palette for the chart.
+If a palette with a single color is passed all bars will have the same colour.
+If the bars in a group are more then the colours in the palette, the colours will be repeted.
 
     palette =
         Scale.Color.tableau10
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.withColorPalette palette
         |> Bar.render (data, accessor)
 
@@ -266,7 +269,7 @@ withColorPalette palette config =
 
 This option is not supported for stacked bar charts and will have no effect on them.
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.withColorInterpolator Scale.Color.plasmaInterpolator
         |> Bar.render ( data, accessor )
 
@@ -276,9 +279,9 @@ withColorInterpolator interpolator config =
     Type.setColorResource (ColorInterpolator interpolator) config
 
 
-{-| Sets the bandGroup value in the domain, in place of calculating it from the data.
+{-| Sets the group band domain explicitly. The group data relates to the `xGoup` accessor.
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.withBandGroupDomain [ "0" ]
         |> Bar.render ( data, accessor )
 
@@ -288,22 +291,22 @@ withBandGroupDomain value config =
     Type.setDomainBandBandGroup value config
 
 
-{-| Sets the bandSingle value in the domain, in place of calculating it from the data.
+{-| Sets the band domain explicitly. The data relates to the `xValue` accessor.
 
-    Bar.init
-        |> Bar.withDomainBandBandSingle [ "a", "b" ]
+    Bar.init requiredConfig
+        |> Bar.withBandDomain [ "a", "b" ]
         |> Bar.render ( data, accessor )
 
 -}
-withBandSingleDomain : Type.BandDomain -> Config -> Config
-withBandSingleDomain value config =
+withBandDomain : Type.BandDomain -> Config -> Config
+withBandDomain value config =
     Type.setDomainBandBandSingle value config
 
 
-{-| Sets the bandLinear value in the domain, in place of calculating it from the data.
+{-| Sets the linear domain explicitly. The data relates to the `yValue` accessor.
 
-    Bar.init
-        |> Bar.withDomainBandLinear ( 0, 0.55 )
+    Bar.init requiredConfig
+        |> Bar.withLinearDomain ( 0, 0.55 )
         |> Bar.render ( data, accessor )
 
 -}
@@ -312,9 +315,9 @@ withLinearDomain value config =
     Type.setDomainBandLinear value config
 
 
-{-| Hide all axis
+{-| Hide all axis.
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.hideAxis
         |> Bar.render ( data, accessor )
 
@@ -325,15 +328,19 @@ hideAxis config =
         |> Type.setYAxis False
 
 
-{-| Hide the Y aixs
+{-| Hide the Y aixs.
 
 The Y axis depends from the layout:
-With a vertical layout the Y axis is the vertical axis.
-With a horizontal layout the Y axis is the horizontal axis.
 
-    Bar.init
-        |> Bar.hideYAxis
-        |> Bar.render ( data, accessor )
+  - With a vertical layout the Y axis is the vertical axis.
+
+  - With a horizontal layout the Y axis is the horizontal axis.
+
+```
+Bar.init requiredConfig
+    |> Bar.hideYAxis
+    |> Bar.render ( data, accessor )
+```
 
 -}
 hideYAxis : Config -> Config
@@ -341,15 +348,19 @@ hideYAxis config =
     Type.setYAxis False config
 
 
-{-| Hide the X aixs
+{-| Hide the X aixs.
 
 The X axis depends from the layout:
-With a vertical layout the X axis is the horizontal axis.
-With a horizontal layout the X axis is the vertical axis.
 
-    Bar.init
-        |> Bar.hideXAxis
-        |> Bar.render ( data, accessor )
+  - With a vertical layout the X axis is the horizontal axis.
+
+  - With a horizontal layout the X axis is the vertical axis.
+
+```
+Bar.init requiredConfig
+    |> Bar.hideXAxis
+    |> Bar.render ( data, accessor )
+```
 
 -}
 hideXAxis : Config -> Config
@@ -357,14 +368,15 @@ hideXAxis config =
     Type.setXAxis False config
 
 
-{-| Sets the Icon Symbols list in the `LayoutConfig`.
+{-| Pass a list of symbols to be rendered at the end of the bars.
 
 Default value: []
 
-These are additional symbols at the end of each bar in a group, for facilitating accessibility.
+Usefull for facilitating accessibility.
 
-    defaultLayoutConfig
+    Bar.init requiredConfig
         |> withSymbols [ Circle, Corner, Triangle ]
+        |> Bar.render ( data, accessor )
 
 -}
 withSymbols : List Symbol -> Config -> Config
@@ -372,18 +384,15 @@ withSymbols =
     Type.setIcons
 
 
-{-| Show the X ordinal values at the end of the bars
+{-| Show the X ordinal values at the end of the bars.
 
 If used together with symbols, the label will be drawn on top of the symbol.
 
 &#9888; Use with caution, there is no knowledge of text wrapping!
 
-With a vertical layout the available horizontal space is the width of the rects.
-
-With an horizontal layout the available horizontal space is the right margin.
-
-    defaultLayoutConfig
+    Bar.init requiredConfig
         |> Bar.withXLabels
+        |> Bar.render ( data, accessor )
 
 -}
 withXLabels : Config -> Config
@@ -391,9 +400,9 @@ withXLabels =
     Type.showXOrdinalLabel
 
 
-{-| Show the Y numerical values at the end of the bars
+{-| Show the Y numerical values at the end of the bars.
 
-It takes a formatter function
+It takes a formatter function.
 
 If used together with symbols, the label will be drawn on top of the symbol.
 
@@ -413,9 +422,9 @@ withYLabels =
 
 
 {-| -}
-forceGroupScale : Config -> Config
-forceGroupScale config =
-    Type.setForceGroupScale True config
+forceGroupAxis : Config -> Config
+forceGroupAxis config =
+    Type.setForceGroupAxis True config
 
 
 {-| Sets an accessible, long-text description for the svg chart.
@@ -423,7 +432,7 @@ forceGroupScale config =
 It defaults to an empty string.
 This shuld be set if no title nor description exists for the chart, for example in a sparkline.
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.withDesc "This is an accessible chart, with a desc element"
         |> Bar.render ( data, accessor )
 
@@ -433,12 +442,12 @@ withDesc value config =
     Type.setSvgDesc value config
 
 
-{-| Sets an accessible title for the svg chart.
+{-| Sets an accessible title for the whole svg chart.
 
 It defaults to an empty string.
 This shuld be set if no title nor description exists for the chart, for example in a sparkline.
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.withTitle "This is a chart"
         |> Bar.render ( data, accessor )
 
@@ -448,11 +457,11 @@ withTitle value config =
     Type.setSvgTitle value config
 
 
-{-| Horizontal layout type
+{-| Horizontal layout type.
 
-Used as argument to Bar.withOrientation
+Used as argument to `Bar.withOrientation`.
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.withOrientation horizontal
         |> Bar.render ( data, accessor )
 
@@ -462,12 +471,12 @@ horizontal =
     Horizontal
 
 
-{-| Vertical layout type
+{-| Vertical layout type.
 
-Used as argument to Bar.withOrientation
-This is the default layout
+Used as argument to `Bar.withOrientation`.
+This is the default layout.
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.withOrientation vertical
         |> Bar.render ( data, accessor )
 
@@ -477,11 +486,11 @@ vertical =
     Vertical
 
 
-{-| Diverging layout for stacked bar charts
+{-| Diverging layout for stacked bar charts.
 
 An example can be a population pyramid chart.
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.withStackedLayout Bar.diverging
         |> Bar.render ( data, accessor )
 
@@ -491,10 +500,10 @@ diverging =
     Type.Diverging
 
 
-{-| Default layout for stacked bar charts, where tha bars are sequentially stacked
+{-| Default layout for stacked bar charts, where the bars are sequentially stacked
 one upon another.
 
-    Bar.init
+    Bar.init requiredConfig
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.render ( data, accessor )
 

@@ -454,7 +454,7 @@ renderBandGrouped ( data, config ) =
 
         axisBandScale : BandScale String
         axisBandScale =
-            if c.forceGroupScale || dataLength > 1 then
+            if c.forceGroupAxis || dataLength > 1 then
                 bandGroupScale
 
             else
