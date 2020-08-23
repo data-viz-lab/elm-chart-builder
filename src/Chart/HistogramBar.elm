@@ -2,16 +2,12 @@ module Chart.HistogramBar exposing
     ( dataAccessor, preProcessedDataAccessor, initHistogramConfig
     , init
     , render
-    , withDomain, withSteps, withColor, withTitle, withDesc, withYAxisTickFormat
-    --, withYAxisTicks
-    --, withXAxis
-    --, withYAxis
-    --, withYAxisTickCount
+    , withDomain, withSteps, withColor, withTitle, withDesc, withYAxisTickFormat, withYAxisTicks, withYAxisTickCount, hideAxis, hideYAxis, hideXAxis
     )
 
 {-| This is the histogram chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
 
-The histogram bar chart can both generate the histogram data or accept some preprocessed data.
+The histogram bar chart can both generate the histogram data automatically or accept preprocessed data.
 
 
 # Data Accessors
@@ -31,7 +27,7 @@ The histogram bar chart can both generate the histogram data or accept some prep
 
 # Configuration setters
 
-@docs withDomain, withSteps, withColor, withTitle, withDesc, withYAxisTickFormat
+@docs withDomain, withSteps, withColor, withTitle, withDesc, withYAxisTickFormat, withYAxisTicks, withYAxisTickCount, hideAxis, hideYAxis, hideXAxis
 
 -}
 
@@ -196,7 +192,35 @@ withColor color config =
     Type.setColorResource (Color color) config
 
 
-{-| Sets the formatting for the y axis ticks.
+{-| Passes the tick values for the Y axis.
+
+Defaults to elm-visualization `Scale.ticks`.
+
+    Histo.init requiredConfig
+        |> Histo.withYAxisTicks [ 1, 2, 3 ]
+        |> Histo.render ( data, accessor )
+
+-}
+withYAxisTicks : List Float -> Config -> Config
+withYAxisTicks ticks config =
+    Type.setYAxisContinousTicks (Type.CustomTicks ticks) config
+
+
+{-| Sets the approximate number of ticks for the Y axis.
+
+Defaults to elm-visualization `Scale.tickCount`.
+
+    Histo.init requiredConfig
+        |> Histo.withYAxisTickCount 5
+        |> Histo.render ( data, accessor )
+
+-}
+withYAxisTickCount : Int -> Config -> Config
+withYAxisTickCount count config =
+    Type.setYAxisContinousTickCount (Type.CustomTickCount count) config
+
+
+{-| Sets the formatting for the Y axis ticks.
 
 Defaults to `Scale.tickFormat`
 
@@ -237,3 +261,40 @@ Default value: ""
 withTitle : String -> Config -> Config
 withTitle value config =
     Type.setSvgTitle value config
+
+
+{-| Hide all axis.
+
+    Histo.init requiredConfig
+        |> Histo.hideAxis
+        |> Histo.render ( data, accessor )
+
+-}
+hideAxis : Config -> Config
+hideAxis config =
+    Type.setXAxis False config
+        |> Type.setYAxis False
+
+
+{-| Hide the Y aixs.
+
+    Histo.init requiredConfig
+        |> Histo.hideYAxis
+        |> Histo.render ( data, accessor )
+
+-}
+hideYAxis : Config -> Config
+hideYAxis config =
+    Type.setYAxis False config
+
+
+{-| Hide the X aixs.
+
+    Histo.init requiredConfig
+        |> Histo.hideXAxis
+        |> Histo.render ( data, accessor )
+
+-}
+hideXAxis : Config -> Config
+hideXAxis config =
+    Type.setXAxis False config

@@ -2,13 +2,14 @@ module Chart.Line exposing
     ( Accessor, AccessorTime, AccessorLinear, time, linear
     , init
     , render
-    , withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXDomainTime, withYDomain, withLinearDomainX, withStackedLayout, withGroupedLayout
+    , withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout
     , withSymbols
+    , RequiredConfig
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
 
-I expects the X axis to plot time or linear data and the Y axis to plot linear data.
+It expects the X axis to plot time or linear data and the Y axis to plot linear data.
 
 
 # Chart Data Format
@@ -28,7 +29,7 @@ I expects the X axis to plot time or linear data and the Y axis to plot linear d
 
 # Configuration setters
 
-@docs withXAxisContinousTickCount, withColorPalette, withTitle, withDesc, withXAxisContinousTickFormat, withXAxisContinousTicks, withYAxisContinousTickCount, withYAxisContinousTickFormat, withYAxisContinousTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXDomainTime, withYDomain, withLinearDomainX, withStackedLayout, withGroupedLayout
+@docs withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout
 
 @docs withSymbols
 
@@ -74,6 +75,8 @@ import Time exposing (Posix)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
+{-| The required config, passed as an argument to the `init` function
+-}
 type alias RequiredConfig =
     { margin : Margin
     , width : Float
@@ -159,9 +162,9 @@ linear acc =
         Line.time (Line.accessorTime .groupLabel .x .y)
 
     Line.init
-        { margin = margin
-        , width = width
-        , height = height
+        { margin = { top = 10, right = 10, bottom = 30, left = 30 }
+        , width = 500
+        , height = 200
         }
         |> Line.render (data, accessor)
 
@@ -175,7 +178,7 @@ init c =
 
 {-| Renders the line chart, after initialisation and customisation
 
-    Line.init
+    Line.init requiredConfig
         |> Line.render ( data, accessor )
 
 -}
@@ -204,13 +207,13 @@ render ( externalData, accessor ) config =
 
 Defaults to elm-visualization `Scale.ticks`
 
-    Line.init
-        |> Line.withContinousXTicks [ 1, 2, 3 ]
+    Line.init requiredConfig
+        |> Line.withXTicks [ 1, 2, 3 ]
         |> Line.render ( data, accessor )
 
 -}
-withXAxisContinousTicks : List Float -> Config -> Config
-withXAxisContinousTicks ticks config =
+withXAxisTicks : List Float -> Config -> Config
+withXAxisTicks ticks config =
     Type.setXAxisContinousTicks (Type.CustomTicks ticks) config
 
 
@@ -221,8 +224,8 @@ Defaults to `Shape.linearCurve`
 See [https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Shape](elm-visualization/latest/Shape)
 for more info.
 
-    Line.init
-        |> Line.curve Shape.monotoneInXCurve
+    Line.init requiredConfig
+        |> Line.withCurve Shape.monotoneInXCurve
         |> Line.render ( data, accessor )
 
 -}
@@ -235,13 +238,13 @@ withCurve curve config =
 
 Defaults to elm-visualization `Scale.ticks`
 
-    Line.init
-        |> Line.withContinousDataTickCount 5
+    Line.init requiredConfig
+        |> Line.withXAxisTickCount 5
         |> Line.render ( data, accessor )
 
 -}
-withXAxisContinousTickCount : Int -> Config -> Config
-withXAxisContinousTickCount count config =
+withXAxisTickCount : Int -> Config -> Config
+withXAxisTickCount count config =
     Type.setXAxisContinousTickCount (Type.CustomTickCount count) config
 
 
@@ -249,13 +252,13 @@ withXAxisContinousTickCount count config =
 
 Defaults to elm-visualization `Scale.tickFormat`
 
-    Line.init
-        |> Line.setXAxisContinousTickFormat (FormatNumber.format { usLocale | decimals = 0 })
+    Line.init requiredConfig
+        |> Line.withXAxisTickFormat (FormatNumber.format { usLocale | decimals = 0 })
         |> Line.render ( data, accessor )
 
 -}
-withXAxisContinousTickFormat : (Float -> String) -> Config -> Config
-withXAxisContinousTickFormat f config =
+withXAxisTickFormat : (Float -> String) -> Config -> Config
+withXAxisTickFormat f config =
     Type.setXAxisContinousTickFormat (Type.CustomTickFormat f) config
 
 
@@ -263,13 +266,13 @@ withXAxisContinousTickFormat f config =
 
 Defaults to `Scale.ticks`
 
-    Line.init
-        |> Line.withYAxisContinousDataTicks [ 1, 2, 3 ]
+    Line.init requiredConfig
+        |> Line.withYAxisTicks [ 1, 2, 3 ]
         |> Line.render ( data, accessor )
 
 -}
-withYAxisContinousTicks : List Float -> Config -> Config
-withYAxisContinousTicks ticks config =
+withYAxisTicks : List Float -> Config -> Config
+withYAxisTicks ticks config =
     Type.setYAxisContinousTicks (Type.CustomTicks ticks) config
 
 
@@ -277,13 +280,13 @@ withYAxisContinousTicks ticks config =
 
 Defaults to `Scale.ticks`
 
-    Line.init
-        |> Line.withContinousDataTickCount 5
+    Line.init requiredConfig
+        |> Line.withYAxisTickCount 5
         |> Line.render ( data, accessor )
 
 -}
-withYAxisContinousTickCount : Int -> Config -> Config
-withYAxisContinousTickCount count config =
+withYAxisTickCount : Int -> Config -> Config
+withYAxisTickCount count config =
     Type.setYAxisContinousTickCount (Type.CustomTickCount count) config
 
 
@@ -291,19 +294,19 @@ withYAxisContinousTickCount count config =
 
 Defaults to `Scale.tickFormat`
 
-    Line.init
-        |> Line.withContinousDataTicks (FormatNumber.format { usLocale | decimals = 0 })
+    Line.init requiredConfig
+        |> Line.withYAxisTickFormat (FormatNumber.format { usLocale | decimals = 0 })
         |> Line.render ( data, accessor )
 
 -}
-withYAxisContinousTickFormat : (Float -> String) -> Config -> Config
-withYAxisContinousTickFormat f config =
+withYAxisTickFormat : (Float -> String) -> Config -> Config
+withYAxisTickFormat f config =
     Type.setYAxisContinousTickFormat (Type.CustomTickFormat f) config
 
 
 {-| Hide all axis
 
-    Line.init
+    Line.init requiredConfig
         |> Line.hideAxis
         |> Line.render ( data, accessor )
 
@@ -321,6 +324,10 @@ With a vertical layout the Y axis is the vertical axis.
 With a horizontal layout the Y axis is the horizontal axis.
 
     Line.init
+        { margin = margin
+        , width = width
+        , height = height
+        }
         |> Line.hideYAxis
         |> Line.render ( data, accessor )
 
@@ -336,7 +343,7 @@ The X axis depends from the layout:
 With a vertical layout the X axis is the horizontal axis.
 With a horizontal layout the X axis is the vertical axis.
 
-    Line.init
+    Line.init requiredConfig
         |> Line.hideXAxis
         |> Line.render ( data, accessor )
 
@@ -351,13 +358,13 @@ hideXAxis config =
 If not set, the domain is calculated from the data.
 If set on a linear line chart this setting will have no effect.
 
-    Line.init
-        |> Line.withXDomainTime ( Time.millisToPosix 1579275175634, 10 )
+    Line.init requiredConfig
+        |> Line.withXTimeDomain ( Time.millisToPosix 1579275175634, 10 )
         |> Line.render ( data, accessor )
 
 -}
-withXDomainTime : ( Posix, Posix ) -> Config -> Config
-withXDomainTime value config =
+withXTimeDomain : ( Posix, Posix ) -> Config -> Config
+withXTimeDomain value config =
     Type.setDomainTimeX value config
 
 
@@ -367,7 +374,7 @@ This is always a linear domain, not a time domain.
 If not set, the domain is calculated from the data.
 If set on a linear line chart this setting will have no effect.
 
-    Line.init
+    Line.init required
         |> Line.withYDomain ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579375175634 )
         |> Line.render ( data, accessor )
 
@@ -382,13 +389,13 @@ withYDomain value config =
 If not set, the domain is calculated from the data.
 If set on a linear line chart this setting will have no effect.
 
-    Line.init
-        |> Line.withLinearDomainX ( 0, 10 )
+    Line.init requiredConfig
+        |> Line.withXLinearDomain ( 0, 10 )
         |> Line.render ( data, accessor )
 
 -}
-withLinearDomainX : ( Float, Float ) -> Config -> Config
-withLinearDomainX value config =
+withXLinearDomain : ( Float, Float ) -> Config -> Config
+withXLinearDomain value config =
     Type.setDomainLinearX value config
 
 
@@ -397,7 +404,7 @@ withLinearDomainX value config =
 It defaults to an empty string.
 This shuld be set if no title nor description exists for the chart, for example in a sparkline.
 
-    Line.init
+    Line.init requiredConfig
         |> Line.withDesc "This is an accessible chart, with a desc element"
         |> Line.render ( data, accessor )
 
@@ -412,7 +419,7 @@ withDesc value config =
 It defaults to an empty string.
 This shuld be set if no title nor description exists for the chart, for example in a sparkline.
 
-    Line.init
+    Line.init required
         |> Line.withTitle "Line chart"
         |> Line.render ( data, accessor )
 
@@ -428,7 +435,7 @@ withTitle value config =
         -- From elm-visualization
         Scale.Color.tableau10
 
-    Line.init
+    Line.init requiredConfig
         |> Line.withColorPalette palette
         |> Line.render (data, accessor)
 
@@ -442,7 +449,7 @@ withColorPalette palette config =
 
 It takes a direction: `diverging` or `noDirection`
 
-    Line.init
+    Line.init requiredConfig
         |> Line.withStackedLayout
         |> Line.render ( data, accessor )
 
@@ -454,7 +461,7 @@ withStackedLayout config =
 
 {-| Creates a grouped line chart.
 
-    Line.init
+    Line.init requiredConfig
         |> Line.withGroupedLayout
         |> Line.render ( data, accessor )
 
