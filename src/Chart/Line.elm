@@ -2,9 +2,9 @@ module Chart.Line exposing
     ( Accessor, AccessorTime, AccessorLinear, time, linear
     , init
     , render
+    , RequiredConfig
     , withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout
     , withSymbols
-    , RequiredConfig
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -25,6 +25,11 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 # Chart Rendering
 
 @docs render
+
+
+# Required Configuration
+
+@docs RequiredConfig
 
 
 # Configuration setters
