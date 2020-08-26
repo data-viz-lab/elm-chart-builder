@@ -47,7 +47,7 @@ suite =
                         config : Type.Config
                         config =
                             Bar.init requiredConfig
-                                |> Bar.withBandSingleDomain bandSingle
+                                |> Bar.withBandDomain bandSingle
 
                         newBandSingle =
                             config

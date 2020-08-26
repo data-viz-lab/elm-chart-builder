@@ -3,10 +3,13 @@ module Chart.Internal.Helpers exposing
     , combineStakedValuesWithXValues
     , floorFloat
     , floorValues
+    , invisibleFigcaption
     , mergeStyles
     )
 
 import Color exposing (Color)
+import Html exposing (Html)
+import Html.Attributes
 
 
 floorFloat : Float -> Float
@@ -82,3 +85,18 @@ mergeStyles new existing =
             )
             (String.split ";" existing)
         |> String.join ";"
+
+
+invisibleFigcaption : List (Html msg) -> Html msg
+invisibleFigcaption content =
+    Html.figcaption
+        [ Html.Attributes.style "border" "0"
+        , Html.Attributes.style "clip" "rect(0 0 0 0)"
+        , Html.Attributes.style "height" "1px"
+        , Html.Attributes.style "margin" "-1px"
+        , Html.Attributes.style "overflow" "hidden"
+        , Html.Attributes.style "padding" "0"
+        , Html.Attributes.style "position" "absolute"
+        , Html.Attributes.style "width" "1px"
+        ]
+        content

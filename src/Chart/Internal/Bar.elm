@@ -17,9 +17,11 @@ import Chart.Internal.Symbol
         , symbolToId
         , triangle
         )
+import Chart.Internal.Table as Table
 import Chart.Internal.Type
     exposing
-        ( AxisContinousDataTickCount(..)
+        ( AccessibilityContent(..)
+        , AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
@@ -375,6 +377,9 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
 renderBandGrouped : ( DataBand, Config ) -> Html msg
 renderBandGrouped ( data, config ) =
     let
+        _ =
+            Debug.log "data" data
+
         c =
             fromConfig config
 
@@ -459,28 +464,62 @@ renderBandGrouped ( data, config ) =
 
             else
                 bandSingleScale
+
+        tableHeadings =
+            Table.dataBandToTableHeadings data
+                |> Table.ComplexHeadings
+
+        tableData =
+            Table.dataBandToTableData data
+
+        table =
+            Table.generate tableData
+                |> Table.setColumnHeadings tableHeadings
+                |> Table.view
+
+        svgEl =
+            svg
+                [ viewBox 0 0 outerW outerH
+                , width outerW
+                , height outerH
+                , role "img"
+                , ariaLabelledby "title desc"
+                ]
+            <|
+                symbolElements
+                    ++ descAndTitle c
+                    ++ bandGroupedYAxis c iconOffset linearScale
+                    ++ bandXAxis c axisBandScale
+                    ++ [ g
+                            [ transform [ Translate m.left m.top ]
+                            , class [ "series" ]
+                            ]
+                         <|
+                            List.map
+                                (columns config iconOffset bandGroupScale bandSingleScale linearScale colorScale)
+                                (fromDataBand data)
+                       ]
+
+        tableEl =
+            Helpers.invisibleFigcaption
+                [ case table of
+                    Ok table_ ->
+                        Html.div [] [ table_ ]
+
+                    Err error ->
+                        Html.text (Table.errorToString error)
+                ]
     in
-    svg
-        [ viewBox 0 0 outerW outerH
-        , width outerW
-        , height outerH
-        , role "img"
-        , ariaLabelledby "title desc"
-        ]
-    <|
-        symbolElements
-            ++ descAndTitle c
-            ++ bandGroupedYAxis c iconOffset linearScale
-            ++ bandXAxis c axisBandScale
-            ++ [ g
-                    [ transform [ Translate m.left m.top ]
-                    , class [ "series" ]
-                    ]
-                 <|
-                    List.map
-                        (columns config iconOffset bandGroupScale bandSingleScale linearScale colorScale)
-                        (fromDataBand data)
-               ]
+    case c.accessibilityContent of
+        AccessibilityTable ->
+            Html.div []
+                [ Html.figure
+                    []
+                    [ svgEl, tableEl ]
+                ]
+
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
 
 
 columns :

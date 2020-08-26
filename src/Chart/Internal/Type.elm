@@ -1,5 +1,6 @@
 module Chart.Internal.Type exposing
-    ( AccessorBand
+    ( AccessibilityContent(..)
+    , AccessorBand
     , AccessorHistogram(..)
     , AccessorLinearStruct
     , AccessorLinearTime(..)
@@ -99,6 +100,7 @@ module Chart.Internal.Type exposing
     , getZone
     , leftGap
     , role
+    , setAccessibilityContent
     , setColorResource
     , setCurve
     , setDimensions
@@ -410,12 +412,18 @@ type ColorResource
     | ColorNone
 
 
+type AccessibilityContent
+    = AccessibilityTable
+    | AccessibilityNone
+
+
 
 -- CONFIG
 
 
 type alias ConfigStruct =
-    { axisXContinousTickCount : AxisContinousDataTickCount
+    { accessibilityContent : AccessibilityContent
+    , axisXContinousTickCount : AxisContinousDataTickCount
     , axisXContinousTickFormat : AxisContinousDataTickFormat
     , axisXContinousTicks : AxisContinousDataTicks
     , axisYContinousTickCount : AxisContinousDataTickCount
@@ -447,7 +455,8 @@ type alias ConfigStruct =
 defaultConfig : Config
 defaultConfig =
     toConfig
-        { axisXContinousTickCount = DefaultTickCount
+        { accessibilityContent = AccessibilityNone
+        , axisXContinousTickCount = DefaultTickCount
         , axisXContinousTickFormat = DefaultTickFormat
         , axisXContinousTicks = DefaultTicks
         , axisYContinousTickCount = DefaultTickCount
@@ -853,6 +862,11 @@ setYAxis bool (Config c) =
 setShowDataPoints : Bool -> Config -> Config
 setShowDataPoints bool (Config c) =
     toConfig { c | showDataPoints = bool }
+
+
+setAccessibilityContent : AccessibilityContent -> Config -> Config
+setAccessibilityContent content (Config c) =
+    toConfig { c | accessibilityContent = content }
 
 
 
