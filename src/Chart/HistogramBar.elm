@@ -1,8 +1,8 @@
 module Chart.HistogramBar exposing
-    ( dataAccessor, preProcessedDataAccessor, initHistogramConfig
+    ( dataAccessor, preProcessedDataAccessor
     , init
     , render
-    , withDomain, withSteps, withColor, withTitle, withDesc, withYAxisTickFormat, withYAxisTicks, withYAxisTickCount, hideAxis, hideYAxis, hideXAxis
+    , withDomain, withColor, withTitle, withDesc, withYAxisTickFormat, withYAxisTicks, withYAxisTickCount, hideAxis, hideYAxis, hideXAxis
     )
 
 {-| This is the histogram chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -48,16 +48,13 @@ import Chart.Internal.Type as Type
         , Margin
         , RenderContext(..)
         , defaultConfig
-        , defaultHistogramConfig
         , fromConfig
-        , fromHistogramConfig
         , setColorResource
         , setDimensions
         , setSvgDesc
         , setSvgTitle
         , setXAxis
         , setYAxis
-        , toHistogramConfig
         )
 import Color exposing (Color)
 import Histogram
@@ -65,6 +62,8 @@ import Html exposing (Html)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
+{-| The required config, passed as an argument to the `init` function
+-}
 type alias RequiredConfig =
     { margin : Margin
     , width : Float
@@ -72,49 +71,27 @@ type alias RequiredConfig =
     }
 
 
-{-| The data accessor for generating a histogram.
-It takes a config that is separate from the general config, because it is only used when generating a histogram and
-not for bucketed pre-processed data.
+{-| The steps to build the histogram
+-}
+type alias Steps =
+    List Float
 
-    histoConfig =
-        Histo.initHistogramConfig
-            |> Histo.withSteps [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
+
+{-| The data accessor for generating a histogram.
+It takes a config that is separate from the general config,
+because it is only used when generating a histogram and not for bucketed pre-processed data.
+
+    steps : Steps
+    steps =
+        [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
 
     dataAccessor =
-        Histo.dataAccessor histoConfig accessor
+        Histo.dataAccessor steps accessor
 
 -}
 dataAccessor : HistogramConfig -> (data -> Float) -> AccessorHistogram data
 dataAccessor config acc =
     AccessorHistogram config acc
-
-
-{-| Initialises the config for the histogram data accessor.
-This is separate from the general config, because it is only used when generating a histogram,
-not for pre-processed data that has been already bucketed.
-
-    histoConfig =
-        Histo.initHistogramConfig
-
--}
-initHistogramConfig : HistogramConfig
-initHistogramConfig =
-    defaultHistogramConfig
-
-
-{-| Set the histogram steps in the config for the histogram data accessor.
-
-    histoConfig =
-        Histo.initHistogramConfig
-            |> Histo.withSteps [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
-
--}
-withSteps : List Float -> HistogramConfig -> HistogramConfig
-withSteps steps config =
-    config
-        |> fromHistogramConfig
-        |> (\c -> { c | histogramSteps = steps })
-        |> toHistogramConfig
 
 
 {-| The data accessor for generating a histogram from pre-processed data.
@@ -151,7 +128,7 @@ init c =
 
 {-| Renders the histogram
 
-    Histo.init
+    Histo.init requiredConfig
         |> Histo.render ( data, accessor )
 
 -}
@@ -170,7 +147,7 @@ render ( externalData, acc ) config =
 {-| Set the domain for the HistogramGenerator.
 All values falling outside the domain will be ignored.
 
-    Histo.init
+    Histo.init requiredConfig
         |> Histo.withDomain ( 0, 1 )
         |> Histo.render ( data, accessor )
 
@@ -182,7 +159,7 @@ withDomain domain config =
 
 {-| Set the histogram color
 
-    Histo.init
+    Histo.init requiredConfig
         |> Histo.withColor (Color.rgb255 240 59 32)
         |> Histo.render ( data, accessor )
 
@@ -227,7 +204,7 @@ Defaults to `Scale.tickFormat`
     formatter =
         Numeral.format "0%"
 
-    Histo.init
+    Histo.init requiredConfig
         |> Histo.withYAxisTickFormat formatter
         |> Histo.render (data, accessor)
 
@@ -240,7 +217,7 @@ withYAxisTickFormat f config =
 {-| Sets an accessible, long-text description for the svg chart.
 Default value: ""
 
-    Histo.init
+    Histo.init requiredConfig
         |> Histo.withDesc "This is an accessible chart, with a desc element"
         |> Histo.render ( data, accessor )
 
@@ -253,7 +230,7 @@ withDesc value config =
 {-| Sets an accessible title for the svg chart.
 Default value: ""
 
-    Histo.init
+    Histo.init requiredConfig
         |> Histo.withTitle "This is a chart"
         |> Histo.render ( data, accessor )
 

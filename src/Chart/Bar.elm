@@ -132,11 +132,7 @@ init c =
 
 {-| Renders the bar chart, after initialisation and optional customisations.
 
-    Bar.init
-        { margin = margin
-        , width = width
-        , height = height
-        }
+    Bar.init requiredConfig
         |> Bar.render ( data, accessor )
 
 -}

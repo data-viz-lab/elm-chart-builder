@@ -25,8 +25,6 @@ module Chart.Internal.Type exposing
     , DomainTime
     , DomainTimeStruct
     , ExternalData
-    , HistogramConfig
-    , HistogramConfigStruct
     , Layout(..)
     , LinearDomain
     , Margin
@@ -51,7 +49,6 @@ module Chart.Internal.Type exposing
     , dataLinearGroupToDataTime
     , defaultConfig
     , defaultHeight
-    , defaultHistogramConfig
     , defaultLayout
     , defaultMargin
     , defaultOrientation
@@ -65,7 +62,6 @@ module Chart.Internal.Type exposing
     , fromDomainBand
     , fromDomainLinear
     , fromExternalData
-    , fromHistogramConfig
     , getAxisContinousDataFormatter
     , getBandGroupRange
     , getBandSingleRange
@@ -80,7 +76,6 @@ module Chart.Internal.Type exposing
     , getDomainTimeFromData
     , getHeight
     , getHistogramDomain
-    , getHistogramSteps
     , getIcons
     , getLinearRange
     , getMargin
@@ -113,7 +108,6 @@ module Chart.Internal.Type exposing
     , setDomainTimeX
     , setHeight
     , setHistogramDomain
-    , setHistogramSteps
     , setIcons
     , setLayout
     , setLayoutRestricted
@@ -141,7 +135,6 @@ module Chart.Internal.Type exposing
     , toConfig
     , toDataBand
     , toExternalData
-    , toHistogramConfig
     )
 
 import Chart.Internal.Helpers as Helpers
@@ -186,34 +179,8 @@ type alias AccessorBand data =
 
 
 type AccessorHistogram data
-    = AccessorHistogram HistogramConfig (data -> Float)
+    = AccessorHistogram (List Float) (data -> Float)
     | AccessorHistogramPreProcessed (data -> Histogram.Bin Float Float)
-
-
-type alias HistogramConfigStruct =
-    { histogramSteps : List Float
-    }
-
-
-defaultHistogramConfig : HistogramConfig
-defaultHistogramConfig =
-    toHistogramConfig
-        { histogramSteps = []
-        }
-
-
-type HistogramConfig
-    = HistogramConfig HistogramConfigStruct
-
-
-toHistogramConfig : HistogramConfigStruct -> HistogramConfig
-toHistogramConfig config =
-    HistogramConfig config
-
-
-fromHistogramConfig : HistogramConfig -> HistogramConfigStruct
-fromHistogramConfig (HistogramConfig config) =
-    config
 
 
 type AccessorLinearTime data
@@ -688,15 +655,6 @@ setHistogramDomain domain (Config c) =
     toConfig { c | histogramDomain = Just domain }
 
 
-setHistogramSteps : List Float -> HistogramConfig -> HistogramConfig
-setHistogramSteps steps config =
-    let
-        c =
-            fromHistogramConfig config
-    in
-    toHistogramConfig { c | histogramSteps = steps }
-
-
 setOrientation : Orientation -> Config -> Config
 setOrientation orientation (Config c) =
     toConfig { c | orientation = orientation }
@@ -962,11 +920,6 @@ getHeight config =
 getHistogramDomain : Config -> Maybe ( Float, Float )
 getHistogramDomain config =
     fromConfig config |> .histogramDomain
-
-
-getHistogramSteps : HistogramConfig -> List Float
-getHistogramSteps config =
-    fromHistogramConfig config |> .histogramSteps
 
 
 getWidth : Config -> Float
@@ -1416,7 +1369,7 @@ externalToDataHistogram config externalData accessor =
                             d
 
                 hc =
-                    fromHistogramConfig histogramConfig
+                    histogramConfig
             in
             if List.length hc.histogramSteps > 0 then
                 histogramCustomGenerator domain floatData (Histogram.steps hc.histogramSteps) identity
