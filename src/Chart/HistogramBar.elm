@@ -12,7 +12,7 @@ The histogram bar chart can both generate the histogram data automatically or ac
 
 # Data Accessors
 
-@docs dataAccessor, preProcessedDataAccessor, initHistogramConfig
+@docs dataAccessor, preProcessedDataAccessor
 
 
 # Chart Initialization
@@ -27,7 +27,7 @@ The histogram bar chart can both generate the histogram data automatically or ac
 
 # Configuration setters
 
-@docs withTable, withDomain, withSteps, withColor, withTitle, withDesc, withYAxisTickFormat, withYAxisTicks, withYAxisTickCount, hideAxis, hideYAxis, hideXAxis
+@docs withTable, withDomain, withColor, withTitle, withDesc, withYAxisTickFormat, withYAxisTicks, withYAxisTickCount, hideAxis, hideYAxis, hideXAxis
 
 -}
 

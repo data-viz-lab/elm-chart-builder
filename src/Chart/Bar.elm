@@ -3,7 +3,7 @@ module Chart.Bar exposing
     , init
     , render
     , RequiredConfig
-    , withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
+    , withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
     , noDirection, diverging, horizontal, vertical
     )
 
@@ -36,7 +36,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
+@docs withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
 
 
 # Configuration arguments
@@ -101,7 +101,12 @@ type alias RequiredConfig =
 
 {-| Initializes the bar chart with the required config.
 
-    data : List {groupLabel : String, x : String, y : Float  }
+    data :
+        List
+            { groupLabel : String
+            , x : String
+            , y : Float
+            }
     data =
         [ { groupLabel = "A"
           , x = "a"
@@ -113,12 +118,22 @@ type alias RequiredConfig =
           }
         ]
 
-    accessor : Bar.Accessor {groupLabel : String, x : String, y : Float  }
+    accessor :
+        Bar.Accessor
+            { groupLabel : String
+            , x : String
+            , y : Float
+            }
     accessor =
         Bar.Accessor .groupLabel .x .y
 
     Bar.init
-        { margin = { top = 10, right = 10, bottom = 30, left = 30 }
+        { margin =
+            { top = 10
+            , right = 10
+            , bottom = 30
+            , left = 30
+            }
         , width = 500
         , height = 200
         }
@@ -279,36 +294,36 @@ withColorInterpolator interpolator config =
 {-| Sets the group band domain explicitly. The group data relates to the `xGoup` accessor.
 
     Bar.init requiredConfig
-        |> Bar.withBandGroupDomain [ "0" ]
+        |> Bar.withXGroupDomain [ "0" ]
         |> Bar.render ( data, accessor )
 
 -}
-withBandGroupDomain : Type.BandDomain -> Config -> Config
-withBandGroupDomain value config =
+withXGroupDomain : Type.BandDomain -> Config -> Config
+withXGroupDomain value config =
     Type.setDomainBandBandGroup value config
 
 
 {-| Sets the band domain explicitly. The data relates to the `xValue` accessor.
 
     Bar.init requiredConfig
-        |> Bar.withBandDomain [ "a", "b" ]
+        |> Bar.withXDomain [ "a", "b" ]
         |> Bar.render ( data, accessor )
 
 -}
-withBandDomain : Type.BandDomain -> Config -> Config
-withBandDomain value config =
+withXDomain : Type.BandDomain -> Config -> Config
+withXDomain value config =
     Type.setDomainBandBandSingle value config
 
 
 {-| Sets the linear domain explicitly. The data relates to the `yValue` accessor.
 
     Bar.init requiredConfig
-        |> Bar.withLinearDomain ( 0, 0.55 )
+        |> Bar.withYLinearDomain ( 0, 0.55 )
         |> Bar.render ( data, accessor )
 
 -}
-withLinearDomain : Type.LinearDomain -> Config -> Config
-withLinearDomain value config =
+withYLinearDomain : Type.LinearDomain -> Config -> Config
+withYLinearDomain value config =
     Type.setDomainBandLinear value config
 
 

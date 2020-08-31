@@ -168,7 +168,12 @@ linear acc =
         Line.time (Line.accessorTime .groupLabel .x .y)
 
     Line.init
-        { margin = { top = 10, right = 10, bottom = 30, left = 30 }
+        { margin =
+            { top = 10
+            , right = 10
+            , bottom = 30
+            , left = 30
+            }
         , width = 500
         , height = 200
         }
