@@ -18,6 +18,7 @@ import Chart.Internal.Symbol
         , triangle
         )
 import Chart.Internal.Table as Table
+import Chart.Internal.TableHelpers as Helpers
 import Chart.Internal.Type
     exposing
         ( AccessibilityContent(..)
@@ -243,26 +244,60 @@ renderBandStacked ( data, config ) =
         axisBandScale : BandScale String
         axisBandScale =
             bandGroupScale
+
+        svgEl =
+            svg
+                [ viewBox 0 0 outerW outerH
+                , width outerW
+                , height outerH
+                , role "img"
+                , ariaLabelledby "title desc"
+                ]
+                (descAndTitle c
+                    ++ bandXAxis c axisBandScale
+                    ++ bandGroupedYAxis c 0 linearScaleAxis
+                    ++ [ g
+                            [ transform [ stackedContainerTranslate c m.left m.top (toFloat stackDepth) ]
+                            , class [ "series" ]
+                            ]
+                         <|
+                            List.map (stackedColumns c bandGroupScale)
+                                (List.map2 (\a b -> ( a, b, labels )) columnGroupes scaledValues)
+                       ]
+                )
+
+        tableHeadings =
+            Helpers.dataBandToTableHeadings data
+                |> Table.ComplexHeadings
+
+        tableData =
+            Helpers.dataBandToTableData data
+
+        table =
+            Table.generate tableData
+                |> Table.setColumnHeadings tableHeadings
+                |> Table.view
+
+        tableEl =
+            Helpers.invisibleFigcaption
+                [ case table of
+                    Ok table_ ->
+                        Html.div [] [ table_ ]
+
+                    Err error ->
+                        Html.text (Table.errorToString error)
+                ]
     in
-    svg
-        [ viewBox 0 0 outerW outerH
-        , width outerW
-        , height outerH
-        , role "img"
-        , ariaLabelledby "title desc"
-        ]
-        (descAndTitle c
-            ++ bandXAxis c axisBandScale
-            ++ bandGroupedYAxis c 0 linearScaleAxis
-            ++ [ g
-                    [ transform [ stackedContainerTranslate c m.left m.top (toFloat stackDepth) ]
-                    , class [ "series" ]
-                    ]
-                 <|
-                    List.map (stackedColumns c bandGroupScale)
-                        (List.map2 (\a b -> ( a, b, labels )) columnGroupes scaledValues)
-               ]
-        )
+    case c.accessibilityContent of
+        AccessibilityTable ->
+            Html.div []
+                [ Html.figure
+                    []
+                    [ svgEl, tableEl ]
+                ]
+
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
 
 
 stackedContainerTranslate : ConfigStruct -> Float -> Float -> Float -> Transform
@@ -377,9 +412,6 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
 renderBandGrouped : ( DataBand, Config ) -> Html msg
 renderBandGrouped ( data, config ) =
     let
-        _ =
-            Debug.log "data" data
-
         c =
             fromConfig config
 
@@ -466,11 +498,11 @@ renderBandGrouped ( data, config ) =
                 bandSingleScale
 
         tableHeadings =
-            Table.dataBandToTableHeadings data
+            Helpers.dataBandToTableHeadings data
                 |> Table.ComplexHeadings
 
         tableData =
-            Table.dataBandToTableData data
+            Helpers.dataBandToTableData data
 
         table =
             Table.generate tableData
@@ -483,6 +515,8 @@ renderBandGrouped ( data, config ) =
                 , width outerW
                 , height outerH
                 , role "img"
+
+                --TODO: this should only exist if we have a title and/or a desc
                 , ariaLabelledby "title desc"
                 ]
             <|

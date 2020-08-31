@@ -5,11 +5,13 @@ module Chart.Internal.Helpers exposing
     , floorValues
     , invisibleFigcaption
     , mergeStyles
+    , toUtcString
     )
 
 import Color exposing (Color)
 import Html exposing (Html)
 import Html.Attributes
+import Time exposing (toHour, toMinute, toSecond, utc)
 
 
 floorFloat : Float -> Float
@@ -100,3 +102,13 @@ invisibleFigcaption content =
         , Html.Attributes.style "width" "1px"
         ]
         content
+
+
+toUtcString : Time.Posix -> String
+toUtcString time =
+    String.fromInt (toHour utc time)
+        ++ ":"
+        ++ String.fromInt (toMinute utc time)
+        ++ ":"
+        ++ String.fromInt (toSecond utc time)
+        ++ " (UTC)"

@@ -3,7 +3,7 @@ module Chart.Line exposing
     , init
     , render
     , RequiredConfig
-    , withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout
+    , withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout
     , withSymbols
     )
 
@@ -34,7 +34,7 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 
 # Configuration setters
 
-@docs withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout
+@docs withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout
 
 @docs withSymbols
 
@@ -48,7 +48,8 @@ import Chart.Internal.Line
 import Chart.Internal.Symbol as InternalSymbol exposing (Symbol(..))
 import Chart.Internal.Type as Type
     exposing
-        ( AxisContinousDataTickCount(..)
+        ( AccessibilityContent(..)
+        , AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
@@ -402,6 +403,18 @@ If set on a linear line chart this setting will have no effect.
 withXLinearDomain : ( Float, Float ) -> Config -> Config
 withXLinearDomain value config =
     Type.setDomainLinearX value config
+
+
+{-| Build an alternative table content for accessibility
+
+    Line.init requiredConfig
+        |> Line.withTable
+        |> Line.render ( data, accessor )
+
+-}
+withTable : Config -> Config
+withTable =
+    Type.setAccessibilityContent AccessibilityTable
 
 
 {-| Sets an accessible, long-text description for the svg chart.

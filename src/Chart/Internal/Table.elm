@@ -2,8 +2,6 @@ module Chart.Internal.Table exposing
     ( ComplexHeading(..)
     , Headings(..)
     , TableError(..)
-    , dataBandToTableData
-    , dataBandToTableHeadings
     , errorToString
     , generate
     , hideColumnHeadings
@@ -498,36 +496,3 @@ view config =
 
         Err error ->
             Err error
-
-
-
--- CHART HELPERS
-
-
-dataBandToTableData : DataBand -> List (List String)
-dataBandToTableData data =
-    data
-        |> fromDataBand
-        |> List.map .points
-        |> List.map
-            (\points ->
-                points
-                    |> List.map (\p -> ( Tuple.first p, Tuple.second p |> String.fromFloat ))
-            )
-        |> List.transpose
-        |> List.map
-            (\points ->
-                points
-                    |> List.map (\p -> [ Tuple.first p, Tuple.second p ])
-                    |> List.concat
-            )
-
-
-dataBandToTableHeadings : DataBand -> List ComplexHeading
-dataBandToTableHeadings data =
-    data
-        |> fromDataBand
-        |> List.map
-            (\d ->
-                HeadingAndSubHeadings (Maybe.withDefault "" d.groupLabel) [ "x", "y" ]
-            )
