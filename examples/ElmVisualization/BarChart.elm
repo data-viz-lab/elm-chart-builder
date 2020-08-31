@@ -34,6 +34,10 @@ body {
 text {
     fill: #333;
 }
+
+figure {
+    margin: 0;
+}
 """
 
 

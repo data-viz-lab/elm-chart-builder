@@ -3,7 +3,7 @@ module Chart.Bar exposing
     , init
     , render
     , RequiredConfig
-    , withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
+    , withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
     , noDirection, diverging, horizontal, vertical
     )
 
@@ -36,7 +36,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
+@docs withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withBandGroupDomain, withBandDomain, withLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
 
 
 # Configuration arguments
@@ -53,7 +53,8 @@ import Chart.Internal.Bar
 import Chart.Internal.Symbol as InternalSymbol exposing (Symbol(..))
 import Chart.Internal.Type as Type
     exposing
-        ( AxisContinousDataTickCount(..)
+        ( AccessibilityContent(..)
+        , AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
@@ -394,6 +395,18 @@ If used together with symbols, the label will be drawn on top of the symbol.
 withXLabels : Config -> Config
 withXLabels =
     Type.showXOrdinalLabel
+
+
+{-| Build an alternative table content for accessibility
+
+    Bar.init requiredConfig
+        |> Bar.withTable
+        |> Bar.render ( data, accessor )
+
+-}
+withTable : Config -> Config
+withTable =
+    Type.setAccessibilityContent AccessibilityTable
 
 
 {-| Show the Y numerical values at the end of the bars.

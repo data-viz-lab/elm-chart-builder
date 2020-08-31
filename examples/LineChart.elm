@@ -40,6 +40,10 @@ css =
 .line {
     stroke-width: 2px;
 }
+
+figure {
+    margin: 0;
+}
 """
 
 
@@ -122,6 +126,7 @@ doubleLine =
         |> Line.withYAxisTickCount 5
         |> Line.withXAxisTickCount 5
         |> Line.withGroupedLayout
+        |> Line.withTable
         |> Line.withSymbols (icons "chart-b")
         |> Line.render ( data, accessor )
 

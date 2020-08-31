@@ -16,9 +16,12 @@ import Chart.Internal.Symbol
         , symbolToId
         , triangle
         )
+import Chart.Internal.Table as Table
+import Chart.Internal.TableHelpers as Helpers
 import Chart.Internal.Type
     exposing
-        ( AccessorLinearTime(..)
+        ( AccessibilityContent(..)
+        , AccessorLinearTime(..)
         , AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
@@ -215,98 +218,93 @@ renderLineGrouped ( data, config ) =
 
         colorSymbol idx =
             colorStyle c (Just idx) Nothing
-    in
-    svg
-        [ viewBox 0 0 outerW outerH
-        , width outerW
-        , height outerH
-        , role "img"
-        , ariaLabelledby "title desc"
-        ]
-    <|
-        symbolElements config
-            ++ descAndTitle c
-            ++ linearAxisGenerator c Y yScale
-            ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
-            ++ [ g
-                    [ transform [ Translate m.left m.top ]
-                    , class [ "series" ]
-                    ]
-                 <|
-                    List.indexedMap
-                        (\idx d ->
-                            Path.element (line d)
-                                [ class [ "line", "line-" ++ String.fromInt idx ]
-                                , color idx
-                                    |> style
-                                ]
-                        )
-                        sortedLinearData
-               ]
-            ++ [ g
-                    [ transform [ Translate m.left m.top ]
-                    , class [ "series" ]
-                    ]
-                    (sortedLinearData
-                        |> List.indexedMap
-                            (\idx d ->
-                                d.points
-                                    |> List.map
-                                        (\( x, y ) ->
-                                            drawSymbol config
-                                                { idx = idx
-                                                , x = Scale.convert xLinearScale x
-                                                , y = Scale.convert yScale y
-                                                , styleStr = colorSymbol idx
-                                                }
-                                        )
+
+        tableHeadings =
+            Helpers.dataLinearGroupToTableHeadings data
+                |> Table.ComplexHeadings
+
+        tableData =
+            Helpers.dataLinearGroupToTableData data
+
+        table =
+            Table.generate tableData
+                |> Table.setColumnHeadings tableHeadings
+                |> Table.view
+
+        svgEl =
+            svg
+                [ viewBox 0 0 outerW outerH
+                , width outerW
+                , height outerH
+                , role "img"
+                , ariaLabelledby "title desc"
+                ]
+            <|
+                symbolElements config
+                    ++ descAndTitle c
+                    ++ linearAxisGenerator c Y yScale
+                    ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
+                    ++ [ g
+                            [ transform [ Translate m.left m.top ]
+                            , class [ "series" ]
+                            ]
+                         <|
+                            List.indexedMap
+                                (\idx d ->
+                                    Path.element (line d)
+                                        [ class [ "line", "line-" ++ String.fromInt idx ]
+                                        , color idx
+                                            |> style
+                                        ]
+                                )
+                                sortedLinearData
+                       ]
+                    ++ [ g
+                            [ transform [ Translate m.left m.top ]
+                            , class [ "series" ]
+                            ]
+                            (sortedLinearData
+                                |> List.indexedMap
+                                    (\idx d ->
+                                        d.points
+                                            |> List.map
+                                                (\( x, y ) ->
+                                                    drawSymbol config
+                                                        { idx = idx
+                                                        , x = Scale.convert xLinearScale x
+                                                        , y = Scale.convert yScale y
+                                                        , styleStr = colorSymbol idx
+                                                        }
+                                                )
+                                    )
+                                |> List.concat
+                                |> List.concat
                             )
-                        |> List.concat
-                        |> List.concat
-                    )
-               ]
+                       ]
+
+        tableEl =
+            Helpers.invisibleFigcaption
+                [ case table of
+                    Ok table_ ->
+                        Html.div [] [ table_ ]
+
+                    Err error ->
+                        Html.text (Table.errorToString error)
+                ]
+    in
+    case c.accessibilityContent of
+        AccessibilityTable ->
+            Html.div []
+                [ Html.figure
+                    []
+                    [ svgEl, tableEl ]
+                ]
+
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
 
 
 
---++ [ g
---        [ transform [ Translate m.left m.top ]
---        , class [ "points" ]
---        ]
---     <|
---        List.indexedMap
---            (\idx d ->
---                g
---                    [ class
---                        [ "line-point"
---                        , "line-point-" ++ String.fromInt idx
---                        ]
---                    ]
---                <|
---                    List.map
---                        (\( dx, dy ) ->
---                            g
---                                [ fillOpacity (Opacity 0)
---                                , stroke (Paint Color.black)
---                                , transform
---                                    [ Translate
---                                        (Scale.convert
---                                            xLinearScale
---                                            dx
---                                            - 6
---                                        )
---                                        (Scale.convert
---                                            yScale
---                                            dy
---                                            - 6
---                                        )
---                                    ]
---                                ]
---                                [ circle_ 6 ]
---                        )
---                        d
---            )
---            sortedPoints
---   ]
 -- STACKED
 
 
@@ -426,56 +424,90 @@ renderLineStacked ( data, config ) =
             points
                 |> List.map lineGenerator
                 |> Shape.line c.curve
-    in
-    svg
-        [ viewBox 0 0 outerW outerH
-        , width outerW
-        , height outerH
-        , role "img"
-        , ariaLabelledby "title desc"
-        ]
-    <|
-        symbolElements config
-            ++ descAndTitle c
-            ++ linearAxisGenerator c Y yScale
-            ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
-            ++ [ g
-                    [ transform [ Translate m.left m.top ]
-                    , class [ "series" ]
-                    ]
-                 <|
-                    List.indexedMap
-                        (\idx d ->
-                            Path.element (line d)
-                                [ class [ "line", "line-" ++ String.fromInt idx ]
-                                , color idx
-                                    |> style
-                                ]
-                        )
-                        combinedData
-               ]
-            ++ [ g
-                    [ transform [ Translate m.left m.top ]
-                    , class [ "series" ]
-                    ]
-                    (combinedData
-                        |> List.indexedMap
-                            (\idx d ->
-                                d
-                                    |> List.map
-                                        (\( x, y ) ->
-                                            drawSymbol config
-                                                { idx = idx
-                                                , x = Scale.convert xLinearScale x
-                                                , y = Scale.convert yScale y
-                                                , styleStr = colorSymbol idx
-                                                }
-                                        )
+
+        tableHeadings =
+            Helpers.dataLinearGroupToTableHeadings data
+                |> Table.ComplexHeadings
+
+        tableData =
+            Helpers.dataLinearGroupToTableData data
+
+        table =
+            Table.generate tableData
+                |> Table.setColumnHeadings tableHeadings
+                |> Table.view
+
+        svgEl =
+            svg
+                [ viewBox 0 0 outerW outerH
+                , width outerW
+                , height outerH
+                , role "img"
+                , ariaLabelledby "title desc"
+                ]
+            <|
+                symbolElements config
+                    ++ descAndTitle c
+                    ++ linearAxisGenerator c Y yScale
+                    ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
+                    ++ [ g
+                            [ transform [ Translate m.left m.top ]
+                            , class [ "series" ]
+                            ]
+                         <|
+                            List.indexedMap
+                                (\idx d ->
+                                    Path.element (line d)
+                                        [ class [ "line", "line-" ++ String.fromInt idx ]
+                                        , color idx
+                                            |> style
+                                        ]
+                                )
+                                combinedData
+                       ]
+                    ++ [ g
+                            [ transform [ Translate m.left m.top ]
+                            , class [ "series" ]
+                            ]
+                            (combinedData
+                                |> List.indexedMap
+                                    (\idx d ->
+                                        d
+                                            |> List.map
+                                                (\( x, y ) ->
+                                                    drawSymbol config
+                                                        { idx = idx
+                                                        , x = Scale.convert xLinearScale x
+                                                        , y = Scale.convert yScale y
+                                                        , styleStr = colorSymbol idx
+                                                        }
+                                                )
+                                    )
+                                |> List.concat
+                                |> List.concat
                             )
-                        |> List.concat
-                        |> List.concat
-                    )
-               ]
+                       ]
+
+        tableEl =
+            Helpers.invisibleFigcaption
+                [ case table of
+                    Ok table_ ->
+                        Html.div [] [ table_ ]
+
+                    Err error ->
+                        Html.text (Table.errorToString error)
+                ]
+    in
+    case c.accessibilityContent of
+        AccessibilityTable ->
+            Html.div []
+                [ Html.figure
+                    []
+                    [ svgEl, tableEl ]
+                ]
+
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
 
 
 timeAxisGenerator : ConfigStruct -> AxisType -> Maybe (ContinuousScale Posix) -> List (Svg msg)
