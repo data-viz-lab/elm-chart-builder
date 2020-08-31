@@ -41,6 +41,10 @@ body {
 text {
     fill: #333;
 }
+
+figure {
+    margin: 0;
+}
 """
 
 
@@ -146,13 +150,13 @@ accessor =
     identity
 
 
-histoConfig =
-    Histo.initHistogramConfig
-        |> Histo.withSteps [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
+steps : List Float
+steps =
+    [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
 
 
 dataAccessor =
-    Histo.dataAccessor histoConfig accessor
+    Histo.dataAccessor steps accessor
 
 
 histo : Html msg
@@ -164,6 +168,7 @@ histo =
         }
         |> Histo.withDomain ( 0, 1 )
         |> Histo.withColor color
+        |> Histo.withTable
         |> Histo.render ( data, dataAccessor )
 
 

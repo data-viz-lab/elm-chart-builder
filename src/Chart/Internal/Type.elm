@@ -37,6 +37,7 @@ module Chart.Internal.Type exposing
     , RenderContext(..)
     , ShowLabel(..)
     , StackedValues
+    , Steps
     , adjustLinearRange
     , ariaLabelledby
     , bottomGap
@@ -180,8 +181,12 @@ type alias AccessorBand data =
     }
 
 
+type alias Steps =
+    List Float
+
+
 type AccessorHistogram data
-    = AccessorHistogram (List Float) (data -> Float)
+    = AccessorHistogram Steps (data -> Float)
     | AccessorHistogramPreProcessed (data -> Histogram.Bin Float Float)
 
 
@@ -1365,7 +1370,7 @@ externalToDataHistogram config externalData accessor =
             fromExternalData externalData
     in
     case accessor of
-        AccessorHistogram histogramConfig toFloat ->
+        AccessorHistogram bins toFloat ->
             let
                 floatData =
                     data
@@ -1381,12 +1386,9 @@ externalToDataHistogram config externalData accessor =
 
                         Just d ->
                             d
-
-                hc =
-                    histogramConfig
             in
-            if List.length hc.histogramSteps > 0 then
-                histogramCustomGenerator domain floatData (Histogram.steps hc.histogramSteps) identity
+            if List.isEmpty bins |> not then
+                histogramCustomGenerator domain floatData (Histogram.steps bins) identity
 
             else
                 histogramDefaultGenerator domain floatData

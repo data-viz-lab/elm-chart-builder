@@ -2,7 +2,7 @@ module Chart.HistogramBar exposing
     ( dataAccessor, preProcessedDataAccessor
     , init
     , render
-    , withDomain, withColor, withTitle, withDesc, withYAxisTickFormat, withYAxisTicks, withYAxisTickCount, hideAxis, hideYAxis, hideXAxis
+    , withTable, withDomain, withColor, withTitle, withDesc, withYAxisTickFormat, withYAxisTicks, withYAxisTickCount, hideAxis, hideYAxis, hideXAxis
     )
 
 {-| This is the histogram chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -27,7 +27,7 @@ The histogram bar chart can both generate the histogram data automatically or ac
 
 # Configuration setters
 
-@docs withDomain, withSteps, withColor, withTitle, withDesc, withYAxisTickFormat, withYAxisTicks, withYAxisTickCount, hideAxis, hideYAxis, hideXAxis
+@docs withTable, withDomain, withSteps, withColor, withTitle, withDesc, withYAxisTickFormat, withYAxisTicks, withYAxisTickCount, hideAxis, hideYAxis, hideXAxis
 
 -}
 
@@ -37,14 +37,14 @@ import Chart.Internal.Bar
         )
 import Chart.Internal.Type as Type
     exposing
-        ( AccessorHistogram(..)
+        ( AccessibilityContent(..)
+        , AccessorHistogram(..)
         , AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
         , ColorResource(..)
         , Config
-        , HistogramConfig
         , Margin
         , RenderContext(..)
         , defaultConfig
@@ -89,9 +89,9 @@ because it is only used when generating a histogram and not for bucketed pre-pro
         Histo.dataAccessor steps accessor
 
 -}
-dataAccessor : HistogramConfig -> (data -> Float) -> AccessorHistogram data
-dataAccessor config acc =
-    AccessorHistogram config acc
+dataAccessor : Steps -> (data -> Float) -> AccessorHistogram data
+dataAccessor bins acc =
+    AccessorHistogram bins acc
 
 
 {-| The data accessor for generating a histogram from pre-processed data.
@@ -116,7 +116,7 @@ preProcessedDataAccessor acc =
 
 {-| Initializes the histogram bar chart with a default config.
 
-    Histo.init
+    Histo.init requiredConfig
         |> Histo.render ( data, accessor )
 
 -}
@@ -142,6 +142,18 @@ render ( externalData, acc ) config =
             Type.externalToDataHistogram config (Type.toExternalData externalData) acc
     in
     renderHistogram ( data, config )
+
+
+{-| Build an alternative table content for accessibility
+
+    Histo.init requiredConfig
+        |> Histo.withTable
+        |> Histo.render ( data, accessor )
+
+-}
+withTable : Config -> Config
+withTable =
+    Type.setAccessibilityContent AccessibilityTable
 
 
 {-| Set the domain for the HistogramGenerator.

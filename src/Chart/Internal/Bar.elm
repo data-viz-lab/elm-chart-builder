@@ -1142,25 +1142,65 @@ renderHistogram ( histogram, config ) =
                 ]
                 [ Axis.left yAttributes (yScaleFromBins bins) ]
             ]
+
+        tableHeadings =
+            Table.Headings [ "length", "x0", "x1" ]
+
+        tableData =
+            histogram
+                |> List.map
+                    (\d ->
+                        [ d.length |> String.fromInt
+                        , d.x0 |> String.fromFloat
+                        , d.x1 |> String.fromFloat
+                        ]
+                    )
+
+        table =
+            Table.generate tableData
+                |> Table.setColumnHeadings tableHeadings
+                |> Table.view
+
+        tableEl =
+            Helpers.invisibleFigcaption
+                [ case table of
+                    Ok table_ ->
+                        Html.div [] [ table_ ]
+
+                    Err error ->
+                        Html.text (Table.errorToString error)
+                ]
+
+        svgEl =
+            svg
+                [ viewBox 0 0 outerW outerH
+                , width outerW
+                , height outerH
+                , role "img"
+                , ariaLabelledby "title desc"
+                ]
+            <|
+                descAndTitle c
+                    ++ xAxis (calculateHistogramValues histogram)
+                    ++ yAxis histogram
+                    ++ [ g
+                            [ transform [ Translate m.left m.top ]
+                            , class [ "series" ]
+                            ]
+                         <|
+                            List.map (histogramColumn c h xScale (yScaleFromBins histogram)) histogram
+                       ]
     in
-    svg
-        [ viewBox 0 0 outerW outerH
-        , width outerW
-        , height outerH
-        , role "img"
-        , ariaLabelledby "title desc"
-        ]
-    <|
-        descAndTitle c
-            ++ xAxis (calculateHistogramValues histogram)
-            ++ yAxis histogram
-            ++ [ g
-                    [ transform [ Translate m.left m.top ]
-                    , class [ "series" ]
-                    ]
-                 <|
-                    List.map (histogramColumn c h xScale (yScaleFromBins histogram)) histogram
-               ]
+    case c.accessibilityContent of
+        AccessibilityTable ->
+            Html.div []
+                [ Html.figure
+                    []
+                    [ svgEl, tableEl ]
+                ]
+
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
 
 
 histogramColumn :
