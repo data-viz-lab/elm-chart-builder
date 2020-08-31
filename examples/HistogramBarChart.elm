@@ -168,7 +168,6 @@ histo =
         }
         |> Histo.withDomain ( 0, 1 )
         |> Histo.withColor color
-        |> Histo.withTable
         |> Histo.render ( data, dataAccessor )
 
 

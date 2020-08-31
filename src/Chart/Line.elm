@@ -407,6 +407,9 @@ withXLinearDomain value config =
 
 {-| Build an alternative table content for accessibility
 
+&#9888; This is still work in progress and only a basic table is rendered with this option.
+For now it is best to only use it with a limited number of data points.
+
     Line.init requiredConfig
         |> Line.withTable
         |> Line.render ( data, accessor )

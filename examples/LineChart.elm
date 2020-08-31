@@ -126,7 +126,6 @@ doubleLine =
         |> Line.withYAxisTickCount 5
         |> Line.withXAxisTickCount 5
         |> Line.withGroupedLayout
-        |> Line.withTable
         |> Line.withSymbols (icons "chart-b")
         |> Line.render ( data, accessor )
 
