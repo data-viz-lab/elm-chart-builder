@@ -3,7 +3,7 @@ module Chart.Bar exposing
     , init
     , render
     , RequiredConfig
-    , withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
+    , withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
     , noDirection, diverging, horizontal, vertical
     )
 
@@ -36,7 +36,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYLinearDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
+@docs withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
 
 
 # Configuration arguments
@@ -318,12 +318,12 @@ withXDomain value config =
 {-| Sets the linear domain explicitly. The data relates to the `yValue` accessor.
 
     Bar.init requiredConfig
-        |> Bar.withYLinearDomain ( 0, 0.55 )
+        |> Bar.withYDomain ( 0, 0.55 )
         |> Bar.render ( data, accessor )
 
 -}
-withYLinearDomain : Type.LinearDomain -> Config -> Config
-withYLinearDomain value config =
+withYDomain : Type.LinearDomain -> Config -> Config
+withYDomain value config =
     Type.setDomainBandLinear value config
 
 
