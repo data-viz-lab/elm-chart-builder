@@ -298,7 +298,7 @@ withColorInterpolator interpolator config =
         |> Bar.render ( data, accessor )
 
 -}
-withXGroupDomain : Type.BandDomain -> Config -> Config
+withXGroupDomain : List String -> Config -> Config
 withXGroupDomain value config =
     Type.setDomainBandBandGroup value config
 
@@ -310,7 +310,7 @@ withXGroupDomain value config =
         |> Bar.render ( data, accessor )
 
 -}
-withXDomain : Type.BandDomain -> Config -> Config
+withXDomain : List String -> Config -> Config
 withXDomain value config =
     Type.setDomainBandBandSingle value config
 
@@ -322,7 +322,7 @@ withXDomain value config =
         |> Bar.render ( data, accessor )
 
 -}
-withYDomain : Type.LinearDomain -> Config -> Config
+withYDomain : ( Float, Float ) -> Config -> Config
 withYDomain value config =
     Type.setDomainBandLinear value config
 
