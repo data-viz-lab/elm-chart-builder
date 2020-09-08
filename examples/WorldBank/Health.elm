@@ -233,7 +233,7 @@ decodeItem =
 fetchDatasetHealthData : Cmd Msg
 fetchDatasetHealthData =
     Http.get
-        { url = "http://api.worldbank.org/v2/country/all/indicator/SH.STA.MALN.ZS?format=json&date=2000&per_page=370"
+        { url = "https://api.worldbank.org/v2/country/all/indicator/SH.STA.MALN.ZS?format=json&date=2000&per_page=370"
         , expect = Http.expectJson (RemoteData.fromResult >> HealthDataResponse) decodeData
         }
 
@@ -241,7 +241,7 @@ fetchDatasetHealthData =
 fetchDatasetUrbanData : Cmd Msg
 fetchDatasetUrbanData =
     Http.get
-        { url = "http://api.worldbank.org/v2/country/all/indicator/EN.URB.MCTY.TL.ZS?format=json&date=2000&per_page=370"
+        { url = "https://api.worldbank.org/v2/country/all/indicator/EN.URB.MCTY.TL.ZS?format=json&date=2000&per_page=370"
         , expect = Http.expectJson (RemoteData.fromResult >> UrbanDataResponse) decodeData
         }
 
