@@ -1,4 +1,4 @@
-module RealData.Smoking exposing (main)
+module UKOpenData.Smoking exposing (main)
 
 {-| This module shows how to build a line chart.
 -}

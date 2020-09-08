@@ -1437,7 +1437,6 @@ externalToDataBand externalData accessor =
                 }
             )
         |> DataBand
-        |> Debug.log "post"
 
 
 externalToDataLinearGroup : ExternalData data -> AccessorLinearTime data -> DataLinearGroup

@@ -27,7 +27,7 @@ suite =
                         config : Type.Config
                         config =
                             Bar.init requiredConfig
-                                |> Bar.withBandGroupDomain bandGroup
+                                |> Bar.withXGroupDomain bandGroup
 
                         newBandGroup =
                             config
@@ -47,7 +47,7 @@ suite =
                         config : Type.Config
                         config =
                             Bar.init requiredConfig
-                                |> Bar.withBandDomain bandSingle
+                                |> Bar.withXDomain bandSingle
 
                         newBandSingle =
                             config
@@ -66,7 +66,7 @@ suite =
                         config : Type.Config
                         config =
                             Bar.init requiredConfig
-                                |> Bar.withLinearDomain linearDomain
+                                |> Bar.withYLinearDomain linearDomain
 
                         newLinearDomain =
                             config
