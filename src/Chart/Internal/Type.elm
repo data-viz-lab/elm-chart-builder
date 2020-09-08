@@ -148,6 +148,7 @@ import Html
 import Html.Attributes
 import List.Extra
 import Scale exposing (BandScale)
+import Set
 import Shape
 import Statistics
 import SubPath exposing (SubPath)
@@ -990,6 +991,9 @@ getDomainBandFromData data config =
                     d
                         |> List.map .groupLabel
                         |> List.indexedMap (\i g -> g |> Maybe.withDefault (String.fromInt i))
+                        -- remove duplicates from the data
+                        --|> Set.fromList
+                        --|> Set.toList
                         |> Just
         , bandSingle =
             case domain.bandSingle of
@@ -1404,8 +1408,11 @@ externalToDataBand externalData accessor =
             fromExternalData externalData
     in
     data
+        |> List.sortBy (accessor.xGroup >> Maybe.withDefault "")
         |> List.Extra.groupWhile
-            (\a b -> accessor.xGroup a == accessor.xGroup b)
+            (\a b ->
+                accessor.xGroup a == accessor.xGroup b
+            )
         |> List.map
             (\d ->
                 let
@@ -1430,6 +1437,7 @@ externalToDataBand externalData accessor =
                 }
             )
         |> DataBand
+        |> Debug.log "post"
 
 
 externalToDataLinearGroup : ExternalData data -> AccessorLinearTime data -> DataLinearGroup
