@@ -627,17 +627,6 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
         stl =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
 
-        label =
-            verticalLabel config (x_ + w / 2) (y_ - labelGap) point
-
-        x_ =
-            Helpers.floorFloat <| Scale.convert bandSingleScale x__
-
-        y_ =
-            Scale.convert linearScale y__
-                + iconOffset
-                |> Helpers.floorFloat
-
         w =
             Helpers.floorFloat <| Scale.bandwidth bandSingleScale
 
@@ -645,6 +634,17 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
             getHeight (toConfig c)
                 - Scale.convert linearScale y__
                 - iconOffset
+                |> Helpers.floorFloat
+
+        label =
+            verticalLabel config (x_ + w / 2) (y_ - labelGap - w) point
+
+        x_ =
+            Helpers.floorFloat <| Scale.convert bandSingleScale x__
+
+        y_ =
+            Scale.convert linearScale y__
+                + iconOffset
                 |> Helpers.floorFloat
 
         symbol =
@@ -692,7 +692,7 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
 
         label =
-            horizontalLabel config (w + labelGap) (y_ + h / 2) point
+            horizontalLabel config (w + labelGap + h) (y_ + h / 2) point
 
         symbol =
             horizontalSymbol config { idx = idx, w = w, y_ = y_, h = h, styleStr = stl }
