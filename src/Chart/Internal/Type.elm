@@ -121,6 +121,7 @@ module Chart.Internal.Type exposing
     , setSvgTitle
     , setWidth
     , setXAxis
+    , setXAxisConfix
     , setXAxisContinousTickCount
     , setXAxisContinousTickFormat
     , setXAxisContinousTicks
@@ -140,6 +141,7 @@ module Chart.Internal.Type exposing
     , toExternalData
     )
 
+import Axis
 import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
 import Color exposing (Color)
@@ -394,8 +396,30 @@ type AccessibilityContent
 -- CONFIG
 
 
+type alias AxisBandConfig =
+    { ticks : BandDomain -> Int -> List String
+    , domain : BandDomain
+    , tickFormat : BandDomain -> Int -> String -> String
+    , convert : BandDomain -> ( Float, Float ) -> String -> Float
+    , range : ( Float, Float )
+    , rangeExtent : BandDomain -> ( Float, Float ) -> ( Float, Float )
+    }
+
+
+defaultAxisBandConfig : AxisBandConfig
+defaultAxisBandConfig =
+    { ticks = \_ _ -> []
+    , domain = []
+    , tickFormat = \_ _ _ -> ""
+    , convert = \_ _ _ -> 0
+    , range = ( 0, 0 )
+    , rangeExtent = \_ _ -> ( 0, 0 )
+    }
+
+
 type alias ConfigStruct =
     { accessibilityContent : AccessibilityContent
+    , axisXConfix : AxisBandConfig
     , axisXContinousTickCount : AxisContinousDataTickCount
     , axisXContinousTickFormat : AxisContinousDataTickFormat
     , axisXContinousTicks : AxisContinousDataTicks
@@ -429,6 +453,7 @@ defaultConfig : Config
 defaultConfig =
     toConfig
         { accessibilityContent = AccessibilityNone
+        , axisXConfix = defaultAxisBandConfig
         , axisXContinousTickCount = DefaultTickCount
         , axisXContinousTickFormat = DefaultTickFormat
         , axisXContinousTicks = DefaultTicks
@@ -629,6 +654,11 @@ setSvgDesc desc (Config c) =
 setSvgTitle : String -> Config -> Config
 setSvgTitle title (Config c) =
     toConfig { c | svgTitle = title }
+
+
+setXAxisConfix : AxisBandConfig -> Config -> Config
+setXAxisConfix axisConfig (Config c) =
+    toConfig { c | axisXConfix = axisConfig }
 
 
 setXAxisContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config

@@ -45,6 +45,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 -}
 
+import Axis
 import Chart.Internal.Bar
     exposing
         ( renderBandGrouped
@@ -54,6 +55,7 @@ import Chart.Internal.Symbol as InternalSymbol exposing (Symbol(..))
 import Chart.Internal.Type as Type
     exposing
         ( AccessibilityContent(..)
+        , AxisBandConfig
         , AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
@@ -532,3 +534,8 @@ one upon another.
 noDirection : Direction
 noDirection =
     Type.NoDirection
+
+
+axis : AxisBandConfig
+axis =
+    AxisBandConfig
