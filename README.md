@@ -1,4 +1,4 @@
-![elm-chart-builder](https://raw.githubusercontent.com/data-viz-lab/elm-chart-builder/master/elm-chart-builder-example-small.png "elm-chart-builder-example")
+![elm-chart-builder](https://raw.githubusercontent.com/data-viz-lab/elm-chart-builder/master/images/world-bank-example.png "elm-chart-builder-example")
 
 # elm-chart-builder
 An opinionated and accessible charting library for Elm based on [gampleman/elm-visualization](https://github.com/gampleman/elm-visualization) and [elm-community/typed-svg](https://package.elm-lang.org/packages/elm-community/typed-svg/latest/).
