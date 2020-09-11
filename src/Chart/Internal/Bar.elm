@@ -624,6 +624,13 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
         c =
             fromConfig config
 
+        labelOffset =
+            if List.isEmpty c.icons then
+                0
+
+            else
+                w
+
         stl =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
 
@@ -637,7 +644,7 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
                 |> Helpers.floorFloat
 
         label =
-            verticalLabel config (x_ + w / 2) (y_ - labelGap - w) point
+            verticalLabel config (x_ + w / 2) (y_ - labelGap - labelOffset) point
 
         x_ =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
@@ -691,8 +698,15 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
         stl =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
 
+        labelOffset =
+            if List.isEmpty c.icons then
+                0
+
+            else
+                h
+
         label =
-            horizontalLabel config (w + labelGap + h) (y_ + h / 2) point
+            horizontalLabel config (w + labelGap + labelOffset) (y_ + h / 2) point
 
         symbol =
             horizontalSymbol config { idx = idx, w = w, y_ = y_, h = h, styleStr = stl }
