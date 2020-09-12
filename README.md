@@ -10,12 +10,15 @@ All chart modules are being developed with full accessibility in mind (work in p
 
 ## Core concepts
 
-* For all charts the building process starts by passing a required config to the init function.
-* The required config includes the width, height and margin of the chart.
-* After initialisation, an extensive list of optional configuration functions can be passed in a pipeline.
-* The pipeline is closed with a render function, that takes the configuration from the pipeline together with the data and a data accessor.
-* The data is a flat list of generic items that must at least contain an xValue and a yValue value and an optional xGroup value.
-* The accessor is a function that tells the library how to access the xValue, yValue and xGroup fields.
+To build a chart you need:
+- Your data
+- An accessor function that tells elm-chart-builder how to get x and y values from the data, and how to group them.
+- A configuration (data structure) that tells elm-chart-builder how the chart should look
+
+Build your configuration in a pipeline: 
+- Start with ['init'](link to the function if you can), which takes all the mandatory parameters,
+- pipe through functions that set options,
+- and end with ['render']() which which takes your data and accessor and returns your chart as  `Html msg`.
 
 ```elm
 Bar.init
