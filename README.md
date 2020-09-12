@@ -16,9 +16,9 @@ To build a chart you need:
 - A configuration (data structure) that tells elm-chart-builder how the chart should look
 
 Build your configuration in a pipeline: 
-- Start with ['init'](link to the function if you can), which takes all the mandatory parameters,
+- Start with ['init'](https://package.elm-lang.org/packages/data-viz-lab/elm-chart-builder/latest/Chart-Bar#init), which takes all the mandatory parameters,
 - pipe through functions that set options,
-- and end with ['render']() which which takes your data and accessor and returns your chart as  `Html msg`.
+- and end with ['render'](https://package.elm-lang.org/packages/data-viz-lab/elm-chart-builder/latest/Chart-Bar#render) which takes your data and accessor and returns your chart as `Html msg`.
 
 ```elm
 Bar.init
