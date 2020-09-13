@@ -163,12 +163,13 @@ accessor =
 lineLinear : Data -> Html msg
 lineLinear d =
     Line.init
-        { margin = { top = 10, right = 20, bottom = 30, left = 30 }
+        { margin = { top = 10, right = 40, bottom = 30, left = 30 }
         , width = width
         , height = height
         }
         |> Line.withYAxisTickCount 5
         |> Line.withXAxisTickCount 5
+        |> Line.withGroupLabels
         |> Line.withYDomain ( 0, 20 )
         |> Line.withXAxisTicks xAxisTicks
         |> Line.withXAxisTickFormat (round >> String.fromInt)

@@ -129,6 +129,7 @@ module Chart.Internal.Type exposing
     , setYAxisContinousTickFormat
     , setYAxisContinousTicks
     , showIcons
+    , showXGroupLabel
     , showXLinearLabel
     , showXOrdinalLabel
     , showYLabel
@@ -841,6 +842,7 @@ type ShowLabel
     = YLabel (Float -> String)
     | XLinearLabel (Float -> String)
     | XOrdinalLabel
+    | XGroupLabel
     | NoLabel
 
 
@@ -857,6 +859,11 @@ showXLinearLabel formatter (Config c) =
 showYLabel : (Float -> String) -> Config -> Config
 showYLabel formatter (Config c) =
     toConfig { c | showLabels = YLabel formatter }
+
+
+showXGroupLabel : Config -> Config
+showXGroupLabel (Config c) =
+    toConfig { c | showLabels = XGroupLabel }
 
 
 
@@ -1657,13 +1664,3 @@ colorCategoricalStyle c idx =
 
         _ ->
             TypedSvg.Attributes.style ""
-
-
-
---dataLinearGroupToDataTimeStacked : List DataGroupTime -> List ( String, List Float )
---dataLinearGroupToDataTimeStacked data =
---    data
---        |> List.indexedMap
---            (\i d ->
---                ( d.groupLabel |> Maybe.withDefault (String.fromInt i), d.points |> List.map Tuple.second )
---            )

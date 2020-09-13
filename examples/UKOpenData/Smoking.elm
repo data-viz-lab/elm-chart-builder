@@ -95,11 +95,11 @@ accessor =
 
 line =
     Line.init
-        { margin = { top = 10, right = 20, bottom = 30, left = 30 }
+        { margin = { top = 10, right = 50, bottom = 30, left = 30 }
         , width = 700
         , height = 400
         }
-        --|> Line.withCurve Shape.basisCurve
+        |> Line.withCurve Shape.basisCurve
         |> Line.withYAxisTickCount 5
         |> Line.withXAxisTicks xAxisTicks
         |> Line.withXAxisTickFormat (round >> String.fromInt)
