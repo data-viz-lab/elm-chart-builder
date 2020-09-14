@@ -12,6 +12,7 @@ import Chart.Internal.Symbol
         , corner
         , custom
         , getSymbolByIndex
+        , getSymbolSize
         , symbolGap
         , symbolToId
         , triangle
@@ -793,14 +794,13 @@ drawLinearLine config xScale yScale sortedData =
                 [ ( "fill", "none" ) ]
                 (colorStyle c (Just idx) Nothing)
 
-        label : Maybe String -> List PointLinear -> Svg msg
-        label s d =
+        label : Int -> Maybe String -> List PointLinear -> Svg msg
+        label i s d =
             d
                 |> List.reverse
                 |> List.head
-                |> Maybe.map (horizontalLabel config xScale yScale s)
+                |> Maybe.map (horizontalLabel config xScale yScale i s)
                 |> Maybe.withDefault (text_ [] [])
-                |> Debug.log "xxx"
     in
     [ g
         [ transform [ Translate m.left m.top ]
@@ -823,9 +823,9 @@ drawLinearLine config xScale yScale sortedData =
                 ]
              <|
                 (sortedData
-                    |> List.map
-                        (\{ groupLabel, points } ->
-                            label groupLabel points
+                    |> List.indexedMap
+                        (\idx { groupLabel, points } ->
+                            label idx groupLabel points
                         )
                 )
            ]
@@ -861,14 +861,15 @@ horizontalLabel :
     Config
     -> ContinuousScale Float
     -> ContinuousScale Float
+    -> Int
     -> Maybe String
     -> PointLinear
     -> Svg msg
-horizontalLabel config xScale yScale groupLabel point =
+horizontalLabel config xScale yScale idx groupLabel point =
     case groupLabel of
         Just label ->
             let
-                c =
+                conf =
                     fromConfig config
 
                 ( xVal, yVal ) =
@@ -882,20 +883,22 @@ horizontalLabel config xScale yScale groupLabel point =
                     Scale.convert yScale yVal
                         |> Helpers.floorFloat
 
+                symbol =
+                    getSymbolByIndex conf.icons idx
+
+                labelOffset =
+                    symbol
+                        |> getSymbolSize
+                        |> Maybe.withDefault defaultSymbolSize
+                        |> (+) labelGap
+
                 showLabels =
                     getShowLabels config
-
-                symbolOffset =
-                    if showIcons config then
-                        c.size |> Maybe.withDefault defaultSymbolSize
-
-                    else
-                        0
 
                 txt =
                     text_
                         [ y yPos
-                        , x (xPos + labelGap)
+                        , x (xPos + labelOffset)
                         , textAnchor AnchorStart
                         , dominantBaseline DominantBaselineMiddle
                         ]
