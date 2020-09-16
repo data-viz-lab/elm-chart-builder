@@ -1,10 +1,10 @@
 module Chart.Internal.Helpers exposing
     ( colorPaletteToColor
-    , combineStakedValuesWithXValues
     , floorFloat
     , floorValues
     , invisibleFigcaption
     , mergeStyles
+    , stackDataGroupLinear
     , toUtcString
     )
 
@@ -12,6 +12,12 @@ import Color exposing (Color)
 import Html exposing (Html)
 import Html.Attributes
 import Time exposing (toHour, toMinute, toSecond, utc)
+
+
+type alias DataGroupLinear =
+    { groupLabel : Maybe String
+    , points : List ( Float, Float )
+    }
 
 
 floorFloat : Float -> Float
@@ -29,19 +35,19 @@ floorValues v =
             )
 
 
-combineStakedValuesWithXValues : List (List ( Float, Float )) -> List (List Float) -> List (List ( Float, Float ))
-combineStakedValuesWithXValues values xValues =
+stackDataGroupLinear :
+    List (List ( Float, Float ))
+    -> List DataGroupLinear
+    -> List DataGroupLinear
+stackDataGroupLinear values groupData =
     List.map2
-        (\lineValues xs ->
-            List.map2
-                (\value x ->
-                    ( x, Tuple.second value )
-                )
-                lineValues
-                xs
+        (\vals group ->
+            { groupLabel = group.groupLabel
+            , points = List.map2 (\( _, y ) ( x, _ ) -> ( x, y )) vals group.points
+            }
         )
         values
-        xValues
+        groupData
 
 
 colorPaletteToColor : List Color -> Int -> String

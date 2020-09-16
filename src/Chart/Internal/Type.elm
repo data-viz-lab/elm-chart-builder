@@ -129,6 +129,7 @@ module Chart.Internal.Type exposing
     , setYAxisContinousTickFormat
     , setYAxisContinousTicks
     , showIcons
+    , showXGroupLabel
     , showXLinearLabel
     , showXOrdinalLabel
     , showYLabel
@@ -148,6 +149,7 @@ import Html
 import Html.Attributes
 import List.Extra
 import Scale exposing (BandScale)
+import Set
 import Shape
 import Statistics
 import SubPath exposing (SubPath)
@@ -840,6 +842,7 @@ type ShowLabel
     = YLabel (Float -> String)
     | XLinearLabel (Float -> String)
     | XOrdinalLabel
+    | XGroupLabel
     | NoLabel
 
 
@@ -856,6 +859,11 @@ showXLinearLabel formatter (Config c) =
 showYLabel : (Float -> String) -> Config -> Config
 showYLabel formatter (Config c) =
     toConfig { c | showLabels = YLabel formatter }
+
+
+showXGroupLabel : Config -> Config
+showXGroupLabel (Config c) =
+    toConfig { c | showLabels = XGroupLabel }
 
 
 
@@ -990,6 +998,9 @@ getDomainBandFromData data config =
                     d
                         |> List.map .groupLabel
                         |> List.indexedMap (\i g -> g |> Maybe.withDefault (String.fromInt i))
+                        -- remove duplicates from the data
+                        --|> Set.fromList
+                        --|> Set.toList
                         |> Just
         , bandSingle =
             case domain.bandSingle of
@@ -1404,8 +1415,11 @@ externalToDataBand externalData accessor =
             fromExternalData externalData
     in
     data
+        |> List.sortBy (accessor.xGroup >> Maybe.withDefault "")
         |> List.Extra.groupWhile
-            (\a b -> accessor.xGroup a == accessor.xGroup b)
+            (\a b ->
+                accessor.xGroup a == accessor.xGroup b
+            )
         |> List.map
             (\d ->
                 let
@@ -1650,13 +1664,3 @@ colorCategoricalStyle c idx =
 
         _ ->
             TypedSvg.Attributes.style ""
-
-
-
---dataLinearGroupToDataTimeStacked : List DataGroupTime -> List ( String, List Float )
---dataLinearGroupToDataTimeStacked data =
---    data
---        |> List.indexedMap
---            (\i d ->
---                ( d.groupLabel |> Maybe.withDefault (String.fromInt i), d.points |> List.map Tuple.second )
---            )

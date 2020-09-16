@@ -5,6 +5,7 @@ module Chart.Line exposing
     , RequiredConfig
     , withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout
     , withSymbols
+    , withGroupLabels
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -35,6 +36,7 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 # Configuration setters
 
 @docs withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout
+@docs withXGroupLabels
 
 @docs withSymbols
 
@@ -495,6 +497,20 @@ withStackedLayout config =
 withGroupedLayout : Config -> Config
 withGroupedLayout config =
     Type.setLayout GroupedLine config
+
+
+{-| Show the xGroup values at the end of the lines.
+
+&#9888; Use with caution, there is no knowledge of text wrapping!
+
+    Line.init requiredConfig
+        |> Bar.withGroupLabels
+        |> Bar.render ( data, accessor )
+
+-}
+withGroupLabels : Config -> Config
+withGroupLabels =
+    Type.showXGroupLabel
 
 
 

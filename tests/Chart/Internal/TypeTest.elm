@@ -513,12 +513,11 @@ suite =
                             defaultConfig
                                 |> setHistogramDomain ( 0, 1 )
 
-                        histogramConfig =
-                            defaultHistogramConfig
-                                |> setHistogramSteps [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
+                        bins =
+                            [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
 
                         accessor =
-                            AccessorHistogram histogramConfig identity
+                            AccessorHistogram bins identity
 
                         expected =
                             [ { length = 4, values = [ 0.1, 0.09, 0.02, 0.01 ], x0 = 0, x1 = 0.1 }
@@ -592,5 +591,21 @@ suite =
                             ( 0, 1 )
                     in
                     Expect.equal expected (calculateHistogramDomain data)
+            ]
+        , describe "externalToDataBand"
+            [ test "generate bandDatta from external data" <|
+                \_ ->
+                    let
+                        data =
+                            toExternalData
+                                [ { countryId = "XM", countryIso3code = "", countryName = "Low income", indicator = "Population in urban agglomerations of more than 1 million (% of total population)", value = 12.3796416662598, year = "2019" }, { countryId = "XO", countryIso3code = "LMY", countryName = "Low & middle income", indicator = "Population in urban agglomerations of more than 1 million (% of total population)", value = 21.5619375454364, year = "2019" }, { countryId = "XO", countryIso3code = "LMY", countryName = "Low & middle income", indicator = "Prevalence of underweight, weight for age (% of children under 5)", value = 14.5, year = "2019" }, { countryId = "XM", countryIso3code = "", countryName = "Low income", indicator = "Prevalence of underweight, weight for age (% of children under 5)", value = 18.1, year = "2019" } ]
+
+                        accessor =
+                            AccessorBand (.countryName >> Just) .indicator .value
+
+                        expected =
+                            toDataBand [ { groupLabel = Just "Low & middle income", points = [ ( "Population in urban agglomerations of more than 1 million (% of total population)", 21.5619375454364 ), ( "Prevalence of underweight, weight for age (% of children under 5)", 14.5 ) ] }, { groupLabel = Just "Low income", points = [ ( "Population in urban agglomerations of more than 1 million (% of total population)", 12.3796416662598 ), ( "Prevalence of underweight, weight for age (% of children under 5)", 18.1 ) ] } ]
+                    in
+                    Expect.equal (externalToDataBand data accessor) expected
             ]
         ]

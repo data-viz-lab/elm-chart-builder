@@ -624,19 +624,15 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
         c =
             fromConfig config
 
+        labelOffset =
+            if List.isEmpty c.icons then
+                0
+
+            else
+                w
+
         stl =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
-
-        label =
-            verticalLabel config (x_ + w / 2) (y_ - labelGap) point
-
-        x_ =
-            Helpers.floorFloat <| Scale.convert bandSingleScale x__
-
-        y_ =
-            Scale.convert linearScale y__
-                + iconOffset
-                |> Helpers.floorFloat
 
         w =
             Helpers.floorFloat <| Scale.bandwidth bandSingleScale
@@ -645,6 +641,17 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
             getHeight (toConfig c)
                 - Scale.convert linearScale y__
                 - iconOffset
+                |> Helpers.floorFloat
+
+        label =
+            verticalLabel config (x_ + w / 2) (y_ - labelGap - labelOffset) point
+
+        x_ =
+            Helpers.floorFloat <| Scale.convert bandSingleScale x__
+
+        y_ =
+            Scale.convert linearScale y__
+                + iconOffset
                 |> Helpers.floorFloat
 
         symbol =
@@ -691,8 +698,15 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
         stl =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
 
+        labelOffset =
+            if List.isEmpty c.icons then
+                0
+
+            else
+                h
+
         label =
-            horizontalLabel config (w + labelGap) (y_ + h / 2) point
+            horizontalLabel config (w + labelGap + labelOffset) (y_ + h / 2) point
 
         symbol =
             horizontalSymbol config { idx = idx, w = w, y_ = y_, h = h, styleStr = stl }
@@ -722,12 +736,12 @@ dataGroupTranslation bandGroupScale dataGroup =
 
 
 verticalLabel : Config -> Float -> Float -> PointBand -> List (Svg msg)
-verticalLabel config x_ y_ point =
+verticalLabel config xPos yPos point =
     let
         c =
             fromConfig config
 
-        ( x__, y__ ) =
+        ( xVal, yVal ) =
             point
 
         showLabels =
@@ -735,17 +749,17 @@ verticalLabel config x_ y_ point =
 
         txt =
             text_
-                [ x x_
-                , y y_
+                [ x xPos
+                , y yPos
                 , textAnchor AnchorMiddle
                 ]
     in
     case showLabels of
         YLabel formatter ->
-            [ txt [ text (y__ |> formatter) ] ]
+            [ txt [ text (yVal |> formatter) ] ]
 
         XOrdinalLabel ->
-            [ txt [ text x__ ] ]
+            [ txt [ text xVal ] ]
 
         _ ->
             []
@@ -891,37 +905,6 @@ verticalSymbol config { idx, w, y_, x_, styleStr } =
 
     else
         []
-
-
-horizontalLabel : Config -> Float -> Float -> PointBand -> List (Svg msg)
-horizontalLabel config x_ y_ point =
-    let
-        c =
-            fromConfig config
-
-        ( x__, y__ ) =
-            point
-
-        showLabels =
-            getShowLabels config
-
-        txt =
-            text_
-                [ y y_
-                , x x_
-                , textAnchor AnchorStart
-                , dominantBaseline DominantBaselineMiddle
-                ]
-    in
-    case showLabels of
-        YLabel formatter ->
-            [ txt [ text (y__ |> formatter) ] ]
-
-        XOrdinalLabel ->
-            [ txt [ text x__ ] ]
-
-        _ ->
-            []
 
 
 symbolsToSymbolElements : Orientation -> BandScale String -> List Symbol -> List (Svg msg)
@@ -1239,3 +1222,38 @@ labelGap =
 strokeWidth : Float
 strokeWidth =
     0.5
+
+
+
+-- LABEL HELPERS
+
+
+horizontalLabel : Config -> Float -> Float -> PointBand -> List (Svg msg)
+horizontalLabel config xPos yPos point =
+    let
+        c =
+            fromConfig config
+
+        ( xVal, yVal ) =
+            point
+
+        showLabels =
+            getShowLabels config
+
+        txt =
+            text_
+                [ y yPos
+                , x xPos
+                , textAnchor AnchorStart
+                , dominantBaseline DominantBaselineMiddle
+                ]
+    in
+    case showLabels of
+        YLabel formatter ->
+            [ txt [ text (yVal |> formatter) ] ]
+
+        XOrdinalLabel ->
+            [ txt [ text xVal ] ]
+
+        _ ->
+            []
