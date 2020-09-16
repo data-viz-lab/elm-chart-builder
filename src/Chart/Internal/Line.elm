@@ -286,11 +286,6 @@ renderLineStacked ( data, config ) =
             data
                 |> dataLinearGroupToDataLinear
 
-        xLinearData : List (List Float)
-        xLinearData =
-            linearData
-                |> List.map (.points >> List.map Tuple.first)
-
         linearDomain : DomainLinearStruct
         linearDomain =
             linearData
@@ -322,9 +317,9 @@ renderLineStacked ( data, config ) =
         { values, extent } =
             Shape.stack stackedConfig
 
-        combinedData : List (List PointLinear)
+        combinedData : List DataGroupLinear
         combinedData =
-            Helpers.combineStakedValuesWithXValues values xLinearData
+            Helpers.stackDataGroupLinear values linearData
 
         timeData =
             data
@@ -402,43 +397,7 @@ renderLineStacked ( data, config ) =
                     ++ descAndTitle c
                     ++ linearAxisGenerator c Y yScale
                     ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
-                    ++ [ g
-                            [ transform [ Translate m.left m.top ]
-                            , class [ "series" ]
-                            ]
-                         <|
-                            List.indexedMap
-                                (\idx d ->
-                                    Path.element (line d)
-                                        [ class [ "line", "line-" ++ String.fromInt idx ]
-                                        , color idx
-                                            |> style
-                                        ]
-                                )
-                                combinedData
-                       ]
-                    ++ [ g
-                            [ transform [ Translate m.left m.top ]
-                            , class [ "series" ]
-                            ]
-                            (combinedData
-                                |> List.indexedMap
-                                    (\idx d ->
-                                        d
-                                            |> List.map
-                                                (\( x, y ) ->
-                                                    drawSymbol config
-                                                        { idx = idx
-                                                        , x = Scale.convert xLinearScale x
-                                                        , y = Scale.convert yScale y
-                                                        , styleStr = colorSymbol idx
-                                                        }
-                                                )
-                                    )
-                                |> List.concat
-                                |> List.concat
-                            )
-                       ]
+                    ++ drawLinearLine config xLinearScale yScale combinedData
 
         tableEl =
             Helpers.invisibleFigcaption
