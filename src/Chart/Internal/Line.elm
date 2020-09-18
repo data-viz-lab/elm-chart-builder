@@ -12,6 +12,7 @@ import Chart.Internal.Symbol
         , corner
         , custom
         , getSymbolByIndex
+        , getSymbolSize
         , symbolGap
         , symbolToId
         , triangle
@@ -35,6 +36,7 @@ import Chart.Internal.Type
         , Layout(..)
         , PointLinear
         , RenderContext(..)
+        , ShowLabel(..)
         , ariaLabelledby
         , bottomGap
         , colorCategoricalStyle
@@ -49,6 +51,7 @@ import Chart.Internal.Type
         , getIcons
         , getMargin
         , getOffset
+        , getShowLabels
         , getWidth
         , leftGap
         , role
@@ -61,24 +64,27 @@ import Path exposing (Path)
 import Scale exposing (ContinuousScale)
 import Shape exposing (StackConfig)
 import Time exposing (Posix)
-import TypedSvg exposing (g, svg)
+import TypedSvg exposing (g, svg, text_)
 import TypedSvg.Attributes
     exposing
         ( class
+        , dominantBaseline
         , fill
         , fillOpacity
         , stroke
         , style
+        , textAnchor
         , transform
         , viewBox
         , xlinkHref
         )
-import TypedSvg.Attributes.InPx exposing (height, width)
+import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types
     exposing
         ( AlignmentBaseline(..)
         , AnchorAlignment(..)
+        , DominantBaseline(..)
         , Opacity(..)
         , Paint(..)
         , ShapeRendering(..)
@@ -201,24 +207,6 @@ renderLineGrouped ( data, config ) =
         yScale =
             Scale.linear yRange (Maybe.withDefault ( 0, 0 ) linearDomain.y)
 
-        lineGenerator : PointLinear -> Maybe ( Float, Float )
-        lineGenerator ( x, y ) =
-            Just ( Scale.convert xLinearScale x, Scale.convert yScale y )
-
-        line : DataGroupLinear -> Path
-        line dataGroup =
-            dataGroup.points
-                |> List.map lineGenerator
-                |> Shape.line c.curve
-
-        color idx =
-            Helpers.mergeStyles
-                [ ( "fill", "none" ) ]
-                (colorStyle c (Just idx) Nothing)
-
-        colorSymbol idx =
-            colorStyle c (Just idx) Nothing
-
         tableHeadings =
             Helpers.dataLinearGroupToTableHeadings data
                 |> Table.ComplexHeadings
@@ -244,43 +232,7 @@ renderLineGrouped ( data, config ) =
                     ++ descAndTitle c
                     ++ linearAxisGenerator c Y yScale
                     ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
-                    ++ [ g
-                            [ transform [ Translate m.left m.top ]
-                            , class [ "series" ]
-                            ]
-                         <|
-                            List.indexedMap
-                                (\idx d ->
-                                    Path.element (line d)
-                                        [ class [ "line", "line-" ++ String.fromInt idx ]
-                                        , color idx
-                                            |> style
-                                        ]
-                                )
-                                sortedLinearData
-                       ]
-                    ++ [ g
-                            [ transform [ Translate m.left m.top ]
-                            , class [ "series" ]
-                            ]
-                            (sortedLinearData
-                                |> List.indexedMap
-                                    (\idx d ->
-                                        d.points
-                                            |> List.map
-                                                (\( x, y ) ->
-                                                    drawSymbol config
-                                                        { idx = idx
-                                                        , x = Scale.convert xLinearScale x
-                                                        , y = Scale.convert yScale y
-                                                        , styleStr = colorSymbol idx
-                                                        }
-                                                )
-                                    )
-                                |> List.concat
-                                |> List.concat
-                            )
-                       ]
+                    ++ drawLinearLine config xLinearScale yScale sortedLinearData
 
         tableEl =
             Helpers.invisibleFigcaption
@@ -334,11 +286,6 @@ renderLineStacked ( data, config ) =
             data
                 |> dataLinearGroupToDataLinear
 
-        xLinearData : List (List Float)
-        xLinearData =
-            linearData
-                |> List.map (.points >> List.map Tuple.first)
-
         linearDomain : DomainLinearStruct
         linearDomain =
             linearData
@@ -370,9 +317,9 @@ renderLineStacked ( data, config ) =
         { values, extent } =
             Shape.stack stackedConfig
 
-        combinedData : List (List PointLinear)
+        combinedData : List DataGroupLinear
         combinedData =
-            Helpers.combineStakedValuesWithXValues values xLinearData
+            Helpers.stackDataGroupLinear values linearData
 
         timeData =
             data
@@ -450,43 +397,7 @@ renderLineStacked ( data, config ) =
                     ++ descAndTitle c
                     ++ linearAxisGenerator c Y yScale
                     ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
-                    ++ [ g
-                            [ transform [ Translate m.left m.top ]
-                            , class [ "series" ]
-                            ]
-                         <|
-                            List.indexedMap
-                                (\idx d ->
-                                    Path.element (line d)
-                                        [ class [ "line", "line-" ++ String.fromInt idx ]
-                                        , color idx
-                                            |> style
-                                        ]
-                                )
-                                combinedData
-                       ]
-                    ++ [ g
-                            [ transform [ Translate m.left m.top ]
-                            , class [ "series" ]
-                            ]
-                            (combinedData
-                                |> List.indexedMap
-                                    (\idx d ->
-                                        d
-                                            |> List.map
-                                                (\( x, y ) ->
-                                                    drawSymbol config
-                                                        { idx = idx
-                                                        , x = Scale.convert xLinearScale x
-                                                        , y = Scale.convert yScale y
-                                                        , styleStr = colorSymbol idx
-                                                        }
-                                                )
-                                    )
-                                |> List.concat
-                                |> List.concat
-                            )
-                       ]
+                    ++ drawLinearLine config xLinearScale yScale combinedData
 
         tableEl =
             Helpers.invisibleFigcaption
@@ -808,3 +719,164 @@ symbolElements config =
 defaultSymbolSize : Float
 defaultSymbolSize =
     10
+
+
+drawLinearLine :
+    Config
+    -> ContinuousScale Float
+    -> ContinuousScale Float
+    -> List DataGroupLinear
+    -> List (Svg msg)
+drawLinearLine config xScale yScale sortedData =
+    let
+        c =
+            fromConfig config
+
+        m =
+            getMargin config
+
+        lineGenerator : PointLinear -> Maybe ( Float, Float )
+        lineGenerator ( x, y ) =
+            Just ( Scale.convert xScale x, Scale.convert yScale y )
+
+        line : DataGroupLinear -> Path
+        line dataGroup =
+            dataGroup.points
+                |> List.map lineGenerator
+                |> Shape.line c.curve
+
+        colorSymbol idx =
+            colorStyle c (Just idx) Nothing
+
+        color idx =
+            Helpers.mergeStyles
+                [ ( "fill", "none" ) ]
+                (colorStyle c (Just idx) Nothing)
+
+        label : Int -> Maybe String -> List PointLinear -> Svg msg
+        label i s d =
+            d
+                |> List.reverse
+                |> List.head
+                |> Maybe.map (horizontalLabel config xScale yScale i s)
+                |> Maybe.withDefault (text_ [] [])
+    in
+    [ g
+        [ transform [ Translate m.left m.top ]
+        , class [ "series" ]
+        ]
+      <|
+        List.indexedMap
+            (\idx d ->
+                Path.element (line d)
+                    [ class [ "line", "line-" ++ String.fromInt idx ]
+                    , color idx
+                        |> style
+                    ]
+            )
+            sortedData
+    ]
+        ++ [ g
+                [ transform [ Translate m.left m.top ]
+                , class [ "series" ]
+                ]
+             <|
+                (sortedData
+                    |> List.indexedMap
+                        (\idx { groupLabel, points } ->
+                            label idx groupLabel points
+                        )
+                )
+           ]
+        ++ [ g
+                [ transform [ Translate m.left m.top ]
+                , class [ "series" ]
+                ]
+                (sortedData
+                    |> List.indexedMap
+                        (\idx d ->
+                            d.points
+                                |> List.map
+                                    (\( x, y ) ->
+                                        drawSymbol config
+                                            { idx = idx
+                                            , x = Scale.convert xScale x
+                                            , y = Scale.convert yScale y
+                                            , styleStr = colorSymbol idx
+                                            }
+                                    )
+                        )
+                    |> List.concat
+                    |> List.concat
+                )
+           ]
+
+
+
+-- LABEL HELPERS
+
+
+horizontalLabel :
+    Config
+    -> ContinuousScale Float
+    -> ContinuousScale Float
+    -> Int
+    -> Maybe String
+    -> PointLinear
+    -> Svg msg
+horizontalLabel config xScale yScale idx groupLabel point =
+    case groupLabel of
+        Just label ->
+            let
+                conf =
+                    fromConfig config
+
+                ( xVal, yVal ) =
+                    point
+
+                xPos =
+                    Scale.convert xScale xVal
+                        |> Helpers.floorFloat
+
+                yPos =
+                    Scale.convert yScale yVal
+                        |> Helpers.floorFloat
+
+                symbol =
+                    getSymbolByIndex conf.icons idx
+
+                labelOffset =
+                    symbol
+                        |> getSymbolSize
+                        |> Maybe.withDefault defaultSymbolSize
+                        |> (+) labelGap
+
+                showLabels =
+                    getShowLabels config
+
+                txt =
+                    text_
+                        [ y yPos
+                        , x (xPos + labelOffset)
+                        , textAnchor AnchorStart
+                        , dominantBaseline DominantBaselineMiddle
+                        ]
+            in
+            case showLabels of
+                XGroupLabel ->
+                    txt [ text label ]
+
+                _ ->
+                    text_ [] []
+
+        Nothing ->
+            text_ [] []
+
+
+
+-- CONSTANTS
+
+
+labelGap : Float
+labelGap =
+    2

@@ -6,6 +6,7 @@ module Chart.Internal.Symbol exposing
     , corner
     , custom
     , getSymbolByIndex
+    , getSymbolSize
     , initialConf
     , initialCustomConf
     , symbolGap
@@ -137,3 +138,23 @@ getSymbolByIndex all idx =
 
     else
         NoSymbol
+
+
+getSymbolSize : Symbol -> Maybe Float
+getSymbolSize symbol =
+    case symbol of
+        Triangle c ->
+            c.size
+
+        Circle c ->
+            c.size
+
+        Custom c ->
+            --TODO
+            Nothing
+
+        Corner c ->
+            c.size
+
+        NoSymbol ->
+            Nothing
