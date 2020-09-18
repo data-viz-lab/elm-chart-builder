@@ -5,3 +5,5 @@ repl-temp-*
 # vim stuff
 *.swp
 *.swo
+
+elm-analyse.log

@@ -64,3 +64,11 @@ It expects elm-test to already be installed and accessible.
 $ elm-test
 ```
 
+## elm-anlyse:
+
+It expects elm-analyse to already be installed and accessible.
+
+```shell
+$ elm-analyse | elm-analyse.log
+```
+

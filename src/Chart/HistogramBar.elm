@@ -48,7 +48,6 @@ import Chart.Internal.Type as Type
         , Margin
         , RenderContext(..)
         , defaultConfig
-        , fromConfig
         , setColorResource
         , setDimensions
         , setSvgDesc
@@ -135,9 +134,6 @@ init c =
 render : ( List data, AccessorHistogram data ) -> Config -> Html msg
 render ( externalData, acc ) config =
     let
-        c =
-            fromConfig config
-
         data =
             Type.externalToDataHistogram config (Type.toExternalData externalData) acc
     in
