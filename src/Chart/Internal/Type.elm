@@ -375,6 +375,16 @@ type AxisContinousDataTickCount
     | CustomTickCount Int
 
 
+type AxisTickSize
+    = DefaultTickSize
+    | CustomTickSize
+
+
+type AxisTickPadding
+    = DefaultTickPadding
+    | CustomTickPadding
+
+
 type AxisContinousDataTickFormat
     = DefaultTickFormat
     | CustomTickFormat (Float -> String)
@@ -397,36 +407,20 @@ type AccessibilityContent
 -- CONFIG
 
 
-type alias AxisBandConfig =
-    { ticks : BandDomain -> Int -> List String
-    , domain : BandDomain
-    , tickFormat : BandDomain -> Int -> String -> String
-    , convert : BandDomain -> ( Float, Float ) -> String -> Float
-    , range : ( Float, Float )
-    , rangeExtent : BandDomain -> ( Float, Float ) -> ( Float, Float )
-    }
-
-
-defaultAxisBandConfig : AxisBandConfig
-defaultAxisBandConfig =
-    { ticks = \_ _ -> []
-    , domain = []
-    , tickFormat = \_ _ _ -> ""
-    , convert = \_ _ _ -> 0
-    , range = ( 0, 0 )
-    , rangeExtent = \_ _ -> ( 0, 0 )
-    }
-
-
 type alias ConfigStruct =
     { accessibilityContent : AccessibilityContent
-    , axisXConfix : AxisBandConfig
     , axisXContinousTickCount : AxisContinousDataTickCount
     , axisXContinousTickFormat : AxisContinousDataTickFormat
     , axisXContinousTicks : AxisContinousDataTicks
+    , axisXTickSizeOuter : AxisTickSize
+    , axisXTickSizeInner : AxisTickSize
+    , axisXTickPadding : AxisTickPadding
     , axisYContinousTickCount : AxisContinousDataTickCount
     , axisYContinousTickFormat : AxisContinousDataTickFormat
     , axisYContinousTicks : AxisContinousDataTicks
+    , axisYTickSizeOuter : AxisTickSize
+    , axisYTickSizeInner : AxisTickSize
+    , axisYTickPadding : AxisTickPadding
     , colorResource : ColorResource
     , curve : List ( Float, Float ) -> SubPath
     , domainBand : DomainBand
@@ -454,13 +448,18 @@ defaultConfig : Config
 defaultConfig =
     toConfig
         { accessibilityContent = AccessibilityNone
-        , axisXConfix = defaultAxisBandConfig
         , axisXContinousTickCount = DefaultTickCount
         , axisXContinousTickFormat = DefaultTickFormat
         , axisXContinousTicks = DefaultTicks
+        , axisXTickSizeOuter = DefaultTickSize
+        , axisXTickSizeInner = DefaultTickSize
+        , axisXTickPadding = DefaultTickPadding
         , axisYContinousTickCount = DefaultTickCount
         , axisYContinousTickFormat = DefaultTickFormat
         , axisYContinousTicks = DefaultTicks
+        , axisYTickSizeOuter = DefaultTickSize
+        , axisYTickSizeInner = DefaultTickSize
+        , axisYTickPadding = DefaultTickPadding
         , colorResource = ColorNone
         , curve = \d -> Shape.linearCurve d
         , domainBand = DomainBand initialDomainBandStruct
@@ -655,11 +654,6 @@ setSvgDesc desc (Config c) =
 setSvgTitle : String -> Config -> Config
 setSvgTitle title (Config c) =
     toConfig { c | svgTitle = title }
-
-
-setXAxisConfix : AxisBandConfig -> Config -> Config
-setXAxisConfix axisConfig (Config c) =
-    toConfig { c | axisXConfix = axisConfig }
 
 
 setXAxisContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
