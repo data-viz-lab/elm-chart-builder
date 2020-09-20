@@ -735,41 +735,39 @@ drawLinearLine config xScale yScale sortedData =
                     ]
             )
             sortedData
+    , g
+        [ transform [ Translate m.left m.top ]
+        , class [ "series" ]
+        ]
+      <|
+        (sortedData
+            |> List.indexedMap
+                (\idx { groupLabel, points } ->
+                    label idx groupLabel points
+                )
+        )
+    , g
+        [ transform [ Translate m.left m.top ]
+        , class [ "series" ]
+        ]
+        (sortedData
+            |> List.indexedMap
+                (\idx d ->
+                    d.points
+                        |> List.map
+                            (\( x, y ) ->
+                                drawSymbol config
+                                    { idx = idx
+                                    , x = Scale.convert xScale x
+                                    , y = Scale.convert yScale y
+                                    , styleStr = colorSymbol idx
+                                    }
+                            )
+                )
+            |> List.concat
+            |> List.concat
+        )
     ]
-        ++ [ g
-                [ transform [ Translate m.left m.top ]
-                , class [ "series" ]
-                ]
-             <|
-                (sortedData
-                    |> List.indexedMap
-                        (\idx { groupLabel, points } ->
-                            label idx groupLabel points
-                        )
-                )
-           ]
-        ++ [ g
-                [ transform [ Translate m.left m.top ]
-                , class [ "series" ]
-                ]
-                (sortedData
-                    |> List.indexedMap
-                        (\idx d ->
-                            d.points
-                                |> List.map
-                                    (\( x, y ) ->
-                                        drawSymbol config
-                                            { idx = idx
-                                            , x = Scale.convert xScale x
-                                            , y = Scale.convert yScale y
-                                            , styleStr = colorSymbol idx
-                                            }
-                                    )
-                        )
-                    |> List.concat
-                    |> List.concat
-                )
-           ]
 
 
 
