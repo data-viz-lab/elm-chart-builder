@@ -55,7 +55,6 @@ import Chart.Internal.Symbol exposing (Symbol(..))
 import Chart.Internal.Type as Type
     exposing
         ( AccessibilityContent(..)
-        , AxisBandConfig
         , AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
@@ -536,8 +535,3 @@ one upon another.
 noDirection : Direction
 noDirection =
     Type.NoDirection
-
-
-axis : AxisBandConfig
-axis =
-    AxisBandConfig

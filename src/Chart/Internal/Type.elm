@@ -121,7 +121,6 @@ module Chart.Internal.Type exposing
     , setSvgTitle
     , setWidth
     , setXAxis
-    , setXAxisConfix
     , setXAxisContinousTickCount
     , setXAxisContinousTickFormat
     , setXAxisContinousTicks
