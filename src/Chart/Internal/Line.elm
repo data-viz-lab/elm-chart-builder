@@ -13,7 +13,6 @@ import Chart.Internal.Symbol
         , custom
         , getSymbolByIndex
         , getSymbolSize
-        , symbolGap
         , symbolToId
         , triangle
         )
@@ -39,7 +38,6 @@ import Chart.Internal.Type
         , ShowLabel(..)
         , ariaLabelledby
         , bottomGap
-        , colorCategoricalStyle
         , colorStyle
         , dataLinearGroupToDataLinear
         , dataLinearGroupToDataLinearStacked
@@ -57,7 +55,6 @@ import Chart.Internal.Type
         , role
         , showIcons
         )
-import Color
 import Html exposing (Html)
 import Html.Attributes
 import Path exposing (Path)
@@ -69,9 +66,6 @@ import TypedSvg.Attributes
     exposing
         ( class
         , dominantBaseline
-        , fill
-        , fillOpacity
-        , stroke
         , style
         , textAnchor
         , transform
@@ -149,10 +143,6 @@ renderLineGrouped ( data, config ) =
             linearData
                 |> getDomainLinearFromData config
 
-        colorScale : ContinuousScale Float
-        colorScale =
-            Scale.linear ( 0, 1 ) (Maybe.withDefault ( 0, 0 ) linearDomain.y)
-
         timeData =
             data
                 |> dataLinearGroupToDataTime
@@ -167,7 +157,7 @@ renderLineGrouped ( data, config ) =
         yRange =
             ( h, 0 )
 
-        ( sortedLinearData, sortedPoints ) =
+        ( sortedLinearData, _ ) =
             linearData
                 |> List.map
                     (\d ->
@@ -291,18 +281,6 @@ renderLineStacked ( data, config ) =
             linearData
                 |> getDomainLinearFromData config
 
-        colorScale : ContinuousScale Float
-        colorScale =
-            Scale.linear ( 0, 1 ) (Maybe.withDefault ( 0, 0 ) linearDomain.y)
-
-        color idx =
-            Helpers.mergeStyles
-                [ ( "fill", "none" ) ]
-                (colorStyle c (Just idx) Nothing)
-
-        colorSymbol idx =
-            colorStyle c (Just idx) Nothing
-
         dataStacked : List ( String, List Float )
         dataStacked =
             dataLinearGroupToDataLinearStacked linearData
@@ -361,16 +339,6 @@ renderLineStacked ( data, config ) =
         yScale : ContinuousScale Float
         yScale =
             Scale.linear yRange extent
-
-        lineGenerator : PointLinear -> Maybe ( Float, Float )
-        lineGenerator ( x, y ) =
-            Just ( Scale.convert xLinearScale x, Scale.convert yScale y )
-
-        line : List PointLinear -> Path
-        line points =
-            points
-                |> List.map lineGenerator
-                |> Shape.line c.curve
 
         tableHeadings =
             Helpers.dataLinearGroupToTableHeadings data
@@ -668,14 +636,6 @@ drawSymbol config { idx, x, y, styleStr } =
                 ]
 
             Custom c ->
-                let
-                    gap =
-                        if c.useGap then
-                            symbolGap
-
-                        else
-                            0
-                in
                 [ g
                     [ transform [ Translate x y ]
                     , class [ "symbol" ]
@@ -775,41 +735,39 @@ drawLinearLine config xScale yScale sortedData =
                     ]
             )
             sortedData
+    , g
+        [ transform [ Translate m.left m.top ]
+        , class [ "series" ]
+        ]
+      <|
+        (sortedData
+            |> List.indexedMap
+                (\idx { groupLabel, points } ->
+                    label idx groupLabel points
+                )
+        )
+    , g
+        [ transform [ Translate m.left m.top ]
+        , class [ "series" ]
+        ]
+        (sortedData
+            |> List.indexedMap
+                (\idx d ->
+                    d.points
+                        |> List.map
+                            (\( x, y ) ->
+                                drawSymbol config
+                                    { idx = idx
+                                    , x = Scale.convert xScale x
+                                    , y = Scale.convert yScale y
+                                    , styleStr = colorSymbol idx
+                                    }
+                            )
+                )
+            |> List.concat
+            |> List.concat
+        )
     ]
-        ++ [ g
-                [ transform [ Translate m.left m.top ]
-                , class [ "series" ]
-                ]
-             <|
-                (sortedData
-                    |> List.indexedMap
-                        (\idx { groupLabel, points } ->
-                            label idx groupLabel points
-                        )
-                )
-           ]
-        ++ [ g
-                [ transform [ Translate m.left m.top ]
-                , class [ "series" ]
-                ]
-                (sortedData
-                    |> List.indexedMap
-                        (\idx d ->
-                            d.points
-                                |> List.map
-                                    (\( x, y ) ->
-                                        drawSymbol config
-                                            { idx = idx
-                                            , x = Scale.convert xScale x
-                                            , y = Scale.convert yScale y
-                                            , styleStr = colorSymbol idx
-                                            }
-                                    )
-                        )
-                    |> List.concat
-                    |> List.concat
-                )
-           ]
 
 
 

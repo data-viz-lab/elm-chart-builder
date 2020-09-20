@@ -149,7 +149,7 @@ getSymbolSize symbol =
         Circle c ->
             c.size
 
-        Custom c ->
+        Custom _ ->
             --TODO
             Nothing
 

@@ -151,7 +151,6 @@ import Html
 import Html.Attributes
 import List.Extra
 import Scale exposing (BandScale)
-import Set
 import Shape
 import Statistics
 import SubPath exposing (SubPath)
@@ -600,16 +599,6 @@ setIcons :
     -> Config
 setIcons all (Config c) =
     Config { c | icons = all }
-
-
-getDirection : Config -> Direction
-getDirection (Config c) =
-    case c.layout of
-        StackedBar direction ->
-            direction
-
-        _ ->
-            NoDirection
 
 
 

@@ -47,7 +47,7 @@ import Chart.Internal.Line
         ( renderLineGrouped
         , renderLineStacked
         )
-import Chart.Internal.Symbol as InternalSymbol exposing (Symbol(..))
+import Chart.Internal.Symbol exposing (Symbol)
 import Chart.Internal.Type as Type
     exposing
         ( AccessibilityContent(..)

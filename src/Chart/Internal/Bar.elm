@@ -45,18 +45,15 @@ import Chart.Internal.Type
         , ariaLabelledby
         , bottomGap
         , calculateHistogramDomain
-        , calculateHistogramValues
         , colorCategoricalStyle
         , colorStyle
         , dataBandToDataStacked
-        , externalToDataHistogram
         , fromConfig
         , fromDataBand
         , getAxisContinousDataFormatter
         , getBandGroupRange
         , getBandSingleRange
         , getDataBandDepth
-        , getDomainBand
         , getDomainBandFromData
         , getHeight
         , getIcons
@@ -74,14 +71,12 @@ import Chart.Internal.Type
         , symbolSpace
         , toConfig
         )
-import Color
-import Histogram exposing (Bin, HistogramGenerator, Threshold)
+import Histogram exposing (Bin)
 import Html exposing (Html)
 import Html.Attributes
 import List.Extra
 import Scale exposing (BandScale, ContinuousScale, defaultBandConfig)
 import Shape exposing (StackConfig)
-import Statistics exposing (extent)
 import TypedSvg exposing (g, rect, svg, text_)
 import TypedSvg.Attributes
     exposing
@@ -738,9 +733,6 @@ dataGroupTranslation bandGroupScale dataGroup =
 verticalLabel : Config -> Float -> Float -> PointBand -> List (Svg msg)
 verticalLabel config xPos yPos point =
     let
-        c =
-            fromConfig config
-
         ( xVal, yVal ) =
             point
 
@@ -1108,8 +1100,8 @@ renderHistogram ( histogram, config ) =
             [ yTickFormat ]
                 |> List.filterMap identity
 
-        xAxis : List Float -> List (Svg msg)
-        xAxis d =
+        xAxis : List (Svg msg)
+        xAxis =
             [ g
                 [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
                 , class [ "axis", "axis--horizontal" ]
@@ -1164,7 +1156,7 @@ renderHistogram ( histogram, config ) =
                 ]
             <|
                 descAndTitle c
-                    ++ xAxis (calculateHistogramValues histogram)
+                    ++ xAxis
                     ++ yAxis histogram
                     ++ [ g
                             [ transform [ Translate m.left m.top ]
@@ -1231,9 +1223,6 @@ strokeWidth =
 horizontalLabel : Config -> Float -> Float -> PointBand -> List (Svg msg)
 horizontalLabel config xPos yPos point =
     let
-        c =
-            fromConfig config
-
         ( xVal, yVal ) =
             point
 
