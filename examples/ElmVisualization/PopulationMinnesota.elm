@@ -167,6 +167,7 @@ data =
                 in
                 { age = age, gender = gender, people = people }
             )
+        |> Debug.log "data"
 
 
 valueFormatter : Float -> String
