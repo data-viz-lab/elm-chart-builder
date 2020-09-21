@@ -50,7 +50,7 @@ import Chart.Internal.Bar
         ( renderBandGrouped
         , renderBandStacked
         )
-import Chart.Internal.Symbol as InternalSymbol exposing (Symbol(..))
+import Chart.Internal.Symbol exposing (Symbol(..))
 import Chart.Internal.Type as Type
     exposing
         ( AccessibilityContent(..)
@@ -68,11 +68,8 @@ import Chart.Internal.Type as Type
         , fromConfig
         , setColorResource
         , setDimensions
-        , setHeight
-        , setMargin
         , setSvgDesc
         , setSvgTitle
-        , setWidth
         , setXAxis
         , setYAxis
         )
@@ -93,7 +90,12 @@ type alias Accessor data =
 {-| The required config, passed as an argument to the `init` function
 -}
 type alias RequiredConfig =
-    { margin : { top : Float, right : Float, bottom : Float, left : Float }
+    { margin :
+        { top : Float
+        , right : Float
+        , bottom : Float
+        , left : Float
+        }
     , width : Float
     , height : Float
     }

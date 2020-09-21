@@ -4,6 +4,7 @@ module Chart.Internal.Helpers exposing
     , floorValues
     , invisibleFigcaption
     , mergeStyles
+    , sortStrings
     , stackDataGroupLinear
     , toUtcString
     )
@@ -118,3 +119,24 @@ toUtcString time =
         ++ ":"
         ++ String.fromInt (toSecond utc time)
         ++ " (UTC)"
+
+
+sortStrings : (a -> String) -> List a -> List a
+sortStrings accessor strings =
+    List.sortWith
+        (\a_ b_ ->
+            let
+                a =
+                    accessor a_
+
+                b =
+                    accessor b_
+            in
+            case ( a |> String.toFloat, b |> String.toFloat ) of
+                ( Just floatA, Just floatB ) ->
+                    compare floatA floatB
+
+                _ ->
+                    compare a b
+        )
+        strings

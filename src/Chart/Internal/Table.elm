@@ -11,7 +11,6 @@ module Chart.Internal.Table exposing
     , view
     )
 
-import Chart.Internal.Type exposing (DataBand, fromDataBand)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import List.Extra as List
@@ -412,7 +411,7 @@ view config =
                                     in
                                     colSpacer
                                         ++ List.map
-                                            (\(ColumnHeadingGroup (ColumnHeading colInfo) subHeads) ->
+                                            (\(ColumnHeadingGroup (ColumnHeading _) subHeads) ->
                                                 colgroup_ (List.length subHeads)
                                             )
                                             complexHeadings

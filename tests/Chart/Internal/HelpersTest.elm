@@ -16,6 +16,7 @@ suite =
     Test.describe "The helpers module"
         [ colorPaletteToColorTest
         , mergeStylesTest
+        , sortStringsTest
         , stackDataGroupLinearTest
         ]
 
@@ -73,6 +74,48 @@ colorPaletteToColorTest =
 
                 else
                     Expect.fail "The color generated is not in the input palette"
+        ]
+
+
+sortStringsTest : Test
+sortStringsTest =
+    describe "sortString"
+        [ test "It should sort a list of number strings in number order" <|
+            \_ ->
+                let
+                    input =
+                        [ "2", "3", "1", "60" ]
+
+                    expected =
+                        [ "1", "2", "3", "60" ]
+                in
+                Expect.equal (sortStrings identity input) expected
+        , test "It should sort a list of records with number strings in number order" <|
+            \_ ->
+                let
+                    input =
+                        [ { age = "5", gender = "Male", people = -1411067 }
+                        , { age = "5", gender = "Female", people = 1359668 }
+                        , { age = "45", gender = "Male", people = -384211 }
+                        , { age = "45", gender = "Female", people = 341254 }
+                        , { age = "50", gender = "Male", people = -321343 }
+                        , { age = "50", gender = "Female", people = 286580 }
+                        , { age = "55", gender = "Male", people = -194080 }
+                        , { age = "55", gender = "Female", people = 187208 }
+                        ]
+
+                    expected =
+                        [ { age = "5", gender = "Male", people = -1411067 }
+                        , { age = "5", gender = "Female", people = 1359668 }
+                        , { age = "45", gender = "Male", people = -384211 }
+                        , { age = "45", gender = "Female", people = 341254 }
+                        , { age = "50", gender = "Male", people = -321343 }
+                        , { age = "50", gender = "Female", people = 286580 }
+                        , { age = "55", gender = "Male", people = -194080 }
+                        , { age = "55", gender = "Female", people = 187208 }
+                        ]
+                in
+                Expect.equal (sortStrings .age input) expected
         ]
 
 
