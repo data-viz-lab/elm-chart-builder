@@ -1342,7 +1342,7 @@ externalToDataBand externalData accessor =
             fromExternalData externalData
     in
     data
-        |> List.sortBy (accessor.xGroup >> Maybe.withDefault "")
+        |> Helpers.sortStrings (accessor.xGroup >> Maybe.withDefault "")
         |> List.Extra.groupWhile
             (\a b ->
                 accessor.xGroup a == accessor.xGroup b
