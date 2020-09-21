@@ -1404,8 +1404,7 @@ externalToDataBand externalData accessor =
             fromExternalData externalData
     in
     data
-        --FIXME: sorting of numbers as strings is wrong!
-        |> List.sortBy (accessor.xGroup >> Maybe.withDefault "")
+        |> Helpers.sortStrings (accessor.xGroup >> Maybe.withDefault "")
         |> List.Extra.groupWhile
             (\a b ->
                 accessor.xGroup a == accessor.xGroup b
