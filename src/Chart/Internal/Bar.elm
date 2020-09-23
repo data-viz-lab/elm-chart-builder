@@ -26,7 +26,6 @@ import Chart.Internal.Type
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
-        , ColorResource(..)
         , Config
         , ConfigStruct
         , DataBand
@@ -350,6 +349,10 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
             let
                 ( upper, lower ) =
                     stackedValue
+
+                coreStyles =
+                    Helpers.mergeStyles c.coreStyles (colorCategoricalStyle c idx)
+                        |> style
             in
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
                 [ rect
@@ -358,7 +361,7 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
                     , width <| Scale.bandwidth bandGroupScale
                     , height <| (abs <| upper - lower)
                     , shapeRendering RenderCrispEdges
-                    , colorCategoricalStyle c idx
+                    , coreStyles
                     ]
                     []
                 , TypedSvg.title [] [ text <| getRectTitleText c.axisYContinousTickFormat idx group labels rawValue ]
@@ -378,6 +381,10 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
             let
                 ( lower, upper ) =
                     stackedValue
+
+                coreStyles =
+                    Helpers.mergeStyles c.coreStyles (colorCategoricalStyle c idx)
+                        |> style
             in
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
                 [ rect
@@ -386,7 +393,7 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
                     , height <| Scale.bandwidth bandGroupScale
                     , width <| (abs <| upper - lower)
                     , shapeRendering RenderCrispEdges
-                    , colorCategoricalStyle c idx
+                    , coreStyles
                     ]
                     []
                 , TypedSvg.title [] [ text <| getRectTitleText c.axisYContinousTickFormat idx group labels rawValue ]
@@ -623,8 +630,12 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
             else
                 w
 
-        stl =
+        colorStyles =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
+
+        coreStyles =
+            Helpers.mergeStyles c.coreStyles colorStyles
+                |> style
 
         w =
             Helpers.floorFloat <| Scale.bandwidth bandSingleScale
@@ -647,7 +658,7 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
                 |> Helpers.floorFloat
 
         symbol =
-            verticalSymbol config { idx = idx, x_ = x_, y_ = y_, w = w, styleStr = stl }
+            verticalSymbol config { idx = idx, x_ = x_, y_ = y_, w = w, styleStr = colorStyles }
     in
     rect
         [ x <| x_
@@ -655,7 +666,7 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
         , width <| w
         , height <| h
         , shapeRendering RenderCrispEdges
-        , style stl
+        , coreStyles
         ]
         []
         :: symbol
@@ -687,8 +698,12 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
         y_ =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
 
-        stl =
+        colorStyles =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
+
+        coreStyles =
+            Helpers.mergeStyles c.coreStyles colorStyles
+                |> style
 
         labelOffset =
             if List.isEmpty c.icons then
@@ -701,7 +716,7 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
             horizontalLabel config (w + labelGap + labelOffset) (y_ + h / 2) point
 
         symbol =
-            horizontalSymbol config { idx = idx, w = w, y_ = y_, h = h, styleStr = stl }
+            horizontalSymbol config { idx = idx, w = w, y_ = y_, h = h, styleStr = colorStyles }
     in
     rect
         [ x <| 0
@@ -709,8 +724,7 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
         , width w
         , height h
         , shapeRendering RenderCrispEdges
-        , stl
-            |> style
+        , coreStyles
         ]
         []
         :: symbol

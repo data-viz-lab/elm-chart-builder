@@ -84,6 +84,7 @@ module Chart.Internal.Type exposing
     , role
     , setAccessibilityContent
     , setColorResource
+    , setCoreStyles
     , setCurve
     , setDimensions
     , setDomainBand
@@ -406,6 +407,7 @@ type alias ConfigStruct =
     , axisYTickSizeInner : AxisTickSize
     , axisYTickPadding : AxisTickPadding
     , colorResource : ColorResource
+    , coreStyles : List ( String, String )
     , curve : List ( Float, Float ) -> SubPath
     , domainBand : DomainBand
     , domainLinear : DomainLinear
@@ -445,6 +447,7 @@ defaultConfig =
         , axisYTickSizeInner = DefaultTickSize
         , axisYTickPadding = DefaultTickPadding
         , colorResource = ColorNone
+        , coreStyles = []
         , curve = \d -> Shape.linearCurve d
         , domainBand = DomainBand initialDomainBandStruct
         , domainLinear = DomainLinear initialDomainLinearStruct
@@ -653,6 +656,11 @@ setYAxisContinousTicks ticks (Config c) =
 setColorResource : ColorResource -> Config -> Config
 setColorResource resource (Config c) =
     toConfig { c | colorResource = resource }
+
+
+setCoreStyles : List ( String, String ) -> Config -> Config
+setCoreStyles styles (Config c) =
+    toConfig { c | coreStyles = styles }
 
 
 setHeight : Float -> Config -> Config
@@ -1583,11 +1591,11 @@ colorStyle c idx interpolatorInput =
 
 {-| Only categorical styles
 -}
-colorCategoricalStyle : ConfigStruct -> Int -> TypedSvg.Core.Attribute msg
+colorCategoricalStyle : ConfigStruct -> Int -> String
 colorCategoricalStyle c idx =
     case c.colorResource of
         ColorPalette colors ->
-            TypedSvg.Attributes.style ("fill: " ++ Helpers.colorPaletteToColor colors idx)
+            "fill: " ++ Helpers.colorPaletteToColor colors idx
 
         _ ->
-            TypedSvg.Attributes.style ""
+            ""

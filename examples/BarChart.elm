@@ -211,6 +211,7 @@ verticalGrouped =
         , height = height
         }
         |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withBarStyle [ ( "fill", "none" ), ( "stroke-width", "2" ) ]
         |> Bar.withGroupedLayout
         |> Bar.withSymbols (iconsCustom "chart-a")
         |> Bar.withYAxisTickCount 5

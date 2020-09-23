@@ -5,6 +5,7 @@ module Chart.Bar exposing
     , RequiredConfig
     , withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
     , noDirection, diverging, horizontal, vertical
+    , withBarStyle
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -68,6 +69,7 @@ import Chart.Internal.Type as Type
         , defaultConfig
         , fromConfig
         , setColorResource
+        , setCoreStyles
         , setDimensions
         , setSvgDesc
         , setSvgTitle
@@ -216,6 +218,13 @@ Default value: `vertical`.
 withOrientation : Orientation -> Config -> Config
 withOrientation value config =
     Type.setOrientation value config
+
+
+{-| TODO
+-}
+withBarStyle : List ( String, String ) -> Config -> Config
+withBarStyle styles config =
+    Type.setCoreStyles styles config
 
 
 {-| Passes the tick values for a bar chart continous axis.
