@@ -55,14 +55,11 @@ import Chart.Internal.Type
         , getBandSingleRange
         , getDataBandDepth
         , getDomainBandFromData
-        , getHeight
         , getIcons
         , getLinearRange
-        , getMargin
         , getOffset
         , getShowLabels
         , getStackedValuesAndGroupes
-        , getWidth
         , leftGap
         , role
         , showIcons
@@ -122,13 +119,13 @@ renderBandStacked ( data, config ) =
             fromConfig config
 
         m =
-            getMargin config
+            c.margin
 
         w =
-            getWidth config
+            c.width
 
         h =
-            getHeight config
+            c.height
 
         outerW =
             w + m.left + m.right
@@ -411,13 +408,13 @@ renderBandGrouped ( data, config ) =
             fromConfig config
 
         m =
-            getMargin config
+            c.margin
 
         w =
-            getWidth config
+            c.width
 
         h =
-            getHeight config
+            c.height
 
         outerW =
             w + m.left + m.right
@@ -633,7 +630,7 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
             Helpers.floorFloat <| Scale.bandwidth bandSingleScale
 
         h =
-            getHeight (toConfig c)
+            c.height
                 - Scale.convert linearScale y__
                 - iconOffset
                 |> Helpers.floorFloat
@@ -1046,13 +1043,13 @@ renderHistogram ( histogram, config ) =
             fromConfig config
 
         m =
-            getMargin config
+            c.margin
 
         w =
-            getWidth config
+            c.width
 
         h =
-            getHeight config
+            c.height
 
         outerW =
             w + m.left + m.right

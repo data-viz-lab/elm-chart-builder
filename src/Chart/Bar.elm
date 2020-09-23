@@ -45,6 +45,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 -}
 
+import Axis
 import Chart.Internal.Bar
     exposing
         ( renderBandGrouped

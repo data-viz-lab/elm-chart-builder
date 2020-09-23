@@ -45,12 +45,9 @@ import Chart.Internal.Type
         , fromConfig
         , getDomainLinearFromData
         , getDomainTimeFromData
-        , getHeight
         , getIcons
-        , getMargin
         , getOffset
         , getShowLabels
-        , getWidth
         , leftGap
         , role
         , showIcons
@@ -119,13 +116,13 @@ renderLineGrouped ( data, config ) =
             fromConfig config
 
         m =
-            getMargin config
+            c.margin
 
         w =
-            getWidth config
+            c.width
 
         h =
-            getHeight config
+            c.height
 
         outerW =
             w + m.left + m.right
@@ -257,13 +254,13 @@ renderLineStacked ( data, config ) =
             fromConfig config
 
         m =
-            getMargin config
+            c.margin
 
         w =
-            getWidth config
+            c.width
 
         h =
-            getHeight config
+            c.height
 
         outerW =
             w + m.left + m.right
@@ -693,7 +690,7 @@ drawLinearLine config xScale yScale sortedData =
             fromConfig config
 
         m =
-            getMargin config
+            c.margin
 
         lineGenerator : PointLinear -> Maybe ( Float, Float )
         lineGenerator ( x, y ) =
