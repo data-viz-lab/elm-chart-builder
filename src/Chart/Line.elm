@@ -5,7 +5,7 @@ module Chart.Line exposing
     , RequiredConfig
     , withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout
     , withSymbols
-    , withGroupLabels
+    , withGroupLabels, withLineStyle
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -511,6 +511,13 @@ withGroupedLayout config =
 withGroupLabels : Config -> Config
 withGroupLabels =
     Type.showXGroupLabel
+
+
+{-| TODO
+-}
+withLineStyle : List ( String, String ) -> Config -> Config
+withLineStyle styles config =
+    Type.setCoreStyles styles config
 
 
 

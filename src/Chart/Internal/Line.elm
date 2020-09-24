@@ -705,10 +705,12 @@ drawLinearLine config xScale yScale sortedData =
         colorSymbol idx =
             colorStyle c (Just idx) Nothing
 
-        color idx =
+        styles idx =
             Helpers.mergeStyles
                 [ ( "fill", "none" ) ]
                 (colorStyle c (Just idx) Nothing)
+                |> Helpers.mergeStyles c.coreStyle
+                |> style
 
         label : Int -> Maybe String -> List PointLinear -> Svg msg
         label i s d =
@@ -727,8 +729,7 @@ drawLinearLine config xScale yScale sortedData =
             (\idx d ->
                 Path.element (line d)
                     [ class [ "line", "line-" ++ String.fromInt idx ]
-                    , color idx
-                        |> style
+                    , styles idx
                     ]
             )
             sortedData

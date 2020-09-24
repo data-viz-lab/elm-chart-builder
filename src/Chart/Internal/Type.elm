@@ -407,7 +407,7 @@ type alias ConfigStruct =
     , axisYTickSizeInner : AxisTickSize
     , axisYTickPadding : AxisTickPadding
     , colorResource : ColorResource
-    , coreStyles : List ( String, String )
+    , coreStyle : List ( String, String )
     , curve : List ( Float, Float ) -> SubPath
     , domainBand : DomainBand
     , domainLinear : DomainLinear
@@ -447,7 +447,7 @@ defaultConfig =
         , axisYTickSizeInner = DefaultTickSize
         , axisYTickPadding = DefaultTickPadding
         , colorResource = ColorNone
-        , coreStyles = []
+        , coreStyle = []
         , curve = \d -> Shape.linearCurve d
         , domainBand = DomainBand initialDomainBandStruct
         , domainLinear = DomainLinear initialDomainLinearStruct
@@ -660,7 +660,7 @@ setColorResource resource (Config c) =
 
 setCoreStyles : List ( String, String ) -> Config -> Config
 setCoreStyles styles (Config c) =
-    toConfig { c | coreStyles = styles }
+    toConfig { c | coreStyle = styles }
 
 
 setHeight : Float -> Config -> Config

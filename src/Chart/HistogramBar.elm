@@ -3,6 +3,7 @@ module Chart.HistogramBar exposing
     , init
     , render
     , withTable, withDomain, withColor, withTitle, withDesc, withYAxisTickFormat, withYAxisTicks, withYAxisTickCount, hideAxis, hideYAxis, hideXAxis
+    , withBarStyle
     )
 
 {-| This is the histogram chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -286,3 +287,10 @@ hideYAxis config =
 hideXAxis : Config -> Config
 hideXAxis config =
     Type.setXAxis False config
+
+
+{-| TODO
+-}
+withBarStyle : List ( String, String ) -> Config -> Config
+withBarStyle styles config =
+    Type.setCoreStyles styles config

@@ -350,8 +350,8 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
                 ( upper, lower ) =
                     stackedValue
 
-                coreStyles =
-                    Helpers.mergeStyles c.coreStyles (colorCategoricalStyle c idx)
+                coreStyle =
+                    Helpers.mergeStyles c.coreStyle (colorCategoricalStyle c idx)
                         |> style
             in
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
@@ -361,7 +361,7 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
                     , width <| Scale.bandwidth bandGroupScale
                     , height <| (abs <| upper - lower)
                     , shapeRendering RenderCrispEdges
-                    , coreStyles
+                    , coreStyle
                     ]
                     []
                 , TypedSvg.title [] [ text <| getRectTitleText c.axisYContinousTickFormat idx group labels rawValue ]
@@ -382,8 +382,8 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
                 ( lower, upper ) =
                     stackedValue
 
-                coreStyles =
-                    Helpers.mergeStyles c.coreStyles (colorCategoricalStyle c idx)
+                coreStyle =
+                    Helpers.mergeStyles c.coreStyle (colorCategoricalStyle c idx)
                         |> style
             in
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
@@ -393,7 +393,7 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
                     , height <| Scale.bandwidth bandGroupScale
                     , width <| (abs <| upper - lower)
                     , shapeRendering RenderCrispEdges
-                    , coreStyles
+                    , coreStyle
                     ]
                     []
                 , TypedSvg.title [] [ text <| getRectTitleText c.axisYContinousTickFormat idx group labels rawValue ]
@@ -633,8 +633,8 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
         colorStyles =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
 
-        coreStyles =
-            Helpers.mergeStyles c.coreStyles colorStyles
+        coreStyle =
+            Helpers.mergeStyles c.coreStyle colorStyles
                 |> style
 
         w =
@@ -666,7 +666,7 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
         , width <| w
         , height <| h
         , shapeRendering RenderCrispEdges
-        , coreStyles
+        , coreStyle
         ]
         []
         :: symbol
@@ -701,8 +701,8 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
         colorStyles =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
 
-        coreStyles =
-            Helpers.mergeStyles c.coreStyles colorStyles
+        coreStyle =
+            Helpers.mergeStyles c.coreStyle colorStyles
                 |> style
 
         labelOffset =
@@ -724,7 +724,7 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
         , width w
         , height h
         , shapeRendering RenderCrispEdges
-        , coreStyles
+        , coreStyle
         ]
         []
         :: symbol
@@ -1198,17 +1198,19 @@ histogramColumn :
     -> Svg msg
 histogramColumn c h xScale yScale { length, x0, x1 } =
     let
-        styleStr =
+        styles =
             Helpers.mergeStyles
                 [ ( "stroke", "#fff" ), ( "stroke-width", String.fromFloat strokeWidth ++ "px" ) ]
                 (colorStyle c Nothing Nothing)
+                |> Helpers.mergeStyles c.coreStyle
+                |> style
     in
     rect
         [ x <| Scale.convert xScale x0
         , y <| Scale.convert yScale (toFloat length)
         , width <| Scale.convert xScale x1 - Scale.convert xScale x0
         , height <| h - Scale.convert yScale (toFloat length)
-        , style styleStr
+        , styles
         ]
         []
 
