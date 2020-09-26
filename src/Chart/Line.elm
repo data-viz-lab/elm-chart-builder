@@ -513,7 +513,13 @@ withGroupLabels =
     Type.showXGroupLabel
 
 
-{-| TODO
+{-| Sets the style for the lines
+The styles set here have precedence over `withColorPalette` and css.
+
+    Line.init requiredConfig
+        |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
+        |> Line.render ( data, accessor )
+
 -}
 withLineStyle : List ( String, String ) -> Config -> Config
 withLineStyle styles config =

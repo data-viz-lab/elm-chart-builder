@@ -220,7 +220,13 @@ withOrientation value config =
     Type.setOrientation value config
 
 
-{-| TODO
+{-| Sets the style for the bars
+The styles set here have precedence over `withColorPalette`, `withColorInterpolator` and css.
+
+    Bar.init requiredConfig
+        |> Bar.withBarStyle [ ( "fill", "none" ), ( "stroke-width", "2" ) ]
+        |> Bar.render ( data, accessor )
+
 -}
 withBarStyle : List ( String, String ) -> Config -> Config
 withBarStyle styles config =

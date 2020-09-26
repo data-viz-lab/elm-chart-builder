@@ -289,7 +289,13 @@ hideXAxis config =
     Type.setXAxis False config
 
 
-{-| TODO
+{-| Sets the style for the bars
+The styles set here have precedence over css.
+
+    Histo.init requiredConfig
+        |> Histo.withBarStyle [ ( "fill", "none" ), ( "stroke-width", "2" ) ]
+        |> Histo.render ( data, accessor )
+
 -}
 withBarStyle : List ( String, String ) -> Config -> Config
 withBarStyle styles config =
