@@ -296,7 +296,7 @@ chart data =
         }
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withOrientation Bar.horizontal
-        |> Bar.withYLinearDomain ( 0, 50 )
+        |> Bar.withYDomain ( 0, 50 )
         |> Bar.withYLabels (valueFormatter >> removeZeroes)
         |> Bar.withSymbols (icons "x")
         |> Bar.withYAxisTickFormat valueFormatter
