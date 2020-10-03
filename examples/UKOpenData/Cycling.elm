@@ -175,6 +175,7 @@ stackedByFrequency =
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.withAxisTickSizeInner 0
+        |> Bar.withXAxisTickPadding 6
         |> Bar.withYDomain ( 0, 0.55 )
         |> Bar.hideYAxis
         |> Bar.render ( data, accessor )
@@ -189,8 +190,8 @@ stackedByFrequencyGender =
         }
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withYAxisTickFormat valueFormatter
-        -- TODO
-        --|> Bar.withAxisTickSizeInner 0
+        |> Bar.withXAxisTickSizeInner 0
+        |> Bar.withXAxisTickPadding 6
         |> Bar.withYDomain ( 0, 0.55 )
         |> Bar.render ( dataGender, accessor )
 

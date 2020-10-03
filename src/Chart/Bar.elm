@@ -3,7 +3,7 @@ module Chart.Bar exposing
     , init
     , render
     , RequiredConfig
-    , withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding
+    , withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter
     , noDirection, diverging, horizontal, vertical
     , withBarStyle
     )
@@ -37,7 +37,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding
+@docs withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter
 
 
 # Configuration arguments
@@ -312,6 +312,78 @@ withAxisTickSizeOuter size config =
 withAxisTickPadding : Float -> Config -> Config
 withAxisTickPadding size config =
     Type.setAxisTickPadding size config
+
+
+{-| Sets the the inner tick size that controls the length of the tick lines, offset from the native position of the axis. Defaults to 6. Only affects the Y axis.
+
+    Bar.init requiredConfig
+        |> Bar.withYAxisTickSizeInner 10
+        |> Bar.render ( data, accessor )
+
+-}
+withYAxisTickSizeInner : Float -> Config -> Config
+withYAxisTickSizeInner size config =
+    Type.setYAxisTickSizeInner size config
+
+
+{-| The outer tick size controls the length of the square ends of the domain path, offset from the native position of the axis. Thus, the “outer ticks” are not actually ticks but part of the domain path, and their position is determined by the associated scale’s domain extent. Thus, outer ticks may overlap with the first or last inner tick. An outer tick size of 0 suppresses the square ends of the domain path, instead producing a straight line. Defaults to 6. Only affects the Y axis.
+
+    Bar.init requiredConfig
+        |> Bar.withYAxisTickSizeOuter 0
+        |> Bar.render ( data, accessor )
+
+-}
+withYAxisTickSizeOuter : Float -> Config -> Config
+withYAxisTickSizeOuter size config =
+    Type.setYAxisTickSizeOuter size config
+
+
+{-| Padding controls the space between tick marks and tick labels. Defaults to 3. Only affects the Y axis.
+
+    Bar.init requiredConfig
+        |> Bar.withYAxisTickPadding 6
+        |> Bar.render ( data, accessor )
+
+-}
+withYAxisTickPadding : Float -> Config -> Config
+withYAxisTickPadding size config =
+    Type.setYAxisTickPadding size config
+
+
+{-| Sets the the inner tick size that controls the length of the tick lines, offset from the native position of the axis. Defaults to 6. Only affects the X axis.
+
+    Bar.init requiredConfig
+        |> Bar.withXAxisTickSizeInner 10
+        |> Bar.render ( data, accessor )
+
+-}
+withXAxisTickSizeInner : Float -> Config -> Config
+withXAxisTickSizeInner size config =
+    Type.setXAxisTickSizeInner size config
+
+
+{-| The outer tick size controls the length of the square ends of the domain path, offset from the native position of the axis. Thus, the “outer ticks” are not actually ticks but part of the domain path, and their position is determined by the associated scale’s domain extent. Thus, outer ticks may overlap with the first or last inner tick. An outer tick size of 0 suppresses the square ends of the domain path, instead producing a straight line. Defaults to 6. Only affects the X axis.
+
+    Bar.init requiredConfig
+        |> Bar.withXAxisTickSizeOuter 0
+        |> Bar.render ( data, accessor )
+
+-}
+withXAxisTickSizeOuter : Float -> Config -> Config
+withXAxisTickSizeOuter size config =
+    Type.setXAxisTickSizeOuter size config
+
+
+{-| Padding controls the space between tick marks and tick labels. Defaults to 3. Only affects the X axis.
+
+    Bar.init requiredConfig
+        |> Bar.withXAxisTickPadding 6
+        |> Bar.render ( data, accessor )
+
+-}
+withXAxisTickPadding : Float -> Config -> Config
+withXAxisTickPadding size config =
+    Type.setXAxisTickPadding size config
 
 
 {-| Sets the color palette for the chart.

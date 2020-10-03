@@ -3,7 +3,7 @@ module Chart.Line exposing
     , init
     , render
     , RequiredConfig
-    , withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding
+    , withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter
     , withSymbols
     , withGroupLabels, withLineStyle
     )
@@ -35,7 +35,7 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 
 # Configuration setters
 
-@docs withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout, withXGroupLabels, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding
+@docs withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout, withXGroupLabels, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter
 
 @docs withSymbols
 
@@ -350,6 +350,78 @@ withAxisTickSizeOuter size config =
 withAxisTickPadding : Float -> Config -> Config
 withAxisTickPadding size config =
     Type.setAxisTickPadding size config
+
+
+{-| Sets the the inner tick size that controls the length of the tick lines, offset from the native position of the axis. Defaults to 6. Only affects the Y axis.
+
+    Line.init requiredConfig
+        |> Line.withYAxisTickSizeInner 10
+        |> Line.render ( data, accessor )
+
+-}
+withYAxisTickSizeInner : Float -> Config -> Config
+withYAxisTickSizeInner size config =
+    Type.setYAxisTickSizeInner size config
+
+
+{-| The outer tick size controls the length of the square ends of the domain path, offset from the native position of the axis. Thus, the “outer ticks” are not actually ticks but part of the domain path, and their position is determined by the associated scale’s domain extent. Thus, outer ticks may overlap with the first or last inner tick. An outer tick size of 0 suppresses the square ends of the domain path, instead producing a straight line. Defaults to 6. Only affects the Y axis.
+
+    Line.init requiredConfig
+        |> Line.withYAxisTickSizeOuter 0
+        |> Line.render ( data, accessor )
+
+-}
+withYAxisTickSizeOuter : Float -> Config -> Config
+withYAxisTickSizeOuter size config =
+    Type.setYAxisTickSizeOuter size config
+
+
+{-| Padding controls the space between tick marks and tick labels. Defaults to 3. Only affects the Y axis.
+
+    Line.init requiredConfig
+        |> Line.withYAxisTickPadding 6
+        |> Line.render ( data, accessor )
+
+-}
+withYAxisTickPadding : Float -> Config -> Config
+withYAxisTickPadding size config =
+    Type.setYAxisTickPadding size config
+
+
+{-| Sets the the inner tick size that controls the length of the tick lines, offset from the native position of the axis. Defaults to 6. Only affects the X axis.
+
+    Line.init requiredConfig
+        |> Line.withXAxisTickSizeInner 10
+        |> Line.render ( data, accessor )
+
+-}
+withXAxisTickSizeInner : Float -> Config -> Config
+withXAxisTickSizeInner size config =
+    Type.setXAxisTickSizeInner size config
+
+
+{-| The outer tick size controls the length of the square ends of the domain path, offset from the native position of the axis. Thus, the “outer ticks” are not actually ticks but part of the domain path, and their position is determined by the associated scale’s domain extent. Thus, outer ticks may overlap with the first or last inner tick. An outer tick size of 0 suppresses the square ends of the domain path, instead producing a straight line. Defaults to 6. Only affects the X axis.
+
+    Line.init requiredConfig
+        |> Line.withXAxisTickSizeOuter 0
+        |> Line.render ( data, accessor )
+
+-}
+withXAxisTickSizeOuter : Float -> Config -> Config
+withXAxisTickSizeOuter size config =
+    Type.setXAxisTickSizeOuter size config
+
+
+{-| Padding controls the space between tick marks and tick labels. Defaults to 3. Only affects the X axis.
+
+    Line.init requiredConfig
+        |> Line.withXAxisTickPadding 6
+        |> Line.render ( data, accessor )
+
+-}
+withXAxisTickPadding : Float -> Config -> Config
+withXAxisTickPadding size config =
+    Type.setXAxisTickPadding size config
 
 
 {-| Hide all axis

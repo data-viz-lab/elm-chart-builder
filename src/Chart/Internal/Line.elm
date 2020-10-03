@@ -52,6 +52,8 @@ import Chart.Internal.Type
         , getShowLabels
         , leftGap
         , role
+        , setXAxisAttributes
+        , setYAxisAttributes
         , showIcons
         )
 import Html exposing (Html)
@@ -407,14 +409,6 @@ timeAxisGenerator c axisType scale =
                                     _ ->
                                         Nothing
 
-                            tickCount =
-                                case c.axisXTickCount of
-                                    DefaultTickCount ->
-                                        Nothing
-
-                                    CustomTickCount count ->
-                                        Just (Axis.tickCount count)
-
                             tickFormat =
                                 case c.axisXTickFormat of
                                     CustomTimeTickFormat formatter ->
@@ -423,32 +417,9 @@ timeAxisGenerator c axisType scale =
                                     _ ->
                                         Nothing
 
-                            tickSizeInner =
-                                case c.axisTickSizeInner of
-                                    CustomTickSize x ->
-                                        Just (Axis.tickSizeInner x)
-
-                                    _ ->
-                                        Nothing
-
-                            tickSizeOuter =
-                                case c.axisTickSizeOuter of
-                                    CustomTickSize x ->
-                                        Just (Axis.tickSizeOuter x)
-
-                                    _ ->
-                                        Nothing
-
-                            tickPadding =
-                                case c.axisTickPadding of
-                                    CustomTickPadding p ->
-                                        Just (Axis.tickPadding p)
-
-                                    _ ->
-                                        Nothing
-
                             attributes =
-                                [ ticks, tickCount, tickFormat, tickSizeInner, tickSizeOuter, tickPadding ]
+                                [ ticks, tickFormat ]
+                                    ++ setXAxisAttributes c
                                     |> List.filterMap identity
 
                             axis =
@@ -471,31 +442,6 @@ timeAxisGenerator c axisType scale =
 linearAxisGenerator : ConfigStruct -> AxisType -> ContinuousScale Float -> List (Svg msg)
 linearAxisGenerator c axisType scale =
     if c.showYAxis == True then
-        let
-            tickSizeInner =
-                case c.axisTickSizeInner of
-                    CustomTickSize s ->
-                        Just (Axis.tickSizeInner s)
-
-                    _ ->
-                        Nothing
-
-            tickSizeOuter =
-                case c.axisTickSizeOuter of
-                    CustomTickSize s ->
-                        Just (Axis.tickSizeOuter s)
-
-                    _ ->
-                        Nothing
-
-            tickPadding =
-                case c.axisTickPadding of
-                    CustomTickPadding p ->
-                        Just (Axis.tickPadding p)
-
-                    _ ->
-                        Nothing
-        in
         case axisType of
             Y ->
                 let
@@ -507,14 +453,6 @@ linearAxisGenerator c axisType scale =
                             _ ->
                                 Nothing
 
-                    tickCount =
-                        case c.axisYTickCount of
-                            DefaultTickCount ->
-                                Nothing
-
-                            CustomTickCount count ->
-                                Just (Axis.tickCount count)
-
                     tickFormat =
                         case c.axisYTickFormat of
                             CustomTickFormat formatter ->
@@ -524,7 +462,8 @@ linearAxisGenerator c axisType scale =
                                 Nothing
 
                     attributes =
-                        [ ticks, tickFormat, tickCount, tickSizeInner, tickSizeOuter, tickPadding ]
+                        [ ticks, tickFormat ]
+                            ++ setYAxisAttributes c
                             |> List.filterMap identity
 
                     axis =
@@ -547,14 +486,6 @@ linearAxisGenerator c axisType scale =
                             _ ->
                                 Nothing
 
-                    tickCount =
-                        case c.axisXTickCount of
-                            DefaultTickCount ->
-                                Nothing
-
-                            CustomTickCount count ->
-                                Just (Axis.tickCount count)
-
                     tickFormat =
                         case c.axisXTickFormat of
                             CustomTickFormat formatter ->
@@ -564,7 +495,8 @@ linearAxisGenerator c axisType scale =
                                 Nothing
 
                     attributes =
-                        [ ticks, tickFormat, tickCount, tickSizeInner, tickSizeOuter, tickPadding ]
+                        [ ticks, tickFormat ]
+                            ++ setXAxisAttributes c
                             |> List.filterMap identity
 
                     axis =

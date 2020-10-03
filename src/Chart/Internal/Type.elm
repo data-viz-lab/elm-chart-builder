@@ -113,12 +113,20 @@ module Chart.Internal.Type exposing
     , setSvgTitle
     , setWidth
     , setXAxis
+    , setXAxisAttributes
     , setXAxisTickCount
     , setXAxisTickFormat
+    , setXAxisTickPadding
+    , setXAxisTickSizeInner
+    , setXAxisTickSizeOuter
     , setXAxisTicks
     , setYAxis
+    , setYAxisAttributes
     , setYAxisTickCount
     , setYAxisTickFormat
+    , setYAxisTickPadding
+    , setYAxisTickSizeInner
+    , setYAxisTickSizeOuter
     , setYAxisTicks
     , showIcons
     , showXGroupLabel
@@ -408,6 +416,12 @@ type alias ConfigStruct =
     , axisTickSizeOuter : AxisTickSize
     , axisTickSizeInner : AxisTickSize
     , axisTickPadding : AxisTickPadding
+    , axisXTickSizeOuter : AxisTickSize
+    , axisXTickSizeInner : AxisTickSize
+    , axisXTickPadding : AxisTickPadding
+    , axisYTickSizeOuter : AxisTickSize
+    , axisYTickSizeInner : AxisTickSize
+    , axisYTickPadding : AxisTickPadding
     , colorResource : ColorResource
     , coreStyle : List ( String, String )
     , curve : List ( Float, Float ) -> SubPath
@@ -445,6 +459,12 @@ defaultConfig =
         , axisTickSizeOuter = DefaultTickSize
         , axisTickSizeInner = DefaultTickSize
         , axisTickPadding = DefaultTickPadding
+        , axisXTickSizeOuter = DefaultTickSize
+        , axisXTickSizeInner = DefaultTickSize
+        , axisXTickPadding = DefaultTickPadding
+        , axisYTickSizeOuter = DefaultTickSize
+        , axisYTickSizeInner = DefaultTickSize
+        , axisYTickPadding = DefaultTickPadding
         , colorResource = ColorNone
         , coreStyle = []
         , curve = \d -> Shape.linearCurve d
@@ -665,6 +685,36 @@ setAxisTickSizeOuter size (Config c) =
 setAxisTickPadding : Float -> Config -> Config
 setAxisTickPadding size (Config c) =
     toConfig { c | axisTickPadding = CustomTickPadding size }
+
+
+setXAxisTickSizeInner : Float -> Config -> Config
+setXAxisTickSizeInner size (Config c) =
+    toConfig { c | axisXTickSizeInner = CustomTickSize size }
+
+
+setXAxisTickSizeOuter : Float -> Config -> Config
+setXAxisTickSizeOuter size (Config c) =
+    toConfig { c | axisXTickSizeOuter = CustomTickSize size }
+
+
+setXAxisTickPadding : Float -> Config -> Config
+setXAxisTickPadding size (Config c) =
+    toConfig { c | axisXTickPadding = CustomTickPadding size }
+
+
+setYAxisTickSizeInner : Float -> Config -> Config
+setYAxisTickSizeInner size (Config c) =
+    toConfig { c | axisYTickSizeInner = CustomTickSize size }
+
+
+setYAxisTickSizeOuter : Float -> Config -> Config
+setYAxisTickSizeOuter size (Config c) =
+    toConfig { c | axisYTickSizeOuter = CustomTickSize size }
+
+
+setYAxisTickPadding : Float -> Config -> Config
+setYAxisTickPadding size (Config c) =
+    toConfig { c | axisYTickPadding = CustomTickPadding size }
 
 
 setColorResource : ColorResource -> Config -> Config
@@ -1613,3 +1663,109 @@ colorCategoricalStyle c idx =
 
         _ ->
             ""
+
+
+setXAxisAttributes : ConfigStruct -> List (Maybe (Axis.Attribute data))
+setXAxisAttributes c =
+    let
+        tickCount =
+            case c.axisXTickCount of
+                DefaultTickCount ->
+                    Nothing
+
+                CustomTickCount count ->
+                    Just (Axis.tickCount count)
+
+        tickSizeInner =
+            case c.axisXTickSizeInner of
+                CustomTickSize x ->
+                    Just (Axis.tickSizeInner x)
+
+                _ ->
+                    case c.axisTickSizeInner of
+                        CustomTickSize x ->
+                            Just (Axis.tickSizeInner x)
+
+                        _ ->
+                            Nothing
+
+        tickSizeOuter =
+            case c.axisXTickSizeOuter of
+                CustomTickSize x ->
+                    Just (Axis.tickSizeOuter x)
+
+                _ ->
+                    case c.axisTickSizeOuter of
+                        CustomTickSize x ->
+                            Just (Axis.tickSizeOuter x)
+
+                        _ ->
+                            Nothing
+
+        tickPadding =
+            case c.axisXTickPadding of
+                CustomTickPadding p ->
+                    Just (Axis.tickPadding p)
+
+                _ ->
+                    case c.axisTickPadding of
+                        CustomTickPadding p ->
+                            Just (Axis.tickPadding p)
+
+                        _ ->
+                            Nothing
+    in
+    [ tickCount, tickSizeInner, tickSizeOuter, tickPadding ]
+
+
+setYAxisAttributes : ConfigStruct -> List (Maybe (Axis.Attribute data))
+setYAxisAttributes c =
+    let
+        tickCount =
+            case c.axisYTickCount of
+                DefaultTickCount ->
+                    Nothing
+
+                CustomTickCount count ->
+                    Just (Axis.tickCount count)
+
+        tickSizeInner =
+            case c.axisYTickSizeInner of
+                CustomTickSize x ->
+                    Just (Axis.tickSizeInner x)
+
+                _ ->
+                    case c.axisTickSizeInner of
+                        CustomTickSize x ->
+                            Just (Axis.tickSizeInner x)
+
+                        _ ->
+                            Nothing
+
+        tickSizeOuter =
+            case c.axisYTickSizeOuter of
+                CustomTickSize x ->
+                    Just (Axis.tickSizeOuter x)
+
+                _ ->
+                    case c.axisTickSizeOuter of
+                        CustomTickSize x ->
+                            Just (Axis.tickSizeOuter x)
+
+                        _ ->
+                            Nothing
+
+        tickPadding =
+            case c.axisYTickPadding of
+                CustomTickPadding p ->
+                    Just (Axis.tickPadding p)
+
+                _ ->
+                    case c.axisTickPadding of
+                        CustomTickPadding p ->
+                            Just (Axis.tickPadding p)
+
+                        _ ->
+                            Nothing
+    in
+    [ tickCount, tickSizeInner, tickSizeOuter, tickPadding ]

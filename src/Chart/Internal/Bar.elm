@@ -63,6 +63,8 @@ import Chart.Internal.Type
         , getStackedValuesAndGroupes
         , leftGap
         , role
+        , setXAxisAttributes
+        , setYAxisAttributes
         , showIcons
         , stackedValuesInverse
         , symbolCustomSpace
@@ -959,32 +961,11 @@ bandXAxis : ConfigStruct -> BandScale String -> List (Svg msg)
 bandXAxis c bandScale =
     if c.showXAxis == True then
         let
-            tickSizeInner =
-                case c.axisTickSizeInner of
-                    CustomTickSize s ->
-                        Just (Axis.tickSizeInner s)
-
-                    _ ->
-                        Nothing
-
-            tickSizeOuter =
-                case c.axisTickSizeOuter of
-                    CustomTickSize s ->
-                        Just (Axis.tickSizeOuter s)
-
-                    _ ->
-                        Nothing
-
-            tickPadding =
-                case c.axisTickPadding of
-                    CustomTickPadding p ->
-                        Just (Axis.tickPadding p)
-
-                    _ ->
-                        Nothing
-
             attributes =
-                [ tickSizeInner, tickSizeOuter, tickPadding ]
+                setXAxisAttributes c
+                    -- removing tickCount
+                    |> List.tail
+                    |> Maybe.withDefault []
                     |> List.filterMap identity
         in
         case c.orientation of
@@ -1028,38 +1009,6 @@ bandGroupedYAxis c iconOffset linearScale =
                     _ ->
                         Nothing
 
-            tickCount =
-                case c.axisYTickCount of
-                    DefaultTickCount ->
-                        Nothing
-
-                    CustomTickCount count ->
-                        Just (Axis.tickCount count)
-
-            tickSizeInner =
-                case c.axisTickSizeInner of
-                    CustomTickSize s ->
-                        Just (Axis.tickSizeInner s)
-
-                    _ ->
-                        Nothing
-
-            tickSizeOuter =
-                case c.axisTickSizeOuter of
-                    CustomTickSize s ->
-                        Just (Axis.tickSizeOuter s)
-
-                    _ ->
-                        Nothing
-
-            tickPadding =
-                case c.axisTickPadding of
-                    CustomTickPadding p ->
-                        Just (Axis.tickPadding p)
-
-                    _ ->
-                        Nothing
-
             tickFormat =
                 case c.axisYTickFormat of
                     CustomTickFormat formatter ->
@@ -1069,7 +1018,8 @@ bandGroupedYAxis c iconOffset linearScale =
                         Nothing
 
             attributes =
-                [ ticks, tickFormat, tickCount, tickSizeInner, tickSizeOuter, tickPadding ]
+                [ ticks, tickFormat ]
+                    ++ setYAxisAttributes c
                     |> List.filterMap identity
         in
         case c.orientation of
