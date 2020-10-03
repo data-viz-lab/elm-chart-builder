@@ -3,9 +3,9 @@ module Chart.Line exposing
     , init
     , render
     , RequiredConfig
-    , withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout
+    , withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding
     , withSymbols
-    , withGroupLabels
+    , withGroupLabels, withLineStyle
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -35,8 +35,7 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 
 # Configuration setters
 
-@docs withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout
-@docs withXGroupLabels
+@docs withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout, withXGroupLabels, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding
 
 @docs withSymbols
 
@@ -68,13 +67,13 @@ import Chart.Internal.Type as Type
         , setSvgDesc
         , setSvgTitle
         , setXAxis
-        , setXAxisContinousTickCount
-        , setXAxisContinousTickFormat
-        , setXAxisContinousTicks
+        , setXAxisTickCount
+        , setXAxisTickFormat
+        , setXAxisTicks
         , setYAxis
-        , setYAxisContinousTickCount
-        , setYAxisContinousTickFormat
-        , setYAxisContinousTicks
+        , setYAxisTickCount
+        , setYAxisTickFormat
+        , setYAxisTicks
         )
 import Color exposing (Color)
 import Html exposing (Html)
@@ -227,7 +226,7 @@ Defaults to elm-visualization `Scale.ticks`
 -}
 withXAxisTicks : List Float -> Config -> Config
 withXAxisTicks ticks config =
-    Type.setXAxisContinousTicks (Type.CustomTicks ticks) config
+    Type.setXAxisTicks (Type.CustomTicks ticks) config
 
 
 {-| Sets the line curve shape
@@ -258,7 +257,7 @@ Defaults to elm-visualization `Scale.ticks`
 -}
 withXAxisTickCount : Int -> Config -> Config
 withXAxisTickCount count config =
-    Type.setXAxisContinousTickCount (Type.CustomTickCount count) config
+    Type.setXAxisTickCount (Type.CustomTickCount count) config
 
 
 {-| Sets the tick formatting for the X axis
@@ -272,7 +271,7 @@ Defaults to elm-visualization `Scale.tickFormat`
 -}
 withXAxisTickFormat : (Float -> String) -> Config -> Config
 withXAxisTickFormat f config =
-    Type.setXAxisContinousTickFormat (Type.CustomTickFormat f) config
+    Type.setXAxisTickFormat (Type.CustomTickFormat f) config
 
 
 {-| Explicitly sets the ticks for the Y axis
@@ -286,7 +285,7 @@ Defaults to `Scale.ticks`
 -}
 withYAxisTicks : List Float -> Config -> Config
 withYAxisTicks ticks config =
-    Type.setYAxisContinousTicks (Type.CustomTicks ticks) config
+    Type.setYAxisTicks (Type.CustomTicks ticks) config
 
 
 {-| Sets the approximate number of ticks for the y axis
@@ -300,7 +299,7 @@ Defaults to `Scale.ticks`
 -}
 withYAxisTickCount : Int -> Config -> Config
 withYAxisTickCount count config =
-    Type.setYAxisContinousTickCount (Type.CustomTickCount count) config
+    Type.setYAxisTickCount (Type.CustomTickCount count) config
 
 
 {-| Sets the formatting for ticks in the y axis
@@ -314,7 +313,43 @@ Defaults to `Scale.tickFormat`
 -}
 withYAxisTickFormat : (Float -> String) -> Config -> Config
 withYAxisTickFormat f config =
-    Type.setYAxisContinousTickFormat (Type.CustomTickFormat f) config
+    Type.setYAxisTickFormat (Type.CustomTickFormat f) config
+
+
+{-| Sets the the inner tick size that controls the length of the tick lines, offset from the native position of the axis. Defaults to 6.
+
+    Line.init requiredConfig
+        |> Line.withAxisTickSizeInner 10
+        |> Line.render ( data, accessor )
+
+-}
+withAxisTickSizeInner : Float -> Config -> Config
+withAxisTickSizeInner size config =
+    Type.setAxisTickSizeInner size config
+
+
+{-| The outer tick size controls the length of the square ends of the domain path, offset from the native position of the axis. Thus, the “outer ticks” are not actually ticks but part of the domain path, and their position is determined by the associated scale’s domain extent. Thus, outer ticks may overlap with the first or last inner tick. An outer tick size of 0 suppresses the square ends of the domain path, instead producing a straight line. Defaults to 6.
+
+    Line.init requiredConfig
+        |> Line.withAxisTickSizeOuter 0
+        |> Line.render ( data, accessor )
+
+-}
+withAxisTickSizeOuter : Float -> Config -> Config
+withAxisTickSizeOuter size config =
+    Type.setAxisTickSizeOuter size config
+
+
+{-| Padding controls the space between tick marks and tick labels. Defaults to 3.
+
+    Line.init requiredConfig
+        |> Line.withAxisTickPadding 6
+        |> Line.render ( data, accessor )
+
+-}
+withAxisTickPadding : Float -> Config -> Config
+withAxisTickPadding size config =
+    Type.setAxisTickPadding size config
 
 
 {-| Hide all axis
@@ -511,6 +546,19 @@ withGroupedLayout config =
 withGroupLabels : Config -> Config
 withGroupLabels =
     Type.showXGroupLabel
+
+
+{-| Sets the style for the lines
+The styles set here have precedence over `withColorPalette` and css.
+
+    Line.init requiredConfig
+        |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
+        |> Line.render ( data, accessor )
+
+-}
+withLineStyle : List ( String, String ) -> Config -> Config
+withLineStyle styles config =
+    Type.setCoreStyles styles config
 
 
 

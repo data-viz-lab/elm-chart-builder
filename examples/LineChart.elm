@@ -37,10 +37,6 @@ css =
     fill: #333;
 }
 
-.line {
-    stroke-width: 2px;
-}
-
 figure {
     margin: 0;
 }
@@ -125,6 +121,9 @@ doubleLine =
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withYAxisTickCount 5
         |> Line.withXAxisTickCount 5
+        |> Line.withAxisTickSizeOuter 0
+        |> Line.withAxisTickSizeInner 3
+        |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withGroupLabels
         |> Line.withGroupedLayout
         |> Line.withSymbols (icons "chart-b")
@@ -190,6 +189,9 @@ doubleLineStacked =
         }
         |> Line.withYAxisTickCount 5
         |> Line.withXAxisTickCount 5
+        |> Line.withAxisTickSizeOuter 0
+        |> Line.withAxisTickSizeInner 3
+        |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withGroupLabels
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withStackedLayout

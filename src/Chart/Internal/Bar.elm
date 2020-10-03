@@ -26,7 +26,8 @@ import Chart.Internal.Type
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
-        , ColorResource(..)
+        , AxisTickPadding(..)
+        , AxisTickSize(..)
         , Config
         , ConfigStruct
         , DataBand
@@ -55,14 +56,11 @@ import Chart.Internal.Type
         , getBandSingleRange
         , getDataBandDepth
         , getDomainBandFromData
-        , getHeight
         , getIcons
         , getLinearRange
-        , getMargin
         , getOffset
         , getShowLabels
         , getStackedValuesAndGroupes
-        , getWidth
         , leftGap
         , role
         , showIcons
@@ -122,13 +120,13 @@ renderBandStacked ( data, config ) =
             fromConfig config
 
         m =
-            getMargin config
+            c.margin
 
         w =
-            getWidth config
+            c.width
 
         h =
-            getHeight config
+            c.height
 
         outerW =
             w + m.left + m.right
@@ -353,6 +351,10 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
             let
                 ( upper, lower ) =
                     stackedValue
+
+                coreStyle =
+                    Helpers.mergeStyles c.coreStyle (colorCategoricalStyle c idx)
+                        |> style
             in
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
                 [ rect
@@ -361,10 +363,10 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
                     , width <| Scale.bandwidth bandGroupScale
                     , height <| (abs <| upper - lower)
                     , shapeRendering RenderCrispEdges
-                    , colorCategoricalStyle c idx
+                    , coreStyle
                     ]
                     []
-                , TypedSvg.title [] [ text <| getRectTitleText c.axisYContinousTickFormat idx group labels rawValue ]
+                , TypedSvg.title [] [ text <| getRectTitleText c.axisYTickFormat idx group labels rawValue ]
                 ]
     in
     List.indexedMap (\idx -> block idx) values
@@ -381,6 +383,10 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
             let
                 ( lower, upper ) =
                     stackedValue
+
+                coreStyle =
+                    Helpers.mergeStyles c.coreStyle (colorCategoricalStyle c idx)
+                        |> style
             in
             g [ class [ "column", "column-" ++ String.fromInt idx ] ]
                 [ rect
@@ -389,10 +395,10 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
                     , height <| Scale.bandwidth bandGroupScale
                     , width <| (abs <| upper - lower)
                     , shapeRendering RenderCrispEdges
-                    , colorCategoricalStyle c idx
+                    , coreStyle
                     ]
                     []
-                , TypedSvg.title [] [ text <| getRectTitleText c.axisYContinousTickFormat idx group labels rawValue ]
+                , TypedSvg.title [] [ text <| getRectTitleText c.axisYTickFormat idx group labels rawValue ]
                 ]
     in
     values
@@ -411,13 +417,13 @@ renderBandGrouped ( data, config ) =
             fromConfig config
 
         m =
-            getMargin config
+            c.margin
 
         w =
-            getWidth config
+            c.width
 
         h =
-            getHeight config
+            c.height
 
         outerW =
             w + m.left + m.right
@@ -626,14 +632,18 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
             else
                 w
 
-        stl =
+        colorStyles =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
+
+        coreStyle =
+            Helpers.mergeStyles c.coreStyle colorStyles
+                |> style
 
         w =
             Helpers.floorFloat <| Scale.bandwidth bandSingleScale
 
         h =
-            getHeight (toConfig c)
+            c.height
                 - Scale.convert linearScale y__
                 - iconOffset
                 |> Helpers.floorFloat
@@ -650,7 +660,7 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
                 |> Helpers.floorFloat
 
         symbol =
-            verticalSymbol config { idx = idx, x_ = x_, y_ = y_, w = w, styleStr = stl }
+            verticalSymbol config { idx = idx, x_ = x_, y_ = y_, w = w, styleStr = colorStyles }
     in
     rect
         [ x <| x_
@@ -658,7 +668,7 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
         , width <| w
         , height <| h
         , shapeRendering RenderCrispEdges
-        , style stl
+        , coreStyle
         ]
         []
         :: symbol
@@ -690,8 +700,12 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
         y_ =
             Helpers.floorFloat <| Scale.convert bandSingleScale x__
 
-        stl =
+        colorStyles =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
+
+        coreStyle =
+            Helpers.mergeStyles c.coreStyle colorStyles
+                |> style
 
         labelOffset =
             if List.isEmpty c.icons then
@@ -704,7 +718,7 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
             horizontalLabel config (w + labelGap + labelOffset) (y_ + h / 2) point
 
         symbol =
-            horizontalSymbol config { idx = idx, w = w, y_ = y_, h = h, styleStr = stl }
+            horizontalSymbol config { idx = idx, w = w, y_ = y_, h = h, styleStr = colorStyles }
     in
     rect
         [ x <| 0
@@ -712,8 +726,7 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
         , width w
         , height h
         , shapeRendering RenderCrispEdges
-        , stl
-            |> style
+        , coreStyle
         ]
         []
         :: symbol
@@ -945,11 +958,40 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
 bandXAxis : ConfigStruct -> BandScale String -> List (Svg msg)
 bandXAxis c bandScale =
     if c.showXAxis == True then
+        let
+            tickSizeInner =
+                case c.axisTickSizeInner of
+                    CustomTickSize s ->
+                        Just (Axis.tickSizeInner s)
+
+                    _ ->
+                        Nothing
+
+            tickSizeOuter =
+                case c.axisTickSizeOuter of
+                    CustomTickSize s ->
+                        Just (Axis.tickSizeOuter s)
+
+                    _ ->
+                        Nothing
+
+            tickPadding =
+                case c.axisTickPadding of
+                    CustomTickPadding p ->
+                        Just (Axis.tickPadding p)
+
+                    _ ->
+                        Nothing
+
+            attributes =
+                [ tickSizeInner, tickSizeOuter, tickPadding ]
+                    |> List.filterMap identity
+        in
         case c.orientation of
             Vertical ->
                 let
                     axis =
-                        Axis.bottom [] (Scale.toRenderable identity bandScale)
+                        Axis.bottom attributes (Scale.toRenderable identity bandScale)
                 in
                 [ g
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
@@ -979,7 +1021,7 @@ bandGroupedYAxis c iconOffset linearScale =
     if c.showYAxis == True then
         let
             ticks =
-                case c.axisYContinousTicks of
+                case c.axisYTicks of
                     CustomTicks t ->
                         Just (Axis.ticks t)
 
@@ -987,15 +1029,39 @@ bandGroupedYAxis c iconOffset linearScale =
                         Nothing
 
             tickCount =
-                case c.axisYContinousTickCount of
+                case c.axisYTickCount of
                     DefaultTickCount ->
                         Nothing
 
                     CustomTickCount count ->
                         Just (Axis.tickCount count)
 
+            tickSizeInner =
+                case c.axisTickSizeInner of
+                    CustomTickSize s ->
+                        Just (Axis.tickSizeInner s)
+
+                    _ ->
+                        Nothing
+
+            tickSizeOuter =
+                case c.axisTickSizeOuter of
+                    CustomTickSize s ->
+                        Just (Axis.tickSizeOuter s)
+
+                    _ ->
+                        Nothing
+
+            tickPadding =
+                case c.axisTickPadding of
+                    CustomTickPadding p ->
+                        Just (Axis.tickPadding p)
+
+                    _ ->
+                        Nothing
+
             tickFormat =
-                case c.axisYContinousTickFormat of
+                case c.axisYTickFormat of
                     CustomTickFormat formatter ->
                         Just (Axis.tickFormat formatter)
 
@@ -1003,7 +1069,7 @@ bandGroupedYAxis c iconOffset linearScale =
                         Nothing
 
             attributes =
-                [ ticks, tickFormat, tickCount ]
+                [ ticks, tickFormat, tickCount, tickSizeInner, tickSizeOuter, tickPadding ]
                     |> List.filterMap identity
         in
         case c.orientation of
@@ -1046,13 +1112,13 @@ renderHistogram ( histogram, config ) =
             fromConfig config
 
         m =
-            getMargin config
+            c.margin
 
         w =
-            getWidth config
+            c.width
 
         h =
-            getHeight config
+            c.height
 
         outerW =
             w + m.left + m.right
@@ -1089,7 +1155,7 @@ renderHistogram ( histogram, config ) =
                 |> Scale.linear yRange
 
         yTickFormat =
-            case c.axisYContinousTickFormat of
+            case c.axisYTickFormat of
                 CustomTickFormat formatter ->
                     Just (Axis.tickFormat formatter)
 
@@ -1187,17 +1253,19 @@ histogramColumn :
     -> Svg msg
 histogramColumn c h xScale yScale { length, x0, x1 } =
     let
-        styleStr =
+        styles =
             Helpers.mergeStyles
                 [ ( "stroke", "#fff" ), ( "stroke-width", String.fromFloat strokeWidth ++ "px" ) ]
                 (colorStyle c Nothing Nothing)
+                |> Helpers.mergeStyles c.coreStyle
+                |> style
     in
     rect
         [ x <| Scale.convert xScale x0
         , y <| Scale.convert yScale (toFloat length)
         , width <| Scale.convert xScale x1 - Scale.convert xScale x0
         , height <| h - Scale.convert yScale (toFloat length)
-        , style styleStr
+        , styles
         ]
         []
 

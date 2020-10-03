@@ -26,6 +26,8 @@ import Chart.Internal.Type
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
+        , AxisTickPadding(..)
+        , AxisTickSize(..)
         , ColorResource(..)
         , Config
         , ConfigStruct
@@ -45,12 +47,9 @@ import Chart.Internal.Type
         , fromConfig
         , getDomainLinearFromData
         , getDomainTimeFromData
-        , getHeight
         , getIcons
-        , getMargin
         , getOffset
         , getShowLabels
-        , getWidth
         , leftGap
         , role
         , showIcons
@@ -119,13 +118,13 @@ renderLineGrouped ( data, config ) =
             fromConfig config
 
         m =
-            getMargin config
+            c.margin
 
         w =
-            getWidth config
+            c.width
 
         h =
-            getHeight config
+            c.height
 
         outerW =
             w + m.left + m.right
@@ -257,13 +256,13 @@ renderLineStacked ( data, config ) =
             fromConfig config
 
         m =
-            getMargin config
+            c.margin
 
         w =
-            getWidth config
+            c.width
 
         h =
-            getHeight config
+            c.height
 
         outerW =
             w + m.left + m.right
@@ -401,7 +400,7 @@ timeAxisGenerator c axisType scale =
                     X ->
                         let
                             ticks =
-                                case c.axisXContinousTicks of
+                                case c.axisXTicks of
                                     CustomTimeTicks t ->
                                         Just (Axis.ticks t)
 
@@ -409,7 +408,7 @@ timeAxisGenerator c axisType scale =
                                         Nothing
 
                             tickCount =
-                                case c.axisXContinousTickCount of
+                                case c.axisXTickCount of
                                     DefaultTickCount ->
                                         Nothing
 
@@ -417,15 +416,39 @@ timeAxisGenerator c axisType scale =
                                         Just (Axis.tickCount count)
 
                             tickFormat =
-                                case c.axisXContinousTickFormat of
+                                case c.axisXTickFormat of
                                     CustomTimeTickFormat formatter ->
                                         Just (Axis.tickFormat formatter)
 
                                     _ ->
                                         Nothing
 
+                            tickSizeInner =
+                                case c.axisTickSizeInner of
+                                    CustomTickSize x ->
+                                        Just (Axis.tickSizeInner x)
+
+                                    _ ->
+                                        Nothing
+
+                            tickSizeOuter =
+                                case c.axisTickSizeOuter of
+                                    CustomTickSize x ->
+                                        Just (Axis.tickSizeOuter x)
+
+                                    _ ->
+                                        Nothing
+
+                            tickPadding =
+                                case c.axisTickPadding of
+                                    CustomTickPadding p ->
+                                        Just (Axis.tickPadding p)
+
+                                    _ ->
+                                        Nothing
+
                             attributes =
-                                [ ticks, tickCount, tickFormat ]
+                                [ ticks, tickCount, tickFormat, tickSizeInner, tickSizeOuter, tickPadding ]
                                     |> List.filterMap identity
 
                             axis =
@@ -448,11 +471,36 @@ timeAxisGenerator c axisType scale =
 linearAxisGenerator : ConfigStruct -> AxisType -> ContinuousScale Float -> List (Svg msg)
 linearAxisGenerator c axisType scale =
     if c.showYAxis == True then
+        let
+            tickSizeInner =
+                case c.axisTickSizeInner of
+                    CustomTickSize s ->
+                        Just (Axis.tickSizeInner s)
+
+                    _ ->
+                        Nothing
+
+            tickSizeOuter =
+                case c.axisTickSizeOuter of
+                    CustomTickSize s ->
+                        Just (Axis.tickSizeOuter s)
+
+                    _ ->
+                        Nothing
+
+            tickPadding =
+                case c.axisTickPadding of
+                    CustomTickPadding p ->
+                        Just (Axis.tickPadding p)
+
+                    _ ->
+                        Nothing
+        in
         case axisType of
             Y ->
                 let
                     ticks =
-                        case c.axisYContinousTicks of
+                        case c.axisYTicks of
                             CustomTicks t ->
                                 Just (Axis.ticks t)
 
@@ -460,7 +508,7 @@ linearAxisGenerator c axisType scale =
                                 Nothing
 
                     tickCount =
-                        case c.axisYContinousTickCount of
+                        case c.axisYTickCount of
                             DefaultTickCount ->
                                 Nothing
 
@@ -468,7 +516,7 @@ linearAxisGenerator c axisType scale =
                                 Just (Axis.tickCount count)
 
                     tickFormat =
-                        case c.axisYContinousTickFormat of
+                        case c.axisYTickFormat of
                             CustomTickFormat formatter ->
                                 Just (Axis.tickFormat formatter)
 
@@ -476,7 +524,7 @@ linearAxisGenerator c axisType scale =
                                 Nothing
 
                     attributes =
-                        [ ticks, tickFormat, tickCount ]
+                        [ ticks, tickFormat, tickCount, tickSizeInner, tickSizeOuter, tickPadding ]
                             |> List.filterMap identity
 
                     axis =
@@ -492,7 +540,7 @@ linearAxisGenerator c axisType scale =
             X ->
                 let
                     ticks =
-                        case c.axisXContinousTicks of
+                        case c.axisXTicks of
                             CustomTicks t ->
                                 Just (Axis.ticks t)
 
@@ -500,7 +548,7 @@ linearAxisGenerator c axisType scale =
                                 Nothing
 
                     tickCount =
-                        case c.axisXContinousTickCount of
+                        case c.axisXTickCount of
                             DefaultTickCount ->
                                 Nothing
 
@@ -508,7 +556,7 @@ linearAxisGenerator c axisType scale =
                                 Just (Axis.tickCount count)
 
                     tickFormat =
-                        case c.axisXContinousTickFormat of
+                        case c.axisXTickFormat of
                             CustomTickFormat formatter ->
                                 Just (Axis.tickFormat formatter)
 
@@ -516,7 +564,7 @@ linearAxisGenerator c axisType scale =
                                 Nothing
 
                     attributes =
-                        [ ticks, tickFormat, tickCount ]
+                        [ ticks, tickFormat, tickCount, tickSizeInner, tickSizeOuter, tickPadding ]
                             |> List.filterMap identity
 
                     axis =
@@ -693,7 +741,7 @@ drawLinearLine config xScale yScale sortedData =
             fromConfig config
 
         m =
-            getMargin config
+            c.margin
 
         lineGenerator : PointLinear -> Maybe ( Float, Float )
         lineGenerator ( x, y ) =
@@ -708,10 +756,12 @@ drawLinearLine config xScale yScale sortedData =
         colorSymbol idx =
             colorStyle c (Just idx) Nothing
 
-        color idx =
+        styles idx =
             Helpers.mergeStyles
                 [ ( "fill", "none" ) ]
                 (colorStyle c (Just idx) Nothing)
+                |> Helpers.mergeStyles c.coreStyle
+                |> style
 
         label : Int -> Maybe String -> List PointLinear -> Svg msg
         label i s d =
@@ -730,8 +780,7 @@ drawLinearLine config xScale yScale sortedData =
             (\idx d ->
                 Path.element (line d)
                     [ class [ "line", "line-" ++ String.fromInt idx ]
-                    , color idx
-                        |> style
+                    , styles idx
                     ]
             )
             sortedData

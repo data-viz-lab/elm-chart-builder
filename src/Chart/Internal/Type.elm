@@ -9,6 +9,8 @@ module Chart.Internal.Type exposing
     , AxisContinousDataTickFormat(..)
     , AxisContinousDataTicks(..)
     , AxisOrientation(..)
+    , AxisTickPadding(..)
+    , AxisTickSize(..)
     , BandDomain
     , ColorResource(..)
     , Config
@@ -67,7 +69,6 @@ module Chart.Internal.Type exposing
     , getAxisContinousDataFormatter
     , getBandGroupRange
     , getBandSingleRange
-    , getColorResource
     , getDataBandDepth
     , getDataLinearDepth
     , getDomainBand
@@ -76,28 +77,19 @@ module Chart.Internal.Type exposing
     , getDomainLinearFromData
     , getDomainTime
     , getDomainTimeFromData
-    , getHeight
-    , getHistogramDomain
     , getIcons
     , getLinearRange
-    , getMargin
     , getOffset
     , getShowLabels
     , getStackedValuesAndGroupes
-    , getSvgDesc
-    , getSvgTitle
-    , getWidth
-    , getXAxisContinousTickCount
-    , getXAxisContinousTickFormat
-    , getXAxisContinousTicks
-    , getYAxisContinousTickCount
-    , getYAxisContinousTickFormat
-    , getYAxisContinousTicks
-    , getZone
     , leftGap
     , role
     , setAccessibilityContent
+    , setAxisTickPadding
+    , setAxisTickSizeInner
+    , setAxisTickSizeOuter
     , setColorResource
+    , setCoreStyles
     , setCurve
     , setDimensions
     , setDomainBand
@@ -121,13 +113,13 @@ module Chart.Internal.Type exposing
     , setSvgTitle
     , setWidth
     , setXAxis
-    , setXAxisContinousTickCount
-    , setXAxisContinousTickFormat
-    , setXAxisContinousTicks
+    , setXAxisTickCount
+    , setXAxisTickFormat
+    , setXAxisTicks
     , setYAxis
-    , setYAxisContinousTickCount
-    , setYAxisContinousTickFormat
-    , setYAxisContinousTicks
+    , setYAxisTickCount
+    , setYAxisTickFormat
+    , setYAxisTicks
     , showIcons
     , showXGroupLabel
     , showXLinearLabel
@@ -141,6 +133,7 @@ module Chart.Internal.Type exposing
     , toExternalData
     )
 
+import Axis
 import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
 import Color exposing (Color)
@@ -372,6 +365,16 @@ type AxisContinousDataTickCount
     | CustomTickCount Int
 
 
+type AxisTickSize
+    = DefaultTickSize
+    | CustomTickSize Float
+
+
+type AxisTickPadding
+    = DefaultTickPadding
+    | CustomTickPadding Float
+
+
 type AxisContinousDataTickFormat
     = DefaultTickFormat
     | CustomTickFormat (Float -> String)
@@ -396,13 +399,17 @@ type AccessibilityContent
 
 type alias ConfigStruct =
     { accessibilityContent : AccessibilityContent
-    , axisXContinousTickCount : AxisContinousDataTickCount
-    , axisXContinousTickFormat : AxisContinousDataTickFormat
-    , axisXContinousTicks : AxisContinousDataTicks
-    , axisYContinousTickCount : AxisContinousDataTickCount
-    , axisYContinousTickFormat : AxisContinousDataTickFormat
-    , axisYContinousTicks : AxisContinousDataTicks
+    , axisXTickCount : AxisContinousDataTickCount
+    , axisXTickFormat : AxisContinousDataTickFormat
+    , axisXTicks : AxisContinousDataTicks
+    , axisYTickCount : AxisContinousDataTickCount
+    , axisYTickFormat : AxisContinousDataTickFormat
+    , axisYTicks : AxisContinousDataTicks
+    , axisTickSizeOuter : AxisTickSize
+    , axisTickSizeInner : AxisTickSize
+    , axisTickPadding : AxisTickPadding
     , colorResource : ColorResource
+    , coreStyle : List ( String, String )
     , curve : List ( Float, Float ) -> SubPath
     , domainBand : DomainBand
     , domainLinear : DomainLinear
@@ -429,13 +436,17 @@ defaultConfig : Config
 defaultConfig =
     toConfig
         { accessibilityContent = AccessibilityNone
-        , axisXContinousTickCount = DefaultTickCount
-        , axisXContinousTickFormat = DefaultTickFormat
-        , axisXContinousTicks = DefaultTicks
-        , axisYContinousTickCount = DefaultTickCount
-        , axisYContinousTickFormat = DefaultTickFormat
-        , axisYContinousTicks = DefaultTicks
+        , axisXTickCount = DefaultTickCount
+        , axisXTickFormat = DefaultTickFormat
+        , axisXTicks = DefaultTicks
+        , axisYTickCount = DefaultTickCount
+        , axisYTickFormat = DefaultTickFormat
+        , axisYTicks = DefaultTicks
+        , axisTickSizeOuter = DefaultTickSize
+        , axisTickSizeInner = DefaultTickSize
+        , axisTickPadding = DefaultTickPadding
         , colorResource = ColorNone
+        , coreStyle = []
         , curve = \d -> Shape.linearCurve d
         , domainBand = DomainBand initialDomainBandStruct
         , domainLinear = DomainLinear initialDomainLinearStruct
@@ -596,14 +607,14 @@ type alias StackedValuesAndGroupes =
 -- SETTERS
 
 
-setXAxisContinousTickCount : AxisContinousDataTickCount -> Config -> Config
-setXAxisContinousTickCount count (Config c) =
-    toConfig { c | axisXContinousTickCount = count }
+setXAxisTickCount : AxisContinousDataTickCount -> Config -> Config
+setXAxisTickCount count (Config c) =
+    toConfig { c | axisXTickCount = count }
 
 
-setYAxisContinousTickCount : AxisContinousDataTickCount -> Config -> Config
-setYAxisContinousTickCount count (Config c) =
-    toConfig { c | axisYContinousTickCount = count }
+setYAxisTickCount : AxisContinousDataTickCount -> Config -> Config
+setYAxisTickCount count (Config c) =
+    toConfig { c | axisYTickCount = count }
 
 
 setCurve : (List ( Float, Float ) -> SubPath) -> Config -> Config
@@ -621,29 +632,49 @@ setSvgTitle title (Config c) =
     toConfig { c | svgTitle = title }
 
 
-setXAxisContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
-setXAxisContinousTickFormat format (Config c) =
-    toConfig { c | axisXContinousTickFormat = format }
+setXAxisTickFormat : AxisContinousDataTickFormat -> Config -> Config
+setXAxisTickFormat format (Config c) =
+    toConfig { c | axisXTickFormat = format }
 
 
-setYAxisContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
-setYAxisContinousTickFormat format (Config c) =
-    toConfig { c | axisYContinousTickFormat = format }
+setYAxisTickFormat : AxisContinousDataTickFormat -> Config -> Config
+setYAxisTickFormat format (Config c) =
+    toConfig { c | axisYTickFormat = format }
 
 
-setXAxisContinousTicks : AxisContinousDataTicks -> Config -> Config
-setXAxisContinousTicks ticks (Config c) =
-    toConfig { c | axisXContinousTicks = ticks }
+setXAxisTicks : AxisContinousDataTicks -> Config -> Config
+setXAxisTicks ticks (Config c) =
+    toConfig { c | axisXTicks = ticks }
 
 
-setYAxisContinousTicks : AxisContinousDataTicks -> Config -> Config
-setYAxisContinousTicks ticks (Config c) =
-    toConfig { c | axisYContinousTicks = ticks }
+setYAxisTicks : AxisContinousDataTicks -> Config -> Config
+setYAxisTicks ticks (Config c) =
+    toConfig { c | axisYTicks = ticks }
+
+
+setAxisTickSizeInner : Float -> Config -> Config
+setAxisTickSizeInner size (Config c) =
+    toConfig { c | axisTickSizeInner = CustomTickSize size }
+
+
+setAxisTickSizeOuter : Float -> Config -> Config
+setAxisTickSizeOuter size (Config c) =
+    toConfig { c | axisTickSizeOuter = CustomTickSize size }
+
+
+setAxisTickPadding : Float -> Config -> Config
+setAxisTickPadding size (Config c) =
+    toConfig { c | axisTickPadding = CustomTickPadding size }
 
 
 setColorResource : ColorResource -> Config -> Config
 setColorResource resource (Config c) =
     toConfig { c | colorResource = resource }
+
+
+setCoreStyles : List ( String, String ) -> Config -> Config
+setCoreStyles styles (Config c) =
+    toConfig { c | coreStyle = styles }
 
 
 setHeight : Float -> Config -> Config
@@ -859,46 +890,6 @@ showXGroupLabel (Config c) =
 -- GETTERS
 
 
-getZone : Config -> Time.Zone
-getZone config =
-    fromConfig config |> .zone
-
-
-getXAxisContinousTickCount : Config -> AxisContinousDataTickCount
-getXAxisContinousTickCount config =
-    fromConfig config |> .axisXContinousTickCount
-
-
-getYAxisContinousTickCount : Config -> AxisContinousDataTickCount
-getYAxisContinousTickCount config =
-    fromConfig config |> .axisYContinousTickCount
-
-
-getXAxisContinousTickFormat : Config -> AxisContinousDataTickFormat
-getXAxisContinousTickFormat config =
-    fromConfig config |> .axisXContinousTickFormat
-
-
-getYAxisContinousTickFormat : Config -> AxisContinousDataTickFormat
-getYAxisContinousTickFormat config =
-    fromConfig config |> .axisYContinousTickFormat
-
-
-getYAxisContinousTicks : Config -> AxisContinousDataTicks
-getYAxisContinousTicks config =
-    fromConfig config |> .axisYContinousTicks
-
-
-getColorResource : Config -> ColorResource
-getColorResource config =
-    fromConfig config |> .colorResource
-
-
-getXAxisContinousTicks : Config -> AxisContinousDataTicks
-getXAxisContinousTicks config =
-    fromConfig config |> .axisXContinousTicks
-
-
 getAxisContinousDataFormatter : AxisContinousDataTickFormat -> Maybe (Float -> String)
 getAxisContinousDataFormatter format =
     case format of
@@ -910,37 +901,6 @@ getAxisContinousDataFormatter format =
 
         CustomTimeTickFormat _ ->
             Nothing
-
-
-getSvgDesc : Config -> String
-getSvgDesc config =
-    fromConfig config |> .svgDesc
-
-
-getSvgTitle : Config -> String
-getSvgTitle config =
-    fromConfig config |> .svgTitle
-
-
-getMargin : Config -> Margin
-getMargin config =
-    fromConfig config
-        |> .margin
-
-
-getHeight : Config -> Float
-getHeight config =
-    fromConfig config |> .height
-
-
-getHistogramDomain : Config -> Maybe ( Float, Float )
-getHistogramDomain config =
-    fromConfig config |> .histogramDomain
-
-
-getWidth : Config -> Float
-getWidth config =
-    fromConfig config |> .width
 
 
 getDomainBand : Config -> DomainBandStruct
@@ -1645,11 +1605,11 @@ colorStyle c idx interpolatorInput =
 
 {-| Only categorical styles
 -}
-colorCategoricalStyle : ConfigStruct -> Int -> TypedSvg.Core.Attribute msg
+colorCategoricalStyle : ConfigStruct -> Int -> String
 colorCategoricalStyle c idx =
     case c.colorResource of
         ColorPalette colors ->
-            TypedSvg.Attributes.style ("fill: " ++ Helpers.colorPaletteToColor colors idx)
+            "fill: " ++ Helpers.colorPaletteToColor colors idx
 
         _ ->
-            TypedSvg.Attributes.style ""
+            ""

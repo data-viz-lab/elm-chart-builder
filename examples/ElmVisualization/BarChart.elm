@@ -71,7 +71,7 @@ chart =
         , width = 600
         , height = 400
         }
-        |> Bar.withYLinearDomain ( 0, 5 )
+        |> Bar.withYDomain ( 0, 5 )
         |> Bar.withYAxisTickCount 5
         |> Bar.withYLabels String.fromFloat
         |> Bar.render ( timeSeries, accessor )
