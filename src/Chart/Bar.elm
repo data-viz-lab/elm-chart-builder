@@ -3,7 +3,7 @@ module Chart.Bar exposing
     , init
     , render
     , RequiredConfig
-    , withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
+    , withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding
     , noDirection, diverging, horizontal, vertical
     , withBarStyle
     )
@@ -37,7 +37,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols
+@docs withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding
 
 
 # Configuration arguments
@@ -244,7 +244,7 @@ Defaults to elm-visualization `Scale.ticks`.
 -}
 withYAxisTicks : List Float -> Config -> Config
 withYAxisTicks ticks config =
-    Type.setYAxisContinousTicks (Type.CustomTicks ticks) config
+    Type.setYAxisTicks (Type.CustomTicks ticks) config
 
 
 {-| Sets the approximate number of ticks for a bar chart continous axis.
@@ -258,7 +258,7 @@ Defaults to elm-visualization `Scale.tickCount`.
 -}
 withYAxisTickCount : Int -> Config -> Config
 withYAxisTickCount count config =
-    Type.setYAxisContinousTickCount (Type.CustomTickCount count) config
+    Type.setYAxisTickCount (Type.CustomTickCount count) config
 
 
 {-| Sets the formatting for the ticks in a bar chart continous axis.
@@ -275,7 +275,43 @@ Defaults to elm-visualization `Scale.tickFormat`.
 -}
 withYAxisTickFormat : (Float -> String) -> Config -> Config
 withYAxisTickFormat f config =
-    Type.setYAxisContinousTickFormat (CustomTickFormat f) config
+    Type.setYAxisTickFormat (CustomTickFormat f) config
+
+
+{-| Sets the the inner tick size that controls the length of the tick lines, offset from the native position of the axis. Defaults to 6.
+
+    Bar.init requiredConfig
+        |> Bar.withAxisTickSizeInner 10
+        |> Bar.render ( data, accessor )
+
+-}
+withAxisTickSizeInner : Float -> Config -> Config
+withAxisTickSizeInner size config =
+    Type.setAxisTickSizeInner size config
+
+
+{-| The outer tick size controls the length of the square ends of the domain path, offset from the native position of the axis. Thus, the “outer ticks” are not actually ticks but part of the domain path, and their position is determined by the associated scale’s domain extent. Thus, outer ticks may overlap with the first or last inner tick. An outer tick size of 0 suppresses the square ends of the domain path, instead producing a straight line. Defaults to 6.
+
+    Bar.init requiredConfig
+        |> Bar.withAxisTickSizeOuter 0
+        |> Bar.render ( data, accessor )
+
+-}
+withAxisTickSizeOuter : Float -> Config -> Config
+withAxisTickSizeOuter size config =
+    Type.setAxisTickSizeOuter size config
+
+
+{-| Padding controls the space between tick marks and tick labels. Defaults to 3.
+
+    Bar.init requiredConfig
+        |> Bar.withAxisTickPadding 6
+        |> Bar.render ( data, accessor )
+
+-}
+withAxisTickPadding : Float -> Config -> Config
+withAxisTickPadding size config =
+    Type.setAxisTickPadding size config
 
 
 {-| Sets the color palette for the chart.

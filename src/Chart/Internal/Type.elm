@@ -9,6 +9,8 @@ module Chart.Internal.Type exposing
     , AxisContinousDataTickFormat(..)
     , AxisContinousDataTicks(..)
     , AxisOrientation(..)
+    , AxisTickPadding(..)
+    , AxisTickSize(..)
     , BandDomain
     , ColorResource(..)
     , Config
@@ -83,6 +85,9 @@ module Chart.Internal.Type exposing
     , leftGap
     , role
     , setAccessibilityContent
+    , setAxisTickPadding
+    , setAxisTickSizeInner
+    , setAxisTickSizeOuter
     , setColorResource
     , setCoreStyles
     , setCurve
@@ -108,13 +113,13 @@ module Chart.Internal.Type exposing
     , setSvgTitle
     , setWidth
     , setXAxis
-    , setXAxisContinousTickCount
-    , setXAxisContinousTickFormat
-    , setXAxisContinousTicks
+    , setXAxisTickCount
+    , setXAxisTickFormat
+    , setXAxisTicks
     , setYAxis
-    , setYAxisContinousTickCount
-    , setYAxisContinousTickFormat
-    , setYAxisContinousTicks
+    , setYAxisTickCount
+    , setYAxisTickFormat
+    , setYAxisTicks
     , showIcons
     , showXGroupLabel
     , showXLinearLabel
@@ -362,12 +367,12 @@ type AxisContinousDataTickCount
 
 type AxisTickSize
     = DefaultTickSize
-    | CustomTickSize
+    | CustomTickSize Float
 
 
 type AxisTickPadding
     = DefaultTickPadding
-    | CustomTickPadding
+    | CustomTickPadding Float
 
 
 type AxisContinousDataTickFormat
@@ -394,18 +399,15 @@ type AccessibilityContent
 
 type alias ConfigStruct =
     { accessibilityContent : AccessibilityContent
-    , axisXContinousTickCount : AxisContinousDataTickCount
-    , axisXContinousTickFormat : AxisContinousDataTickFormat
-    , axisXContinousTicks : AxisContinousDataTicks
-    , axisXTickSizeOuter : AxisTickSize
-    , axisXTickSizeInner : AxisTickSize
-    , axisXTickPadding : AxisTickPadding
-    , axisYContinousTickCount : AxisContinousDataTickCount
-    , axisYContinousTickFormat : AxisContinousDataTickFormat
-    , axisYContinousTicks : AxisContinousDataTicks
-    , axisYTickSizeOuter : AxisTickSize
-    , axisYTickSizeInner : AxisTickSize
-    , axisYTickPadding : AxisTickPadding
+    , axisXTickCount : AxisContinousDataTickCount
+    , axisXTickFormat : AxisContinousDataTickFormat
+    , axisXTicks : AxisContinousDataTicks
+    , axisYTickCount : AxisContinousDataTickCount
+    , axisYTickFormat : AxisContinousDataTickFormat
+    , axisYTicks : AxisContinousDataTicks
+    , axisTickSizeOuter : AxisTickSize
+    , axisTickSizeInner : AxisTickSize
+    , axisTickPadding : AxisTickPadding
     , colorResource : ColorResource
     , coreStyle : List ( String, String )
     , curve : List ( Float, Float ) -> SubPath
@@ -434,18 +436,15 @@ defaultConfig : Config
 defaultConfig =
     toConfig
         { accessibilityContent = AccessibilityNone
-        , axisXContinousTickCount = DefaultTickCount
-        , axisXContinousTickFormat = DefaultTickFormat
-        , axisXContinousTicks = DefaultTicks
-        , axisXTickSizeOuter = DefaultTickSize
-        , axisXTickSizeInner = DefaultTickSize
-        , axisXTickPadding = DefaultTickPadding
-        , axisYContinousTickCount = DefaultTickCount
-        , axisYContinousTickFormat = DefaultTickFormat
-        , axisYContinousTicks = DefaultTicks
-        , axisYTickSizeOuter = DefaultTickSize
-        , axisYTickSizeInner = DefaultTickSize
-        , axisYTickPadding = DefaultTickPadding
+        , axisXTickCount = DefaultTickCount
+        , axisXTickFormat = DefaultTickFormat
+        , axisXTicks = DefaultTicks
+        , axisYTickCount = DefaultTickCount
+        , axisYTickFormat = DefaultTickFormat
+        , axisYTicks = DefaultTicks
+        , axisTickSizeOuter = DefaultTickSize
+        , axisTickSizeInner = DefaultTickSize
+        , axisTickPadding = DefaultTickPadding
         , colorResource = ColorNone
         , coreStyle = []
         , curve = \d -> Shape.linearCurve d
@@ -608,14 +607,14 @@ type alias StackedValuesAndGroupes =
 -- SETTERS
 
 
-setXAxisContinousTickCount : AxisContinousDataTickCount -> Config -> Config
-setXAxisContinousTickCount count (Config c) =
-    toConfig { c | axisXContinousTickCount = count }
+setXAxisTickCount : AxisContinousDataTickCount -> Config -> Config
+setXAxisTickCount count (Config c) =
+    toConfig { c | axisXTickCount = count }
 
 
-setYAxisContinousTickCount : AxisContinousDataTickCount -> Config -> Config
-setYAxisContinousTickCount count (Config c) =
-    toConfig { c | axisYContinousTickCount = count }
+setYAxisTickCount : AxisContinousDataTickCount -> Config -> Config
+setYAxisTickCount count (Config c) =
+    toConfig { c | axisYTickCount = count }
 
 
 setCurve : (List ( Float, Float ) -> SubPath) -> Config -> Config
@@ -633,24 +632,39 @@ setSvgTitle title (Config c) =
     toConfig { c | svgTitle = title }
 
 
-setXAxisContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
-setXAxisContinousTickFormat format (Config c) =
-    toConfig { c | axisXContinousTickFormat = format }
+setXAxisTickFormat : AxisContinousDataTickFormat -> Config -> Config
+setXAxisTickFormat format (Config c) =
+    toConfig { c | axisXTickFormat = format }
 
 
-setYAxisContinousTickFormat : AxisContinousDataTickFormat -> Config -> Config
-setYAxisContinousTickFormat format (Config c) =
-    toConfig { c | axisYContinousTickFormat = format }
+setYAxisTickFormat : AxisContinousDataTickFormat -> Config -> Config
+setYAxisTickFormat format (Config c) =
+    toConfig { c | axisYTickFormat = format }
 
 
-setXAxisContinousTicks : AxisContinousDataTicks -> Config -> Config
-setXAxisContinousTicks ticks (Config c) =
-    toConfig { c | axisXContinousTicks = ticks }
+setXAxisTicks : AxisContinousDataTicks -> Config -> Config
+setXAxisTicks ticks (Config c) =
+    toConfig { c | axisXTicks = ticks }
 
 
-setYAxisContinousTicks : AxisContinousDataTicks -> Config -> Config
-setYAxisContinousTicks ticks (Config c) =
-    toConfig { c | axisYContinousTicks = ticks }
+setYAxisTicks : AxisContinousDataTicks -> Config -> Config
+setYAxisTicks ticks (Config c) =
+    toConfig { c | axisYTicks = ticks }
+
+
+setAxisTickSizeInner : Float -> Config -> Config
+setAxisTickSizeInner size (Config c) =
+    toConfig { c | axisTickSizeInner = CustomTickSize size }
+
+
+setAxisTickSizeOuter : Float -> Config -> Config
+setAxisTickSizeOuter size (Config c) =
+    toConfig { c | axisTickSizeOuter = CustomTickSize size }
+
+
+setAxisTickPadding : Float -> Config -> Config
+setAxisTickPadding size (Config c) =
+    toConfig { c | axisTickPadding = CustomTickPadding size }
 
 
 setColorResource : ColorResource -> Config -> Config

@@ -192,7 +192,7 @@ Defaults to elm-visualization `Scale.ticks`.
 -}
 withYAxisTicks : List Float -> Config -> Config
 withYAxisTicks ticks config =
-    Type.setYAxisContinousTicks (Type.CustomTicks ticks) config
+    Type.setYAxisTicks (Type.CustomTicks ticks) config
 
 
 {-| Sets the approximate number of ticks for the Y axis.
@@ -206,7 +206,7 @@ Defaults to elm-visualization `Scale.tickCount`.
 -}
 withYAxisTickCount : Int -> Config -> Config
 withYAxisTickCount count config =
-    Type.setYAxisContinousTickCount (Type.CustomTickCount count) config
+    Type.setYAxisTickCount (Type.CustomTickCount count) config
 
 
 {-| Sets the formatting for the Y axis ticks.
@@ -223,7 +223,7 @@ Defaults to `Scale.tickFormat`
 -}
 withYAxisTickFormat : (Float -> String) -> Config -> Config
 withYAxisTickFormat f config =
-    Type.setYAxisContinousTickFormat (CustomTickFormat f) config
+    Type.setYAxisTickFormat (CustomTickFormat f) config
 
 
 {-| Sets an accessible, long-text description for the svg chart.

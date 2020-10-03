@@ -26,6 +26,8 @@ import Chart.Internal.Type
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
+        , AxisTickPadding(..)
+        , AxisTickSize(..)
         , Config
         , ConfigStruct
         , DataBand
@@ -364,7 +366,7 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
                     , coreStyle
                     ]
                     []
-                , TypedSvg.title [] [ text <| getRectTitleText c.axisYContinousTickFormat idx group labels rawValue ]
+                , TypedSvg.title [] [ text <| getRectTitleText c.axisYTickFormat idx group labels rawValue ]
                 ]
     in
     List.indexedMap (\idx -> block idx) values
@@ -396,7 +398,7 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
                     , coreStyle
                     ]
                     []
-                , TypedSvg.title [] [ text <| getRectTitleText c.axisYContinousTickFormat idx group labels rawValue ]
+                , TypedSvg.title [] [ text <| getRectTitleText c.axisYTickFormat idx group labels rawValue ]
                 ]
     in
     values
@@ -956,11 +958,40 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
 bandXAxis : ConfigStruct -> BandScale String -> List (Svg msg)
 bandXAxis c bandScale =
     if c.showXAxis == True then
+        let
+            tickSizeInner =
+                case c.axisTickSizeInner of
+                    CustomTickSize s ->
+                        Just (Axis.tickSizeInner s)
+
+                    _ ->
+                        Nothing
+
+            tickSizeOuter =
+                case c.axisTickSizeOuter of
+                    CustomTickSize s ->
+                        Just (Axis.tickSizeOuter s)
+
+                    _ ->
+                        Nothing
+
+            tickPadding =
+                case c.axisTickPadding of
+                    CustomTickPadding p ->
+                        Just (Axis.tickPadding p)
+
+                    _ ->
+                        Nothing
+
+            attributes =
+                [ tickSizeInner, tickSizeOuter, tickPadding ]
+                    |> List.filterMap identity
+        in
         case c.orientation of
             Vertical ->
                 let
                     axis =
-                        Axis.bottom [] (Scale.toRenderable identity bandScale)
+                        Axis.bottom attributes (Scale.toRenderable identity bandScale)
                 in
                 [ g
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
@@ -990,7 +1021,7 @@ bandGroupedYAxis c iconOffset linearScale =
     if c.showYAxis == True then
         let
             ticks =
-                case c.axisYContinousTicks of
+                case c.axisYTicks of
                     CustomTicks t ->
                         Just (Axis.ticks t)
 
@@ -998,15 +1029,39 @@ bandGroupedYAxis c iconOffset linearScale =
                         Nothing
 
             tickCount =
-                case c.axisYContinousTickCount of
+                case c.axisYTickCount of
                     DefaultTickCount ->
                         Nothing
 
                     CustomTickCount count ->
                         Just (Axis.tickCount count)
 
+            tickSizeInner =
+                case c.axisTickSizeInner of
+                    CustomTickSize s ->
+                        Just (Axis.tickSizeInner s)
+
+                    _ ->
+                        Nothing
+
+            tickSizeOuter =
+                case c.axisTickSizeOuter of
+                    CustomTickSize s ->
+                        Just (Axis.tickSizeOuter s)
+
+                    _ ->
+                        Nothing
+
+            tickPadding =
+                case c.axisTickPadding of
+                    CustomTickPadding p ->
+                        Just (Axis.tickPadding p)
+
+                    _ ->
+                        Nothing
+
             tickFormat =
-                case c.axisYContinousTickFormat of
+                case c.axisYTickFormat of
                     CustomTickFormat formatter ->
                         Just (Axis.tickFormat formatter)
 
@@ -1014,7 +1069,7 @@ bandGroupedYAxis c iconOffset linearScale =
                         Nothing
 
             attributes =
-                [ ticks, tickFormat, tickCount ]
+                [ ticks, tickFormat, tickCount, tickSizeInner, tickSizeOuter, tickPadding ]
                     |> List.filterMap identity
         in
         case c.orientation of
@@ -1100,7 +1155,7 @@ renderHistogram ( histogram, config ) =
                 |> Scale.linear yRange
 
         yTickFormat =
-            case c.axisYContinousTickFormat of
+            case c.axisYTickFormat of
                 CustomTickFormat formatter ->
                     Just (Axis.tickFormat formatter)
 

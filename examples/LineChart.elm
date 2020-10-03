@@ -121,6 +121,8 @@ doubleLine =
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withYAxisTickCount 5
         |> Line.withXAxisTickCount 5
+        |> Line.withAxisTickSizeOuter 0
+        |> Line.withAxisTickSizeInner 3
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withGroupLabels
         |> Line.withGroupedLayout
@@ -187,6 +189,8 @@ doubleLineStacked =
         }
         |> Line.withYAxisTickCount 5
         |> Line.withXAxisTickCount 5
+        |> Line.withAxisTickSizeOuter 0
+        |> Line.withAxisTickSizeInner 3
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withGroupLabels
         |> Line.withColorPalette Scale.Color.tableau10
