@@ -7,3 +7,5 @@ repl-temp-*
 *.swo
 
 elm-analyse.log
+
+screenshot-tests/node_modules
