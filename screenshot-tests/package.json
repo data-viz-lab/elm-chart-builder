@@ -6,6 +6,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "pixelmatch": "^5.2.1",
     "prettier": "^2.1.2",
     "puppeteer": "^5.3.1"
   }
