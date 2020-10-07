@@ -72,3 +72,19 @@ It expects elm-analyse to already be installed and accessible.
 $ elm-analyse | elm-analyse.log
 ```
 
+## screenshot tests:
+
+It expects the `elm reactor` server to be already running on port 8000.
+
+```shell
+$ cd screenshot-tests
+$ npm install
+
+# Check if a page in the examples folder has changed unexpectedly after a code change:
+$ node tests.js
+
+# If the change was intentional, reset the images:
+$ node tests.js --reset
+```
+
+
