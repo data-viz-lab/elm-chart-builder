@@ -1,4 +1,4 @@
-module LineChart exposing (data, main)
+module LineChart exposing (main)
 
 {-| This module shows how to build a simple line chart.
 -}
@@ -6,7 +6,7 @@ module LineChart exposing (data, main)
 import Chart.Line as Line
 import Chart.Symbol as Symbol exposing (Symbol)
 import Html exposing (Html)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, style)
 import Scale.Color
 import Set
 import Time exposing (Posix)
@@ -15,30 +15,17 @@ import Time exposing (Posix)
 css : String
 css =
     """
-.wrapper {
-  display: grid;
-  grid-template-columns: 350px 350px;
-  grid-gap: 20px;
-  background-color: #fff;
-  color: #444;
-  margin: 25px;
-}
-
-.chart-wrapper {
-    border: 1px solid #c4c4c4;
-}
-
 .axis path,
 .axis line {
-    stroke: #b7b7b7;
+  stroke: #b7b7b7;
 }
 
 .axis text {
-    fill: #333;
+  fill: #333;
 }
 
 figure {
-    margin: 0;
+  margin: 0;
 }
 """
 
@@ -55,22 +42,51 @@ icons prefix =
     ]
 
 
-width : Float
-width =
-    350
+sharedStackedLineConfig =
+    Line.init
+        { margin = { top = 10, right = 40, bottom = 30, left = 30 }
+        , width = width
+        , height = height
+        }
+        |> Line.withYAxisTickCount 5
+        |> Line.withXAxisTickCount 5
+        |> Line.withAxisTickSizeOuter 0
+        |> Line.withAxisTickSizeInner 3
+        |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
+        |> Line.withGroupLabels
+        |> Line.withColorPalette Scale.Color.tableau10
+        |> Line.withStackedLayout
+        |> Line.withSymbols (icons "chart-b")
 
 
-height : Float
-height =
-    250
+sharedGroupedLineConfig =
+    Line.init
+        { margin = { top = 10, right = 40, bottom = 30, left = 30 }
+        , width = width
+        , height = height
+        }
+        |> Line.withColorPalette Scale.Color.tableau10
+        |> Line.withYAxisTickCount 5
+        |> Line.withXAxisTickCount 5
+        |> Line.withAxisTickSizeOuter 0
+        |> Line.withAxisTickSizeInner 3
+        |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
+        |> Line.withGroupLabels
+        |> Line.withGroupedLayout
+        |> Line.withSymbols (icons "chart-b")
 
 
-type alias Data =
+type alias TimeData =
     { x : Posix, y : Float, groupLabel : String }
 
 
-data : List Data
-data =
+timeAccessor : Line.Accessor TimeData
+timeAccessor =
+    Line.time (Line.AccessorTime (.groupLabel >> Just) .x .y)
+
+
+timeData : List TimeData
+timeData =
     [ { groupLabel = "A"
       , x = Time.millisToPosix 1579275175634
       , y = 10
@@ -98,44 +114,13 @@ data =
     ]
 
 
-accessor : Line.Accessor Data
-accessor =
-    Line.time (Line.AccessorTime (.groupLabel >> Just) .x .y)
-
-
-attrs : List (Html.Attribute msg)
-attrs =
-    [ Html.Attributes.style "height" (String.fromFloat height ++ "px")
-    , Html.Attributes.style "width" (String.fromFloat width ++ "px")
-    , class "chart-wrapper"
-    ]
-
-
-doubleLine : Html msg
-doubleLine =
-    Line.init
-        { margin = { top = 10, right = 40, bottom = 30, left = 30 }
-        , width = width
-        , height = height
-        }
-        |> Line.withColorPalette Scale.Color.tableau10
-        |> Line.withYAxisTickCount 5
-        |> Line.withXAxisTickCount 5
-        |> Line.withAxisTickSizeOuter 0
-        |> Line.withAxisTickSizeInner 3
-        |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
-        |> Line.withGroupLabels
-        |> Line.withGroupedLayout
-        |> Line.withSymbols (icons "chart-b")
-        |> Line.render ( data, accessor )
-
-
-
--- Linear example
-
-
 type alias DataLinear =
     { x : Float, y : Float, groupLabel : String }
+
+
+accessorLinear : Line.Accessor DataLinear
+accessorLinear =
+    Line.linear (Line.AccessorLinear (.groupLabel >> Just) .x .y)
 
 
 dataLinear : List DataLinear
@@ -176,50 +161,72 @@ xAxisTicks =
         |> List.sort
 
 
-accessorLinear : Line.Accessor DataLinear
-accessorLinear =
-    Line.linear (Line.AccessorLinear (.groupLabel >> Just) .x .y)
+groupedTimeLine : Html msg
+groupedTimeLine =
+    sharedGroupedLineConfig
+        |> Line.render ( timeData, timeAccessor )
 
 
-doubleLineStacked =
-    Line.init
-        { margin = { top = 10, right = 40, bottom = 30, left = 30 }
-        , width = width
-        , height = height
-        }
-        |> Line.withYAxisTickCount 5
-        |> Line.withXAxisTickCount 5
-        |> Line.withAxisTickSizeOuter 0
-        |> Line.withAxisTickSizeInner 3
-        |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
-        |> Line.withGroupLabels
-        |> Line.withColorPalette Scale.Color.tableau10
-        |> Line.withStackedLayout
-        |> Line.withSymbols (icons "chart-b")
-
-
-doubleLineStackedLinear : Html msg
-doubleLineStackedLinear =
-    doubleLineStacked
+groupedLine : Html msg
+groupedLine =
+    sharedGroupedLineConfig
         |> Line.withXAxisTicks xAxisTicks
         |> Line.withXAxisTickFormat (round >> String.fromInt)
         |> Line.render ( dataLinear, accessorLinear )
 
 
-doubleLineStackedTime : Html msg
-doubleLineStackedTime =
-    doubleLineStacked
-        |> Line.render ( data, accessor )
+stackedTimeLine : Html msg
+stackedTimeLine =
+    sharedStackedLineConfig
+        |> Line.render ( timeData, timeAccessor )
+
+
+stackedLine : Html msg
+stackedLine =
+    sharedStackedLineConfig
+        |> Line.withXAxisTicks xAxisTicks
+        |> Line.withXAxisTickFormat (round >> String.fromInt)
+        |> Line.render ( dataLinear, accessorLinear )
+
+
+width : Float
+width =
+    400
+
+
+height : Float
+height =
+    250
+
+
+chartTitle : String -> Html msg
+chartTitle label =
+    Html.div [] [ Html.h5 [ style "margin" "2px" ] [ Html.text label ] ]
+
+
+attrs : List (Html.Attribute msg)
+attrs =
+    [ Html.Attributes.style "height" (String.fromFloat (height + 20) ++ "px")
+    , Html.Attributes.style "width" (String.fromFloat width ++ "px")
+    , Html.Attributes.style "border" "1px solid #c4c4c4"
+    ]
 
 
 main : Html msg
 main =
-    Html.div []
+    Html.div [ style "font-family" "Sans-Serif" ]
         [ Html.node "style" [] [ Html.text css ]
-        , Html.div [ class "wrapper" ]
-            [ Html.h3 [] [ Html.text "time" ], Html.div attrs [ doubleLine ] ]
-        , Html.div [ class "wrapper" ]
-            [ Html.h3 [] [ Html.text "Stacked time" ], Html.div attrs [ doubleLineStackedTime ] ]
-        , Html.div [ class "wrapper" ]
-            [ Html.h3 [] [ Html.text "Stacked linear" ], Html.div attrs [ doubleLineStackedLinear ] ]
+        , Html.div
+            [ style "display" "grid"
+            , style "grid-template-columns" "repeat(2, 400px)"
+            , style "grid-gap" "20px"
+            , style "background-color" "#fff"
+            , style "color" "#444"
+            , style "margin" "25px"
+            ]
+            [ Html.div attrs [ chartTitle "grouped", groupedLine ]
+            , Html.div attrs [ chartTitle "grouped time", groupedTimeLine ]
+            , Html.div attrs [ chartTitle "stacked", stackedLine ]
+            , Html.div attrs [ chartTitle "stacked time", stackedTimeLine ]
+            ]
         ]
