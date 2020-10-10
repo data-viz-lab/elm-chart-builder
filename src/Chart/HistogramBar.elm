@@ -2,8 +2,8 @@ module Chart.HistogramBar exposing
     ( dataAccessor, preProcessedDataAccessor
     , init
     , render
-    , withTable, withDomain, withColor, withTitle, withDesc, withYAxisTickFormat, withYAxisTicks, withYAxisTickCount, hideAxis, hideYAxis, hideXAxis
-    , withBarStyle
+    , withBarStyle, withColor, withDesc, withDomain, withTable, withTitle
+    , hideAxis, hideXAxis, hideYAxis, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks
     )
 
 {-| This is the histogram chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -28,7 +28,12 @@ The histogram bar chart can both generate the histogram data automatically or ac
 
 # Configuration setters
 
-@docs withTable, withDomain, withColor, withTitle, withDesc, withYAxisTickFormat, withYAxisTicks, withYAxisTickCount, hideAxis, hideYAxis, hideXAxis
+@docs withBarStyle, withColor, withDesc, withDomain, withTable, withTitle
+
+
+# Optional Axis Configuration Setters
+
+@docs hideAxis, hideXAxis, hideYAxis, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks
 
 -}
 

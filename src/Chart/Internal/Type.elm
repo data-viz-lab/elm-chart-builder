@@ -2,8 +2,8 @@ module Chart.Internal.Type exposing
     ( AccessibilityContent(..)
     , AccessorBand
     , AccessorHistogram(..)
+    , AccessorLinearOrTime(..)
     , AccessorLinearStruct
-    , AccessorLinearTime(..)
     , AccessorTimeStruct
     , AxisContinousDataTickCount(..)
     , AxisContinousDataTickFormat(..)
@@ -13,6 +13,7 @@ module Chart.Internal.Type exposing
     , AxisTickSize(..)
     , BandDomain
     , ColorResource(..)
+    , ColumnTitle(..)
     , Config
     , ConfigStruct
     , DataBand
@@ -28,6 +29,7 @@ module Chart.Internal.Type exposing
     , DomainTime
     , DomainTimeStruct
     , ExternalData
+    , Label(..)
     , Layout(..)
     , LinearDomain
     , Margin
@@ -37,11 +39,11 @@ module Chart.Internal.Type exposing
     , PointStacked
     , PointTime
     , RenderContext(..)
-    , ShowLabel(..)
     , StackedValues
     , Steps
     , adjustLinearRange
     , ariaLabelledby
+    , ariaLabelledbyContent
     , bottomGap
     , calculateHistogramDomain
     , calculateHistogramValues
@@ -77,10 +79,8 @@ module Chart.Internal.Type exposing
     , getDomainLinearFromData
     , getDomainTime
     , getDomainTimeFromData
-    , getIcons
     , getLinearRange
     , getOffset
-    , getShowLabels
     , getStackedValuesAndGroupes
     , leftGap
     , role
@@ -105,7 +105,6 @@ module Chart.Internal.Type exposing
     , setHistogramDomain
     , setIcons
     , setLayout
-    , setLayoutRestricted
     , setMargin
     , setOrientation
     , setShowDataPoints
@@ -129,9 +128,12 @@ module Chart.Internal.Type exposing
     , setYAxisTickSizeOuter
     , setYAxisTicks
     , showIcons
+    , showStackedColumnTitle
     , showXGroupLabel
     , showXLinearLabel
+    , showXOrdinalColumnTitle
     , showXOrdinalLabel
+    , showYColumnTitle
     , showYLabel
     , stackedValuesInverse
     , symbolCustomSpace
@@ -192,7 +194,7 @@ type AccessorHistogram data
     | AccessorHistogramPreProcessed (data -> Histogram.Bin Float Float)
 
 
-type AccessorLinearTime data
+type AccessorLinearOrTime data
     = AccessorLinear (AccessorLinearStruct data)
     | AccessorTime (AccessorTimeStruct data)
 
@@ -434,9 +436,10 @@ type alias ConfigStruct =
     , layout : Layout
     , margin : Margin
     , orientation : Orientation
+    , showColumnTitle : ColumnTitle
     , showDataPoints : Bool
     , showGroupLabels : Bool
-    , showLabels : ShowLabel
+    , showLabels : Label
     , showXAxis : Bool
     , showYAxis : Bool
     , svgDesc : String
@@ -477,6 +480,7 @@ defaultConfig =
         , layout = defaultLayout
         , margin = defaultMargin
         , orientation = defaultOrientation
+        , showColumnTitle = NoColumnTitle
         , showXAxis = True
         , showYAxis = True
         , showDataPoints = False
@@ -569,45 +573,6 @@ bottomGap =
     2
 
 
-showIcons : Config -> Bool
-showIcons (Config c) =
-    c
-        |> .icons
-        |> List.length
-        |> (\l -> l > 0)
-
-
-getIcons : Config -> List Symbol
-getIcons (Config c) =
-    c |> .icons
-
-
-getShowLabels : Config -> ShowLabel
-getShowLabels (Config c) =
-    c |> .showLabels
-
-
-setLayout : Layout -> Config -> Config
-setLayout layout (Config c) =
-    toConfig { c | layout = layout }
-
-
-setLayoutRestricted :
-    Layout
-    -> Config
-    -> Config
-setLayoutRestricted layout (Config c) =
-    toConfig { c | layout = layout }
-
-
-setIcons :
-    List Symbol
-    -> Config
-    -> Config
-setIcons all (Config c) =
-    Config { c | icons = all }
-
-
 
 -- STACKED
 
@@ -625,6 +590,16 @@ type alias StackedValuesAndGroupes =
 
 
 -- SETTERS
+
+
+setLayout : Layout -> Config -> Config
+setLayout layout (Config c) =
+    toConfig { c | layout = layout }
+
+
+setIcons : List Symbol -> Config -> Config
+setIcons all (Config c) =
+    Config { c | icons = all }
 
 
 setXAxisTickCount : AxisContinousDataTickCount -> Config -> Config
@@ -908,7 +883,7 @@ setAccessibilityContent content (Config c) =
 -- LABELS
 
 
-type ShowLabel
+type Label
     = YLabel (Float -> String)
     | XLinearLabel (Float -> String)
     | XOrdinalLabel
@@ -937,7 +912,41 @@ showXGroupLabel (Config c) =
 
 
 
+-- COLUMN TITLES
+
+
+type ColumnTitle
+    = YColumnTitle (Float -> String)
+    | XOrdinalColumnTitle
+    | StackedColumnTitle (Float -> String)
+    | NoColumnTitle
+
+
+showXOrdinalColumnTitle : Config -> Config
+showXOrdinalColumnTitle (Config c) =
+    toConfig { c | showColumnTitle = XOrdinalColumnTitle }
+
+
+showYColumnTitle : (Float -> String) -> Config -> Config
+showYColumnTitle formatter (Config c) =
+    toConfig { c | showColumnTitle = YColumnTitle formatter }
+
+
+showStackedColumnTitle : (Float -> String) -> Config -> Config
+showStackedColumnTitle formatter (Config c) =
+    toConfig { c | showColumnTitle = StackedColumnTitle formatter }
+
+
+
 -- GETTERS
+
+
+showIcons : Config -> Bool
+showIcons (Config c) =
+    c
+        |> .icons
+        |> List.length
+        |> (\l -> l > 0)
 
 
 getAxisContinousDataFormatter : AxisContinousDataTickFormat -> Maybe (Float -> String)
@@ -1208,7 +1217,7 @@ getLinearRange config renderContext width height bandScale =
                 GroupedBar ->
                     if showIcons config then
                         -- Here we are leaving space for the symbol
-                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale (getIcons config) )
+                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale c.icons )
 
                     else
                         ( 0, width )
@@ -1226,7 +1235,7 @@ getLinearRange config renderContext width height bandScale =
                 GroupedBar ->
                     if showIcons config then
                         -- Here we are leaving space for the symbol
-                        ( height - symbolGap - symbolSpace c.orientation bandScale (getIcons config)
+                        ( height - symbolGap - symbolSpace c.orientation bandScale c.icons
                         , 0
                         )
 
@@ -1445,7 +1454,7 @@ externalToDataBand externalData accessor =
         |> DataBand
 
 
-externalToDataLinearGroup : ExternalData data -> AccessorLinearTime data -> DataLinearGroup
+externalToDataLinearGroup : ExternalData data -> AccessorLinearOrTime data -> DataLinearGroup
 externalToDataLinearGroup externalData accessorGroup =
     let
         data =
@@ -1769,3 +1778,15 @@ setYAxisAttributes c =
                             Nothing
     in
     [ tickCount, tickSizeInner, tickSizeOuter, tickPadding ]
+
+
+ariaLabelledbyContent : ConfigStruct -> List (TypedSvg.Core.Attribute msg)
+ariaLabelledbyContent c =
+    if c.svgDesc /= "" then
+        [ ariaLabelledby c.svgDesc ]
+
+    else if c.svgTitle /= "" then
+        [ ariaLabelledby c.svgTitle ]
+
+    else
+        []

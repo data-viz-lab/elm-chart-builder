@@ -1,11 +1,11 @@
 module Chart.Line exposing
-    ( Accessor, AccessorTime, AccessorLinear, time, linear
+    ( Accessor, AccessorLinear, AccessorTime, linear, time
     , init
     , render
     , RequiredConfig
-    , withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter
+    , withColorPalette, withCurve, withDesc, withGroupLabels, withGroupedLayout, withLineStyle, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
+    , hideAxis, hideXAxis, hideYAxis, withAxisTickPadding, withAxisTickSizeInner, withAxisTickSizeOuter, withXAxisTickCount, withXAxisTickFormat, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter, withYAxisTicks
     , withSymbols
-    , withGroupLabels, withLineStyle
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -15,7 +15,7 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 
 # Chart Data Format
 
-@docs Accessor, AccessorTime, AccessorLinear, time, linear
+@docs Accessor, AccessorLinear, AccessorTime, linear, time
 
 
 # Chart Initialization
@@ -33,9 +33,14 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 @docs RequiredConfig
 
 
-# Configuration setters
+# Optional Configuration setters
 
-@docs withTable, withXAxisTickCount, withColorPalette, withTitle, withDesc, withXAxisTickFormat, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withCurve, hideXAxis, hideYAxis, hideAxis, withXTimeDomain, withYDomain, withXLinearDomain, withStackedLayout, withGroupedLayout, withXGroupLabels, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter
+@docs withColorPalette, withCurve, withDesc, withGroupLabels, withGroupedLayout, withLineStyle, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
+
+
+# Optional Axis Configuration Setters
+
+@docs hideAxis, hideXAxis, hideYAxis, withAxisTickPadding, withAxisTickSizeInner, withAxisTickSizeOuter, withXAxisTickCount, withXAxisTickFormat, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter, withYAxisTicks
 
 @docs withSymbols
 
@@ -101,7 +106,7 @@ A line chart can have the X axis as linear or time data.
 
 -}
 type alias Accessor data =
-    Type.AccessorLinearTime data
+    Type.AccessorLinearOrTime data
 
 
 {-| The accessor structure for x time lines.
@@ -194,7 +199,7 @@ init c =
         |> Line.render ( data, accessor )
 
 -}
-render : ( List data, Type.AccessorLinearTime data ) -> Config -> Html msg
+render : ( List data, Accessor data ) -> Config -> Html msg
 render ( externalData, accessor ) config =
     let
         c =
@@ -233,7 +238,7 @@ withXAxisTicks ticks config =
 
 Defaults to `Shape.linearCurve`
 
-See [https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Shape](elm-visualization/latest/Shape)
+See [elm-visualization/latest/Shape](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Shape)
 for more info.
 
     Line.init requiredConfig
@@ -540,7 +545,7 @@ It defaults to an empty string.
 This shuld be set if no title nor description exists for the chart, for example in a sparkline.
 
     Line.init requiredConfig
-        |> Line.withDesc "This is an accessible chart, with a desc element"
+        |> Line.withDesc "This is an accessible chart"
         |> Line.render ( data, accessor )
 
 -}

@@ -21,7 +21,7 @@ import Chart.Internal.TableHelpers as Helpers
 import Chart.Internal.Type
     exposing
         ( AccessibilityContent(..)
-        , AccessorLinearTime(..)
+        , AccessorLinearOrTime(..)
         , AxisContinousDataTickCount(..)
         , AxisContinousDataTickFormat(..)
         , AxisContinousDataTicks(..)
@@ -34,10 +34,10 @@ import Chart.Internal.Type
         , DataGroupLinear
         , DataLinearGroup(..)
         , DomainLinearStruct
+        , Label(..)
         , Layout(..)
         , PointLinear
         , RenderContext(..)
-        , ShowLabel(..)
         , ariaLabelledby
         , bottomGap
         , colorStyle
@@ -47,9 +47,7 @@ import Chart.Internal.Type
         , fromConfig
         , getDomainLinearFromData
         , getDomainTimeFromData
-        , getIcons
         , getOffset
-        , getShowLabels
         , leftGap
         , role
         , setXAxisAttributes
@@ -637,17 +635,21 @@ drawSymbol config { idx, x, y, styleStr } =
 
 symbolElements : Config -> List (Svg msg)
 symbolElements config =
-    case fromConfig config |> .layout of
+    let
+        c =
+            fromConfig config
+    in
+    case c.layout of
         StackedLine ->
             if showIcons config then
-                symbolsToSymbolElements (getIcons config)
+                symbolsToSymbolElements c.icons
 
             else
                 []
 
         GroupedLine ->
             if showIcons config then
-                symbolsToSymbolElements (getIcons config)
+                symbolsToSymbolElements c.icons
 
             else
                 []
@@ -790,9 +792,6 @@ horizontalLabel config xScale yScale idx groupLabel point =
                         |> Maybe.withDefault defaultSymbolSize
                         |> (+) labelGap
 
-                showLabels =
-                    getShowLabels config
-
                 txt =
                     text_
                         [ y yPos
@@ -801,7 +800,7 @@ horizontalLabel config xScale yScale idx groupLabel point =
                         , dominantBaseline DominantBaselineMiddle
                         ]
             in
-            case showLabels of
+            case conf.showLabels of
                 XGroupLabel ->
                     txt [ text label ]
 

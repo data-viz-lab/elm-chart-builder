@@ -28,6 +28,7 @@ import Chart.Internal.Type
         , AxisOrientation(..)
         , AxisTickPadding(..)
         , AxisTickSize(..)
+        , ColumnTitle(..)
         , Config
         , ConfigStruct
         , DataBand
@@ -36,14 +37,15 @@ import Chart.Internal.Type
         , DomainBand(..)
         , DomainBandStruct
         , DomainLinear(..)
+        , Label(..)
         , Layout(..)
         , Orientation(..)
         , PointBand
         , RenderContext(..)
-        , ShowLabel(..)
         , StackedValues
         , adjustLinearRange
         , ariaLabelledby
+        , ariaLabelledbyContent
         , bottomGap
         , calculateHistogramDomain
         , colorCategoricalStyle
@@ -56,10 +58,8 @@ import Chart.Internal.Type
         , getBandSingleRange
         , getDataBandDepth
         , getDomainBandFromData
-        , getIcons
         , getLinearRange
         , getOffset
-        , getShowLabels
         , getStackedValuesAndGroupes
         , leftGap
         , role
@@ -104,6 +104,7 @@ import TypedSvg.Types
 
 descAndTitle : ConfigStruct -> List (Svg msg)
 descAndTitle c =
+    -- TODO, return empty list if no options
     -- https://developer.paciellogroup.com/blog/2013/12/using-aria-enhance-svg-accessibility/
     [ TypedSvg.title [] [ text c.svgTitle ]
     , TypedSvg.desc [] [ text c.svgDesc ]
@@ -240,14 +241,16 @@ renderBandStacked ( data, config ) =
         axisBandScale =
             bandGroupScale
 
+        svgElAttrs =
+            [ viewBox 0 0 outerW outerH
+            , width outerW
+            , height outerH
+            , role "img"
+            ]
+                ++ ariaLabelledbyContent c
+
         svgEl =
-            svg
-                [ viewBox 0 0 outerW outerH
-                , width outerW
-                , height outerH
-                , role "img"
-                , ariaLabelledby "title desc"
-                ]
+            svg svgElAttrs
                 (descAndTitle c
                     ++ bandXAxis c axisBandScale
                     ++ bandGroupedYAxis c 0 linearScaleAxis
@@ -323,22 +326,6 @@ stackedColumns config bandGroupScale payload =
     g [ class [ "columns" ] ] rects
 
 
-getLabel : Int -> List String -> String
-getLabel idx l =
-    List.Extra.getAt idx l
-        |> Maybe.withDefault ""
-
-
-getRectTitleText : AxisContinousDataTickFormat -> Int -> String -> List String -> Float -> String
-getRectTitleText tickFormat idx group labels value =
-    let
-        formatter =
-            getAxisContinousDataFormatter tickFormat
-                |> Maybe.withDefault (\f -> String.fromFloat f)
-    in
-    group ++ " - " ++ getLabel idx labels ++ ": " ++ formatter value
-
-
 verticalRectsStacked :
     ConfigStruct
     -> BandScale String
@@ -357,19 +344,19 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
                 coreStyle =
                     Helpers.mergeStyles c.coreStyle (colorCategoricalStyle c idx)
                         |> style
+
+                rect_ =
+                    rect
+                        [ x <| bandValue
+                        , y <| lower - toFloat idx
+                        , width <| Scale.bandwidth bandGroupScale
+                        , height <| (abs <| upper - lower)
+                        , shapeRendering RenderCrispEdges
+                        , coreStyle
+                        ]
+                        (stackedColumnTitleText c idx labels rawValue)
             in
-            g [ class [ "column", "column-" ++ String.fromInt idx ] ]
-                [ rect
-                    [ x <| bandValue
-                    , y <| lower - toFloat idx
-                    , width <| Scale.bandwidth bandGroupScale
-                    , height <| (abs <| upper - lower)
-                    , shapeRendering RenderCrispEdges
-                    , coreStyle
-                    ]
-                    []
-                , TypedSvg.title [] [ text <| getRectTitleText c.axisYTickFormat idx group labels rawValue ]
-                ]
+            g [ class [ "column", "column-" ++ String.fromInt idx ] ] [ rect_ ]
     in
     List.indexedMap (\idx -> block idx) values
 
@@ -389,19 +376,19 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
                 coreStyle =
                     Helpers.mergeStyles c.coreStyle (colorCategoricalStyle c idx)
                         |> style
+
+                rect_ =
+                    rect
+                        [ y <| Scale.convert bandGroupScale group
+                        , x <| lower + toFloat idx
+                        , height <| Scale.bandwidth bandGroupScale
+                        , width <| (abs <| upper - lower)
+                        , shapeRendering RenderCrispEdges
+                        , coreStyle
+                        ]
+                        (stackedColumnTitleText c idx labels rawValue)
             in
-            g [ class [ "column", "column-" ++ String.fromInt idx ] ]
-                [ rect
-                    [ y <| Scale.convert bandGroupScale group
-                    , x <| lower + toFloat idx
-                    , height <| Scale.bandwidth bandGroupScale
-                    , width <| (abs <| upper - lower)
-                    , shapeRendering RenderCrispEdges
-                    , coreStyle
-                    ]
-                    []
-                , TypedSvg.title [] [ text <| getRectTitleText c.axisYTickFormat idx group labels rawValue ]
-                ]
+            g [ class [ "column", "column-" ++ String.fromInt idx ] ] [ rect_ ]
     in
     values
         |> stackedValuesInverse c.width
@@ -478,13 +465,13 @@ renderBandGrouped ( data, config ) =
 
         iconOffset : Float
         iconOffset =
-            symbolSpace Vertical bandSingleScale (getIcons config) + symbolGap
+            symbolSpace Vertical bandSingleScale c.icons + symbolGap
 
         symbolElements =
             case c.layout of
                 GroupedBar ->
                     if showIcons config then
-                        symbolsToSymbolElements c.orientation bandSingleScale (getIcons config)
+                        symbolsToSymbolElements c.orientation bandSingleScale c.icons
 
                     else
                         []
@@ -512,19 +499,17 @@ renderBandGrouped ( data, config ) =
                 |> Table.setColumnHeadings tableHeadings
                 |> Table.view
 
-        svgEl =
-            svg
-                [ viewBox 0 0 outerW outerH
-                , width outerW
-                , height outerH
-                , role "img"
+        svgElAttrs =
+            [ viewBox 0 0 outerW outerH
+            , width outerW
+            , height outerH
+            , role "img"
+            ]
+                ++ ariaLabelledbyContent c
 
-                --TODO: this should only exist if we have a title and/or a desc
-                , ariaLabelledby "title desc"
-                ]
-            <|
-                symbolElements
-                    ++ descAndTitle c
+        svgEl =
+            svg svgElAttrs <|
+                descAndTitle c
                     ++ bandGroupedYAxis c iconOffset linearScale
                     ++ bandXAxis c axisBandScale
                     ++ [ g
@@ -536,6 +521,10 @@ renderBandGrouped ( data, config ) =
                                 (columns config iconOffset bandGroupScale bandSingleScale linearScale colorScale)
                                 (fromDataBand data)
                        ]
+                    --TODO: the symbol elements could be extrapolated outside the svg element
+                    -- and eventually they could also be shared across multiple charts
+                    -- see: https://css-tricks.com/svg-symbol-good-choice-icons/
+                    ++ symbolElements
 
         tableEl =
             Helpers.invisibleFigcaption
@@ -661,18 +650,22 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
                 + iconOffset
                 |> Helpers.floorFloat
 
+        symbol : List (Svg msg)
         symbol =
             verticalSymbol config { idx = idx, x_ = x_, y_ = y_, w = w, styleStr = colorStyles }
+
+        rect_ =
+            rect
+                [ x <| x_
+                , y <| y_
+                , width <| w
+                , height <| h
+                , shapeRendering RenderCrispEdges
+                , coreStyle
+                ]
+                (columnTitleText config point)
     in
-    rect
-        [ x <| x_
-        , y <| y_
-        , width <| w
-        , height <| h
-        , shapeRendering RenderCrispEdges
-        , coreStyle
-        ]
-        []
+    rect_
         :: symbol
         ++ label
 
@@ -721,16 +714,19 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
 
         symbol =
             horizontalSymbol config { idx = idx, w = w, y_ = y_, h = h, styleStr = colorStyles }
+
+        rect_ =
+            rect
+                [ x <| 0
+                , y y_
+                , width w
+                , height h
+                , shapeRendering RenderCrispEdges
+                , coreStyle
+                ]
+                (columnTitleText config point)
     in
-    rect
-        [ x <| 0
-        , y y_
-        , width w
-        , height h
-        , shapeRendering RenderCrispEdges
-        , coreStyle
-        ]
-        []
+    rect_
         :: symbol
         ++ label
 
@@ -751,9 +747,6 @@ verticalLabel config xPos yPos point =
         ( xVal, yVal ) =
             point
 
-        showLabels =
-            getShowLabels config
-
         txt =
             text_
                 [ x xPos
@@ -761,7 +754,7 @@ verticalLabel config xPos yPos point =
                 , textAnchor AnchorMiddle
                 ]
     in
-    case showLabels of
+    case fromConfig config |> .showLabels of
         YLabel formatter ->
             [ txt [ text (yVal |> formatter) ] ]
 
@@ -779,7 +772,7 @@ horizontalSymbol :
 horizontalSymbol config { idx, w, y_, styleStr } =
     let
         symbol =
-            getSymbolByIndex (getIcons config) idx
+            getSymbolByIndex (fromConfig config |> .icons) idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
@@ -849,7 +842,7 @@ verticalSymbol config { idx, w, y_, x_, styleStr } =
     --TODO: merge styles
     let
         symbol =
-            getSymbolByIndex (getIcons config) idx
+            getSymbolByIndex (fromConfig config |> .icons) idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
@@ -1162,15 +1155,17 @@ renderHistogram ( histogram, config ) =
                         Html.text (Table.errorToString error)
                 ]
 
+        svgElAttrs =
+            [ viewBox 0 0 outerW outerH
+            , width outerW
+            , height outerH
+            , role "img"
+            , ariaLabelledby "title desc"
+            ]
+                ++ ariaLabelledbyContent c
+
         svgEl =
-            svg
-                [ viewBox 0 0 outerW outerH
-                , width outerW
-                , height outerH
-                , role "img"
-                , ariaLabelledby "title desc"
-                ]
-            <|
+            svg svgElAttrs <|
                 descAndTitle c
                     ++ xAxis
                     ++ yAxis histogram
@@ -1238,14 +1233,54 @@ strokeWidth =
 -- LABEL HELPERS
 
 
+getStackedLabel : Int -> List String -> String
+getStackedLabel idx l =
+    List.Extra.getAt idx l
+        |> Maybe.withDefault ""
+
+
+stackedColumnTitleText : ConfigStruct -> Int -> List String -> Float -> List (Svg msg)
+stackedColumnTitleText c idx labels value =
+    let
+        ordinalValue =
+            getStackedLabel idx labels
+    in
+    case c.showColumnTitle of
+        StackedColumnTitle formatter ->
+            [ TypedSvg.title [] [ text (ordinalValue ++ ": " ++ formatter value) ] ]
+
+        YColumnTitle formatter ->
+            [ TypedSvg.title [] [ value |> formatter |> text ] ]
+
+        XOrdinalColumnTitle ->
+            [ TypedSvg.title [] [ text ordinalValue ] ]
+
+        _ ->
+            []
+
+
+columnTitleText : Config -> PointBand -> List (Svg msg)
+columnTitleText config point =
+    let
+        ( xVal, yVal ) =
+            point
+    in
+    case fromConfig config |> .showColumnTitle of
+        YColumnTitle formatter ->
+            [ TypedSvg.title [] [ yVal |> formatter |> text ] ]
+
+        XOrdinalColumnTitle ->
+            [ TypedSvg.title [] [ text xVal ] ]
+
+        _ ->
+            []
+
+
 horizontalLabel : Config -> Float -> Float -> PointBand -> List (Svg msg)
 horizontalLabel config xPos yPos point =
     let
         ( xVal, yVal ) =
             point
-
-        showLabels =
-            getShowLabels config
 
         txt =
             text_
@@ -1255,7 +1290,7 @@ horizontalLabel config xPos yPos point =
                 , dominantBaseline DominantBaselineMiddle
                 ]
     in
-    case showLabels of
+    case fromConfig config |> .showLabels of
         YLabel formatter ->
             [ txt [ text (yVal |> formatter) ] ]
 

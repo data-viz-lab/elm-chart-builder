@@ -3,9 +3,9 @@ module Chart.Bar exposing
     , init
     , render
     , RequiredConfig
-    , withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter
-    , noDirection, diverging, horizontal, vertical
-    , withBarStyle
+    , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain, withYLabels
+    , hideAxis, hideXAxis, hideYAxis, withAxisTickPadding, withAxisTickSizeInner, withAxisTickSizeOuter, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withYAxisTickCount, withYAxisTickFormat, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter, withYAxisTicks
+    , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -37,12 +37,17 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withTable, withXLabels, withYLabels, withTitle, withDesc, withColorPalette, withColorInterpolator, withXGroupDomain, withXDomain, withYDomain, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks, withOrientation, hideXAxis, hideYAxis, hideAxis, withGroupedLayout, withStackedLayout, withSymbols, withAxisTickSizeOuter, withAxisTickSizeInner, withAxisTickPadding, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter
+@docs withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain, withYLabels
+
+
+# Optional Axis Configuration Setters
+
+@docs hideAxis, hideXAxis, hideYAxis, withAxisTickPadding, withAxisTickSizeInner, withAxisTickSizeOuter, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withYAxisTickCount, withYAxisTickFormat, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter, withYAxisTicks
 
 
 # Configuration arguments
 
-@docs noDirection, diverging, horizontal, vertical
+@docs diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle
 
 -}
 
@@ -61,6 +66,7 @@ import Chart.Internal.Type as Type
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
         , ColorResource(..)
+        , ColumnTitle(..)
         , Config
         , Direction(..)
         , Layout(..)
@@ -190,7 +196,7 @@ It takes a direction: `diverging` or `noDirection`.
 -}
 withStackedLayout : Direction -> Config -> Config
 withStackedLayout direction config =
-    Type.setLayoutRestricted (StackedBar direction) config
+    Type.setLayout (StackedBar direction) config
 
 
 {-| Creates a grouped bar chart.
@@ -574,6 +580,30 @@ withYLabels =
     Type.showYLabel
 
 
+{-| Set the Y numerical values as title attributes
+
+It takes a formatter function.
+
+    defaultLayoutConfig
+        |> Bar.withYColumnTitle String.fromFloat
+
+-}
+withColumnTitle : ColumnTitle -> Config -> Config
+withColumnTitle title config =
+    case title of
+        YColumnTitle formatter ->
+            Type.showYColumnTitle formatter config
+
+        XOrdinalColumnTitle ->
+            Type.showXOrdinalColumnTitle config
+
+        StackedColumnTitle formatter ->
+            Type.showStackedColumnTitle formatter config
+
+        NoColumnTitle ->
+            config
+
+
 {-| Sets an accessible, long-text description for the svg chart.
 
 It defaults to an empty string.
@@ -658,3 +688,21 @@ one upon another.
 noDirection : Direction
 noDirection =
     Type.NoDirection
+
+
+{-| -}
+xOrdinalColumnTitle : ColumnTitle
+xOrdinalColumnTitle =
+    XOrdinalColumnTitle
+
+
+{-| -}
+stackedColumnTitle : (Float -> String) -> ColumnTitle
+stackedColumnTitle =
+    StackedColumnTitle
+
+
+{-| -}
+yColumnTitle : (Float -> String) -> ColumnTitle
+yColumnTitle =
+    YColumnTitle
