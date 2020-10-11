@@ -353,7 +353,7 @@ suite =
                             ]
                                 |> toExternalData
 
-                        accessor : AccessorLinearTime Data
+                        accessor : AccessorLinearOrTime Data
                         accessor =
                             AccessorTime (AccessorTimeStruct (.groupLabel >> Just) .x .y)
 

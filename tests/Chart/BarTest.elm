@@ -86,7 +86,7 @@ withLinearDomainTest =
                     config : Type.Config
                     config =
                         Bar.init requiredConfig
-                            |> Bar.withYLinearDomain linearDomain
+                            |> Bar.withYDomain linearDomain
 
                     newLinearDomain =
                         config
