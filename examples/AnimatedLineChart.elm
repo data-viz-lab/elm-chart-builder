@@ -169,7 +169,7 @@ lineLinear d =
         }
         |> Line.withYAxisTickCount 5
         |> Line.withXAxisTickCount 5
-        |> Line.withGroupLabels
+        |> Line.withLabels Line.xGroupLabel
         |> Line.withYDomain ( 0, 20 )
         |> Line.withXAxisTicks xAxisTicks
         |> Line.withXAxisTickFormat (round >> String.fromInt)

@@ -3,9 +3,9 @@ module Chart.Bar exposing
     , init
     , render
     , RequiredConfig
-    , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain, withYLabels
+    , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withYDomain
     , hideAxis, hideXAxis, hideYAxis, withAxisTickPadding, withAxisTickSizeInner, withAxisTickSizeOuter, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withYAxisTickCount, withYAxisTickFormat, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter, withYAxisTicks
-    , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle
+    , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -37,7 +37,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain, withYLabels
+@docs withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withYDomain
 
 
 # Optional Axis Configuration Setters
@@ -47,7 +47,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Configuration arguments
 
-@docs diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle
+@docs diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
 
 -}
 
@@ -69,6 +69,7 @@ import Chart.Internal.Type as Type
         , ColumnTitle(..)
         , Config
         , Direction(..)
+        , Label(..)
         , Layout(..)
         , Orientation(..)
         , RenderContext(..)
@@ -559,25 +560,32 @@ withTable =
     Type.setAccessibilityContent AccessibilityTable
 
 
-{-| Show the Y numerical values at the end of the bars.
+{-| Show a label at the end of the bars.
 
-It takes a formatter function.
+It takes one of: yLabel, xLabel, xGroupLabel
 
-If used together with symbols, the label will be drawn on top of the symbol.
+If used together with symbols, the label will be drawn after the symbol.
 
 &#9888; Use with caution, there is no knowledge of text wrapping!
 
-With a vertical layout the available horizontal space is the width of the rects.
-
-With an horizontal layout the available horizontal space is the right margin.
-
     defaultLayoutConfig
-        |> Bar.withYLabels String.fromFloat
+        |> Bar.withLabels (Bar.yLabel String.fromFloat)
 
 -}
-withYLabels : (Float -> String) -> Config -> Config
-withYLabels =
-    Type.showYLabel
+withLabels : Label -> Config -> Config
+withLabels label =
+    case label of
+        YLabel formatter ->
+            Type.showYLabel formatter
+
+        XOrdinalLabel ->
+            Type.showXOrdinalLabel
+
+        XGroupLabel ->
+            Type.showXGroupLabel
+
+        _ ->
+            identity
 
 
 {-| Set the Y numerical values as title attributes
@@ -706,3 +714,21 @@ stackedColumnTitle =
 yColumnTitle : (Float -> String) -> ColumnTitle
 yColumnTitle =
     YColumnTitle
+
+
+{-| -}
+yLabel : (Float -> String) -> Label
+yLabel =
+    YLabel
+
+
+{-| -}
+xLabel : Label
+xLabel =
+    XOrdinalLabel
+
+
+{-| -}
+xGroupLabel : Label
+xGroupLabel =
+    XGroupLabel

@@ -53,7 +53,7 @@ sharedStackedLineConfig =
         |> Line.withAxisTickSizeOuter 0
         |> Line.withAxisTickSizeInner 3
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
-        |> Line.withGroupLabels
+        |> Line.withLabels Line.xGroupLabel
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withStackedLayout
         |> Line.withSymbols (icons "chart-b")
@@ -71,7 +71,7 @@ sharedGroupedLineConfig =
         |> Line.withAxisTickSizeOuter 0
         |> Line.withAxisTickSizeInner 3
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
-        |> Line.withGroupLabels
+        |> Line.withLabels Line.xGroupLabel
         |> Line.withGroupedLayout
         |> Line.withSymbols (icons "chart-b")
 

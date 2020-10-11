@@ -181,7 +181,7 @@ chart data =
         }
         |> Bar.withColorPalette [ Color.rgb255 209 33 2 ]
         |> Bar.withOrientation Bar.horizontal
-        |> Bar.withYLabels valueFormatter
+        |> Bar.withLabels (Bar.yLabel valueFormatter)
         |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.withYAxisTickCount 8
         |> Bar.render ( data, accessor )

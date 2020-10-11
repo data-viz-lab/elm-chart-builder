@@ -182,7 +182,7 @@ verticalGroupedWithLabels =
         |> Bar.withGroupedLayout
         |> Bar.withYAxisTickCount 5
         |> Bar.withYAxisTickFormat valueFormatter
-        |> Bar.withYLabels yLabelFormatter
+        |> Bar.withLabels (Bar.yLabel yLabelFormatter)
         |> Bar.render ( data, accessor )
 
 
@@ -214,7 +214,7 @@ horizontalGroupedWithLabels =
         |> Bar.withColumnTitle (Bar.yColumnTitle valueFormatter)
         |> Bar.withGroupedLayout
         |> Bar.withOrientation Bar.horizontal
-        |> Bar.withXLabels
+        |> Bar.withLabels Bar.xLabel
         |> Bar.withYAxisTickCount 5
         |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.render ( data, accessor )

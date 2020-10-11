@@ -3,9 +3,10 @@ module Chart.Line exposing
     , init
     , render
     , RequiredConfig
-    , withColorPalette, withCurve, withDesc, withGroupLabels, withGroupedLayout, withLineStyle, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
+    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
     , hideAxis, hideXAxis, hideYAxis, withAxisTickPadding, withAxisTickSizeInner, withAxisTickSizeOuter, withXAxisTickCount, withXAxisTickFormat, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter, withYAxisTicks
     , withSymbols
+    , xGroupLabel
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -35,7 +36,7 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 
 # Optional Configuration setters
 
-@docs withColorPalette, withCurve, withDesc, withGroupLabels, withGroupedLayout, withLineStyle, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
+@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
 
 
 # Optional Axis Configuration Setters
@@ -43,6 +44,11 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 @docs hideAxis, hideXAxis, hideYAxis, withAxisTickPadding, withAxisTickSizeInner, withAxisTickSizeOuter, withXAxisTickCount, withXAxisTickFormat, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter, withYAxisTicks
 
 @docs withSymbols
+
+
+# Configuration arguments
+
+@docs xGroupLabel
 
 -}
 
@@ -62,6 +68,7 @@ import Chart.Internal.Type as Type
         , ColorResource(..)
         , Config
         , Direction(..)
+        , Label(..)
         , Layout(..)
         , Margin
         , RenderContext(..)
@@ -611,18 +618,24 @@ withGroupedLayout config =
     Type.setLayout GroupedLine config
 
 
-{-| Show the xGroup values at the end of the lines.
+{-| Show a label at the end of the lines.
+
+It takes one of: xGroupLabel
 
 &#9888; Use with caution, there is no knowledge of text wrapping!
 
-    Line.init requiredConfig
-        |> Bar.withGroupLabels
-        |> Bar.render ( data, accessor )
+    defaultLayoutConfig
+        |> Line.withLabels Line.xGroupLabel
 
 -}
-withGroupLabels : Config -> Config
-withGroupLabels =
-    Type.showXGroupLabel
+withLabels : Label -> Config -> Config
+withLabels label =
+    case label of
+        XGroupLabel ->
+            Type.showXGroupLabel
+
+        _ ->
+            identity
 
 
 {-| Sets the style for the lines
@@ -654,3 +667,13 @@ Default value: []
 withSymbols : List Symbol -> Config -> Config
 withSymbols =
     Type.setIcons
+
+
+
+--
+
+
+{-| -}
+xGroupLabel : Label
+xGroupLabel =
+    XGroupLabel

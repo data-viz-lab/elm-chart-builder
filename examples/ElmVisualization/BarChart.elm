@@ -73,7 +73,7 @@ chart =
         }
         |> Bar.withYDomain ( 0, 5 )
         |> Bar.withYAxisTickCount 5
-        |> Bar.withYLabels String.fromFloat
+        |> Bar.withLabels (Bar.yLabel String.fromFloat)
         |> Bar.render ( timeSeries, accessor )
 
 
