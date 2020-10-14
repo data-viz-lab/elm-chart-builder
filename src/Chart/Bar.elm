@@ -588,12 +588,12 @@ withLabels label =
             identity
 
 
-{-| Set the Y numerical values as title attributes
+{-| Set the chart columns title value
 
-It takes a formatter function.
+It takes one of: stackedColumnTitle, xOrdinalColumnTitle, yColumnTitle
 
     defaultLayoutConfig
-        |> Bar.withYColumnTitle String.fromFloat
+        |> Bar.withColumnTitle (Bar.yColumnTitle String.fromFloat)
 
 -}
 withColumnTitle : ColumnTitle -> Config -> Config

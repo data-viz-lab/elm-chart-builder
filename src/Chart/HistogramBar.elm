@@ -3,7 +3,8 @@ module Chart.HistogramBar exposing
     , init
     , render
     , withBarStyle, withColor, withDesc, withDomain, withTable, withTitle
-    , hideAxis, hideXAxis, hideYAxis, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks
+    , hideAxis, hideXAxis, hideYAxis, withColumnTitle, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks
+    , yColumnTitle
     )
 
 {-| This is the histogram chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -33,7 +34,12 @@ The histogram bar chart can both generate the histogram data automatically or ac
 
 # Optional Axis Configuration Setters
 
-@docs hideAxis, hideXAxis, hideYAxis, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks
+@docs hideAxis, hideXAxis, hideYAxis, withColumnTitle, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks
+
+
+# Configuration arguments
+
+      yColumnTitle
 
 -}
 
@@ -50,6 +56,7 @@ import Chart.Internal.Type as Type
         , AxisContinousDataTicks(..)
         , AxisOrientation(..)
         , ColorResource(..)
+        , ColumnTitle(..)
         , Config
         , Margin
         , RenderContext(..)
@@ -257,6 +264,29 @@ withTitle value config =
     Type.setSvgTitle value config
 
 
+{-| Set the chart columns title value
+
+It takes one of: yColumnTitle
+
+It takes a formatter function.
+
+    defaultLayoutConfig
+        |> Bar.withColumnTitle (Bar.yColumnTitle String.fromFloat)
+
+-}
+withColumnTitle : ColumnTitle -> Config -> Config
+withColumnTitle title config =
+    case title of
+        YColumnTitle formatter ->
+            Type.showYColumnTitle formatter config
+
+        XOrdinalColumnTitle ->
+            Type.showXOrdinalColumnTitle config
+
+        _ ->
+            config
+
+
 {-| Hide all axis.
 
     Histo.init requiredConfig
@@ -305,3 +335,9 @@ The styles set here have precedence over css.
 withBarStyle : List ( String, String ) -> Config -> Config
 withBarStyle styles config =
     Type.setCoreStyles styles config
+
+
+{-| -}
+yColumnTitle : (Float -> String) -> ColumnTitle
+yColumnTitle =
+    YColumnTitle

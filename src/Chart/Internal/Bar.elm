@@ -1174,7 +1174,7 @@ renderHistogram ( histogram, config ) =
                             , class [ "series" ]
                             ]
                          <|
-                            List.map (histogramColumn c h xScale (yScaleFromBins histogram)) histogram
+                            List.map (histogramColumn config h xScale (yScaleFromBins histogram)) histogram
                        ]
     in
     case c.accessibilityContent of
@@ -1190,14 +1190,17 @@ renderHistogram ( histogram, config ) =
 
 
 histogramColumn :
-    ConfigStruct
+    Config
     -> Float
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> Bin Float Float
     -> Svg msg
-histogramColumn c h xScale yScale { length, x0, x1 } =
+histogramColumn config h xScale yScale { length, x0, x1 } =
     let
+        c =
+            fromConfig config
+
         styles =
             Helpers.mergeStyles
                 [ ( "stroke", "#fff" ), ( "stroke-width", String.fromFloat strokeWidth ++ "px" ) ]
@@ -1212,7 +1215,7 @@ histogramColumn c h xScale yScale { length, x0, x1 } =
         , height <| h - Scale.convert yScale (toFloat length)
         , styles
         ]
-        []
+        (columnTitleText config ( "", toFloat length ))
 
 
 

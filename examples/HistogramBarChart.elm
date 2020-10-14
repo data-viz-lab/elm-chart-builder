@@ -168,6 +168,7 @@ histo =
         }
         |> Histo.withDomain ( 0, 1 )
         |> Histo.withColor color
+        |> Histo.withColumnTitle (Histo.yColumnTitle String.fromFloat)
         |> Histo.withBarStyle [ ( "stroke-color", "#fff" ), ( "stroke-width", "1" ) ]
         |> Histo.render ( data, dataAccessor )
 
@@ -192,6 +193,7 @@ preProcessedHisto =
         }
         |> Histo.withYAxisTickFormat (Numeral.format "0,0")
         |> Histo.withColor color
+        |> Histo.withColumnTitle (Histo.yColumnTitle String.fromFloat)
         |> Histo.withBarStyle [ ( "stroke-color", "#fff" ), ( "stroke-width", "1" ) ]
         |> Histo.render ( preProcessedData, preProcessedDataAccessor )
 
