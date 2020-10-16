@@ -83,6 +83,7 @@ module Chart.Internal.Type exposing
     , getOffset
     , getStackedValuesAndGroupes
     , leftGap
+    , noGroups
     , role
     , setAccessibilityContent
     , setAxisTickPadding
@@ -1790,3 +1791,10 @@ ariaLabelledbyContent c =
 
     else
         []
+
+
+noGroups : List { a | groupLabel : Maybe String } -> Bool
+noGroups data =
+    data
+        |> List.map .groupLabel
+        |> List.all (\d -> d == Nothing)

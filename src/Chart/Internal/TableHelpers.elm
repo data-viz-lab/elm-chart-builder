@@ -61,27 +61,44 @@ dataLinearGroupToTableData data =
                     )
 
 
-dataBandToTableHeadings : Type.DataBand -> List Table.ComplexHeading
+dataBandToTableHeadings : Type.DataBand -> Table.Headings
 dataBandToTableHeadings data =
     data
         |> Type.fromDataBand
-        |> List.map
-            (\d ->
-                Table.HeadingAndSubHeadings (Maybe.withDefault "" d.groupLabel) [ "x", "y" ]
-            )
+        |> (\dataBand ->
+                if Type.noGroups dataBand then
+                    dataBand
+                        |> always (Table.Headings [ "x", "y" ])
+
+                else
+                    dataBand
+                        |> List.map
+                            (\d ->
+                                Table.HeadingAndSubHeadings (Maybe.withDefault "" d.groupLabel) [ "x", "y" ]
+                            )
+                        |> Table.ComplexHeadings
+           )
 
 
-dataLinearGroupToTableHeadings : Type.DataLinearGroup -> List Table.ComplexHeading
+dataLinearGroupToTableHeadings : Type.DataLinearGroup -> Table.Headings
 dataLinearGroupToTableHeadings data =
     let
         toHeading d =
             Table.HeadingAndSubHeadings (Maybe.withDefault "" d.groupLabel) [ "x", "y" ]
+
+        toHeadings dd =
+            if Type.noGroups dd then
+                dd
+                    |> always (Table.Headings [ "x", "y" ])
+
+            else
+                dd
+                    |> List.map toHeading
+                    |> Table.ComplexHeadings
     in
     case data of
         Type.DataTime data_ ->
-            data_
-                |> List.map toHeading
+            toHeadings data_
 
         Type.DataLinear data_ ->
-            data_
-                |> List.map toHeading
+            toHeadings data_

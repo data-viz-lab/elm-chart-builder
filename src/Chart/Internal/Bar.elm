@@ -263,35 +263,13 @@ renderBandStacked ( data, config ) =
                                 (List.map2 (\a b -> ( a, b, labels )) columnGroupes scaledValues)
                        ]
                 )
-
-        tableHeadings =
-            Helpers.dataBandToTableHeadings data
-                |> Table.ComplexHeadings
-
-        tableData =
-            Helpers.dataBandToTableData data
-
-        table =
-            Table.generate tableData
-                |> Table.setColumnHeadings tableHeadings
-                |> Table.view
-
-        tableEl =
-            Helpers.invisibleFigcaption
-                [ case table of
-                    Ok table_ ->
-                        Html.div [] [ table_ ]
-
-                    Err error ->
-                        Html.text (Table.errorToString error)
-                ]
     in
     case c.accessibilityContent of
         AccessibilityTable ->
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableEl ]
+                    [ svgEl, tableElement data ]
                 ]
 
         AccessibilityNone ->
@@ -487,18 +465,6 @@ renderBandGrouped ( data, config ) =
             else
                 bandSingleScale
 
-        tableHeadings =
-            Helpers.dataBandToTableHeadings data
-                |> Table.ComplexHeadings
-
-        tableData =
-            Helpers.dataBandToTableData data
-
-        table =
-            Table.generate tableData
-                |> Table.setColumnHeadings tableHeadings
-                |> Table.view
-
         svgElAttrs =
             [ viewBox 0 0 outerW outerH
             , width outerW
@@ -525,23 +491,13 @@ renderBandGrouped ( data, config ) =
                     -- and eventually they could also be shared across multiple charts
                     -- see: https://css-tricks.com/svg-symbol-good-choice-icons/
                     ++ symbolElements
-
-        tableEl =
-            Helpers.invisibleFigcaption
-                [ case table of
-                    Ok table_ ->
-                        Html.div [] [ table_ ]
-
-                    Err error ->
-                        Html.text (Table.errorToString error)
-                ]
     in
     case c.accessibilityContent of
         AccessibilityTable ->
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableEl ]
+                    [ svgEl, tableElement data ]
                 ]
 
         AccessibilityNone ->
@@ -1302,3 +1258,27 @@ horizontalLabel config xPos yPos point =
 
         _ ->
             []
+
+
+tableElement : DataBand -> Html msg
+tableElement data =
+    let
+        tableHeadings =
+            Helpers.dataBandToTableHeadings data
+
+        tableData =
+            Helpers.dataBandToTableData data
+
+        table =
+            Table.generate tableData
+                |> Table.setColumnHeadings tableHeadings
+                |> Table.view
+    in
+    Helpers.invisibleFigcaption
+        [ case table of
+            Ok table_ ->
+                Html.div [] [ table_ ]
+
+            Err error ->
+                Html.text (Table.errorToString error)
+        ]

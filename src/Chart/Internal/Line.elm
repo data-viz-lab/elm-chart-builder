@@ -196,18 +196,6 @@ renderLineGrouped ( data, config ) =
         yScale =
             Scale.linear yRange (Maybe.withDefault ( 0, 0 ) linearDomain.y)
 
-        tableHeadings =
-            Helpers.dataLinearGroupToTableHeadings data
-                |> Table.ComplexHeadings
-
-        tableData =
-            Helpers.dataLinearGroupToTableData data
-
-        table =
-            Table.generate tableData
-                |> Table.setColumnHeadings tableHeadings
-                |> Table.view
-
         svgEl =
             svg
                 [ viewBox 0 0 outerW outerH
@@ -222,23 +210,13 @@ renderLineGrouped ( data, config ) =
                     ++ linearAxisGenerator c Y yScale
                     ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
                     ++ drawLinearLine config xLinearScale yScale sortedLinearData
-
-        tableEl =
-            Helpers.invisibleFigcaption
-                [ case table of
-                    Ok table_ ->
-                        Html.div [] [ table_ ]
-
-                    Err error ->
-                        Html.text (Table.errorToString error)
-                ]
     in
     case c.accessibilityContent of
         AccessibilityTable ->
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableEl ]
+                    [ svgEl, tableElement data ]
                 ]
 
         AccessibilityNone ->
@@ -339,18 +317,6 @@ renderLineStacked ( data, config ) =
         yScale =
             Scale.linear yRange extent
 
-        tableHeadings =
-            Helpers.dataLinearGroupToTableHeadings data
-                |> Table.ComplexHeadings
-
-        tableData =
-            Helpers.dataLinearGroupToTableData data
-
-        table =
-            Table.generate tableData
-                |> Table.setColumnHeadings tableHeadings
-                |> Table.view
-
         svgEl =
             svg
                 [ viewBox 0 0 outerW outerH
@@ -365,23 +331,13 @@ renderLineStacked ( data, config ) =
                     ++ linearAxisGenerator c Y yScale
                     ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
                     ++ drawLinearLine config xLinearScale yScale combinedData
-
-        tableEl =
-            Helpers.invisibleFigcaption
-                [ case table of
-                    Ok table_ ->
-                        Html.div [] [ table_ ]
-
-                    Err error ->
-                        Html.text (Table.errorToString error)
-                ]
     in
     case c.accessibilityContent of
         AccessibilityTable ->
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableEl ]
+                    [ svgEl, tableElement data ]
                 ]
 
         AccessibilityNone ->
@@ -809,6 +765,30 @@ horizontalLabel config xScale yScale idx groupLabel point =
 
         Nothing ->
             text_ [] []
+
+
+tableElement : DataLinearGroup -> Html msg
+tableElement data =
+    let
+        tableHeadings =
+            Helpers.dataLinearGroupToTableHeadings data
+
+        tableData =
+            Helpers.dataLinearGroupToTableData data
+
+        table =
+            Table.generate tableData
+                |> Table.setColumnHeadings tableHeadings
+                |> Table.view
+    in
+    Helpers.invisibleFigcaption
+        [ case table of
+            Ok table_ ->
+                Html.div [] [ table_ ]
+
+            Err error ->
+                Html.text (Table.errorToString error)
+        ]
 
 
 
