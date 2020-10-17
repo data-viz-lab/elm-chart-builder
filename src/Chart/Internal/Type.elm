@@ -113,14 +113,18 @@ module Chart.Internal.Type exposing
     , setWidth
     , setXAxis
     , setXAxisAttributes
+    , setXAxisBand
+    , setXAxisLinear
     , setXAxisTickCount
     , setXAxisTickFormat
     , setXAxisTickPadding
     , setXAxisTickSizeInner
     , setXAxisTickSizeOuter
     , setXAxisTicks
+    , setXAxisTime
     , setYAxis
     , setYAxisAttributes
+    , setYAxisLinear
     , setYAxisTickCount
     , setYAxisTickFormat
     , setYAxisTickPadding
@@ -144,6 +148,7 @@ module Chart.Internal.Type exposing
     )
 
 import Axis
+import Chart.Internal.Axis as ChartAxis
 import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
 import Color exposing (Color)
@@ -361,7 +366,7 @@ type alias Margin =
 
 
 
---ideas on axis: https://codepen.io/deciob/pen/GRgrXgR
+--
 
 
 type AxisContinousDataTicks
@@ -409,6 +414,10 @@ type AccessibilityContent
 
 type alias ConfigStruct =
     { accessibilityContent : AccessibilityContent
+    , axisXLinear : ChartAxis.XAxis Float
+    , axisXTime : ChartAxis.XAxis Posix
+    , axisXBand : ChartAxis.XAxis String
+    , axisYLinear : ChartAxis.YAxis Float
     , axisXTickCount : AxisContinousDataTickCount
     , axisXTickFormat : AxisContinousDataTickFormat
     , axisXTicks : AxisContinousDataTicks
@@ -453,6 +462,10 @@ defaultConfig : Config
 defaultConfig =
     toConfig
         { accessibilityContent = AccessibilityNone
+        , axisXLinear = ChartAxis.Bottom []
+        , axisXTime = ChartAxis.Bottom []
+        , axisXBand = ChartAxis.Bottom []
+        , axisYLinear = ChartAxis.Left []
         , axisXTickCount = DefaultTickCount
         , axisXTickFormat = DefaultTickFormat
         , axisXTicks = DefaultTicks
@@ -625,6 +638,26 @@ setSvgDesc desc (Config c) =
 setSvgTitle : String -> Config -> Config
 setSvgTitle title (Config c) =
     toConfig { c | svgTitle = title }
+
+
+setXAxisTime : ChartAxis.XAxis Posix -> Config -> Config
+setXAxisTime orientation (Config c) =
+    toConfig { c | axisXTime = orientation }
+
+
+setXAxisLinear : ChartAxis.XAxis Float -> Config -> Config
+setXAxisLinear orientation (Config c) =
+    toConfig { c | axisXLinear = orientation }
+
+
+setXAxisBand : ChartAxis.XAxis String -> Config -> Config
+setXAxisBand orientation (Config c) =
+    toConfig { c | axisXBand = orientation }
+
+
+setYAxisLinear : ChartAxis.YAxis Float -> Config -> Config
+setYAxisLinear orientation (Config c) =
+    toConfig { c | axisYLinear = orientation }
 
 
 setXAxisTickFormat : AxisContinousDataTickFormat -> Config -> Config

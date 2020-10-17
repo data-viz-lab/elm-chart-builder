@@ -3,6 +3,7 @@ module UKOpenData.Smoking exposing (main)
 {-| This module shows how to build a line chart.
 -}
 
+import Axis
 import Chart.Line as Line
 import Data exposing (smokeStats)
 import Html exposing (Html)
@@ -93,16 +94,28 @@ accessor =
     Line.linear (Line.AccessorLinear (.regionPerGender >> Just) .year .percentage)
 
 
+xAxis : Line.XAxis Float
+xAxis =
+    Line.axisBottom
+        [ Axis.ticks xAxisTicks
+        , Axis.tickFormat (round >> String.fromInt)
+        ]
+
+
+yAxis : Line.YAxis Float
+yAxis =
+    Line.axisLeft [ Axis.tickCount 5 ]
+
+
 line =
     Line.init
         { margin = { top = 10, right = 50, bottom = 30, left = 30 }
         , width = 700
         , height = 400
         }
+        |> Line.withXAxisLinear xAxis
+        |> Line.withYAxisLinear yAxis
         |> Line.withCurve Shape.basisCurve
-        |> Line.withYAxisTickCount 5
-        |> Line.withXAxisTicks xAxisTicks
-        |> Line.withXAxisTickFormat (round >> String.fromInt)
         |> Line.withYDomain ( 0, 50 )
 
 

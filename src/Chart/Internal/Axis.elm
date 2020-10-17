@@ -1,0 +1,12 @@
+module Chart.Internal.Axis exposing (XAxis(..), YAxis(..))
+
+import Axis as VAxis
+
+
+type YAxis value
+    = Left (List (VAxis.Attribute value))
+    | Right (List (VAxis.Attribute value))
+
+
+type XAxis value
+    = Bottom (List (VAxis.Attribute value))

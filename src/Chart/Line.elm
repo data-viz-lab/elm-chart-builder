@@ -4,9 +4,9 @@ module Chart.Line exposing
     , render
     , RequiredConfig
     , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
-    , hideAxis, hideXAxis, hideYAxis, withAxisTickPadding, withAxisTickSizeInner, withAxisTickSizeOuter, withXAxisTickCount, withXAxisTickFormat, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter, withYAxisTicks
+    , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisLinear, withXAxisTime, withYAxisLinear
     , withSymbols
-    , xGroupLabel
+    , axisBottom, axisLeft, axisRight, xGroupLabel
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -41,17 +41,19 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 
 # Optional Axis Configuration Setters
 
-@docs hideAxis, hideXAxis, hideYAxis, withAxisTickPadding, withAxisTickSizeInner, withAxisTickSizeOuter, withXAxisTickCount, withXAxisTickFormat, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withXAxisTicks, withYAxisTickCount, withYAxisTickFormat, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter, withYAxisTicks
+@docs XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisLinear, withXAxisTime, withYAxisLinear
 
 @docs withSymbols
 
 
 # Configuration arguments
 
-@docs xGroupLabel
+@docs axisBottom, axisLeft, axisRight, xGroupLabel
 
 -}
 
+import Axis
+import Chart.Internal.Axis as ChartAxis
 import Chart.Internal.Line
     exposing
         ( renderLineGrouped
@@ -61,10 +63,6 @@ import Chart.Internal.Symbol exposing (Symbol)
 import Chart.Internal.Type as Type
     exposing
         ( AccessibilityContent(..)
-        , AxisContinousDataTickCount(..)
-        , AxisContinousDataTickFormat(..)
-        , AxisContinousDataTicks(..)
-        , AxisOrientation(..)
         , ColorResource(..)
         , Config
         , Direction(..)
@@ -78,14 +76,6 @@ import Chart.Internal.Type as Type
         , setLayout
         , setSvgDesc
         , setSvgTitle
-        , setXAxis
-        , setXAxisTickCount
-        , setXAxisTickFormat
-        , setXAxisTicks
-        , setYAxis
-        , setYAxisTickCount
-        , setYAxisTickFormat
-        , setYAxisTicks
         )
 import Color exposing (Color)
 import Html exposing (Html)
@@ -326,6 +316,42 @@ Defaults to `Scale.tickFormat`
 withYAxisTickFormat : (Float -> String) -> Config -> Config
 withYAxisTickFormat f config =
     Type.setYAxisTickFormat (Type.CustomTickFormat f) config
+
+
+{-| -}
+withXAxisTime : ChartAxis.XAxis Posix -> Config -> Config
+withXAxisTime =
+    Type.setXAxisTime
+
+
+{-| -}
+withXAxisLinear : ChartAxis.XAxis Float -> Config -> Config
+withXAxisLinear =
+    Type.setXAxisLinear
+
+
+{-| -}
+withYAxisLinear : ChartAxis.YAxis Float -> Config -> Config
+withYAxisLinear =
+    Type.setYAxisLinear
+
+
+{-| -}
+axisLeft : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisLeft =
+    ChartAxis.Left
+
+
+{-| -}
+axisRight : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisRight =
+    ChartAxis.Right
+
+
+{-| -}
+axisBottom : List (Axis.Attribute value) -> ChartAxis.XAxis value
+axisBottom =
+    ChartAxis.Bottom
 
 
 {-| Sets the the inner tick size that controls the length of the tick lines, offset from the native position of the axis. Defaults to 6.
@@ -677,3 +703,13 @@ withSymbols =
 xGroupLabel : Label
 xGroupLabel =
     XGroupLabel
+
+
+{-| -}
+type alias XAxis value =
+    ChartAxis.XAxis value
+
+
+{-| -}
+type alias YAxis value =
+    ChartAxis.YAxis value
