@@ -420,7 +420,7 @@ linearYAxis c scale =
                     [ Axis.left attributes scale ]
                 ]
 
-            ChartAxis.Right attributes ->
+            ChartAxis.Right _ ->
                 --FIXME
                 []
 

@@ -23,11 +23,6 @@ import Chart.Internal.TableHelpers as Helpers
 import Chart.Internal.Type
     exposing
         ( AccessibilityContent(..)
-        , AxisContinousDataTickFormat(..)
-        , AxisContinousDataTicks(..)
-        , AxisOrientation(..)
-        , AxisTickPadding(..)
-        , AxisTickSize(..)
         , ColumnTitle(..)
         , Config
         , ConfigStruct
@@ -53,7 +48,6 @@ import Chart.Internal.Type
         , dataBandToDataStacked
         , fromConfig
         , fromDataBand
-        , getAxisContinousDataFormatter
         , getBandGroupRange
         , getBandSingleRange
         , getDataBandDepth
@@ -67,7 +61,6 @@ import Chart.Internal.Type
         , stackedValuesInverse
         , symbolCustomSpace
         , symbolSpace
-        , toConfig
         )
 import Histogram exposing (Bin)
 import Html exposing (Html)
@@ -965,7 +958,7 @@ bandXAxis c bandScale =
                     [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
                     , class [ "axis", "axis--vertical" ]
                     ]
-                    [ Axis.left [] (Scale.toRenderable identity bandScale) ]
+                    [ Axis.left attributes (Scale.toRenderable identity bandScale) ]
                 ]
 
     else
@@ -984,7 +977,7 @@ bandGroupedYAxis c iconOffset linearScale =
                     [ Axis.left attributes linearScale ]
                 ]
 
-            ( Vertical, ChartAxis.Right attributes ) ->
+            ( Vertical, ChartAxis.Right _ ) ->
                 [ text "TODO"
                 ]
 
@@ -1081,7 +1074,7 @@ renderHistogram ( histogram, config ) =
                         [ Axis.left attributes (yScaleFromBins bins) ]
                     ]
 
-                ChartAxis.Right attributes ->
+                ChartAxis.Right _ ->
                     [ text "TODO" ]
 
         tableHeadings =

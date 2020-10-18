@@ -5,12 +5,6 @@ module Chart.Internal.Type exposing
     , AccessorLinearOrTime(..)
     , AccessorLinearStruct
     , AccessorTimeStruct
-    , AxisContinousDataTickCount(..)
-    , AxisContinousDataTickFormat(..)
-    , AxisContinousDataTicks(..)
-    , AxisOrientation(..)
-    , AxisTickPadding(..)
-    , AxisTickSize(..)
     , BandDomain
     , ColorResource(..)
     , ColumnTitle(..)
@@ -68,7 +62,6 @@ module Chart.Internal.Type exposing
     , fromDomainBand
     , fromDomainLinear
     , fromExternalData
-    , getAxisContinousDataFormatter
     , getBandGroupRange
     , getBandSingleRange
     , getDataBandDepth
@@ -130,7 +123,6 @@ module Chart.Internal.Type exposing
     , toExternalData
     )
 
-import Axis
 import Chart.Internal.Axis as ChartAxis
 import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
@@ -144,7 +136,6 @@ import Shape
 import Statistics
 import SubPath exposing (SubPath)
 import Time exposing (Posix, Zone)
-import TypedSvg.Attributes
 import TypedSvg.Core
 
 
@@ -270,11 +261,6 @@ type Direction
     | NoDirection
 
 
-type AxisOrientation
-    = X
-    | Y
-
-
 type alias LinearDomain =
     ( Float, Float )
 
@@ -350,33 +336,6 @@ type alias Margin =
 
 
 --
-
-
-type AxisContinousDataTicks
-    = DefaultTicks
-    | CustomTicks (List Float)
-    | CustomTimeTicks (List Posix)
-
-
-type AxisContinousDataTickCount
-    = DefaultTickCount
-    | CustomTickCount Int
-
-
-type AxisTickSize
-    = DefaultTickSize
-    | CustomTickSize Float
-
-
-type AxisTickPadding
-    = DefaultTickPadding
-    | CustomTickPadding Float
-
-
-type AxisContinousDataTickFormat
-    = DefaultTickFormat
-    | CustomTickFormat (Float -> String)
-    | CustomTimeTickFormat (Posix -> String)
 
 
 type ColorResource
@@ -858,19 +817,6 @@ showIcons (Config c) =
         |> .icons
         |> List.length
         |> (\l -> l > 0)
-
-
-getAxisContinousDataFormatter : AxisContinousDataTickFormat -> Maybe (Float -> String)
-getAxisContinousDataFormatter format =
-    case format of
-        DefaultTickFormat ->
-            Just (\f -> String.fromFloat f)
-
-        CustomTickFormat formatter ->
-            Just formatter
-
-        CustomTimeTickFormat _ ->
-            Nothing
 
 
 getDomainBand : Config -> DomainBandStruct
