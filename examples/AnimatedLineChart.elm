@@ -181,8 +181,8 @@ lineLinear d =
         , width = width
         , height = height
         }
-        |> Line.withYAxisLinear yAxis
         |> Line.withXAxisLinear xAxis
+        |> Line.withYAxis yAxis
         |> Line.withLabels Line.xGroupLabel
         |> Line.withYDomain ( 0, 20 )
         |> Line.render ( d, accessor )

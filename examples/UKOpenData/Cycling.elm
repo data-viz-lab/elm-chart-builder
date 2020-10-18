@@ -3,6 +3,7 @@ module UKOpenData.Cycling exposing (main)
 {-| This module shows how to build a simple bar chart.
 -}
 
+import Axis
 import Chart.Bar as Bar
 import Html exposing (Html)
 import Html.Attributes exposing (class)
@@ -165,6 +166,21 @@ valueFormatter =
     Numeral.format "0%"
 
 
+yAxis : Bar.YAxis Float
+yAxis =
+    Bar.axisLeft
+        [ Axis.tickFormat valueFormatter
+        ]
+
+
+xAxis : Bar.XAxis String
+xAxis =
+    Bar.axisBottom
+        [ Axis.tickSizeInner 0
+        , Axis.tickPadding 6
+        ]
+
+
 stackedByFrequency : Html msg
 stackedByFrequency =
     Bar.init
@@ -173,9 +189,7 @@ stackedByFrequency =
         , height = height
         }
         |> Bar.withStackedLayout Bar.noDirection
-        |> Bar.withYAxisTickFormat valueFormatter
-        |> Bar.withAxisTickSizeInner 0
-        |> Bar.withXAxisTickPadding 6
+        |> Bar.withXAxis xAxis
         |> Bar.withYDomain ( 0, 0.55 )
         |> Bar.hideYAxis
         |> Bar.render ( data, accessor )
@@ -189,10 +203,9 @@ stackedByFrequencyGender =
         , height = height
         }
         |> Bar.withStackedLayout Bar.noDirection
-        |> Bar.withYAxisTickFormat valueFormatter
-        |> Bar.withXAxisTickSizeInner 0
-        |> Bar.withXAxisTickPadding 6
         |> Bar.withYDomain ( 0, 0.55 )
+        |> Bar.withYAxis yAxis
+        |> Bar.withXAxis xAxis
         |> Bar.render ( dataGender, accessor )
 
 

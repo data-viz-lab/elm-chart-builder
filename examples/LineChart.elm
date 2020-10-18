@@ -89,7 +89,7 @@ xAxisTime =
 
 sharedStackedLineConfig =
     Line.init requiredConfig
-        |> Line.withYAxisLinear yAxis
+        |> Line.withYAxis yAxis
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withLabels Line.xGroupLabel
         |> Line.withColorPalette Scale.Color.tableau10
@@ -100,7 +100,7 @@ sharedStackedLineConfig =
 sharedGroupedLineConfig =
     Line.init requiredConfig
         |> Line.withColorPalette Scale.Color.tableau10
-        |> Line.withYAxisLinear yAxis
+        |> Line.withYAxis yAxis
         |> Line.withXAxisLinear xAxis
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withLabels Line.xGroupLabel

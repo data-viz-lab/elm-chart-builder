@@ -202,7 +202,7 @@ renderLineGrouped ( data, config ) =
             <|
                 symbolElements config
                     ++ descAndTitle c
-                    ++ linearYAxisGenerator c yScale
+                    ++ linearYAxis c yScale
                     ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
                     ++ drawLinearLine config xLinearScale yScale sortedLinearData
 
@@ -345,7 +345,7 @@ renderLineStacked ( data, config ) =
             <|
                 symbolElements config
                     ++ descAndTitle c
-                    ++ linearYAxisGenerator c yScale
+                    ++ linearYAxis c yScale
                     ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
                     ++ drawLinearLine config xLinearScale yScale combinedData
 
@@ -371,8 +371,8 @@ renderLineStacked ( data, config ) =
             Html.div [] [ svgEl ]
 
 
-linearXAxisGenerator : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
-linearXAxisGenerator c scale =
+linearXAxis : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
+linearXAxis c scale =
     if c.showXAxis == True then
         case c.axisXLinear of
             ChartAxis.Bottom attributes ->
@@ -387,8 +387,8 @@ linearXAxisGenerator c scale =
         []
 
 
-timeXAxisGenerator : ConfigStruct -> Maybe (ContinuousScale Posix) -> List (Svg msg)
-timeXAxisGenerator c scale =
+timeXAxis : ConfigStruct -> Maybe (ContinuousScale Posix) -> List (Svg msg)
+timeXAxis c scale =
     if c.showXAxis == True then
         case scale of
             Just s ->
@@ -408,8 +408,8 @@ timeXAxisGenerator c scale =
         []
 
 
-linearYAxisGenerator : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
-linearYAxisGenerator c scale =
+linearYAxis : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
+linearYAxis c scale =
     if c.showYAxis == True then
         case c.axisYLinear of
             ChartAxis.Left attributes ->
@@ -440,10 +440,10 @@ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config ) =
     in
     case data of
         DataTime _ ->
-            timeXAxisGenerator c xTimeScale
+            timeXAxis c xTimeScale
 
         DataLinear _ ->
-            linearXAxisGenerator c xLinearScale
+            linearXAxis c xLinearScale
 
 
 symbolsToSymbolElements : List Symbol -> List (Svg msg)

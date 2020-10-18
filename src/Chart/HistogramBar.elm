@@ -2,8 +2,8 @@ module Chart.HistogramBar exposing
     ( dataAccessor, preProcessedDataAccessor
     , init
     , render
-    , withBarStyle, withColor, withDesc, withDomain, withTable, withTitle
-    , hideAxis, hideXAxis, hideYAxis, withColumnTitle, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks
+    , withBarStyle, withColor, withColumnTitle, withDesc, withDomain, withTable, withTitle
+    , XAxis, YAxis, axisBottom, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
     , yColumnTitle
     )
 
@@ -29,12 +29,12 @@ The histogram bar chart can both generate the histogram data automatically or ac
 
 # Configuration setters
 
-@docs withBarStyle, withColor, withDesc, withDomain, withTable, withTitle
+@docs withBarStyle, withColor, withColumnTitle, withDesc, withDomain, withTable, withTitle
 
 
 # Optional Axis Configuration Setters
 
-@docs hideAxis, hideXAxis, hideYAxis, withColumnTitle, withYAxisTickCount, withYAxisTickFormat, withYAxisTicks
+@docs XAxis, YAxis, axisBottom, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
 
 
 # Configuration arguments
@@ -43,6 +43,8 @@ The histogram bar chart can both generate the histogram data automatically or ac
 
 -}
 
+import Axis
+import Chart.Internal.Axis as ChartAxis
 import Chart.Internal.Bar
     exposing
         ( renderHistogram
@@ -51,10 +53,6 @@ import Chart.Internal.Type as Type
     exposing
         ( AccessibilityContent(..)
         , AccessorHistogram(..)
-        , AxisContinousDataTickCount(..)
-        , AxisContinousDataTickFormat(..)
-        , AxisContinousDataTicks(..)
-        , AxisOrientation(..)
         , ColorResource(..)
         , ColumnTitle(..)
         , Config
@@ -193,51 +191,6 @@ withColor color config =
     Type.setColorResource (Color color) config
 
 
-{-| Passes the tick values for the Y axis.
-
-Defaults to elm-visualization `Scale.ticks`.
-
-    Histo.init requiredConfig
-        |> Histo.withYAxisTicks [ 1, 2, 3 ]
-        |> Histo.render ( data, accessor )
-
--}
-withYAxisTicks : List Float -> Config -> Config
-withYAxisTicks ticks config =
-    Type.setYAxisTicks (Type.CustomTicks ticks) config
-
-
-{-| Sets the approximate number of ticks for the Y axis.
-
-Defaults to elm-visualization `Scale.tickCount`.
-
-    Histo.init requiredConfig
-        |> Histo.withYAxisTickCount 5
-        |> Histo.render ( data, accessor )
-
--}
-withYAxisTickCount : Int -> Config -> Config
-withYAxisTickCount count config =
-    Type.setYAxisTickCount (Type.CustomTickCount count) config
-
-
-{-| Sets the formatting for the Y axis ticks.
-
-Defaults to `Scale.tickFormat`
-
-    formatter =
-        Numeral.format "0%"
-
-    Histo.init requiredConfig
-        |> Histo.withYAxisTickFormat formatter
-        |> Histo.render (data, accessor)
-
--}
-withYAxisTickFormat : (Float -> String) -> Config -> Config
-withYAxisTickFormat f config =
-    Type.setYAxisTickFormat (CustomTickFormat f) config
-
-
 {-| Sets an accessible, long-text description for the svg chart.
 Default value: ""
 
@@ -287,6 +240,39 @@ withColumnTitle title config =
             config
 
 
+{-| Sets the style for the bars
+The styles set here have precedence over css.
+
+    Histo.init requiredConfig
+        |> Histo.withBarStyle [ ( "fill", "none" ), ( "stroke-width", "2" ) ]
+        |> Histo.render ( data, accessor )
+
+-}
+withBarStyle : List ( String, String ) -> Config -> Config
+withBarStyle styles config =
+    Type.setCoreStyles styles config
+
+
+{-| -}
+yColumnTitle : (Float -> String) -> ColumnTitle
+yColumnTitle =
+    YColumnTitle
+
+
+
+-- AXIS
+
+
+{-| -}
+type alias XAxis value =
+    ChartAxis.XAxis value
+
+
+{-| -}
+type alias YAxis value =
+    ChartAxis.YAxis value
+
+
 {-| Hide all axis.
 
     Histo.init requiredConfig
@@ -324,20 +310,31 @@ hideXAxis config =
     Type.setXAxis False config
 
 
-{-| Sets the style for the bars
-The styles set here have precedence over css.
-
-    Histo.init requiredConfig
-        |> Histo.withBarStyle [ ( "fill", "none" ), ( "stroke-width", "2" ) ]
-        |> Histo.render ( data, accessor )
-
--}
-withBarStyle : List ( String, String ) -> Config -> Config
-withBarStyle styles config =
-    Type.setCoreStyles styles config
+{-| -}
+withXAxis : ChartAxis.XAxis Float -> Config -> Config
+withXAxis =
+    Type.setXAxisLinear
 
 
 {-| -}
-yColumnTitle : (Float -> String) -> ColumnTitle
-yColumnTitle =
-    YColumnTitle
+withYAxis : ChartAxis.YAxis Float -> Config -> Config
+withYAxis =
+    Type.setYAxisLinear
+
+
+{-| -}
+axisLeft : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisLeft =
+    ChartAxis.Left
+
+
+{-| -}
+axisRight : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisRight =
+    ChartAxis.Right
+
+
+{-| -}
+axisBottom : List (Axis.Attribute value) -> ChartAxis.XAxis value
+axisBottom =
+    ChartAxis.Bottom

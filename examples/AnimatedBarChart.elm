@@ -3,6 +3,7 @@ module AnimatedBarChart exposing (main)
 {-| -}
 
 import Array exposing (Array)
+import Axis
 import Browser
 import Browser.Events
 import Chart.Bar as Bar
@@ -247,6 +248,14 @@ attrs =
     ]
 
 
+yAxis : Bar.YAxis Float
+yAxis =
+    Bar.axisLeft
+        [ Axis.tickCount 5
+        , Axis.tickFormat valueFormatter
+        ]
+
+
 horizontalGrouped : Data -> Html Msg
 horizontalGrouped d =
     Bar.init
@@ -256,8 +265,7 @@ horizontalGrouped d =
         }
         |> Bar.withColorPalette [ Color.rgb255 166 189 219 ]
         |> Bar.withOrientation Bar.horizontal
-        |> Bar.withYAxisTickFormat valueFormatter
-        |> Bar.withYAxisTickCount 5
+        |> Bar.withYAxis yAxis
         |> Bar.withYDomain domain
         |> Bar.render ( d, accessor )
 

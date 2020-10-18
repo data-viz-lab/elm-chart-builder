@@ -114,7 +114,7 @@ line =
         , height = 400
         }
         |> Line.withXAxisLinear xAxis
-        |> Line.withYAxisLinear yAxis
+        |> Line.withYAxis yAxis
         |> Line.withCurve Shape.basisCurve
         |> Line.withYDomain ( 0, 50 )
 

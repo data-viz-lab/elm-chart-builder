@@ -4,7 +4,7 @@ module Chart.Line exposing
     , render
     , RequiredConfig
     , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
-    , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisLinear, withXAxisTime, withYAxisLinear
+    , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisLinear, withXAxisTime, withYAxis
     , withSymbols
     , axisBottom, axisLeft, axisRight, xGroupLabel
     )
@@ -41,7 +41,7 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 
 # Optional Axis Configuration Setters
 
-@docs XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisLinear, withXAxisTime, withYAxisLinear
+@docs XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisLinear, withXAxisTime, withYAxis
 
 @docs withSymbols
 
@@ -217,20 +217,6 @@ render ( externalData, accessor ) config =
             Html.text ""
 
 
-{-| Explicitly sets the ticks for the X axis
-
-Defaults to elm-visualization `Scale.ticks`
-
-    Line.init requiredConfig
-        |> Line.withXTicks [ 1, 2, 3 ]
-        |> Line.render ( data, accessor )
-
--}
-withXAxisTicks : List Float -> Config -> Config
-withXAxisTicks ticks config =
-    Type.setXAxisTicks (Type.CustomTicks ticks) config
-
-
 {-| Sets the line curve shape
 
 Defaults to `Shape.linearCurve`
@@ -246,269 +232,6 @@ for more info.
 withCurve : (List ( Float, Float ) -> SubPath) -> Config -> Config
 withCurve curve config =
     Type.setCurve curve config
-
-
-{-| Sets the approximate number of ticks for the X axis
-
-Defaults to elm-visualization `Scale.ticks`
-
-    Line.init requiredConfig
-        |> Line.withXAxisTickCount 5
-        |> Line.render ( data, accessor )
-
--}
-withXAxisTickCount : Int -> Config -> Config
-withXAxisTickCount count config =
-    Type.setXAxisTickCount (Type.CustomTickCount count) config
-
-
-{-| Sets the tick formatting for the X axis
-
-Defaults to elm-visualization `Scale.tickFormat`
-
-    Line.init requiredConfig
-        |> Line.withXAxisTickFormat (FormatNumber.format { usLocale | decimals = 0 })
-        |> Line.render ( data, accessor )
-
--}
-withXAxisTickFormat : (Float -> String) -> Config -> Config
-withXAxisTickFormat f config =
-    Type.setXAxisTickFormat (Type.CustomTickFormat f) config
-
-
-{-| Explicitly sets the ticks for the Y axis
-
-Defaults to `Scale.ticks`
-
-    Line.init requiredConfig
-        |> Line.withYAxisTicks [ 1, 2, 3 ]
-        |> Line.render ( data, accessor )
-
--}
-withYAxisTicks : List Float -> Config -> Config
-withYAxisTicks ticks config =
-    Type.setYAxisTicks (Type.CustomTicks ticks) config
-
-
-{-| Sets the approximate number of ticks for the y axis
-
-Defaults to `Scale.ticks`
-
-    Line.init requiredConfig
-        |> Line.withYAxisTickCount 5
-        |> Line.render ( data, accessor )
-
--}
-withYAxisTickCount : Int -> Config -> Config
-withYAxisTickCount count config =
-    Type.setYAxisTickCount (Type.CustomTickCount count) config
-
-
-{-| Sets the formatting for ticks in the y axis
-
-Defaults to `Scale.tickFormat`
-
-    Line.init requiredConfig
-        |> Line.withYAxisTickFormat (FormatNumber.format { usLocale | decimals = 0 })
-        |> Line.render ( data, accessor )
-
--}
-withYAxisTickFormat : (Float -> String) -> Config -> Config
-withYAxisTickFormat f config =
-    Type.setYAxisTickFormat (Type.CustomTickFormat f) config
-
-
-{-| -}
-withXAxisTime : ChartAxis.XAxis Posix -> Config -> Config
-withXAxisTime =
-    Type.setXAxisTime
-
-
-{-| -}
-withXAxisLinear : ChartAxis.XAxis Float -> Config -> Config
-withXAxisLinear =
-    Type.setXAxisLinear
-
-
-{-| -}
-withYAxisLinear : ChartAxis.YAxis Float -> Config -> Config
-withYAxisLinear =
-    Type.setYAxisLinear
-
-
-{-| -}
-axisLeft : List (Axis.Attribute value) -> ChartAxis.YAxis value
-axisLeft =
-    ChartAxis.Left
-
-
-{-| -}
-axisRight : List (Axis.Attribute value) -> ChartAxis.YAxis value
-axisRight =
-    ChartAxis.Right
-
-
-{-| -}
-axisBottom : List (Axis.Attribute value) -> ChartAxis.XAxis value
-axisBottom =
-    ChartAxis.Bottom
-
-
-{-| Sets the the inner tick size that controls the length of the tick lines, offset from the native position of the axis. Defaults to 6.
-
-    Line.init requiredConfig
-        |> Line.withAxisTickSizeInner 10
-        |> Line.render ( data, accessor )
-
--}
-withAxisTickSizeInner : Float -> Config -> Config
-withAxisTickSizeInner size config =
-    Type.setAxisTickSizeInner size config
-
-
-{-| The outer tick size controls the length of the square ends of the domain path, offset from the native position of the axis. Thus, the “outer ticks” are not actually ticks but part of the domain path, and their position is determined by the associated scale’s domain extent. Thus, outer ticks may overlap with the first or last inner tick. An outer tick size of 0 suppresses the square ends of the domain path, instead producing a straight line. Defaults to 6.
-
-    Line.init requiredConfig
-        |> Line.withAxisTickSizeOuter 0
-        |> Line.render ( data, accessor )
-
--}
-withAxisTickSizeOuter : Float -> Config -> Config
-withAxisTickSizeOuter size config =
-    Type.setAxisTickSizeOuter size config
-
-
-{-| Padding controls the space between tick marks and tick labels. Defaults to 3.
-
-    Line.init requiredConfig
-        |> Line.withAxisTickPadding 6
-        |> Line.render ( data, accessor )
-
--}
-withAxisTickPadding : Float -> Config -> Config
-withAxisTickPadding size config =
-    Type.setAxisTickPadding size config
-
-
-{-| Sets the the inner tick size that controls the length of the tick lines, offset from the native position of the axis. Defaults to 6. Only affects the Y axis.
-
-    Line.init requiredConfig
-        |> Line.withYAxisTickSizeInner 10
-        |> Line.render ( data, accessor )
-
--}
-withYAxisTickSizeInner : Float -> Config -> Config
-withYAxisTickSizeInner size config =
-    Type.setYAxisTickSizeInner size config
-
-
-{-| The outer tick size controls the length of the square ends of the domain path, offset from the native position of the axis. Thus, the “outer ticks” are not actually ticks but part of the domain path, and their position is determined by the associated scale’s domain extent. Thus, outer ticks may overlap with the first or last inner tick. An outer tick size of 0 suppresses the square ends of the domain path, instead producing a straight line. Defaults to 6. Only affects the Y axis.
-
-    Line.init requiredConfig
-        |> Line.withYAxisTickSizeOuter 0
-        |> Line.render ( data, accessor )
-
--}
-withYAxisTickSizeOuter : Float -> Config -> Config
-withYAxisTickSizeOuter size config =
-    Type.setYAxisTickSizeOuter size config
-
-
-{-| Padding controls the space between tick marks and tick labels. Defaults to 3. Only affects the Y axis.
-
-    Line.init requiredConfig
-        |> Line.withYAxisTickPadding 6
-        |> Line.render ( data, accessor )
-
--}
-withYAxisTickPadding : Float -> Config -> Config
-withYAxisTickPadding size config =
-    Type.setYAxisTickPadding size config
-
-
-{-| Sets the the inner tick size that controls the length of the tick lines, offset from the native position of the axis. Defaults to 6. Only affects the X axis.
-
-    Line.init requiredConfig
-        |> Line.withXAxisTickSizeInner 10
-        |> Line.render ( data, accessor )
-
--}
-withXAxisTickSizeInner : Float -> Config -> Config
-withXAxisTickSizeInner size config =
-    Type.setXAxisTickSizeInner size config
-
-
-{-| The outer tick size controls the length of the square ends of the domain path, offset from the native position of the axis. Thus, the “outer ticks” are not actually ticks but part of the domain path, and their position is determined by the associated scale’s domain extent. Thus, outer ticks may overlap with the first or last inner tick. An outer tick size of 0 suppresses the square ends of the domain path, instead producing a straight line. Defaults to 6. Only affects the X axis.
-
-    Line.init requiredConfig
-        |> Line.withXAxisTickSizeOuter 0
-        |> Line.render ( data, accessor )
-
--}
-withXAxisTickSizeOuter : Float -> Config -> Config
-withXAxisTickSizeOuter size config =
-    Type.setXAxisTickSizeOuter size config
-
-
-{-| Padding controls the space between tick marks and tick labels. Defaults to 3. Only affects the X axis.
-
-    Line.init requiredConfig
-        |> Line.withXAxisTickPadding 6
-        |> Line.render ( data, accessor )
-
--}
-withXAxisTickPadding : Float -> Config -> Config
-withXAxisTickPadding size config =
-    Type.setXAxisTickPadding size config
-
-
-{-| Hide all axis
-
-    Line.init requiredConfig
-        |> Line.hideAxis
-        |> Line.render ( data, accessor )
-
--}
-hideAxis : Config -> Config
-hideAxis config =
-    Type.setXAxis False config
-        |> Type.setYAxis False
-
-
-{-| Hide the Y aixs
-
-The Y axis depends from the layout:
-With a vertical layout the Y axis is the vertical axis.
-With a horizontal layout the Y axis is the horizontal axis.
-
-    Line.init
-        { margin = margin
-        , width = width
-        , height = height
-        }
-        |> Line.hideYAxis
-        |> Line.render ( data, accessor )
-
--}
-hideYAxis : Config -> Config
-hideYAxis config =
-    Type.setYAxis False config
-
-
-{-| Hide the X aixs
-
-The X axis depends from the layout:
-With a vertical layout the X axis is the horizontal axis.
-With a horizontal layout the X axis is the vertical axis.
-
-    Line.init requiredConfig
-        |> Line.hideXAxis
-        |> Line.render ( data, accessor )
-
--}
-hideXAxis : Config -> Config
-hideXAxis config =
-    Type.setXAxis False config
 
 
 {-| Sets the Y domain of a time line chart
@@ -678,6 +401,105 @@ withLineStyle styles config =
 
 
 
+-- AXIS
+
+
+{-| -}
+type alias XAxis value =
+    ChartAxis.XAxis value
+
+
+{-| -}
+type alias YAxis value =
+    ChartAxis.YAxis value
+
+
+{-| Hide the Y aixs
+
+The Y axis depends from the layout:
+With a vertical layout the Y axis is the vertical axis.
+With a horizontal layout the Y axis is the horizontal axis.
+
+    Line.init
+        { margin = margin
+        , width = width
+        , height = height
+        }
+        |> Line.hideYAxis
+        |> Line.render ( data, accessor )
+
+-}
+hideYAxis : Config -> Config
+hideYAxis config =
+    Type.setYAxis False config
+
+
+{-| Hide the X aixs
+
+The X axis depends from the layout:
+With a vertical layout the X axis is the horizontal axis.
+With a horizontal layout the X axis is the vertical axis.
+
+    Line.init requiredConfig
+        |> Line.hideXAxis
+        |> Line.render ( data, accessor )
+
+-}
+hideXAxis : Config -> Config
+hideXAxis config =
+    Type.setXAxis False config
+
+
+{-| -}
+withXAxisTime : ChartAxis.XAxis Posix -> Config -> Config
+withXAxisTime =
+    Type.setXAxisTime
+
+
+{-| -}
+withXAxisLinear : ChartAxis.XAxis Float -> Config -> Config
+withXAxisLinear =
+    Type.setXAxisLinear
+
+
+{-| -}
+withYAxis : ChartAxis.YAxis Float -> Config -> Config
+withYAxis =
+    Type.setYAxisLinear
+
+
+{-| -}
+axisLeft : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisLeft =
+    ChartAxis.Left
+
+
+{-| -}
+axisRight : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisRight =
+    ChartAxis.Right
+
+
+{-| -}
+axisBottom : List (Axis.Attribute value) -> ChartAxis.XAxis value
+axisBottom =
+    ChartAxis.Bottom
+
+
+{-| Hide all axis
+
+    Line.init requiredConfig
+        |> Line.hideAxis
+        |> Line.render ( data, accessor )
+
+-}
+hideAxis : Config -> Config
+hideAxis config =
+    Type.setXAxis False config
+        |> Type.setYAxis False
+
+
+
 --SYMBOLS
 
 
@@ -703,13 +525,3 @@ withSymbols =
 xGroupLabel : Label
 xGroupLabel =
     XGroupLabel
-
-
-{-| -}
-type alias XAxis value =
-    ChartAxis.XAxis value
-
-
-{-| -}
-type alias YAxis value =
-    ChartAxis.YAxis value
