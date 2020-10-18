@@ -971,14 +971,25 @@ bandGroupedYAxis c iconOffset linearScale =
         case ( c.orientation, c.axisYLinear ) of
             ( Vertical, ChartAxis.Left attributes ) ->
                 [ g
-                    [ transform [ Translate (c.margin.left - leftGap) (iconOffset + c.margin.top) ]
+                    [ transform
+                        [ Translate (c.margin.left - leftGap |> Helpers.floorFloat)
+                            (iconOffset + c.margin.top)
+                        ]
                     , class [ "axis", "axis--vertical" ]
                     ]
                     [ Axis.left attributes linearScale ]
                 ]
 
-            ( Vertical, ChartAxis.Right _ ) ->
-                [ text "TODO"
+            ( Vertical, ChartAxis.Right attributes ) ->
+                [ g
+                    [ transform
+                        [ Translate
+                            (c.width + c.margin.left + leftGap |> Helpers.floorFloat)
+                            (iconOffset + c.margin.top)
+                        ]
+                    , class [ "axis", "axis--vertical" ]
+                    ]
+                    [ Axis.right attributes linearScale ]
                 ]
 
             ( Horizontal, ChartAxis.Left attributes ) ->

@@ -32,14 +32,14 @@ The histogram bar chart can both generate the histogram data automatically or ac
 @docs withBarStyle, withColor, withColumnTitle, withDesc, withDomain, withTable, withTitle
 
 
-# Optional Axis Configuration Setters
+# Axis
 
 @docs XAxis, YAxis, axisBottom, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
 
 
 # Configuration arguments
 
-      yColumnTitle
+@docs yColumnTitle
 
 -}
 
@@ -263,14 +263,46 @@ yColumnTitle =
 -- AXIS
 
 
-{-| -}
+{-| The XAxis type
+-}
 type alias XAxis value =
     ChartAxis.XAxis value
 
 
-{-| -}
+{-| The YAxis type
+-}
 type alias YAxis value =
     ChartAxis.YAxis value
+
+
+{-| A YAxis Left type
+
+    Histo.axisLeft [ Axis.tickCount 5 ]
+
+-}
+axisLeft : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisLeft =
+    ChartAxis.Left
+
+
+{-| It returns an YAxis Right type
+
+    Histo.axisRight [ Axis.tickCount 5 ]
+
+-}
+axisRight : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisRight =
+    ChartAxis.Right
+
+
+{-| It returns an XAxis Bottom type
+
+    Histo.axisBottom [ Axis.tickCount 5 ]
+
+-}
+axisBottom : List (Axis.Attribute value) -> ChartAxis.XAxis value
+axisBottom =
+    ChartAxis.Bottom
 
 
 {-| Hide all axis.
@@ -310,31 +342,25 @@ hideXAxis config =
     Type.setXAxis False config
 
 
-{-| -}
+{-| Customise the xAxis
+
+    Histo.init requiredConfig
+        |> Histo.withXAxis (Histo.axisBottom [ Axis.tickCount 5 ])
+        |> Histo.render ( data, accessor )
+
+-}
 withXAxis : ChartAxis.XAxis Float -> Config -> Config
 withXAxis =
     Type.setXAxisLinear
 
 
-{-| -}
+{-| Customise the yAxis
+
+    Histo.init requiredConfig
+        |> Histo.withYAxis (Histo.axisRight [ Axis.tickCount 5 ])
+        |> Histo.render ( data, accessor )
+
+-}
 withYAxis : ChartAxis.YAxis Float -> Config -> Config
 withYAxis =
     Type.setYAxisLinear
-
-
-{-| -}
-axisLeft : List (Axis.Attribute value) -> ChartAxis.YAxis value
-axisLeft =
-    ChartAxis.Left
-
-
-{-| -}
-axisRight : List (Axis.Attribute value) -> ChartAxis.YAxis value
-axisRight =
-    ChartAxis.Right
-
-
-{-| -}
-axisBottom : List (Axis.Attribute value) -> ChartAxis.XAxis value
-axisBottom =
-    ChartAxis.Bottom

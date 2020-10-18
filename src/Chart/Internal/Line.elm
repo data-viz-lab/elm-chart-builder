@@ -420,9 +420,17 @@ linearYAxis c scale =
                     [ Axis.left attributes scale ]
                 ]
 
-            ChartAxis.Right _ ->
-                --FIXME
-                []
+            ChartAxis.Right attributes ->
+                [ g
+                    [ transform
+                        [ Translate
+                            (c.width + c.margin.left + leftGap |> Helpers.floorFloat)
+                            c.margin.top
+                        ]
+                    , class [ "axis", "axis--y" ]
+                    ]
+                    [ Axis.right attributes scale ]
+                ]
 
     else
         []

@@ -39,7 +39,7 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 @docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
 
 
-# Optional Axis Configuration Setters
+# Axis
 
 @docs XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisLinear, withXAxisTime, withYAxis
 
@@ -404,14 +404,46 @@ withLineStyle styles config =
 -- AXIS
 
 
-{-| -}
+{-| The XAxis type
+-}
 type alias XAxis value =
     ChartAxis.XAxis value
 
 
-{-| -}
+{-| The YAxis type
+-}
 type alias YAxis value =
     ChartAxis.YAxis value
+
+
+{-| It returns an YAxis Left type
+
+    Line.axisLeft [ Axis.tickCount 5 ]
+
+-}
+axisLeft : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisLeft =
+    ChartAxis.Left
+
+
+{-| It returns an YAxis right type
+
+    Line.axisRight [ Axis.tickCount 5 ]
+
+-}
+axisRight : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisRight =
+    ChartAxis.Right
+
+
+{-| It returns an XAxis bottom type
+
+    Line.axisBottom [ Axis.tickCount 5 ]
+
+-}
+axisBottom : List (Axis.Attribute value) -> ChartAxis.XAxis value
+axisBottom =
+    ChartAxis.Bottom
 
 
 {-| Hide the Y aixs
@@ -450,42 +482,6 @@ hideXAxis config =
     Type.setXAxis False config
 
 
-{-| -}
-withXAxisTime : ChartAxis.XAxis Posix -> Config -> Config
-withXAxisTime =
-    Type.setXAxisTime
-
-
-{-| -}
-withXAxisLinear : ChartAxis.XAxis Float -> Config -> Config
-withXAxisLinear =
-    Type.setXAxisLinear
-
-
-{-| -}
-withYAxis : ChartAxis.YAxis Float -> Config -> Config
-withYAxis =
-    Type.setYAxisLinear
-
-
-{-| -}
-axisLeft : List (Axis.Attribute value) -> ChartAxis.YAxis value
-axisLeft =
-    ChartAxis.Left
-
-
-{-| -}
-axisRight : List (Axis.Attribute value) -> ChartAxis.YAxis value
-axisRight =
-    ChartAxis.Right
-
-
-{-| -}
-axisBottom : List (Axis.Attribute value) -> ChartAxis.XAxis value
-axisBottom =
-    ChartAxis.Bottom
-
-
 {-| Hide all axis
 
     Line.init requiredConfig
@@ -497,6 +493,42 @@ hideAxis : Config -> Config
 hideAxis config =
     Type.setXAxis False config
         |> Type.setYAxis False
+
+
+{-| Customise the time xAxis
+
+    Line.init requiredConfig
+        |> Line.withXAxisTime (Line.axisBottom [ Axis.tickCount 5 ])
+        |> Line.render ( data, accessor )
+
+-}
+withXAxisTime : ChartAxis.XAxis Posix -> Config -> Config
+withXAxisTime =
+    Type.setXAxisTime
+
+
+{-| Customise the linear xAxis
+
+    Line.init requiredConfig
+        |> Line.withXAxisLinear (Line.axisBottom [ Axis.tickCount 5 ])
+        |> Line.render ( data, accessor )
+
+-}
+withXAxisLinear : ChartAxis.XAxis Float -> Config -> Config
+withXAxisLinear =
+    Type.setXAxisLinear
+
+
+{-| Customise the yAxis
+
+    Line.init requiredConfig
+        |> Line.withYAxis (Line.axisRight [ Axis.tickCount 5 ])
+        |> Line.render ( data, accessor )
+
+-}
+withYAxis : ChartAxis.YAxis Float -> Config -> Config
+withYAxis =
+    Type.setYAxisLinear
 
 
 

@@ -104,7 +104,7 @@ xAxis =
 
 yAxis : Line.YAxis Float
 yAxis =
-    Line.axisLeft [ Axis.tickCount 5 ]
+    Line.axisRight [ Axis.tickCount 5 ]
 
 
 line =

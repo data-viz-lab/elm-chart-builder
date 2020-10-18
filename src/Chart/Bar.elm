@@ -4,8 +4,8 @@ module Chart.Bar exposing
     , render
     , RequiredConfig
     , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
-    , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
-    , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel, axisBottom, axisLeft, axisRight
+    , XAxis, YAxis, axisBottom, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
+    , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -40,14 +40,16 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 @docs withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
 
 
-# Optional Axis Configuration Setters
+# Axis
 
-@docs XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
+&#9888; axisLeft & axisRight apply to a vertical chart context. If you change the chart orientation to horizontal, the axis positioning will always change to bottom.
+
+@docs XAxis, YAxis, axisBottom, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
 
 
 # Configuration arguments
 
-@docs diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel, axisBottom, axisLeft, axisRight
+@docs diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
 
 -}
 
@@ -529,14 +531,50 @@ xGroupLabel =
 -- AXIS
 
 
-{-| -}
+{-| The XAxis type
+-}
 type alias XAxis value =
     ChartAxis.XAxis value
 
 
-{-| -}
+{-| The YAxis type
+-}
 type alias YAxis value =
     ChartAxis.YAxis value
+
+
+{-| It returns an YAxis Left type
+
+Only relevant if the chart orientation is vertical.
+
+    Bar.axisLeft [ Axis.tickCount 5 ]
+
+-}
+axisLeft : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisLeft =
+    ChartAxis.Left
+
+
+{-| It returns an YAxis Right type
+
+Only relevant if the chart orientation is vertical.
+
+    Bar.axisRight [ Axis.tickCount 5 ]
+
+-}
+axisRight : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisRight =
+    ChartAxis.Right
+
+
+{-| It returns an XAxis Bottom type
+
+    Bar.axisBottom [ Axis.tickCount 5 ]
+
+-}
+axisBottom : List (Axis.Attribute value) -> ChartAxis.XAxis value
+axisBottom =
+    ChartAxis.Bottom
 
 
 {-| Hide all axis.
@@ -592,31 +630,25 @@ hideXAxis config =
     Type.setXAxis False config
 
 
-{-| -}
+{-| Customise the xAxis
+
+    Bar.init requiredConfig
+        |> Bar.withXAxis (Bar.axisBottom [ Axis.tickCount 5 ])
+        |> Bar.render ( data, accessor )
+
+-}
 withXAxis : ChartAxis.XAxis String -> Config -> Config
 withXAxis =
     Type.setXAxisBand
 
 
-{-| -}
+{-| Customise the yAxis
+
+    Bar.init requiredConfig
+        |> Bar.withYAxis (Bar.axisRight [ Axis.tickCount 5 ])
+        |> Bar.render ( data, accessor )
+
+-}
 withYAxis : ChartAxis.YAxis Float -> Config -> Config
 withYAxis =
     Type.setYAxisLinear
-
-
-{-| -}
-axisLeft : List (Axis.Attribute value) -> ChartAxis.YAxis value
-axisLeft =
-    ChartAxis.Left
-
-
-{-| -}
-axisRight : List (Axis.Attribute value) -> ChartAxis.YAxis value
-axisRight =
-    ChartAxis.Right
-
-
-{-| -}
-axisBottom : List (Axis.Attribute value) -> ChartAxis.XAxis value
-axisBottom =
-    ChartAxis.Bottom
