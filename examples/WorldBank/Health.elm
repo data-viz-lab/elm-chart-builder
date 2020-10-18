@@ -2,6 +2,7 @@ module WorldBank.Health exposing (main)
 
 {-| -}
 
+import Axis
 import Browser
 import Chart.Bar as Bar
 import Chart.Symbol as Symbol exposing (Symbol)
@@ -287,6 +288,14 @@ accessor =
     Bar.Accessor (.countryName >> Just) .indicator .value
 
 
+yAxis : Bar.YAxis Float
+yAxis =
+    Bar.axisLeft
+        [ Axis.tickCount 8
+        , Axis.tickFormat valueFormatter
+        ]
+
+
 chart : List Data -> Html Msg
 chart data =
     Bar.init
@@ -299,8 +308,7 @@ chart data =
         |> Bar.withYDomain ( 0, 50 )
         |> Bar.withLabels (Bar.yLabel (valueFormatter >> removeZeroes))
         |> Bar.withSymbols (icons "x")
-        |> Bar.withYAxisTickFormat valueFormatter
-        |> Bar.withYAxisTickCount 8
+        |> Bar.withYAxis yAxis
         |> Bar.render ( data, accessor )
 
 

@@ -3,6 +3,7 @@ module ElmVisualization.PopulationMinnesota exposing (main)
 {-| This module shows how to build a simple population pyramid chart.
 -}
 
+import Axis
 import Chart.Bar as Bar
 import DateFormat
 import FormatNumber
@@ -180,6 +181,14 @@ accessor =
     Bar.Accessor (.age >> Just) .gender .people
 
 
+yAxis : Bar.YAxis Float
+yAxis =
+    Bar.axisLeft
+        [ Axis.tickCount 8
+        , Axis.tickFormat (abs >> valueFormatter)
+        ]
+
+
 chart : Html msg
 chart =
     Bar.init
@@ -189,9 +198,8 @@ chart =
         }
         |> Bar.withStackedLayout Bar.diverging
         |> Bar.withOrientation Bar.horizontal
-        |> Bar.withYAxisTickCount 8
-        |> Bar.withYAxisTickFormat (abs >> valueFormatter)
         |> Bar.withYDomain ( 0, 2000000 )
+        |> Bar.withYAxis yAxis
         |> Bar.render ( data, accessor )
 
 

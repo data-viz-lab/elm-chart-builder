@@ -69,7 +69,7 @@ $ elm-test
 It expects elm-analyse to already be installed and accessible.
 
 ```shell
-$ elm-analyse | elm-analyse.log
+$ elm-analyse > elm-analyse.log
 ```
 
 ## screenshot tests:

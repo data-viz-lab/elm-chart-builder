@@ -3,6 +3,7 @@ module HistogramBarChart exposing (data, main)
 {-| This module shows how to build a simple bar chart.
 -}
 
+import Axis
 import Chart.HistogramBar as Histo
 import Color
 import FormatNumber
@@ -191,7 +192,8 @@ preProcessedHisto =
         , width = width
         , height = height
         }
-        |> Histo.withYAxisTickFormat (Numeral.format "0,0")
+        |> Histo.withYAxis (Histo.axisLeft [ Axis.tickFormat (Numeral.format "0,0") ])
+        |> Histo.withXAxis (Histo.axisBottom [ Axis.tickCount 5 ])
         |> Histo.withColor color
         |> Histo.withColumnTitle (Histo.yColumnTitle String.fromFloat)
         |> Histo.withBarStyle [ ( "stroke-color", "#fff" ), ( "stroke-width", "1" ) ]

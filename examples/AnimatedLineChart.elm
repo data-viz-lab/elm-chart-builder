@@ -4,6 +4,7 @@ module AnimatedLineChart exposing (main)
 -}
 
 import Array exposing (Array)
+import Axis
 import Browser
 import Browser.Events
 import Chart.Line as Line
@@ -160,6 +161,19 @@ accessor =
     Line.linear (Line.AccessorLinear (.groupLabel >> Just) .x .y)
 
 
+xAxis : Line.XAxis Float
+xAxis =
+    Line.axisBottom
+        [ Axis.ticks xAxisTicks
+        , Axis.tickFormat (round >> String.fromInt)
+        ]
+
+
+yAxis : Line.YAxis Float
+yAxis =
+    Line.axisLeft [ Axis.tickCount 5 ]
+
+
 lineLinear : Data -> Html msg
 lineLinear d =
     Line.init
@@ -167,12 +181,10 @@ lineLinear d =
         , width = width
         , height = height
         }
-        |> Line.withYAxisTickCount 5
-        |> Line.withXAxisTickCount 5
+        |> Line.withXAxisLinear xAxis
+        |> Line.withYAxis yAxis
         |> Line.withLabels Line.xGroupLabel
         |> Line.withYDomain ( 0, 20 )
-        |> Line.withXAxisTicks xAxisTicks
-        |> Line.withXAxisTickFormat (round >> String.fromInt)
         |> Line.render ( d, accessor )
 
 

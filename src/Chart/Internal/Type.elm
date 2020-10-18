@@ -5,12 +5,6 @@ module Chart.Internal.Type exposing
     , AccessorLinearOrTime(..)
     , AccessorLinearStruct
     , AccessorTimeStruct
-    , AxisContinousDataTickCount(..)
-    , AxisContinousDataTickFormat(..)
-    , AxisContinousDataTicks(..)
-    , AxisOrientation(..)
-    , AxisTickPadding(..)
-    , AxisTickSize(..)
     , BandDomain
     , ColorResource(..)
     , ColumnTitle(..)
@@ -68,7 +62,6 @@ module Chart.Internal.Type exposing
     , fromDomainBand
     , fromDomainLinear
     , fromExternalData
-    , getAxisContinousDataFormatter
     , getBandGroupRange
     , getBandSingleRange
     , getDataBandDepth
@@ -85,9 +78,6 @@ module Chart.Internal.Type exposing
     , leftGap
     , role
     , setAccessibilityContent
-    , setAxisTickPadding
-    , setAxisTickSizeInner
-    , setAxisTickSizeOuter
     , setColorResource
     , setCoreStyles
     , setCurve
@@ -112,21 +102,11 @@ module Chart.Internal.Type exposing
     , setSvgTitle
     , setWidth
     , setXAxis
-    , setXAxisAttributes
-    , setXAxisTickCount
-    , setXAxisTickFormat
-    , setXAxisTickPadding
-    , setXAxisTickSizeInner
-    , setXAxisTickSizeOuter
-    , setXAxisTicks
+    , setXAxisBand
+    , setXAxisLinear
+    , setXAxisTime
     , setYAxis
-    , setYAxisAttributes
-    , setYAxisTickCount
-    , setYAxisTickFormat
-    , setYAxisTickPadding
-    , setYAxisTickSizeInner
-    , setYAxisTickSizeOuter
-    , setYAxisTicks
+    , setYAxisLinear
     , showIcons
     , showStackedColumnTitle
     , showXGroupLabel
@@ -143,7 +123,7 @@ module Chart.Internal.Type exposing
     , toExternalData
     )
 
-import Axis
+import Chart.Internal.Axis as ChartAxis
 import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
 import Color exposing (Color)
@@ -156,7 +136,6 @@ import Shape
 import Statistics
 import SubPath exposing (SubPath)
 import Time exposing (Posix, Zone)
-import TypedSvg.Attributes
 import TypedSvg.Core
 
 
@@ -282,11 +261,6 @@ type Direction
     | NoDirection
 
 
-type AxisOrientation
-    = X
-    | Y
-
-
 type alias LinearDomain =
     ( Float, Float )
 
@@ -361,34 +335,7 @@ type alias Margin =
 
 
 
---ideas on axis: https://codepen.io/deciob/pen/GRgrXgR
-
-
-type AxisContinousDataTicks
-    = DefaultTicks
-    | CustomTicks (List Float)
-    | CustomTimeTicks (List Posix)
-
-
-type AxisContinousDataTickCount
-    = DefaultTickCount
-    | CustomTickCount Int
-
-
-type AxisTickSize
-    = DefaultTickSize
-    | CustomTickSize Float
-
-
-type AxisTickPadding
-    = DefaultTickPadding
-    | CustomTickPadding Float
-
-
-type AxisContinousDataTickFormat
-    = DefaultTickFormat
-    | CustomTickFormat (Float -> String)
-    | CustomTimeTickFormat (Posix -> String)
+--
 
 
 type ColorResource
@@ -409,21 +356,10 @@ type AccessibilityContent
 
 type alias ConfigStruct =
     { accessibilityContent : AccessibilityContent
-    , axisXTickCount : AxisContinousDataTickCount
-    , axisXTickFormat : AxisContinousDataTickFormat
-    , axisXTicks : AxisContinousDataTicks
-    , axisYTickCount : AxisContinousDataTickCount
-    , axisYTickFormat : AxisContinousDataTickFormat
-    , axisYTicks : AxisContinousDataTicks
-    , axisTickSizeOuter : AxisTickSize
-    , axisTickSizeInner : AxisTickSize
-    , axisTickPadding : AxisTickPadding
-    , axisXTickSizeOuter : AxisTickSize
-    , axisXTickSizeInner : AxisTickSize
-    , axisXTickPadding : AxisTickPadding
-    , axisYTickSizeOuter : AxisTickSize
-    , axisYTickSizeInner : AxisTickSize
-    , axisYTickPadding : AxisTickPadding
+    , axisXLinear : ChartAxis.XAxis Float
+    , axisXTime : ChartAxis.XAxis Posix
+    , axisXBand : ChartAxis.XAxis String
+    , axisYLinear : ChartAxis.YAxis Float
     , colorResource : ColorResource
     , coreStyle : List ( String, String )
     , curve : List ( Float, Float ) -> SubPath
@@ -453,21 +389,10 @@ defaultConfig : Config
 defaultConfig =
     toConfig
         { accessibilityContent = AccessibilityNone
-        , axisXTickCount = DefaultTickCount
-        , axisXTickFormat = DefaultTickFormat
-        , axisXTicks = DefaultTicks
-        , axisYTickCount = DefaultTickCount
-        , axisYTickFormat = DefaultTickFormat
-        , axisYTicks = DefaultTicks
-        , axisTickSizeOuter = DefaultTickSize
-        , axisTickSizeInner = DefaultTickSize
-        , axisTickPadding = DefaultTickPadding
-        , axisXTickSizeOuter = DefaultTickSize
-        , axisXTickSizeInner = DefaultTickSize
-        , axisXTickPadding = DefaultTickPadding
-        , axisYTickSizeOuter = DefaultTickSize
-        , axisYTickSizeInner = DefaultTickSize
-        , axisYTickPadding = DefaultTickPadding
+        , axisXLinear = ChartAxis.Bottom []
+        , axisXTime = ChartAxis.Bottom []
+        , axisXBand = ChartAxis.Bottom []
+        , axisYLinear = ChartAxis.Left []
         , colorResource = ColorNone
         , coreStyle = []
         , curve = \d -> Shape.linearCurve d
@@ -602,16 +527,6 @@ setIcons all (Config c) =
     Config { c | icons = all }
 
 
-setXAxisTickCount : AxisContinousDataTickCount -> Config -> Config
-setXAxisTickCount count (Config c) =
-    toConfig { c | axisXTickCount = count }
-
-
-setYAxisTickCount : AxisContinousDataTickCount -> Config -> Config
-setYAxisTickCount count (Config c) =
-    toConfig { c | axisYTickCount = count }
-
-
 setCurve : (List ( Float, Float ) -> SubPath) -> Config -> Config
 setCurve curve (Config c) =
     toConfig { c | curve = curve }
@@ -627,69 +542,24 @@ setSvgTitle title (Config c) =
     toConfig { c | svgTitle = title }
 
 
-setXAxisTickFormat : AxisContinousDataTickFormat -> Config -> Config
-setXAxisTickFormat format (Config c) =
-    toConfig { c | axisXTickFormat = format }
+setXAxisTime : ChartAxis.XAxis Posix -> Config -> Config
+setXAxisTime orientation (Config c) =
+    toConfig { c | axisXTime = orientation }
 
 
-setYAxisTickFormat : AxisContinousDataTickFormat -> Config -> Config
-setYAxisTickFormat format (Config c) =
-    toConfig { c | axisYTickFormat = format }
+setXAxisLinear : ChartAxis.XAxis Float -> Config -> Config
+setXAxisLinear orientation (Config c) =
+    toConfig { c | axisXLinear = orientation }
 
 
-setXAxisTicks : AxisContinousDataTicks -> Config -> Config
-setXAxisTicks ticks (Config c) =
-    toConfig { c | axisXTicks = ticks }
+setXAxisBand : ChartAxis.XAxis String -> Config -> Config
+setXAxisBand orientation (Config c) =
+    toConfig { c | axisXBand = orientation }
 
 
-setYAxisTicks : AxisContinousDataTicks -> Config -> Config
-setYAxisTicks ticks (Config c) =
-    toConfig { c | axisYTicks = ticks }
-
-
-setAxisTickSizeInner : Float -> Config -> Config
-setAxisTickSizeInner size (Config c) =
-    toConfig { c | axisTickSizeInner = CustomTickSize size }
-
-
-setAxisTickSizeOuter : Float -> Config -> Config
-setAxisTickSizeOuter size (Config c) =
-    toConfig { c | axisTickSizeOuter = CustomTickSize size }
-
-
-setAxisTickPadding : Float -> Config -> Config
-setAxisTickPadding size (Config c) =
-    toConfig { c | axisTickPadding = CustomTickPadding size }
-
-
-setXAxisTickSizeInner : Float -> Config -> Config
-setXAxisTickSizeInner size (Config c) =
-    toConfig { c | axisXTickSizeInner = CustomTickSize size }
-
-
-setXAxisTickSizeOuter : Float -> Config -> Config
-setXAxisTickSizeOuter size (Config c) =
-    toConfig { c | axisXTickSizeOuter = CustomTickSize size }
-
-
-setXAxisTickPadding : Float -> Config -> Config
-setXAxisTickPadding size (Config c) =
-    toConfig { c | axisXTickPadding = CustomTickPadding size }
-
-
-setYAxisTickSizeInner : Float -> Config -> Config
-setYAxisTickSizeInner size (Config c) =
-    toConfig { c | axisYTickSizeInner = CustomTickSize size }
-
-
-setYAxisTickSizeOuter : Float -> Config -> Config
-setYAxisTickSizeOuter size (Config c) =
-    toConfig { c | axisYTickSizeOuter = CustomTickSize size }
-
-
-setYAxisTickPadding : Float -> Config -> Config
-setYAxisTickPadding size (Config c) =
-    toConfig { c | axisYTickPadding = CustomTickPadding size }
+setYAxisLinear : ChartAxis.YAxis Float -> Config -> Config
+setYAxisLinear orientation (Config c) =
+    toConfig { c | axisYLinear = orientation }
 
 
 setColorResource : ColorResource -> Config -> Config
@@ -947,19 +817,6 @@ showIcons (Config c) =
         |> .icons
         |> List.length
         |> (\l -> l > 0)
-
-
-getAxisContinousDataFormatter : AxisContinousDataTickFormat -> Maybe (Float -> String)
-getAxisContinousDataFormatter format =
-    case format of
-        DefaultTickFormat ->
-            Just (\f -> String.fromFloat f)
-
-        CustomTickFormat formatter ->
-            Just formatter
-
-        CustomTimeTickFormat _ ->
-            Nothing
 
 
 getDomainBand : Config -> DomainBandStruct
@@ -1672,112 +1529,6 @@ colorCategoricalStyle c idx =
 
         _ ->
             ""
-
-
-setXAxisAttributes : ConfigStruct -> List (Maybe (Axis.Attribute data))
-setXAxisAttributes c =
-    let
-        tickCount =
-            case c.axisXTickCount of
-                DefaultTickCount ->
-                    Nothing
-
-                CustomTickCount count ->
-                    Just (Axis.tickCount count)
-
-        tickSizeInner =
-            case c.axisXTickSizeInner of
-                CustomTickSize x ->
-                    Just (Axis.tickSizeInner x)
-
-                _ ->
-                    case c.axisTickSizeInner of
-                        CustomTickSize x ->
-                            Just (Axis.tickSizeInner x)
-
-                        _ ->
-                            Nothing
-
-        tickSizeOuter =
-            case c.axisXTickSizeOuter of
-                CustomTickSize x ->
-                    Just (Axis.tickSizeOuter x)
-
-                _ ->
-                    case c.axisTickSizeOuter of
-                        CustomTickSize x ->
-                            Just (Axis.tickSizeOuter x)
-
-                        _ ->
-                            Nothing
-
-        tickPadding =
-            case c.axisXTickPadding of
-                CustomTickPadding p ->
-                    Just (Axis.tickPadding p)
-
-                _ ->
-                    case c.axisTickPadding of
-                        CustomTickPadding p ->
-                            Just (Axis.tickPadding p)
-
-                        _ ->
-                            Nothing
-    in
-    [ tickCount, tickSizeInner, tickSizeOuter, tickPadding ]
-
-
-setYAxisAttributes : ConfigStruct -> List (Maybe (Axis.Attribute data))
-setYAxisAttributes c =
-    let
-        tickCount =
-            case c.axisYTickCount of
-                DefaultTickCount ->
-                    Nothing
-
-                CustomTickCount count ->
-                    Just (Axis.tickCount count)
-
-        tickSizeInner =
-            case c.axisYTickSizeInner of
-                CustomTickSize x ->
-                    Just (Axis.tickSizeInner x)
-
-                _ ->
-                    case c.axisTickSizeInner of
-                        CustomTickSize x ->
-                            Just (Axis.tickSizeInner x)
-
-                        _ ->
-                            Nothing
-
-        tickSizeOuter =
-            case c.axisYTickSizeOuter of
-                CustomTickSize x ->
-                    Just (Axis.tickSizeOuter x)
-
-                _ ->
-                    case c.axisTickSizeOuter of
-                        CustomTickSize x ->
-                            Just (Axis.tickSizeOuter x)
-
-                        _ ->
-                            Nothing
-
-        tickPadding =
-            case c.axisYTickPadding of
-                CustomTickPadding p ->
-                    Just (Axis.tickPadding p)
-
-                _ ->
-                    case c.axisTickPadding of
-                        CustomTickPadding p ->
-                            Just (Axis.tickPadding p)
-
-                        _ ->
-                            Nothing
-    in
-    [ tickCount, tickSizeInner, tickSizeOuter, tickPadding ]
 
 
 ariaLabelledbyContent : ConfigStruct -> List (TypedSvg.Core.Attribute msg)
