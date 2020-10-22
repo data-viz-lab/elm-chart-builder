@@ -4,6 +4,7 @@ module Chart.Internal.Line exposing
     )
 
 import Axis
+import Chart.Internal.Axis as ChartAxis
 import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol
     exposing
@@ -22,12 +23,6 @@ import Chart.Internal.Type
     exposing
         ( AccessibilityContent(..)
         , AccessorLinearOrTime(..)
-        , AxisContinousDataTickCount(..)
-        , AxisContinousDataTickFormat(..)
-        , AxisContinousDataTicks(..)
-        , AxisOrientation(..)
-        , AxisTickPadding(..)
-        , AxisTickSize(..)
         , ColorResource(..)
         , Config
         , ConfigStruct
@@ -50,8 +45,6 @@ import Chart.Internal.Type
         , getOffset
         , leftGap
         , role
-        , setXAxisAttributes
-        , setYAxisAttributes
         , showIcons
         )
 import Html exposing (Html)
@@ -86,17 +79,7 @@ import TypedSvg.Types
 
 
 
--- LOCAL TYPES
-
-
-type AxisType
-    = Y
-    | X
-
-
-
 -- INTERNALS
---
 
 
 descAndTitle : ConfigStruct -> List (Svg msg)
@@ -207,7 +190,7 @@ renderLineGrouped ( data, config ) =
             <|
                 symbolElements config
                     ++ descAndTitle c
-                    ++ linearAxisGenerator c Y yScale
+                    ++ linearYAxis c yScale
                     ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
                     ++ drawLinearLine config xLinearScale yScale sortedLinearData
     in
@@ -328,7 +311,7 @@ renderLineStacked ( data, config ) =
             <|
                 symbolElements config
                     ++ descAndTitle c
-                    ++ linearAxisGenerator c Y yScale
+                    ++ linearYAxis c yScale
                     ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
                     ++ drawLinearLine config xLinearScale yScale combinedData
     in
@@ -344,46 +327,34 @@ renderLineStacked ( data, config ) =
             Html.div [] [ svgEl ]
 
 
-timeAxisGenerator : ConfigStruct -> AxisType -> Maybe (ContinuousScale Posix) -> List (Svg msg)
-timeAxisGenerator c axisType scale =
+linearXAxis : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
+linearXAxis c scale =
+    if c.showXAxis == True then
+        case c.axisXLinear of
+            ChartAxis.Bottom attributes ->
+                [ g
+                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                    , class [ "axis", "axis--x" ]
+                    ]
+                    [ Axis.bottom attributes scale ]
+                ]
+
+    else
+        []
+
+
+timeXAxis : ConfigStruct -> Maybe (ContinuousScale Posix) -> List (Svg msg)
+timeXAxis c scale =
     if c.showXAxis == True then
         case scale of
             Just s ->
-                case axisType of
-                    Y ->
-                        []
-
-                    X ->
-                        let
-                            ticks =
-                                case c.axisXTicks of
-                                    CustomTimeTicks t ->
-                                        Just (Axis.ticks t)
-
-                                    _ ->
-                                        Nothing
-
-                            tickFormat =
-                                case c.axisXTickFormat of
-                                    CustomTimeTickFormat formatter ->
-                                        Just (Axis.tickFormat formatter)
-
-                                    _ ->
-                                        Nothing
-
-                            attributes =
-                                [ ticks, tickFormat ]
-                                    ++ setXAxisAttributes c
-                                    |> List.filterMap identity
-
-                            axis =
-                                Axis.bottom attributes s
-                        in
+                case c.axisXTime of
+                    ChartAxis.Bottom attributes ->
                         [ g
                             [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
                             , class [ "axis", "axis--x" ]
                             ]
-                            [ axis ]
+                            [ Axis.bottom attributes s ]
                         ]
 
             _ ->
@@ -393,74 +364,28 @@ timeAxisGenerator c axisType scale =
         []
 
 
-linearAxisGenerator : ConfigStruct -> AxisType -> ContinuousScale Float -> List (Svg msg)
-linearAxisGenerator c axisType scale =
+linearYAxis : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
+linearYAxis c scale =
     if c.showYAxis == True then
-        case axisType of
-            Y ->
-                let
-                    ticks =
-                        case c.axisYTicks of
-                            CustomTicks t ->
-                                Just (Axis.ticks t)
-
-                            _ ->
-                                Nothing
-
-                    tickFormat =
-                        case c.axisYTickFormat of
-                            CustomTickFormat formatter ->
-                                Just (Axis.tickFormat formatter)
-
-                            _ ->
-                                Nothing
-
-                    attributes =
-                        [ ticks, tickFormat ]
-                            ++ setYAxisAttributes c
-                            |> List.filterMap identity
-
-                    axis =
-                        Axis.left attributes scale
-                in
+        case c.axisYLinear of
+            ChartAxis.Left attributes ->
                 [ g
                     [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
                     , class [ "axis", "axis--y" ]
                     ]
-                    [ axis ]
+                    [ Axis.left attributes scale ]
                 ]
 
-            X ->
-                let
-                    ticks =
-                        case c.axisXTicks of
-                            CustomTicks t ->
-                                Just (Axis.ticks t)
-
-                            _ ->
-                                Nothing
-
-                    tickFormat =
-                        case c.axisXTickFormat of
-                            CustomTickFormat formatter ->
-                                Just (Axis.tickFormat formatter)
-
-                            _ ->
-                                Nothing
-
-                    attributes =
-                        [ ticks, tickFormat ]
-                            ++ setXAxisAttributes c
-                            |> List.filterMap identity
-
-                    axis =
-                        Axis.bottom attributes scale
-                in
+            ChartAxis.Right attributes ->
                 [ g
-                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                    , class [ "axis", "axis--x" ]
+                    [ transform
+                        [ Translate
+                            (c.width + c.margin.left + leftGap |> Helpers.floorFloat)
+                            c.margin.top
+                        ]
+                    , class [ "axis", "axis--y" ]
                     ]
-                    [ axis ]
+                    [ Axis.right attributes scale ]
                 ]
 
     else
@@ -479,10 +404,10 @@ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config ) =
     in
     case data of
         DataTime _ ->
-            timeAxisGenerator c X xTimeScale
+            timeXAxis c xTimeScale
 
         DataLinear _ ->
-            linearAxisGenerator c X xLinearScale
+            linearXAxis c xLinearScale
 
 
 symbolsToSymbolElements : List Symbol -> List (Svg msg)

@@ -5,6 +5,7 @@ module Chart.Internal.Bar exposing
     )
 
 import Axis
+import Chart.Internal.Axis as ChartAxis
 import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol
     exposing
@@ -22,12 +23,6 @@ import Chart.Internal.TableHelpers as Helpers
 import Chart.Internal.Type
     exposing
         ( AccessibilityContent(..)
-        , AxisContinousDataTickCount(..)
-        , AxisContinousDataTickFormat(..)
-        , AxisContinousDataTicks(..)
-        , AxisOrientation(..)
-        , AxisTickPadding(..)
-        , AxisTickSize(..)
         , ColumnTitle(..)
         , Config
         , ConfigStruct
@@ -53,7 +48,6 @@ import Chart.Internal.Type
         , dataBandToDataStacked
         , fromConfig
         , fromDataBand
-        , getAxisContinousDataFormatter
         , getBandGroupRange
         , getBandSingleRange
         , getDataBandDepth
@@ -63,13 +57,10 @@ import Chart.Internal.Type
         , getStackedValuesAndGroupes
         , leftGap
         , role
-        , setXAxisAttributes
-        , setYAxisAttributes
         , showIcons
         , stackedValuesInverse
         , symbolCustomSpace
         , symbolSpace
-        , toConfig
         )
 import Histogram exposing (Bin)
 import Html exposing (Html)
@@ -909,37 +900,21 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
 bandXAxis : ConfigStruct -> BandScale String -> List (Svg msg)
 bandXAxis c bandScale =
     if c.showXAxis == True then
-        let
-            attributes =
-                setXAxisAttributes c
-                    -- removing tickCount
-                    |> List.tail
-                    |> Maybe.withDefault []
-                    |> List.filterMap identity
-        in
-        case c.orientation of
-            Vertical ->
-                let
-                    axis =
-                        Axis.bottom attributes (Scale.toRenderable identity bandScale)
-                in
+        case ( c.orientation, c.axisXBand ) of
+            ( Vertical, ChartAxis.Bottom attributes ) ->
                 [ g
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
                     , class [ "axis", "axis--horizontal" ]
                     ]
-                    [ axis ]
+                    [ Axis.bottom attributes (Scale.toRenderable identity bandScale) ]
                 ]
 
-            Horizontal ->
-                let
-                    axis =
-                        Axis.left [] (Scale.toRenderable identity bandScale)
-                in
+            ( Horizontal, ChartAxis.Bottom attributes ) ->
                 [ g
                     [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
                     , class [ "axis", "axis--vertical" ]
                     ]
-                    [ axis ]
+                    [ Axis.left attributes (Scale.toRenderable identity bandScale) ]
                 ]
 
     else
@@ -949,51 +924,44 @@ bandXAxis c bandScale =
 bandGroupedYAxis : ConfigStruct -> Float -> ContinuousScale Float -> List (Svg msg)
 bandGroupedYAxis c iconOffset linearScale =
     if c.showYAxis == True then
-        let
-            ticks =
-                case c.axisYTicks of
-                    CustomTicks t ->
-                        Just (Axis.ticks t)
-
-                    _ ->
-                        Nothing
-
-            tickFormat =
-                case c.axisYTickFormat of
-                    CustomTickFormat formatter ->
-                        Just (Axis.tickFormat formatter)
-
-                    _ ->
-                        Nothing
-
-            attributes =
-                [ ticks, tickFormat ]
-                    ++ setYAxisAttributes c
-                    |> List.filterMap identity
-        in
-        case c.orientation of
-            Vertical ->
-                let
-                    axis =
-                        Axis.left attributes linearScale
-                in
+        case ( c.orientation, c.axisYLinear ) of
+            ( Vertical, ChartAxis.Left attributes ) ->
                 [ g
-                    [ transform [ Translate (c.margin.left - leftGap) (iconOffset + c.margin.top) ]
+                    [ transform
+                        [ Translate (c.margin.left - leftGap |> Helpers.floorFloat)
+                            (iconOffset + c.margin.top)
+                        ]
                     , class [ "axis", "axis--vertical" ]
                     ]
-                    [ axis ]
+                    [ Axis.left attributes linearScale ]
                 ]
 
-            Horizontal ->
-                let
-                    axis =
-                        Axis.bottom attributes linearScale
-                in
+            ( Vertical, ChartAxis.Right attributes ) ->
+                [ g
+                    [ transform
+                        [ Translate
+                            (c.width + c.margin.left + leftGap |> Helpers.floorFloat)
+                            (iconOffset + c.margin.top)
+                        ]
+                    , class [ "axis", "axis--vertical" ]
+                    ]
+                    [ Axis.right attributes linearScale ]
+                ]
+
+            ( Horizontal, ChartAxis.Left attributes ) ->
                 [ g
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
                     , class [ "axis", "axis--horizontal" ]
                     ]
-                    [ axis ]
+                    [ Axis.bottom attributes linearScale ]
+                ]
+
+            ( Horizontal, ChartAxis.Right attributes ) ->
+                [ g
+                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                    , class [ "axis", "axis--horizontal" ]
+                    ]
+                    [ Axis.bottom attributes linearScale ]
                 ]
 
     else
@@ -1053,35 +1021,28 @@ renderHistogram ( histogram, config ) =
                 |> Tuple.pair 0
                 |> Scale.linear yRange
 
-        yTickFormat =
-            case c.axisYTickFormat of
-                CustomTickFormat formatter ->
-                    Just (Axis.tickFormat formatter)
-
-                _ ->
-                    Nothing
-
-        yAttributes =
-            [ yTickFormat ]
-                |> List.filterMap identity
-
         xAxis : List (Svg msg)
         xAxis =
             [ g
                 [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
                 , class [ "axis", "axis--horizontal" ]
                 ]
-                [ Axis.bottom [] xScale ]
+                [ Axis.bottom (ChartAxis.xAxisAttributes c.axisXLinear) xScale ]
             ]
 
         yAxis : List (Bin Float Float) -> List (Svg msg)
         yAxis bins =
-            [ g
-                [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
-                , class [ "axis", "axis--vertical" ]
-                ]
-                [ Axis.left yAttributes (yScaleFromBins bins) ]
-            ]
+            case c.axisYLinear of
+                ChartAxis.Left attributes ->
+                    [ g
+                        [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
+                        , class [ "axis", "axis--vertical" ]
+                        ]
+                        [ Axis.left attributes (yScaleFromBins bins) ]
+                    ]
+
+                ChartAxis.Right _ ->
+                    [ text "TODO" ]
 
         tableHeadings =
             Table.Headings [ "length", "x0", "x1" ]

@@ -3,6 +3,7 @@ module ElmVisualization.BarChart exposing (main)
 {-| This module shows how to build a simple bar chart.
 -}
 
+import Axis
 import Chart.Bar as Bar
 import DateFormat
 import Html exposing (Html)
@@ -72,7 +73,7 @@ chart =
         , height = 400
         }
         |> Bar.withYDomain ( 0, 5 )
-        |> Bar.withYAxisTickCount 5
+        |> Bar.withYAxis (Bar.axisLeft [ Axis.tickCount 5 ])
         |> Bar.withTable
         |> Bar.withLabels (Bar.yLabel String.fromFloat)
         |> Bar.render ( timeSeries, accessor )

@@ -3,6 +3,7 @@ module BarChart exposing (data, main)
 {-| This module shows how to build a simple bar chart.
 -}
 
+import Axis
 import Chart.Bar as Bar
 import Chart.Symbol as Symbol exposing (Symbol)
 import FormatNumber
@@ -153,6 +154,14 @@ yLabelFormatter =
     Numeral.format "0.0a"
 
 
+yAxis : Bar.YAxis Float
+yAxis =
+    Bar.axisLeft
+        [ Axis.tickCount 5
+        , Axis.tickFormat valueFormatter
+        ]
+
+
 verticalGroupedWithIcons : Html msg
 verticalGroupedWithIcons =
     Bar.init
@@ -165,8 +174,7 @@ verticalGroupedWithIcons =
         |> Bar.withColumnTitle (Bar.yColumnTitle valueFormatter)
         |> Bar.withGroupedLayout
         |> Bar.withSymbols (iconsCustom "chart-a")
-        |> Bar.withYAxisTickCount 5
-        |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.withYAxis yAxis
         |> Bar.render ( data, accessor )
 
 
@@ -180,9 +188,8 @@ verticalGroupedWithLabels =
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withColumnTitle (Bar.yColumnTitle valueFormatter)
         |> Bar.withGroupedLayout
-        |> Bar.withYAxisTickCount 5
-        |> Bar.withYAxisTickFormat valueFormatter
         |> Bar.withLabels (Bar.yLabel yLabelFormatter)
+        |> Bar.withYAxis yAxis
         |> Bar.render ( data, accessor )
 
 
@@ -198,8 +205,7 @@ horizontalGroupedWithIcons =
         |> Bar.withGroupedLayout
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withSymbols (icons "chart-b")
-        |> Bar.withYAxisTickCount 5
-        |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.withYAxis yAxis
         |> Bar.render ( data, accessor )
 
 
@@ -215,8 +221,7 @@ horizontalGroupedWithLabels =
         |> Bar.withGroupedLayout
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withLabels Bar.xLabel
-        |> Bar.withYAxisTickCount 5
-        |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.withYAxis yAxis
         |> Bar.render ( data, accessor )
 
 
@@ -231,7 +236,7 @@ verticalStacked =
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withSymbols (icons "chart-b")
-        |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.withYAxis yAxis
         |> Bar.render ( data, accessor )
 
 
@@ -246,8 +251,7 @@ horizontalStacked =
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withStackedLayout Bar.noDirection
-        |> Bar.withYAxisTickCount 5
-        |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.withYAxis yAxis
         |> Bar.render ( data, accessor )
 
 
@@ -262,8 +266,7 @@ horizontalStackedDiverging =
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withStackedLayout Bar.diverging
-        |> Bar.withYAxisTickCount 5
-        |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.withYAxis yAxis
         |> Bar.render ( dataDiverging, accessor )
 
 
@@ -278,7 +281,7 @@ verticalStackedDiverging =
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withOrientation Bar.vertical
         |> Bar.withStackedLayout Bar.diverging
-        |> Bar.withYAxisTickFormat valueFormatter
+        |> Bar.withYAxis (Bar.axisLeft [ Axis.tickFormat valueFormatter ])
         |> Bar.render ( dataDiverging, accessor )
 
 

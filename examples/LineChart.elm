@@ -3,6 +3,7 @@ module LineChart exposing (main)
 {-| This module shows how to build a simple line chart.
 -}
 
+import Axis
 import Chart.Line as Line
 import Chart.Symbol as Symbol exposing (Symbol)
 import Html exposing (Html)
@@ -42,16 +43,53 @@ icons prefix =
     ]
 
 
+xAxisTicks : List Float
+xAxisTicks =
+    dataLinear
+        |> List.map .x
+        |> Set.fromList
+        |> Set.toList
+        |> List.sort
+
+
+requiredConfig : Line.RequiredConfig
+requiredConfig =
+    { margin = { top = 10, right = 40, bottom = 30, left = 30 }
+    , width = width
+    , height = height
+    }
+
+
+sharedAttributes : List (Axis.Attribute value)
+sharedAttributes =
+    [ Axis.tickSizeOuter 0
+    , Axis.tickSizeInner 3
+    ]
+
+
+yAxis : Line.YAxis Float
+yAxis =
+    Line.axisLeft (Axis.tickCount 5 :: sharedAttributes)
+
+
+xAxis : Line.XAxis Float
+xAxis =
+    Line.axisBottom
+        ([ Axis.ticks xAxisTicks
+         , Axis.tickFormat (round >> String.fromInt)
+         ]
+            ++ sharedAttributes
+        )
+
+
+xAxisTime : Line.XAxis Posix
+xAxisTime =
+    Line.axisBottom (Axis.tickCount 5 :: sharedAttributes)
+
+
 sharedStackedLineConfig =
-    Line.init
-        { margin = { top = 10, right = 40, bottom = 30, left = 30 }
-        , width = width
-        , height = height
-        }
-        |> Line.withYAxisTickCount 5
-        |> Line.withXAxisTickCount 5
-        |> Line.withAxisTickSizeOuter 0
-        |> Line.withAxisTickSizeInner 3
+    Line.init requiredConfig
+        |> Line.withYAxis yAxis
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withLabels Line.xGroupLabel
         |> Line.withColorPalette Scale.Color.tableau10
@@ -60,16 +98,10 @@ sharedStackedLineConfig =
 
 
 sharedGroupedLineConfig =
-    Line.init
-        { margin = { top = 10, right = 40, bottom = 30, left = 30 }
-        , width = width
-        , height = height
-        }
+    Line.init requiredConfig
         |> Line.withColorPalette Scale.Color.tableau10
-        |> Line.withYAxisTickCount 5
-        |> Line.withXAxisTickCount 5
-        |> Line.withAxisTickSizeOuter 0
-        |> Line.withAxisTickSizeInner 3
+        |> Line.withYAxis yAxis
+        |> Line.withXAxisLinear xAxis
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withLabels Line.xGroupLabel
         |> Line.withGroupedLayout
@@ -152,40 +184,31 @@ dataLinear =
     ]
 
 
-xAxisTicks : List Float
-xAxisTicks =
-    dataLinear
-        |> List.map .x
-        |> Set.fromList
-        |> Set.toList
-        |> List.sort
-
-
 groupedTimeLine : Html msg
 groupedTimeLine =
     sharedGroupedLineConfig
+        |> Line.withXAxisTime xAxisTime
         |> Line.render ( timeData, timeAccessor )
 
 
 groupedLine : Html msg
 groupedLine =
     sharedGroupedLineConfig
-        |> Line.withXAxisTicks xAxisTicks
-        |> Line.withXAxisTickFormat (round >> String.fromInt)
+        |> Line.withXAxisLinear xAxis
         |> Line.render ( dataLinear, accessorLinear )
 
 
 stackedTimeLine : Html msg
 stackedTimeLine =
     sharedStackedLineConfig
+        |> Line.withXAxisTime xAxisTime
         |> Line.render ( timeData, timeAccessor )
 
 
 stackedLine : Html msg
 stackedLine =
     sharedStackedLineConfig
-        |> Line.withXAxisTicks xAxisTicks
-        |> Line.withXAxisTickFormat (round >> String.fromInt)
+        |> Line.withXAxisLinear xAxis
         |> Line.render ( dataLinear, accessorLinear )
 
 

@@ -3,8 +3,8 @@ module Chart.Bar exposing
     , init
     , render
     , RequiredConfig
-    , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withYDomain
-    , hideAxis, hideXAxis, hideYAxis, withAxisTickPadding, withAxisTickSizeInner, withAxisTickSizeOuter, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withYAxisTickCount, withYAxisTickFormat, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter, withYAxisTicks
+    , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
+    , XAxis, YAxis, axisBottom, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
     , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
     )
 
@@ -37,12 +37,14 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withYDomain
+@docs withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
 
 
-# Optional Axis Configuration Setters
+# Axis
 
-@docs hideAxis, hideXAxis, hideYAxis, withAxisTickPadding, withAxisTickSizeInner, withAxisTickSizeOuter, withXAxisTickPadding, withXAxisTickSizeInner, withXAxisTickSizeOuter, withYAxisTickCount, withYAxisTickFormat, withYAxisTickPadding, withYAxisTickSizeInner, withYAxisTickSizeOuter, withYAxisTicks
+&#9888; axisLeft & axisRight apply to a vertical chart context. If you change the chart orientation to horizontal, the axis positioning will always change to bottom.
+
+@docs XAxis, YAxis, axisBottom, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
 
 
 # Configuration arguments
@@ -52,6 +54,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 -}
 
 import Axis
+import Chart.Internal.Axis as ChartAxis
 import Chart.Internal.Bar
     exposing
         ( renderBandGrouped
@@ -61,10 +64,6 @@ import Chart.Internal.Symbol exposing (Symbol(..))
 import Chart.Internal.Type as Type
     exposing
         ( AccessibilityContent(..)
-        , AxisContinousDataTickCount(..)
-        , AxisContinousDataTickFormat(..)
-        , AxisContinousDataTicks(..)
-        , AxisOrientation(..)
         , ColorResource(..)
         , ColumnTitle(..)
         , Config
@@ -240,159 +239,6 @@ withBarStyle styles config =
     Type.setCoreStyles styles config
 
 
-{-| Passes the tick values for a bar chart continous axis.
-
-Defaults to elm-visualization `Scale.ticks`.
-
-    Bar.init requiredConfig
-        |> Bar.withYAxisTicks [ 1, 2, 3 ]
-        |> Bar.render ( data, accessor )
-
--}
-withYAxisTicks : List Float -> Config -> Config
-withYAxisTicks ticks config =
-    Type.setYAxisTicks (Type.CustomTicks ticks) config
-
-
-{-| Sets the approximate number of ticks for a bar chart continous axis.
-
-Defaults to elm-visualization `Scale.tickCount`.
-
-    Bar.init requiredConfig
-        |> Bar.withYAxisTickCount 5
-        |> Bar.render ( data, accessor )
-
--}
-withYAxisTickCount : Int -> Config -> Config
-withYAxisTickCount count config =
-    Type.setYAxisTickCount (Type.CustomTickCount count) config
-
-
-{-| Sets the formatting for the ticks in a bar chart continous axis.
-
-Defaults to elm-visualization `Scale.tickFormat`.
-
-    formatter =
-        FormatNumber.format { usLocale | decimals = 0 }
-
-    Bar.init requiredConfig
-        |> Bar.withYAxisTickFormat formatter
-        |> Bar.render (data, accessor)
-
--}
-withYAxisTickFormat : (Float -> String) -> Config -> Config
-withYAxisTickFormat f config =
-    Type.setYAxisTickFormat (CustomTickFormat f) config
-
-
-{-| Sets the the inner tick size that controls the length of the tick lines, offset from the native position of the axis. Defaults to 6.
-
-    Bar.init requiredConfig
-        |> Bar.withAxisTickSizeInner 10
-        |> Bar.render ( data, accessor )
-
--}
-withAxisTickSizeInner : Float -> Config -> Config
-withAxisTickSizeInner size config =
-    Type.setAxisTickSizeInner size config
-
-
-{-| The outer tick size controls the length of the square ends of the domain path, offset from the native position of the axis. Thus, the “outer ticks” are not actually ticks but part of the domain path, and their position is determined by the associated scale’s domain extent. Thus, outer ticks may overlap with the first or last inner tick. An outer tick size of 0 suppresses the square ends of the domain path, instead producing a straight line. Defaults to 6.
-
-    Bar.init requiredConfig
-        |> Bar.withAxisTickSizeOuter 0
-        |> Bar.render ( data, accessor )
-
--}
-withAxisTickSizeOuter : Float -> Config -> Config
-withAxisTickSizeOuter size config =
-    Type.setAxisTickSizeOuter size config
-
-
-{-| Padding controls the space between tick marks and tick labels. Defaults to 3.
-
-    Bar.init requiredConfig
-        |> Bar.withAxisTickPadding 6
-        |> Bar.render ( data, accessor )
-
--}
-withAxisTickPadding : Float -> Config -> Config
-withAxisTickPadding size config =
-    Type.setAxisTickPadding size config
-
-
-{-| Sets the the inner tick size that controls the length of the tick lines, offset from the native position of the axis. Defaults to 6. Only affects the Y axis.
-
-    Bar.init requiredConfig
-        |> Bar.withYAxisTickSizeInner 10
-        |> Bar.render ( data, accessor )
-
--}
-withYAxisTickSizeInner : Float -> Config -> Config
-withYAxisTickSizeInner size config =
-    Type.setYAxisTickSizeInner size config
-
-
-{-| The outer tick size controls the length of the square ends of the domain path, offset from the native position of the axis. Thus, the “outer ticks” are not actually ticks but part of the domain path, and their position is determined by the associated scale’s domain extent. Thus, outer ticks may overlap with the first or last inner tick. An outer tick size of 0 suppresses the square ends of the domain path, instead producing a straight line. Defaults to 6. Only affects the Y axis.
-
-    Bar.init requiredConfig
-        |> Bar.withYAxisTickSizeOuter 0
-        |> Bar.render ( data, accessor )
-
--}
-withYAxisTickSizeOuter : Float -> Config -> Config
-withYAxisTickSizeOuter size config =
-    Type.setYAxisTickSizeOuter size config
-
-
-{-| Padding controls the space between tick marks and tick labels. Defaults to 3. Only affects the Y axis.
-
-    Bar.init requiredConfig
-        |> Bar.withYAxisTickPadding 6
-        |> Bar.render ( data, accessor )
-
--}
-withYAxisTickPadding : Float -> Config -> Config
-withYAxisTickPadding size config =
-    Type.setYAxisTickPadding size config
-
-
-{-| Sets the the inner tick size that controls the length of the tick lines, offset from the native position of the axis. Defaults to 6. Only affects the X axis.
-
-    Bar.init requiredConfig
-        |> Bar.withXAxisTickSizeInner 10
-        |> Bar.render ( data, accessor )
-
--}
-withXAxisTickSizeInner : Float -> Config -> Config
-withXAxisTickSizeInner size config =
-    Type.setXAxisTickSizeInner size config
-
-
-{-| The outer tick size controls the length of the square ends of the domain path, offset from the native position of the axis. Thus, the “outer ticks” are not actually ticks but part of the domain path, and their position is determined by the associated scale’s domain extent. Thus, outer ticks may overlap with the first or last inner tick. An outer tick size of 0 suppresses the square ends of the domain path, instead producing a straight line. Defaults to 6. Only affects the X axis.
-
-    Bar.init requiredConfig
-        |> Bar.withXAxisTickSizeOuter 0
-        |> Bar.render ( data, accessor )
-
--}
-withXAxisTickSizeOuter : Float -> Config -> Config
-withXAxisTickSizeOuter size config =
-    Type.setXAxisTickSizeOuter size config
-
-
-{-| Padding controls the space between tick marks and tick labels. Defaults to 3. Only affects the X axis.
-
-    Bar.init requiredConfig
-        |> Bar.withXAxisTickPadding 6
-        |> Bar.render ( data, accessor )
-
--}
-withXAxisTickPadding : Float -> Config -> Config
-withXAxisTickPadding size config =
-    Type.setXAxisTickPadding size config
-
-
 {-| Sets the color palette for the chart.
 If a palette with a single color is passed all bars will have the same colour.
 If the bars in a group are more then the colours in the palette, the colours will be repeted.
@@ -458,59 +304,6 @@ withXDomain value config =
 withYDomain : ( Float, Float ) -> Config -> Config
 withYDomain value config =
     Type.setDomainBandLinear value config
-
-
-{-| Hide all axis.
-
-    Bar.init requiredConfig
-        |> Bar.hideAxis
-        |> Bar.render ( data, accessor )
-
--}
-hideAxis : Config -> Config
-hideAxis config =
-    Type.setXAxis False config
-        |> Type.setYAxis False
-
-
-{-| Hide the Y aixs.
-
-The Y axis depends from the layout:
-
-  - With a vertical layout the Y axis is the vertical axis.
-
-  - With a horizontal layout the Y axis is the horizontal axis.
-
-```
-Bar.init requiredConfig
-    |> Bar.hideYAxis
-    |> Bar.render ( data, accessor )
-```
-
--}
-hideYAxis : Config -> Config
-hideYAxis config =
-    Type.setYAxis False config
-
-
-{-| Hide the X aixs.
-
-The X axis depends from the layout:
-
-  - With a vertical layout the X axis is the horizontal axis.
-
-  - With a horizontal layout the X axis is the vertical axis.
-
-```
-Bar.init requiredConfig
-    |> Bar.hideXAxis
-    |> Bar.render ( data, accessor )
-```
-
--}
-hideXAxis : Config -> Config
-hideXAxis config =
-    Type.setXAxis False config
 
 
 {-| Pass a list of symbols to be rendered at the end of the bars.
@@ -732,3 +525,130 @@ xLabel =
 xGroupLabel : Label
 xGroupLabel =
     XGroupLabel
+
+
+
+-- AXIS
+
+
+{-| The XAxis type
+-}
+type alias XAxis value =
+    ChartAxis.XAxis value
+
+
+{-| The YAxis type
+-}
+type alias YAxis value =
+    ChartAxis.YAxis value
+
+
+{-| It returns an YAxis Left type
+
+Only relevant if the chart orientation is vertical.
+
+    Bar.axisLeft [ Axis.tickCount 5 ]
+
+-}
+axisLeft : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisLeft =
+    ChartAxis.Left
+
+
+{-| It returns an YAxis Right type
+
+Only relevant if the chart orientation is vertical.
+
+    Bar.axisRight [ Axis.tickCount 5 ]
+
+-}
+axisRight : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisRight =
+    ChartAxis.Right
+
+
+{-| It returns an XAxis Bottom type
+
+    Bar.axisBottom [ Axis.tickCount 5 ]
+
+-}
+axisBottom : List (Axis.Attribute value) -> ChartAxis.XAxis value
+axisBottom =
+    ChartAxis.Bottom
+
+
+{-| Hide all axis.
+
+    Bar.init requiredConfig
+        |> Bar.hideAxis
+        |> Bar.render ( data, accessor )
+
+-}
+hideAxis : Config -> Config
+hideAxis config =
+    Type.setXAxis False config
+        |> Type.setYAxis False
+
+
+{-| Hide the Y aixs.
+
+The Y axis depends from the layout:
+
+  - With a vertical layout the Y axis is the vertical axis.
+
+  - With a horizontal layout the Y axis is the horizontal axis.
+
+```
+Bar.init requiredConfig
+    |> Bar.hideYAxis
+    |> Bar.render ( data, accessor )
+```
+
+-}
+hideYAxis : Config -> Config
+hideYAxis config =
+    Type.setYAxis False config
+
+
+{-| Hide the X aixs.
+
+The X axis depends from the layout:
+
+  - With a vertical layout the X axis is the horizontal axis.
+
+  - With a horizontal layout the X axis is the vertical axis.
+
+```
+Bar.init requiredConfig
+    |> Bar.hideXAxis
+    |> Bar.render ( data, accessor )
+```
+
+-}
+hideXAxis : Config -> Config
+hideXAxis config =
+    Type.setXAxis False config
+
+
+{-| Customise the xAxis
+
+    Bar.init requiredConfig
+        |> Bar.withXAxis (Bar.axisBottom [ Axis.tickCount 5 ])
+        |> Bar.render ( data, accessor )
+
+-}
+withXAxis : ChartAxis.XAxis String -> Config -> Config
+withXAxis =
+    Type.setXAxisBand
+
+
+{-| Customise the yAxis
+
+    Bar.init requiredConfig
+        |> Bar.withYAxis (Bar.axisRight [ Axis.tickCount 5 ])
+        |> Bar.render ( data, accessor )
+
+-}
+withYAxis : ChartAxis.YAxis Float -> Config -> Config
+withYAxis =
+    Type.setYAxisLinear

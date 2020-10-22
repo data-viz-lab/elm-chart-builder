@@ -2,6 +2,7 @@ module WorldBank.ThreatenedSpecies exposing (main)
 
 {-| -}
 
+import Axis
 import Browser
 import Chart.Bar as Bar
 import Color
@@ -172,6 +173,14 @@ accessor =
     Bar.Accessor (always Nothing) .countryName (.value >> toFloat)
 
 
+yAxis : Bar.YAxis Float
+yAxis =
+    Bar.axisLeft
+        [ Axis.tickCount 8
+        , Axis.tickFormat valueFormatter
+        ]
+
+
 chart : List Data -> Html Msg
 chart data =
     Bar.init
@@ -182,8 +191,7 @@ chart data =
         |> Bar.withColorPalette [ Color.rgb255 209 33 2 ]
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withLabels (Bar.yLabel valueFormatter)
-        |> Bar.withYAxisTickFormat valueFormatter
-        |> Bar.withYAxisTickCount 8
+        |> Bar.withYAxis yAxis
         |> Bar.render ( data, accessor )
 
 
