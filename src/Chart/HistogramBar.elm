@@ -2,7 +2,7 @@ module Chart.HistogramBar exposing
     ( dataAccessor, preProcessedDataAccessor
     , init
     , render
-    , withBarStyle, withColor, withColumnTitle, withDesc, withDomain, withTable, withTitle
+    , withBarStyle, withColor, withColumnTitle, withDesc, withDomain, withoutTable, withTitle
     , XAxis, YAxis, axisBottom, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
     , yColumnTitle
     )
@@ -29,7 +29,7 @@ The histogram bar chart can both generate the histogram data automatically or ac
 
 # Configuration setters
 
-@docs withBarStyle, withColor, withColumnTitle, withDesc, withDomain, withTable, withTitle
+@docs withBarStyle, withColor, withColumnTitle, withDesc, withDomain, withoutTable, withTitle
 
 
 # Axis
@@ -151,19 +151,19 @@ render ( externalData, acc ) config =
     renderHistogram ( data, config )
 
 
-{-| Build an alternative table content for accessibility
+{-| Do **not** build an alternative table content for accessibility
 
-&#9888; This is still work in progress and only a basic table is rendered with this option.
-For now it is best to only use it with a limited number of data points.
+&#9888; By default an alternative table is always being rendered.
+Use this option to not build the table.
 
     Histo.init requiredConfig
-        |> Histo.withTable
+        |> Histo.withoutTable
         |> Histo.render ( data, accessor )
 
 -}
-withTable : Config -> Config
-withTable =
-    Type.setAccessibilityContent AccessibilityTable
+withoutTable : Config -> Config
+withoutTable =
+    Type.setAccessibilityContent AccessibilityNone
 
 
 {-| Set the domain for the HistogramGenerator.

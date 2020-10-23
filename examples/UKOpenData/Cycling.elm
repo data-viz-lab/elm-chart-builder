@@ -88,6 +88,10 @@ text {
     margin-left: 10px;
 }
 
+
+figure {
+  margin: 0;
+}
 """
 
 

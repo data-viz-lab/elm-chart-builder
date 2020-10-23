@@ -346,8 +346,11 @@ type ColorResource
     | ColorNone
 
 
-type AccessibilityContent
-    = AccessibilityTable
+type
+    AccessibilityContent
+    --TODO: AccessibilitySummaryTable
+    = AccessibilityTable ( String, String )
+    | AccessibilityTableNoLabels
     | AccessibilityNone
 
 
@@ -389,7 +392,7 @@ type alias ConfigStruct =
 defaultConfig : Config
 defaultConfig =
     toConfig
-        { accessibilityContent = AccessibilityNone
+        { accessibilityContent = AccessibilityTableNoLabels
         , axisXLinear = ChartAxis.Bottom []
         , axisXTime = ChartAxis.Bottom []
         , axisXBand = ChartAxis.Bottom []

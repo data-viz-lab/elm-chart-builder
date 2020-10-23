@@ -3,7 +3,7 @@ module Chart.Line exposing
     , init
     , render
     , RequiredConfig
-    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
+    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withoutTable, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
     , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisLinear, withXAxisTime, withYAxis
     , withSymbols
     , axisBottom, axisLeft, axisRight, xGroupLabel
@@ -36,7 +36,7 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 
 # Optional Configuration setters
 
-@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
+@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withoutTable, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
 
 
 # Axis
@@ -282,17 +282,32 @@ withXLinearDomain value config =
 
 {-| Build an alternative table content for accessibility
 
-&#9888; This is still work in progress and only a basic table is rendered with this option.
-For now it is best to only use it with a limited number of data points.
+&#9888; By default an alternative table is always being rendered.
+Use this option to explicitly pass a tuple with x and y labels.
 
     Line.init requiredConfig
-        |> Line.withTable
+        |> Line.withTable ( "xLabel", "yLabel" )
         |> Line.render ( data, accessor )
 
 -}
-withTable : Config -> Config
-withTable =
-    Type.setAccessibilityContent AccessibilityTable
+withTable : ( String, String ) -> Config -> Config
+withTable labels =
+    Type.setAccessibilityContent (AccessibilityTable labels)
+
+
+{-| Do **not** build an alternative table content for accessibility
+
+&#9888; By default an alternative table is always being rendered.
+Use this option to not build the table.
+
+    Line.init requiredConfig
+        |> Line.withoutTable
+        |> Line.render ( data, accessor )
+
+-}
+withoutTable : Config -> Config
+withoutTable =
+    Type.setAccessibilityContent AccessibilityNone
 
 
 {-| Sets an accessible, long-text description for the svg chart.

@@ -256,15 +256,15 @@ renderBandStacked ( data, config ) =
                 )
     in
     case c.accessibilityContent of
-        AccessibilityTable ->
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
+
+        _ ->
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableElement data ]
+                    [ svgEl, tableElement data c.accessibilityContent ]
                 ]
-
-        AccessibilityNone ->
-            Html.div [] [ svgEl ]
 
 
 stackedContainerTranslate : ConfigStruct -> Float -> Float -> Float -> Transform
@@ -484,15 +484,15 @@ renderBandGrouped ( data, config ) =
                     ++ symbolElements
     in
     case c.accessibilityContent of
-        AccessibilityTable ->
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
+
+        _ ->
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableElement data ]
+                    [ svgEl, tableElement data c.accessibilityContent ]
                 ]
-
-        AccessibilityNone ->
-            Html.div [] [ svgEl ]
 
 
 columns :
@@ -1095,15 +1095,15 @@ renderHistogram ( histogram, config ) =
                        ]
     in
     case c.accessibilityContent of
-        AccessibilityTable ->
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
+
+        _ ->
             Html.div []
                 [ Html.figure
                     []
                     [ svgEl, tableEl ]
                 ]
-
-        AccessibilityNone ->
-            Html.div [] [ svgEl ]
 
 
 histogramColumn :
@@ -1221,11 +1221,11 @@ horizontalLabel config xPos yPos point =
             []
 
 
-tableElement : DataBand -> Html msg
-tableElement data =
+tableElement : DataBand -> AccessibilityContent -> Html msg
+tableElement data accessibilityContent =
     let
         tableHeadings =
-            Helpers.dataBandToTableHeadings data
+            Helpers.dataBandToTableHeadings data accessibilityContent
 
         tableData =
             Helpers.dataBandToTableData data

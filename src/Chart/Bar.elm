@@ -3,7 +3,7 @@ module Chart.Bar exposing
     , init
     , render
     , RequiredConfig
-    , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
+    , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withoutTable, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
     , XAxis, YAxis, axisBottom, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
     , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
     )
@@ -37,7 +37,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
+@docs withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withoutTable, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
 
 
 # Axis
@@ -340,17 +340,32 @@ withXLabels =
 
 {-| Build an alternative table content for accessibility
 
-&#9888; This is still work in progress and only a basic table is rendered with this option.
-For now it is best to only use it with a limited number of data points.
+&#9888; By default an alternative table is always being rendered.
+Use this option to explicitly pass a tuple with x and y labels.
 
     Bar.init requiredConfig
-        |> Bar.withTable
+        |> Bar.withTable ( "xLabel", "yLabel" )
         |> Bar.render ( data, accessor )
 
 -}
-withTable : Config -> Config
-withTable =
-    Type.setAccessibilityContent AccessibilityTable
+withTable : ( String, String ) -> Config -> Config
+withTable labels =
+    Type.setAccessibilityContent (AccessibilityTable labels)
+
+
+{-| Do **not** build an alternative table content for accessibility
+
+&#9888; By default an alternative table is always being rendered.
+Use this option to not build the table.
+
+    Bar.init requiredConfig
+        |> Bar.withoutTable
+        |> Bar.render ( data, accessor )
+
+-}
+withoutTable : Config -> Config
+withoutTable =
+    Type.setAccessibilityContent AccessibilityNone
 
 
 {-| Show a label at the end of the bars.

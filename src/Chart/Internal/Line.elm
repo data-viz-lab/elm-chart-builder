@@ -195,15 +195,15 @@ renderLineGrouped ( data, config ) =
                     ++ drawLinearLine config xLinearScale yScale sortedLinearData
     in
     case c.accessibilityContent of
-        AccessibilityTable ->
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
+
+        _ ->
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableElement data ]
+                    [ svgEl, tableElement data c.accessibilityContent ]
                 ]
-
-        AccessibilityNone ->
-            Html.div [] [ svgEl ]
 
 
 
@@ -316,15 +316,15 @@ renderLineStacked ( data, config ) =
                     ++ drawLinearLine config xLinearScale yScale combinedData
     in
     case c.accessibilityContent of
-        AccessibilityTable ->
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
+
+        _ ->
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableElement data ]
+                    [ svgEl, tableElement data c.accessibilityContent ]
                 ]
-
-        AccessibilityNone ->
-            Html.div [] [ svgEl ]
 
 
 linearXAxis : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
@@ -692,11 +692,11 @@ horizontalLabel config xScale yScale idx groupLabel point =
             text_ [] []
 
 
-tableElement : DataLinearGroup -> Html msg
-tableElement data =
+tableElement : DataLinearGroup -> AccessibilityContent -> Html msg
+tableElement data accessibilityContent =
     let
         tableHeadings =
-            Helpers.dataLinearGroupToTableHeadings data
+            Helpers.dataLinearGroupToTableHeadings data accessibilityContent
 
         tableData =
             Helpers.dataLinearGroupToTableData data

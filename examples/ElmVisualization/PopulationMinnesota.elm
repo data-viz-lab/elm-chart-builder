@@ -90,6 +90,10 @@ text {
     bottom: 10px;
     font-size: 16px;
 }
+
+figure {
+  margin: 0;
+}
 """
 
 

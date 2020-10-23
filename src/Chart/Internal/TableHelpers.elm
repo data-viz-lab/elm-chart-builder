@@ -61,35 +61,37 @@ dataLinearGroupToTableData data =
                     )
 
 
-dataBandToTableHeadings : Type.DataBand -> Table.Headings
-dataBandToTableHeadings data =
+dataBandToTableHeadings : Type.DataBand -> Type.AccessibilityContent -> Table.Headings
+dataBandToTableHeadings data content =
     data
         |> Type.fromDataBand
         |> (\dataBand ->
                 if Type.noGroups dataBand then
                     dataBand
-                        |> always (Table.Headings [ "x", "y" ])
+                        |> always (Table.Headings <| getLabelsFromContent content)
 
                 else
                     dataBand
                         |> List.map
                             (\d ->
-                                Table.HeadingAndSubHeadings (Maybe.withDefault "" d.groupLabel) [ "x", "y" ]
+                                Table.HeadingAndSubHeadings (Maybe.withDefault "" d.groupLabel)
+                                    (getLabelsFromContent content)
                             )
                         |> Table.ComplexHeadings
            )
 
 
-dataLinearGroupToTableHeadings : Type.DataLinearGroup -> Table.Headings
-dataLinearGroupToTableHeadings data =
+dataLinearGroupToTableHeadings : Type.DataLinearGroup -> Type.AccessibilityContent -> Table.Headings
+dataLinearGroupToTableHeadings data content =
     let
         toHeading d =
-            Table.HeadingAndSubHeadings (Maybe.withDefault "" d.groupLabel) [ "x", "y" ]
+            Table.HeadingAndSubHeadings (Maybe.withDefault "" d.groupLabel)
+                (getLabelsFromContent content)
 
         toHeadings dd =
             if Type.noGroups dd then
                 dd
-                    |> always (Table.Headings [ "x", "y" ])
+                    |> always (Table.Headings <| getLabelsFromContent content)
 
             else
                 dd
@@ -102,3 +104,13 @@ dataLinearGroupToTableHeadings data =
 
         Type.DataLinear data_ ->
             toHeadings data_
+
+
+getLabelsFromContent : Type.AccessibilityContent -> List String
+getLabelsFromContent content =
+    case content of
+        Type.AccessibilityTable ( xLabel, yLabel ) ->
+            [ xLabel, yLabel ]
+
+        _ ->
+            [ "x", "y" ]

@@ -60,10 +60,14 @@ text {
 .male .line {
     stroke: lightskyblue;
 }
+
 .female .line {
     stroke: plum;
 }
 
+figure {
+  margin: 0;
+}
 """
 
 

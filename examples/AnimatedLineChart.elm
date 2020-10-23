@@ -58,6 +58,10 @@ css =
 .line-1 {
     stroke: #3949ab;
 }
+
+figure {
+  margin: 0;
+}
 """
 
 

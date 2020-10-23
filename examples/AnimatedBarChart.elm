@@ -72,6 +72,10 @@ footer {
     font-size: 12px;
     margin: 20px;
 }
+
+figure {
+  margin: 0;
+}
 """
 
 
