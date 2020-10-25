@@ -432,6 +432,31 @@ linearYAxis c scale =
                     [ Axis.right attributes scale ]
                 ]
 
+            ChartAxis.Grid attributes ->
+                let
+                    rightAttrs =
+                        attributes
+                            ++ [ Axis.tickSizeInner (c.width |> Helpers.floorFloat)
+                               , Axis.tickPadding (c.margin.right + c.margin.left)
+                               ]
+
+                    leftAttrs =
+                        attributes
+                            ++ [ Axis.tickSizeInner 0
+                               ]
+                in
+                [ g
+                    [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
+                    , class [ "axis", "axis--y", "axis--y-left" ]
+                    ]
+                    [ Axis.left leftAttrs scale ]
+                , g
+                    [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
+                    , class [ "axis", "axis--y", "axis--y-right" ]
+                    ]
+                    [ Axis.right rightAttrs scale ]
+                ]
+
     else
         []
 

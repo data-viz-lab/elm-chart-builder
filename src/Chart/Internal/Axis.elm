@@ -11,6 +11,7 @@ import Axis as VAxis
 type YAxis value
     = Left (List (VAxis.Attribute value))
     | Right (List (VAxis.Attribute value))
+    | Grid (List (VAxis.Attribute value))
 
 
 type XAxis value
@@ -24,6 +25,9 @@ yAxisAttributes axis =
             a
 
         Right a ->
+            a
+
+        Grid a ->
             a
 
 

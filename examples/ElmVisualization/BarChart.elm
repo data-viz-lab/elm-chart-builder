@@ -68,12 +68,12 @@ accessor =
 chart : Html msg
 chart =
     Bar.init
-        { margin = { top = 10, right = 10, bottom = 30, left = 30 }
+        { margin = { top = 10, right = 50, bottom = 30, left = 50 }
         , width = 600
         , height = 400
         }
         |> Bar.withYDomain ( 0, 5 )
-        |> Bar.withYAxis (Bar.axisLeft [ Axis.tickCount 5 ])
+        |> Bar.withYAxis (Bar.axisGrid [ Axis.tickCount 5 ])
         |> Bar.withLabels (Bar.yLabel String.fromFloat)
         |> Bar.render ( timeSeries, accessor )
 

@@ -992,6 +992,35 @@ bandGroupedYAxis c iconOffset linearScale =
                     [ Axis.right attributes linearScale ]
                 ]
 
+            ( Vertical, ChartAxis.Grid attributes ) ->
+                let
+                    rightAttrs =
+                        attributes
+                            ++ [ Axis.tickSizeInner (c.width |> Helpers.floorFloat)
+                               , Axis.tickPadding (c.margin.right + c.margin.left)
+                               , Axis.tickSizeOuter 0
+                               ]
+
+                    leftAttrs =
+                        attributes
+                            ++ [ Axis.tickSizeInner 0
+                               ]
+                in
+                [ g
+                    [ transform
+                        [ Translate (c.margin.left - leftGap |> Helpers.floorFloat)
+                            (iconOffset + c.margin.top)
+                        ]
+                    , class [ "axis", "axis--vertical" ]
+                    ]
+                    [ Axis.left leftAttrs linearScale ]
+                , g
+                    [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
+                    , class [ "axis", "axis--y", "axis--y-right" ]
+                    ]
+                    [ Axis.right rightAttrs linearScale ]
+                ]
+
             ( Horizontal, ChartAxis.Left attributes ) ->
                 [ g
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
@@ -1006,6 +1035,32 @@ bandGroupedYAxis c iconOffset linearScale =
                     , class [ "axis", "axis--horizontal" ]
                     ]
                     [ Axis.bottom attributes linearScale ]
+                ]
+
+            ( Horizontal, ChartAxis.Grid attributes ) ->
+                let
+                    bottomAttrs =
+                        attributes
+                            ++ [ Axis.tickSizeInner 0
+                               ]
+
+                    topAttrs =
+                        attributes
+                            ++ [ Axis.tickSizeInner (c.height |> Helpers.floorFloat)
+                               , Axis.tickSizeOuter 0
+                               , Axis.tickPadding (c.margin.top + c.margin.bottom)
+                               ]
+                in
+                [ g
+                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                    , class [ "axis", "axis--horizontal" ]
+                    ]
+                    [ Axis.bottom bottomAttrs linearScale ]
+                , g
+                    [ transform [ Translate c.margin.left c.margin.top ]
+                    , class [ "axis", "axis--y", "axis--y-right" ]
+                    ]
+                    [ Axis.bottom topAttrs linearScale ]
                 ]
 
     else
@@ -1084,6 +1139,9 @@ renderHistogram ( histogram, config ) =
                         ]
                         [ Axis.left attributes (yScaleFromBins bins) ]
                     ]
+
+                ChartAxis.Grid _ ->
+                    [ text "TODO" ]
 
                 ChartAxis.Right _ ->
                     [ text "TODO" ]
