@@ -6,7 +6,7 @@ module Chart.Line exposing
     , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withoutTable, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
     , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisLinear, withXAxisTime, withYAxis
     , withSymbols
-    , axisBottom, axisLeft, axisRight, xGroupLabel
+    , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -48,7 +48,7 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 
 # Configuration arguments
 
-@docs axisBottom, axisLeft, axisRight, xGroupLabel
+@docs axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel
 
 -}
 
@@ -439,6 +439,16 @@ type alias YAxis value =
 axisLeft : List (Axis.Attribute value) -> ChartAxis.YAxis value
 axisLeft =
     ChartAxis.Left
+
+
+{-| It returns an YAxis Grid type
+
+    Line.axisGrid [ Axis.tickCount 5 ]
+
+-}
+axisGrid : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisGrid =
+    ChartAxis.Grid
 
 
 {-| It returns an YAxis right type

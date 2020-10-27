@@ -4,7 +4,7 @@ module Chart.Bar exposing
     , render
     , RequiredConfig
     , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withoutTable, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
-    , XAxis, YAxis, axisBottom, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
+    , XAxis, YAxis, axisBottom, axisGrid, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
     , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
     )
 
@@ -44,7 +44,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 &#9888; axisLeft & axisRight apply to a vertical chart context. If you change the chart orientation to horizontal, the axis positioning will always change to bottom.
 
-@docs XAxis, YAxis, axisBottom, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
+@docs XAxis, YAxis, axisBottom, axisGrid, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
 
 
 # Configuration arguments
@@ -580,6 +580,16 @@ Only relevant if the chart orientation is vertical.
 axisRight : List (Axis.Attribute value) -> ChartAxis.YAxis value
 axisRight =
     ChartAxis.Right
+
+
+{-| It returns an YAxis Grid type
+
+    Bar.axisGrid [ Axis.tickCount 5 ]
+
+-}
+axisGrid : List (Axis.Attribute value) -> ChartAxis.YAxis value
+axisGrid =
+    ChartAxis.Grid
 
 
 {-| It returns an XAxis Bottom type
