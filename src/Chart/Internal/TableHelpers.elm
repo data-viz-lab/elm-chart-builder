@@ -8,7 +8,38 @@ module Chart.Internal.TableHelpers exposing
 import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Table as Table
 import Chart.Internal.Type as Type
+import LTTB
 import List.Extra
+import Scale
+import Time exposing (Posix)
+
+
+dataThreshold : List a -> Int
+dataThreshold data =
+    Scale.convert
+        (Scale.linear ( 6, 25 ) ( 0, 500 ) |> Scale.clamp)
+        (data |> List.length |> toFloat)
+        |> floor
+
+
+downsampleDataLinear : List ( Float, Float ) -> List ( Float, Float )
+downsampleDataLinear data =
+    LTTB.downsample
+        { data = data
+        , threshold = dataThreshold data
+        , xGetter = Tuple.first
+        , yGetter = Tuple.second
+        }
+
+
+downsampleDataTime : List ( Posix, Float ) -> List ( Posix, Float )
+downsampleDataTime data =
+    LTTB.downsample
+        { data = data
+        , threshold = dataThreshold data
+        , xGetter = Tuple.first >> Time.posixToMillis >> toFloat
+        , yGetter = Tuple.second
+        }
 
 
 dataBandToTableData : Type.DataBand -> List (List String)
@@ -31,6 +62,7 @@ dataLinearGroupToTableData data =
         Type.DataTime data_ ->
             data_
                 |> List.map .points
+                |> List.map downsampleDataTime
                 |> List.Extra.transpose
                 |> List.map
                     (\points ->
@@ -47,6 +79,7 @@ dataLinearGroupToTableData data =
         Type.DataLinear data_ ->
             data_
                 |> List.map .points
+                |> List.map downsampleDataLinear
                 |> List.Extra.transpose
                 |> List.map
                     (\points ->
