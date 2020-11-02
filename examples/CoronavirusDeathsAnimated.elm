@@ -1,6 +1,8 @@
 module CoronavirusDeathsAnimated exposing (main)
 
-{-| This module shows how to build a simple line chart with a time scale.
+{-| This module shows how to build an animated line chart with a time scale.
+The trick here is to transform the posix values into floats
+and then transition these float values.
 -}
 
 import Array exposing (Array)
@@ -18,6 +20,7 @@ import Html exposing (Html)
 import Html.Attributes exposing (class, style)
 import Interpolation exposing (Interpolator)
 import Iso8601
+import List.Extra
 import Numeral
 import Process
 import Scale.Color
@@ -39,6 +42,16 @@ text {
   font-size: 16px;
 }
 
+.axis--x .domain ,
+.axis--y .domain {
+  stroke: none;
+}
+
+.axis--y-right .tick {
+  stroke-dasharray : 6 6;
+  stroke-width: 0.5px;
+}
+
 .column text {
   font-size: 12px;
 }
@@ -47,6 +60,14 @@ figure {
   margin: 0;
 }
 """
+
+
+type alias DatumTime =
+    ( Posix, Float )
+
+
+type alias DataTime =
+    List DatumTime
 
 
 type alias Datum =
@@ -63,22 +84,27 @@ type alias Frame =
 
 type alias Model =
     { transition : Transition Frame
-    , idx : Int
+    , currentTimeInFloat : Float
     , data : Data
     }
 
 
 type Msg
     = Tick Int
-    | StartAnimation Frame
+    | StartAnimation
 
 
 stats : Data
 stats =
     coronaStats
-        |> List.indexedMap
-            (\idx ( _, _, dead ) ->
-                ( idx |> toFloat, dead )
+        |> List.map
+            (\( timeStr, _, dead ) ->
+                ( Iso8601.toTime timeStr
+                    |> Result.withDefault (Time.millisToPosix 0)
+                    |> Time.posixToMillis
+                    |> toFloat
+                , dead
+                )
             )
 
 
@@ -100,37 +126,55 @@ update msg model =
             , Cmd.none
             )
 
-        StartAnimation to ->
+        StartAnimation ->
             let
-                newIdx =
-                    model.idx + 1
+                prevIdx : Int
+                prevIdx =
+                    stats
+                        |> List.Extra.findIndex (\( t, _ ) -> t == model.currentTimeInFloat)
+                        |> Maybe.withDefault 0
 
+                lastIdx : Int
                 lastIdx =
-                    Array.length pointsInTime - 1
+                    Array.length pointsInTime
+                        - 1
+
+                currentTimeInFloat =
+                    stats
+                        |> List.Extra.getAt (prevIdx + 1)
+                        |> Maybe.map (Tuple.first >> floor)
+                        |> Maybe.withDefault 0
+
+                data =
+                    getDataByCurrentTime (prevIdx + 1)
 
                 from =
-                    Transition.value model.transition
-
-                currentData =
                     model.data
+
+                to =
+                    data
+                        |> List.reverse
+                        |> List.head
+                        |> Maybe.map List.singleton
+                        |> Maybe.withDefault []
 
                 transition =
                     Transition.for transitionSpeed (interpolateValues from to)
             in
             ( { model
                 | transition = transition
-                , idx = newIdx
-                , data = currentData ++ (transition |> Transition.value)
+                , currentTimeInFloat = currentTimeInFloat |> toFloat
+                , data = data
               }
-            , if model.idx == 0 then
-                Task.succeed (StartAnimation <| getDataByYear newIdx)
+            , if model.currentTimeInFloat == 0 then
+                Task.succeed StartAnimation
                     |> Task.perform identity
 
-              else if lastIdx >= newIdx then
+              else if prevIdx + 1 <= lastIdx then
                 Process.sleep transitionStep
                     |> Task.andThen
                         (\_ ->
-                            Task.succeed (StartAnimation <| getDataByYear newIdx)
+                            Task.succeed StartAnimation
                         )
                     |> Task.perform identity
 
@@ -159,10 +203,10 @@ interpolatePosition =
 --
 
 
-accessor : Line.Accessor Datum
+accessor : Line.Accessor DatumTime
 accessor =
-    Line.linear
-        (Line.AccessorLinear (always Nothing) Tuple.first Tuple.second)
+    Line.time
+        (Line.AccessorTime (always Nothing) Tuple.first Tuple.second)
 
 
 valueFormatter : Float -> String
@@ -190,7 +234,7 @@ transitionStep =
 
 yAxis : Bar.YAxis Float
 yAxis =
-    Line.axisLeft
+    Line.axisGrid
         [ Axis.tickCount 5
         , Axis.tickFormat valueFormatter
         ]
@@ -213,10 +257,10 @@ chart data =
         |> Line.withColorPalette [ Color.rgb255 209 33 2 ]
         |> Line.withXAxisTime xAxis
         |> Line.withYAxis yAxis
-        |> Line.withXLinearDomain ( 0, Array.length pointsInTime |> toFloat )
+        |> Line.withXTimeDomain xTimeDomain
         |> Line.withYDomain ( 0, 12000 )
         |> Line.withLineStyle [ ( "stroke-width", "1.5" ) ]
-        |> Line.render ( data, accessor )
+        |> Line.render ( data |> toTimeData, accessor )
 
 
 attrs : List (Html.Attribute msg)
@@ -242,18 +286,13 @@ footer =
 
 view : Model -> Html msg
 view model =
-    let
-        pointInTime =
-            Array.get (model.idx - 1) pointsInTime
-                |> Maybe.withDefault 0
-    in
     Html.div [ style "font-family" "Sans-Serif" ]
         [ Html.node "style" [] [ Html.text css ]
         , Html.h2
             [ style "margin" "25px"
             ]
             [ Html.text
-                "Coronavirus, daily number of confirmed deaths"
+                "Coronavirus, world daily number of confirmed deaths"
             ]
         , Html.div
             [ style "background-color" "#fff"
@@ -272,8 +311,20 @@ view model =
 
 init : () -> ( Model, Cmd Msg )
 init () =
-    ( { transition = Transition.constant <| getDataByYear 0, idx = 0, data = [] }
-    , Task.perform identity (Task.succeed (StartAnimation <| getDataByYear 1))
+    let
+        currentTimeInFloat : Float
+        currentTimeInFloat =
+            Tuple.first xTimeDomain |> Time.posixToMillis |> toFloat
+
+        initialData : Data
+        initialData =
+            []
+    in
+    ( { transition = Transition.constant <| initialData
+      , currentTimeInFloat = currentTimeInFloat
+      , data = initialData
+      }
+    , Task.perform identity (Task.succeed StartAnimation)
     )
 
 
@@ -299,7 +350,27 @@ main =
 -- HELPERS
 
 
-getDataByYear : Int -> Data
-getDataByYear idx =
+getDataByCurrentTime : Int -> Data
+getDataByCurrentTime upTo =
     stats
-        |> List.filter (\( time, value ) -> time == (Array.get idx pointsInTime |> Maybe.withDefault 0))
+        |> List.take upTo
+
+
+toTimeData : Data -> DataTime
+toTimeData data =
+    data
+        |> List.map (\( t, v ) -> ( t |> floor |> Time.millisToPosix, v ))
+
+
+toXDomain : DataTime -> ( Posix, Posix )
+toXDomain data =
+    ( data |> List.head |> Maybe.map Tuple.first |> Maybe.withDefault (Time.millisToPosix 0)
+    , data |> List.reverse |> List.head |> Maybe.map Tuple.first |> Maybe.withDefault (Time.millisToPosix 0)
+    )
+
+
+xTimeDomain : ( Posix, Posix )
+xTimeDomain =
+    stats
+        |> toTimeData
+        |> toXDomain

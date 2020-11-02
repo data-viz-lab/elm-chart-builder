@@ -29,6 +29,7 @@ import Chart.Internal.Type
         , DataGroupLinear
         , DataLinearGroup(..)
         , DomainLinearStruct
+        , DomainTimeStruct
         , Label(..)
         , Layout(..)
         , PointLinear
@@ -120,18 +121,24 @@ renderLineGrouped ( data, config ) =
             data
                 |> dataLinearGroupToDataLinear
 
+        timeDomain : DomainTimeStruct
+        timeDomain =
+            timeData
+                |> getDomainTimeFromData config
+
         linearDomain : DomainLinearStruct
         linearDomain =
-            linearData
-                |> getDomainLinearFromData config
+            case data of
+                DataTime _ ->
+                    timeDomainToLinearDomain timeDomain
+
+                DataLinear _ ->
+                    linearData
+                        |> getDomainLinearFromData config
 
         timeData =
             data
                 |> dataLinearGroupToDataTime
-
-        timeDomain =
-            timeData
-                |> getDomainTimeFromData config
 
         xRange =
             ( 0, w )
@@ -260,8 +267,13 @@ renderLineStacked ( data, config ) =
 
         linearDomain : DomainLinearStruct
         linearDomain =
-            linearData
-                |> getDomainLinearFromData config
+            case data of
+                DataTime _ ->
+                    timeDomainToLinearDomain timeDomain
+
+                DataLinear _ ->
+                    linearData
+                        |> getDomainLinearFromData config
 
         dataStacked : List ( String, List Float )
         dataStacked =
@@ -768,3 +780,24 @@ horizontalLabel config xScale yScale idx groupLabel point =
 labelGap : Float
 labelGap =
     2
+
+
+
+-- HELPERS
+
+
+timeDomainToLinearDomain : DomainTimeStruct -> DomainLinearStruct
+timeDomainToLinearDomain timeDomain =
+    timeDomain
+        |> (\{ x, y } ->
+                { x =
+                    x
+                        |> Maybe.map
+                            (\( a, b ) ->
+                                ( a |> Time.posixToMillis |> toFloat
+                                , b |> Time.posixToMillis |> toFloat
+                                )
+                            )
+                , y = y
+                }
+           )
