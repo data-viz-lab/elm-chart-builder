@@ -8,7 +8,7 @@ import Chart.Bar as Bar
 import Chart.Line as Line
 import Chart.Symbol as Symbol exposing (Symbol)
 import Color
-import Data exposing (CoronaStats, coronaStats)
+import Data exposing (CoronaData, coronaStats)
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
@@ -42,7 +42,7 @@ figure {
 """
 
 
-accessor : Line.Accessor CoronaStats
+accessor : Line.Accessor CoronaData
 accessor =
     Line.time
         { xGroup = always Nothing

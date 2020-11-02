@@ -1,5 +1,5 @@
 module Data exposing
-    ( CoronaStats
+    ( CoronaData
     , FertilityStats
     , SmokeStats
     , coronaStats
@@ -562,12 +562,12 @@ fertilityStats =
     ]
 
 
-type alias CoronaStats =
+type alias CoronaData =
     -- (date, newCases, newDeaths)
     ( String, Float, Float )
 
 
-coronaStats : List CoronaStats
+coronaStats : List CoronaData
 coronaStats =
     [ ( "2019-12-31", 27, 0 )
     , ( "2020-01-01", 0, 0 )
