@@ -221,8 +221,8 @@ renderBandStacked ( data, config ) =
                             in
                             { vals
                                 | stackedValue =
-                                    ( Scale.convert linearScale a1 |> Helpers.floorFloat
-                                    , Scale.convert linearScale a2 |> Helpers.floorFloat
+                                    ( Scale.convert linearScale a1
+                                    , Scale.convert linearScale a2
                                     )
                             }
                         )
@@ -427,6 +427,13 @@ renderBandGrouped ( data, config ) =
         dataLength =
             data |> fromDataBand |> List.length
 
+        paddingInner =
+            -- Adapt the padding to the number of bars, more bars less padding
+            -- otherwise no space would be left between bars
+            Scale.convert
+                (Scale.linear ( 0.2, 0.999 ) ( 0, 500 ) |> Scale.clamp)
+                (data |> getDataBandDepth |> toFloat)
+
         paddingInnerGroup =
             if dataLength == 1 then
                 0
@@ -442,7 +449,7 @@ renderBandGrouped ( data, config ) =
 
         bandSingleScale : BandScale String
         bandSingleScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.05 }
+            Scale.band { defaultBandConfig | paddingInner = paddingInner, paddingOuter = paddingInner / 2 }
                 bandSingleRange
                 (Maybe.withDefault [] domain.bandSingle)
 
@@ -555,10 +562,10 @@ columns config iconOffset bandGroupScale bandSingleScale linearScale colorScale 
                 Vertical ->
                     -- https://observablehq.com/@d3/grouped-bar-chart
                     -- .attr("transform", d => `translate(${x0(d[groupKey])},0)`)
-                    Translate (dataGroupTranslation bandGroupScale dataGroup |> Helpers.floorFloat) 0
+                    Translate (dataGroupTranslation bandGroupScale dataGroup) 0
 
                 Horizontal ->
-                    Translate 0 (dataGroupTranslation bandGroupScale dataGroup |> Helpers.floorFloat)
+                    Translate 0 (dataGroupTranslation bandGroupScale dataGroup)
     in
     g
         [ transform [ tr ]
@@ -622,24 +629,22 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
                 |> style
 
         w =
-            Helpers.floorFloat <| Scale.bandwidth bandSingleScale
+            Scale.bandwidth bandSingleScale
 
         h =
             c.height
                 - Scale.convert linearScale y__
                 - iconOffset
-                |> Helpers.floorFloat
 
         label =
             verticalLabel config (x_ + w / 2) (y_ - labelGap - labelOffset) point
 
         x_ =
-            Helpers.floorFloat <| Scale.convert bandSingleScale x__
+            Scale.convert bandSingleScale x__
 
         y_ =
             Scale.convert linearScale y__
                 + iconOffset
-                |> Helpers.floorFloat
 
         symbol : List (Svg msg)
         symbol =
@@ -678,13 +683,13 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
             point
 
         h =
-            Helpers.floorFloat <| Scale.bandwidth bandSingleScale
+            Scale.bandwidth bandSingleScale
 
         w =
-            Helpers.floorFloat <| Scale.convert linearScale y__
+            Scale.convert linearScale y__
 
         y_ =
-            Helpers.floorFloat <| Scale.convert bandSingleScale x__
+            Scale.convert bandSingleScale x__
 
         colorStyles =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
@@ -902,8 +907,7 @@ symbolsToSymbolElements : Orientation -> BandScale String -> List Symbol -> List
 symbolsToSymbolElements orientation bandSingleScale symbols =
     let
         localDimension =
-            Helpers.floorFloat <|
-                Scale.bandwidth bandSingleScale
+            Scale.bandwidth bandSingleScale
     in
     symbols
         |> List.map
@@ -955,7 +959,7 @@ bandXAxis c bandScale =
 
             ( Horizontal, ChartAxis.Bottom attributes ) ->
                 [ g
-                    [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
+                    [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
                     , class [ "axis", "axis--vertical" ]
                     ]
                     [ Axis.left attributes (Scale.toRenderable identity bandScale) ]
@@ -972,7 +976,7 @@ bandGroupedYAxis c iconOffset linearScale =
             ( Vertical, ChartAxis.Left attributes ) ->
                 [ g
                     [ transform
-                        [ Translate (c.margin.left - leftGap |> Helpers.floorFloat)
+                        [ Translate (c.margin.left - leftGap)
                             (iconOffset + c.margin.top)
                         ]
                     , class [ "axis", "axis--vertical" ]
@@ -984,7 +988,7 @@ bandGroupedYAxis c iconOffset linearScale =
                 [ g
                     [ transform
                         [ Translate
-                            (c.width + c.margin.left + leftGap |> Helpers.floorFloat)
+                            (c.width + c.margin.left + leftGap)
                             (iconOffset + c.margin.top)
                         ]
                     , class [ "axis", "axis--vertical" ]
@@ -996,7 +1000,7 @@ bandGroupedYAxis c iconOffset linearScale =
                 let
                     rightAttrs =
                         attributes
-                            ++ [ Axis.tickSizeInner (c.width |> Helpers.floorFloat)
+                            ++ [ Axis.tickSizeInner c.width
                                , Axis.tickPadding (c.margin.right + c.margin.left)
                                , Axis.tickSizeOuter 0
                                ]
@@ -1008,14 +1012,14 @@ bandGroupedYAxis c iconOffset linearScale =
                 in
                 [ g
                     [ transform
-                        [ Translate (c.margin.left - leftGap |> Helpers.floorFloat)
+                        [ Translate (c.margin.left - leftGap)
                             (iconOffset + c.margin.top)
                         ]
                     , class [ "axis", "axis--vertical" ]
                     ]
                     [ Axis.left leftAttrs linearScale ]
                 , g
-                    [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
+                    [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
                     , class [ "axis", "axis--y", "axis--y-right" ]
                     ]
                     [ Axis.right rightAttrs linearScale ]
@@ -1046,7 +1050,7 @@ bandGroupedYAxis c iconOffset linearScale =
 
                     topAttrs =
                         attributes
-                            ++ [ Axis.tickSizeInner (c.height |> Helpers.floorFloat)
+                            ++ [ Axis.tickSizeInner c.height
                                , Axis.tickSizeOuter 0
                                , Axis.tickPadding (c.margin.top + c.margin.bottom)
                                ]
