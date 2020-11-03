@@ -1,8 +1,14 @@
 module CoronavirusDeathsAnimated exposing (main)
 
 {-| This module shows how to build an animated line chart with a time scale.
+
 The trick here is to transform the posix values into floats
 and then transition these float values.
+
+TODO: this is not very efficient, because it is the same thing that the
+library is doing internally to draw time lines, so the transfromation
+between posix and float is happening twice.
+
 -}
 
 import Array exposing (Array)
@@ -116,6 +122,12 @@ pointsInTime =
         )
 
 
+lastIdx : Int
+lastIdx =
+    Array.length pointsInTime
+        - 1
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -133,11 +145,6 @@ update msg model =
                     stats
                         |> List.Extra.findIndex (\( t, _ ) -> t == model.currentTimeInFloat)
                         |> Maybe.withDefault 0
-
-                lastIdx : Int
-                lastIdx =
-                    Array.length pointsInTime
-                        - 1
 
                 currentTimeInFloat =
                     stats
@@ -172,10 +179,7 @@ update msg model =
 
               else if prevIdx + 1 <= lastIdx then
                 Process.sleep transitionStep
-                    |> Task.andThen
-                        (\_ ->
-                            Task.succeed StartAnimation
-                        )
+                    |> Task.andThen (\_ -> Task.succeed StartAnimation)
                     |> Task.perform identity
 
               else

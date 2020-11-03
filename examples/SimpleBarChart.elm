@@ -1,6 +1,9 @@
-module ElmVisualization.BarChart exposing (main)
+module SimpleBarChart exposing (main)
 
 {-| This module shows how to build a simple bar chart.
+
+The example is taken for elm-visualization.
+
 -}
 
 import Axis
@@ -73,7 +76,7 @@ chart =
         , height = 400
         }
         |> Bar.withYDomain ( 0, 5 )
-        |> Bar.withYAxis (Bar.axisGrid [ Axis.tickCount 5 ])
+        |> Bar.withYAxis (Bar.axisLeft [ Axis.tickCount 5 ])
         |> Bar.withLabels (Bar.yLabel String.fromFloat)
         |> Bar.render ( timeSeries, accessor )
 

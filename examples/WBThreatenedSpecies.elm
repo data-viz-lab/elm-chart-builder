@@ -1,4 +1,4 @@
-module WorldBank.ThreatenedSpecies exposing (main)
+module WBThreatenedSpecies exposing (main)
 
 {-| -}
 

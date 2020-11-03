@@ -1,4 +1,4 @@
-module UKOpenData.Cycling exposing (main)
+module UKCycling exposing (main)
 
 {-| This module shows how to build a simple bar chart.
 -}

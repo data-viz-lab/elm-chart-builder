@@ -76,11 +76,11 @@ footer {
 
 
 transitionSpeed =
-    750
+    1000
 
 
 transitionStep =
-    1000
+    1400
 
 
 width : Float
@@ -123,6 +123,11 @@ years =
         ([ 0, 1000, 1500, 1600, 1700, 1820, 1870, 1913, 1950, 1973, 1998 ]
             |> List.map String.fromInt
         )
+
+
+lastIdx : Int
+lastIdx =
+    Array.length years - 1
 
 
 westernEurope : Data
@@ -177,7 +182,7 @@ type alias Model =
 
 type Msg
     = Tick Int
-    | StartAnimation Frame
+    | StartAnimation
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -190,31 +195,31 @@ update msg model =
             , Cmd.none
             )
 
-        StartAnimation from ->
+        StartAnimation ->
             let
-                to =
-                    Transition.value model.transition
-
                 newIdx =
                     model.idx + 1
 
-                lastIdx =
-                    Array.length years - 1
+                from =
+                    Transition.value model.transition
+
+                to =
+                    getDataByYear model.idx
             in
             ( { model
                 | transition =
-                    Transition.for transitionSpeed (interpolateValues to from)
+                    Transition.for transitionSpeed (interpolateValues from to)
                 , idx = newIdx
               }
             , if model.idx == 0 then
-                Task.succeed (StartAnimation <| getDataByYear newIdx)
+                Task.succeed StartAnimation
                     |> Task.perform identity
 
               else if lastIdx >= newIdx then
                 Process.sleep transitionStep
                     |> Task.andThen
                         (\_ ->
-                            Task.succeed (StartAnimation <| getDataByYear newIdx)
+                            Task.succeed StartAnimation
                         )
                     |> Task.perform identity
 
@@ -287,7 +292,7 @@ view model =
             [ class "wrapper" ]
             [ Html.div [ class "header-wrapper" ]
                 [ Html.h1 []
-                    [ Html.text ("World Population in " ++ year)
+                    [ Html.text ("Population in " ++ year)
                     ]
                 ]
             , Html.div attrs [ horizontalGrouped d ]
@@ -299,15 +304,13 @@ view model =
                 ]
                 [ Html.text "Data source" ]
             ]
-
-        --https://en.wikipedia.org/wiki/World_population
         ]
 
 
 init : () -> ( Model, Cmd Msg )
 init () =
     ( { transition = Transition.constant <| getDataByYear 0, idx = 0 }
-    , Task.perform identity (Task.succeed (StartAnimation <| getDataByYear 1))
+    , Task.perform identity (Task.succeed StartAnimation)
     )
 
 

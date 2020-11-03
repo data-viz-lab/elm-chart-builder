@@ -1,6 +1,9 @@
-module ElmVisualization.PopulationMinnesota exposing (main)
+module PopulationMinnesota exposing (main)
 
 {-| This module shows how to build a simple population pyramid chart.
+
+The example is taken for elm-visualization.
+
 -}
 
 import Axis
@@ -168,7 +171,6 @@ data =
                 in
                 { age = age, gender = gender, people = people }
             )
-        |> Debug.log "data"
 
 
 valueFormatter : Float -> String

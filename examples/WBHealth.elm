@@ -1,4 +1,4 @@
-module WorldBank.Health exposing (main)
+module WBHealth exposing (main)
 
 {-| -}
 
@@ -351,12 +351,6 @@ view model =
                         [ chart
                             (data
                                 |> List.filter (\d -> Set.member d.countryName regions)
-                            )
-                        ]
-                    , Html.div (attrs "chart-2")
-                        [ chart
-                            (data
-                                |> List.filter (\d -> Set.member d.countryName regionsByIncom)
                             )
                         ]
                     ]
