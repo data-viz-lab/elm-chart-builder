@@ -723,12 +723,17 @@ tableElement data accessibilityContent =
         tableHeadings =
             Helpers.dataLinearGroupToTableHeadings data accessibilityContent
 
+        -- TODO
+        --tableRowHeadings =
+        --    Helpers.dataLinearGroupToRowHeadings data accessibilityContent
+        --        |> Debug.log "rowHeadings"
         tableData =
             Helpers.dataLinearGroupToTableData data
 
         table =
             Table.generate tableData
                 |> Table.setColumnHeadings tableHeadings
+                --|> Table.setRowHeadings tableRowHeadings
                 |> Table.view
     in
     Helpers.invisibleFigcaption

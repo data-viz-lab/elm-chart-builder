@@ -1,6 +1,7 @@
 module Chart.Internal.TableHelpers exposing
     ( dataBandToTableData
     , dataBandToTableHeadings
+    , dataLinearGroupToRowHeadings
     , dataLinearGroupToTableData
     , dataLinearGroupToTableHeadings
     )
@@ -147,3 +148,39 @@ getLabelsFromContent content =
 
         _ ->
             [ "x", "y" ]
+
+
+getRowLabelsFromContent : Type.AccessibilityContent -> List String
+getRowLabelsFromContent content =
+    case content of
+        Type.AccessibilityTable ( xLabel, yLabel ) ->
+            [ xLabel ]
+
+        _ ->
+            [ "x" ]
+
+
+dataLinearGroupToRowHeadings : Type.DataLinearGroup -> Type.AccessibilityContent -> Table.Headings
+dataLinearGroupToRowHeadings data content =
+    --TODO: this is controvertial and needs more thoughts
+    let
+        toHeadings dd =
+            if Type.noGroups dd then
+                dd
+                    |> always (Table.Headings <| getRowLabelsFromContent content)
+
+            else
+                dd
+                    |> List.map .points
+                    |> List.map downsampleDataLinear
+                    |> List.head
+                    |> Maybe.withDefault []
+                    |> List.map (Tuple.first >> String.fromFloat)
+                    |> Table.Headings
+    in
+    case data of
+        Type.DataTime data_ ->
+            Table.Headings []
+
+        Type.DataLinear data_ ->
+            toHeadings data_
