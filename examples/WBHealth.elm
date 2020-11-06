@@ -1,6 +1,19 @@
-module WorldBank.Health exposing (main)
+module WBHealth exposing (main)
 
-{-| -}
+{-| An example calling the World Bank public API
+
+
+### Useful Links
+
+<https://data.worldbank.org/>
+
+<https://data.worldbank.org/indicator/>
+
+<https://datahelpdesk.worldbank.org/knowledgebase/articles/906519-world-bank-country-and-lending-groups>
+
+<https://datahelpdesk.worldbank.org/knowledgebase/articles/898581-api-basic-call-structures>
+
+-}
 
 import Axis
 import Browser
@@ -351,12 +364,6 @@ view model =
                         [ chart
                             (data
                                 |> List.filter (\d -> Set.member d.countryName regions)
-                            )
-                        ]
-                    , Html.div (attrs "chart-2")
-                        [ chart
-                            (data
-                                |> List.filter (\d -> Set.member d.countryName regionsByIncom)
                             )
                         ]
                     ]

@@ -1,6 +1,13 @@
-module WorldBank.ThreatenedSpecies exposing (main)
+module WBThreatenedSpecies exposing (main)
 
-{-| -}
+{-| World Bank public API example.
+
+
+#### Mammals species threatened
+
+<http://api.worldbank.org/v2/country/all/indicator/EN.MAM.THRD.NO?format=json&date=2018&per_page=270>
+
+-}
 
 import Axis
 import Browser

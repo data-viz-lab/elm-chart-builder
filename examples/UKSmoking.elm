@@ -1,4 +1,4 @@
-module UKOpenData.Smoking exposing (main)
+module UKSmoking exposing (main)
 
 {-| This module shows how to build a line chart.
 -}
@@ -154,7 +154,7 @@ main =
         , Html.footer []
             [ Html.a
                 [ Html.Attributes.href
-                    "https://digital.nhs.uk/data-and-information/publications/clinical-indicators/compendium-of-population-health-indicators/compendium-public-health/current/smoking/cigarette-smoking-standardised-percent-16-years-annual-trend-mfp"
+                    "https://digital.nhs.uk/"
                 ]
                 [ Html.text "Data source" ]
             ]
