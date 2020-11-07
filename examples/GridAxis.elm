@@ -68,18 +68,6 @@ timeData =
       , x = Time.millisToPosix 1579295175634
       , y = 26
       }
-    , { groupLabel = "B"
-      , x = Time.millisToPosix 1579275175634
-      , y = 13
-      }
-    , { groupLabel = "B"
-      , x = Time.millisToPosix 1579285175634
-      , y = 23
-      }
-    , { groupLabel = "B"
-      , x = Time.millisToPosix 1579295175634
-      , y = 16
-      }
     ]
 
 

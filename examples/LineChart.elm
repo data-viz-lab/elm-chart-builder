@@ -87,6 +87,7 @@ xAxisTime =
     Line.axisBottom (Axis.tickCount 5 :: sharedAttributes)
 
 
+sharedStackedLineConfig : Line.Config
 sharedStackedLineConfig =
     Line.init requiredConfig
         |> Line.withYAxis yAxis
@@ -97,6 +98,7 @@ sharedStackedLineConfig =
         |> Line.withSymbols (icons "chart-b")
 
 
+sharedGroupedLineConfig : Line.Config
 sharedGroupedLineConfig =
     Line.init requiredConfig
         |> Line.withColorPalette Scale.Color.tableau10

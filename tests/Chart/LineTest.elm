@@ -17,23 +17,23 @@ suite : Test
 suite =
     describe "The Public Line module"
         [ describe "withYDomainTime"
-            [ test "it should set the X LinearDomain value in the domain" <|
+            [ test "it should set the X ContinuousDomain value in the domain" <|
                 \_ ->
                     let
-                        linearDomain : Type.LinearDomain
-                        linearDomain =
+                        continuousDomain : Type.ContinuousDomain
+                        continuousDomain =
                             ( 0, 10 )
 
                         config : Type.Config
                         config =
                             Line.init requiredConfig
-                                |> Line.withYDomain linearDomain
+                                |> Line.withYDomain continuousDomain
 
                         newDomain =
                             config
                                 |> Type.getDomainTime
                                 |> .y
                     in
-                    Expect.equal (Just linearDomain) newDomain
+                    Expect.equal (Just continuousDomain) newDomain
             ]
         ]

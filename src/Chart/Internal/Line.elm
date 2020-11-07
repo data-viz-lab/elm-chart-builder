@@ -47,6 +47,7 @@ import Chart.Internal.Type
         , leftGap
         , role
         , showIcons
+        , toContinousScale
         )
 import Html exposing (Html)
 import Html.Attributes
@@ -184,7 +185,7 @@ renderLineGrouped ( data, config ) =
 
         yScale : ContinuousScale Float
         yScale =
-            Scale.linear yRange (Maybe.withDefault ( 0, 0 ) continuousDomain.y)
+            toContinousScale yRange (Maybe.withDefault ( 0, 0 ) continuousDomain.y) c.yScale
 
         tableHeadings =
             Helpers.dataContinuousGroupToTableHeadings data
@@ -332,7 +333,7 @@ renderLineStacked ( data, config ) =
 
         yScale : ContinuousScale Float
         yScale =
-            Scale.linear yRange extent
+            toContinousScale yRange extent c.yScale
 
         tableHeadings =
             Helpers.dataContinuousGroupToTableHeadings data

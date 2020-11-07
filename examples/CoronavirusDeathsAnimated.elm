@@ -48,7 +48,6 @@ text {
   font-size: 16px;
 }
 
-.axis--x .domain ,
 .axis--y .domain {
   stroke: none;
 }
@@ -66,6 +65,16 @@ figure {
   margin: 0;
 }
 """
+
+
+removeZeros : Float -> Float
+removeZeros val =
+    -- Needed for the log scale
+    if val == 0 then
+        1
+
+    else
+        val
 
 
 type alias DatumTime =
@@ -210,7 +219,7 @@ interpolatePosition =
 accessor : Line.Accessor DatumTime
 accessor =
     Line.time
-        (Line.AccessorTime (always Nothing) Tuple.first Tuple.second)
+        (Line.AccessorTime (always Nothing) Tuple.first (Tuple.second >> removeZeros))
 
 
 valueFormatter : Float -> String
@@ -239,7 +248,7 @@ transitionStep =
 yAxis : Bar.YAxis Float
 yAxis =
     Line.axisGrid
-        [ Axis.tickCount 5
+        [ Axis.ticks [ 10, 100, 1000, 10000 ]
         , Axis.tickFormat valueFormatter
         ]
 
@@ -259,11 +268,12 @@ chart data =
         , height = height
         }
         |> Line.withColorPalette [ Color.rgb255 209 33 2 ]
+        |> Line.withLineStyle [ ( "stroke-width", "1.5" ) ]
+        |> Line.withLogYScale 10
         |> Line.withXAxisTime xAxis
         |> Line.withYAxis yAxis
         |> Line.withXTimeDomain xTimeDomain
         |> Line.withYDomain ( 0, 12000 )
-        |> Line.withLineStyle [ ( "stroke-width", "1.5" ) ]
         |> Line.render ( data |> toTimeData, accessor )
 
 

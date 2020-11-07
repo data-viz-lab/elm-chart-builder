@@ -33,8 +33,10 @@ module Chart.Internal.Type exposing
     , PointStacked
     , PointTime
     , RenderContext(..)
+    , RequiredConfig
     , StackedValues
     , Steps
+    , YScale(..)
     , adjustContinuousRange
     , ariaLabelledby
     , ariaLabelledbyContent
@@ -107,6 +109,7 @@ module Chart.Internal.Type exposing
     , setXAxisTime
     , setYAxis
     , setYAxisContinuous
+    , setYScale
     , showIcons
     , showStackedColumnTitle
     , showXContinuousLabel
@@ -119,6 +122,7 @@ module Chart.Internal.Type exposing
     , symbolCustomSpace
     , symbolSpace
     , toConfig
+    , toContinousScale
     , toDataBand
     , toExternalData
     )
@@ -131,7 +135,7 @@ import Histogram
 import Html
 import Html.Attributes
 import List.Extra
-import Scale exposing (BandScale)
+import Scale exposing (BandScale, ContinuousScale)
 import Shape
 import Statistics
 import SubPath exposing (SubPath)
@@ -265,6 +269,10 @@ type alias ContinuousDomain =
     ( Float, Float )
 
 
+type alias Range =
+    ( Float, Float )
+
+
 type alias TimeDomain =
     ( Posix, Posix )
 
@@ -334,6 +342,11 @@ type alias Margin =
     }
 
 
+type YScale
+    = LinearScale
+    | LogScale Float
+
+
 
 --
 
@@ -352,6 +365,13 @@ type AccessibilityContent
 
 
 -- CONFIG
+
+
+type alias RequiredConfig =
+    { margin : Margin
+    , width : Float
+    , height : Float
+    }
 
 
 type alias ConfigStruct =
@@ -381,6 +401,7 @@ type alias ConfigStruct =
     , svgDesc : String
     , svgTitle : String
     , width : Float
+    , yScale : YScale
     , zone : Zone
     }
 
@@ -414,6 +435,7 @@ defaultConfig =
         , svgDesc = ""
         , svgTitle = ""
         , width = defaultWidth
+        , yScale = LinearScale
         , zone = Time.utc
         }
 
@@ -747,6 +769,11 @@ setShowDataPoints bool (Config c) =
 setAccessibilityContent : AccessibilityContent -> Config -> Config
 setAccessibilityContent content (Config c) =
     toConfig { c | accessibilityContent = content }
+
+
+setYScale : YScale -> Config -> Config
+setYScale scale (Config c) =
+    toConfig { c | yScale = scale }
 
 
 
@@ -1541,3 +1568,25 @@ ariaLabelledbyContent c =
 
     else
         []
+
+
+toContinousScale : Range -> ContinuousDomain -> YScale -> ContinuousScale Float
+toContinousScale range domain scale =
+    case scale of
+        LogScale base ->
+            Scale.log base range (domain |> adjustDomainToLogScale)
+
+        LinearScale ->
+            Scale.linear range domain
+
+
+adjustDomainToLogScale : ContinuousDomain -> ContinuousDomain
+adjustDomainToLogScale ( a, b ) =
+    if a == 0 then
+        ( 1, b )
+
+    else if b == 0 then
+        ( a, -1 )
+
+    else
+        ( a, b )

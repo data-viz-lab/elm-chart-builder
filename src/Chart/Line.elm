@@ -2,8 +2,8 @@ module Chart.Line exposing
     ( Accessor, AccessorContinuous, AccessorTime, continuous, time
     , init
     , render
-    , RequiredConfig
-    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withStackedLayout, withTable, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain
+    , Config, RequiredConfig
+    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withLogYScale, withStackedLayout, withTable, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain
     , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisContinuous, withXAxisTime, withYAxis
     , withSymbols
     , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel
@@ -29,14 +29,14 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 @docs render
 
 
-# Required Configuration
+# Configuration
 
-@docs RequiredConfig
+@docs Config, RequiredConfig
 
 
 # Optional Configuration setters
 
-@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withStackedLayout, withTable, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain
+@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withLogYScale, withStackedLayout, withTable, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain
 
 
 # Axis
@@ -61,22 +61,6 @@ import Chart.Internal.Line
         )
 import Chart.Internal.Symbol exposing (Symbol)
 import Chart.Internal.Type as Type
-    exposing
-        ( AccessibilityContent(..)
-        , ColorResource(..)
-        , Config
-        , Direction(..)
-        , Label(..)
-        , Layout(..)
-        , Margin
-        , RenderContext(..)
-        , defaultConfig
-        , fromConfig
-        , setDimensions
-        , setLayout
-        , setSvgDesc
-        , setSvgTitle
-        )
 import Color exposing (Color)
 import Html exposing (Html)
 import SubPath exposing (SubPath)
@@ -84,13 +68,16 @@ import Time exposing (Posix)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
+{-| The Config opaque type
+-}
+type alias Config =
+    Type.Config
+
+
 {-| The required config, passed as an argument to the `init` function
 -}
 type alias RequiredConfig =
-    { margin : Margin
-    , width : Float
-    , height : Float
-    }
+    Type.RequiredConfig
 
 
 {-| The data accessors
@@ -185,9 +172,9 @@ continuous acc =
 -}
 init : RequiredConfig -> Config
 init c =
-    defaultConfig
+    Type.defaultConfig
         |> withGroupedLayout
-        |> setDimensions { margin = c.margin, width = c.width, height = c.height }
+        |> Type.setDimensions { margin = c.margin, width = c.width, height = c.height }
 
 
 {-| Renders the line chart, after initialisation and customisation
@@ -200,16 +187,16 @@ render : ( List data, Accessor data ) -> Config -> Html msg
 render ( externalData, accessor ) config =
     let
         c =
-            fromConfig config
+            Type.fromConfig config
 
         data =
             Type.externalToDataContinuousGroup (Type.toExternalData externalData) accessor
     in
     case c.layout of
-        GroupedLine ->
+        Type.GroupedLine ->
             renderLineGrouped ( data, config )
 
-        StackedLine ->
+        Type.StackedLine ->
             renderLineStacked ( data, config )
 
         _ ->
@@ -292,7 +279,7 @@ For now it is best to only use it with a limited number of data points.
 -}
 withTable : Config -> Config
 withTable =
-    Type.setAccessibilityContent AccessibilityTable
+    Type.setAccessibilityContent Type.AccessibilityTable
 
 
 {-| Sets an accessible, long-text description for the svg chart.
@@ -338,7 +325,7 @@ withTitle value config =
 -}
 withColorPalette : List Color -> Config -> Config
 withColorPalette palette config =
-    Type.setColorResource (ColorPalette palette) config
+    Type.setColorResource (Type.ColorPalette palette) config
 
 
 {-| Creates a stacked line chart.
@@ -364,7 +351,7 @@ withStackedLayout config =
 -}
 withGroupedLayout : Config -> Config
 withGroupedLayout config =
-    Type.setLayout GroupedLine config
+    Type.setLayout Type.GroupedLine config
 
 
 {-| Show a label at the end of the lines.
@@ -377,10 +364,10 @@ It takes one of: xGroupLabel
         |> Line.withLabels Line.xGroupLabel
 
 -}
-withLabels : Label -> Config -> Config
+withLabels : Type.Label -> Config -> Config
 withLabels label =
     case label of
-        XGroupLabel ->
+        Type.XGroupLabel ->
             Type.showXGroupLabel
 
         _ ->
@@ -541,6 +528,18 @@ withYAxis =
     Type.setYAxisContinuous
 
 
+{-| Set the Y scale to logaritmic, passing a base
+
+    Line.init requiredConfig
+        |> Line.withLogYScale 10
+        |> Line.render ( data, accessor )
+
+-}
+withLogYScale : Float -> Config -> Config
+withLogYScale base =
+    Type.setYScale (Type.LogScale base)
+
+
 
 --SYMBOLS
 
@@ -564,6 +563,6 @@ withSymbols =
 
 
 {-| -}
-xGroupLabel : Label
+xGroupLabel : Type.Label
 xGroupLabel =
-    XGroupLabel
+    Type.XGroupLabel
