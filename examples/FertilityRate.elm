@@ -58,7 +58,7 @@ symbol =
 
 dataAccessor : Line.Accessor FertilityStats
 dataAccessor =
-    Line.linear (Line.AccessorLinear (.country >> Just) .year .liveBirtshPerWoman)
+    Line.continuous (Line.AccessorContinuous (.country >> Just) .year .liveBirtshPerWoman)
 
 
 width : Float

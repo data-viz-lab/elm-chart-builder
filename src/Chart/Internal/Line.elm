@@ -22,26 +22,26 @@ import Chart.Internal.TableHelpers as Helpers
 import Chart.Internal.Type
     exposing
         ( AccessibilityContent(..)
-        , AccessorLinearOrTime(..)
+        , AccessorContinuousOrTime(..)
         , ColorResource(..)
         , Config
         , ConfigStruct
-        , DataGroupLinear
-        , DataLinearGroup(..)
-        , DomainLinearStruct
+        , DataContinuousGroup(..)
+        , DataGroupContinuous
+        , DomainContinuousStruct
         , DomainTimeStruct
         , Label(..)
         , Layout(..)
-        , PointLinear
+        , PointContinuous
         , RenderContext(..)
         , ariaLabelledby
         , bottomGap
         , colorStyle
-        , dataLinearGroupToDataLinear
-        , dataLinearGroupToDataLinearStacked
-        , dataLinearGroupToDataTime
+        , dataContinuousGroupToDataContinuous
+        , dataContinuousGroupToDataContinuousStacked
+        , dataContinuousGroupToDataTime
         , fromConfig
-        , getDomainLinearFromData
+        , getDomainContinuousFromData
         , getDomainTimeFromData
         , getOffset
         , leftGap
@@ -95,7 +95,7 @@ descAndTitle c =
 -- GROUPED
 
 
-renderLineGrouped : ( DataLinearGroup, Config ) -> Html msg
+renderLineGrouped : ( DataContinuousGroup, Config ) -> Html msg
 renderLineGrouped ( data, config ) =
     let
         c =
@@ -116,29 +116,29 @@ renderLineGrouped ( data, config ) =
         outerH =
             h + m.top + m.bottom
 
-        linearData : List DataGroupLinear
-        linearData =
+        continuousData : List DataGroupContinuous
+        continuousData =
             data
-                |> dataLinearGroupToDataLinear
+                |> dataContinuousGroupToDataContinuous
 
         timeDomain : DomainTimeStruct
         timeDomain =
             timeData
                 |> getDomainTimeFromData config
 
-        linearDomain : DomainLinearStruct
-        linearDomain =
+        continuousDomain : DomainContinuousStruct
+        continuousDomain =
             case data of
                 DataTime _ ->
-                    timeDomainToLinearDomain timeDomain
+                    timeDomainToContinuousDomain timeDomain
 
-                DataLinear _ ->
-                    linearData
-                        |> getDomainLinearFromData config
+                DataContinuous _ ->
+                    continuousData
+                        |> getDomainContinuousFromData config
 
         timeData =
             data
-                |> dataLinearGroupToDataTime
+                |> dataContinuousGroupToDataTime
 
         xRange =
             ( 0, w )
@@ -146,8 +146,8 @@ renderLineGrouped ( data, config ) =
         yRange =
             ( h, 0 )
 
-        ( sortedLinearData, _ ) =
-            linearData
+        ( sortedContinuousData, _ ) =
+            continuousData
                 |> List.map
                     (\d ->
                         let
@@ -159,11 +159,11 @@ renderLineGrouped ( data, config ) =
                     )
                 |> List.unzip
 
-        xLinearScale : ContinuousScale Float
-        xLinearScale =
+        xContinuousScale : ContinuousScale Float
+        xContinuousScale =
             Scale.linear
                 xRange
-                (Maybe.withDefault ( 0, 0 ) linearDomain.x)
+                (Maybe.withDefault ( 0, 0 ) continuousDomain.x)
 
         xTimeScale : Maybe (ContinuousScale Posix)
         xTimeScale =
@@ -184,14 +184,14 @@ renderLineGrouped ( data, config ) =
 
         yScale : ContinuousScale Float
         yScale =
-            Scale.linear yRange (Maybe.withDefault ( 0, 0 ) linearDomain.y)
+            Scale.linear yRange (Maybe.withDefault ( 0, 0 ) continuousDomain.y)
 
         tableHeadings =
-            Helpers.dataLinearGroupToTableHeadings data
+            Helpers.dataContinuousGroupToTableHeadings data
                 |> Table.ComplexHeadings
 
         tableData =
-            Helpers.dataLinearGroupToTableData data
+            Helpers.dataContinuousGroupToTableData data
 
         table =
             Table.generate tableData
@@ -209,9 +209,9 @@ renderLineGrouped ( data, config ) =
             <|
                 symbolElements config
                     ++ descAndTitle c
-                    ++ linearYAxis c yScale
-                    ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
-                    ++ drawLinearLine config xLinearScale yScale sortedLinearData
+                    ++ continuousYAxis c yScale
+                    ++ continuousOrTimeAxisGenerator xTimeScale xContinuousScale ( data, config )
+                    ++ drawContinuousLine config xContinuousScale yScale sortedContinuousData
 
         tableEl =
             Helpers.invisibleFigcaption
@@ -239,7 +239,7 @@ renderLineGrouped ( data, config ) =
 -- STACKED
 
 
-renderLineStacked : ( DataLinearGroup, Config ) -> Html msg
+renderLineStacked : ( DataContinuousGroup, Config ) -> Html msg
 renderLineStacked ( data, config ) =
     let
         c =
@@ -260,24 +260,24 @@ renderLineStacked ( data, config ) =
         outerH =
             h + m.top + m.bottom
 
-        linearData : List DataGroupLinear
-        linearData =
+        continuousData : List DataGroupContinuous
+        continuousData =
             data
-                |> dataLinearGroupToDataLinear
+                |> dataContinuousGroupToDataContinuous
 
-        linearDomain : DomainLinearStruct
-        linearDomain =
+        continuousDomain : DomainContinuousStruct
+        continuousDomain =
             case data of
                 DataTime _ ->
-                    timeDomainToLinearDomain timeDomain
+                    timeDomainToContinuousDomain timeDomain
 
-                DataLinear _ ->
-                    linearData
-                        |> getDomainLinearFromData config
+                DataContinuous _ ->
+                    continuousData
+                        |> getDomainContinuousFromData config
 
         dataStacked : List ( String, List Float )
         dataStacked =
-            dataLinearGroupToDataLinearStacked linearData
+            dataContinuousGroupToDataContinuousStacked continuousData
 
         stackedConfig : StackConfig String
         stackedConfig =
@@ -289,13 +289,13 @@ renderLineStacked ( data, config ) =
         { values, extent } =
             Shape.stack stackedConfig
 
-        combinedData : List DataGroupLinear
+        combinedData : List DataGroupContinuous
         combinedData =
-            Helpers.stackDataGroupLinear values linearData
+            Helpers.stackDataGroupContinuous values continuousData
 
         timeData =
             data
-                |> dataLinearGroupToDataTime
+                |> dataContinuousGroupToDataTime
 
         timeDomain =
             timeData
@@ -307,11 +307,11 @@ renderLineStacked ( data, config ) =
         yRange =
             ( h, 0 )
 
-        xLinearScale : ContinuousScale Float
-        xLinearScale =
+        xContinuousScale : ContinuousScale Float
+        xContinuousScale =
             Scale.linear
                 xRange
-                (Maybe.withDefault ( 0, 0 ) linearDomain.x)
+                (Maybe.withDefault ( 0, 0 ) continuousDomain.x)
 
         xTimeScale : Maybe (ContinuousScale Posix)
         xTimeScale =
@@ -335,11 +335,11 @@ renderLineStacked ( data, config ) =
             Scale.linear yRange extent
 
         tableHeadings =
-            Helpers.dataLinearGroupToTableHeadings data
+            Helpers.dataContinuousGroupToTableHeadings data
                 |> Table.ComplexHeadings
 
         tableData =
-            Helpers.dataLinearGroupToTableData data
+            Helpers.dataContinuousGroupToTableData data
 
         table =
             Table.generate tableData
@@ -357,9 +357,9 @@ renderLineStacked ( data, config ) =
             <|
                 symbolElements config
                     ++ descAndTitle c
-                    ++ linearYAxis c yScale
-                    ++ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config )
-                    ++ drawLinearLine config xLinearScale yScale combinedData
+                    ++ continuousYAxis c yScale
+                    ++ continuousOrTimeAxisGenerator xTimeScale xContinuousScale ( data, config )
+                    ++ drawContinuousLine config xContinuousScale yScale combinedData
 
         tableEl =
             Helpers.invisibleFigcaption
@@ -383,10 +383,10 @@ renderLineStacked ( data, config ) =
             Html.div [] [ svgEl ]
 
 
-linearXAxis : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
-linearXAxis c scale =
+continuousXAxis : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
+continuousXAxis c scale =
     if c.showXAxis == True then
-        case c.axisXLinear of
+        case c.axisXContinuous of
             ChartAxis.Bottom attributes ->
                 [ g
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
@@ -420,10 +420,10 @@ timeXAxis c scale =
         []
 
 
-linearYAxis : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
-linearYAxis c scale =
+continuousYAxis : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
+continuousYAxis c scale =
     if c.showYAxis == True then
-        case c.axisYLinear of
+        case c.axisYContinuous of
             ChartAxis.Left attributes ->
                 [ g
                     [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
@@ -473,12 +473,12 @@ linearYAxis c scale =
         []
 
 
-linearOrTimeAxisGenerator :
+continuousOrTimeAxisGenerator :
     Maybe (ContinuousScale Posix)
     -> ContinuousScale Float
-    -> ( DataLinearGroup, Config )
+    -> ( DataContinuousGroup, Config )
     -> List (Svg msg)
-linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config ) =
+continuousOrTimeAxisGenerator xTimeScale xContinuousScale ( data, config ) =
     let
         c =
             fromConfig config
@@ -487,8 +487,8 @@ linearOrTimeAxisGenerator xTimeScale xLinearScale ( data, config ) =
         DataTime _ ->
             timeXAxis c xTimeScale
 
-        DataLinear _ ->
-            linearXAxis c xLinearScale
+        DataContinuous _ ->
+            continuousXAxis c xContinuousScale
 
 
 symbolsToSymbolElements : List Symbol -> List (Svg msg)
@@ -625,13 +625,13 @@ defaultSymbolSize =
     10
 
 
-drawLinearLine :
+drawContinuousLine :
     Config
     -> ContinuousScale Float
     -> ContinuousScale Float
-    -> List DataGroupLinear
+    -> List DataGroupContinuous
     -> List (Svg msg)
-drawLinearLine config xScale yScale sortedData =
+drawContinuousLine config xScale yScale sortedData =
     let
         c =
             fromConfig config
@@ -639,11 +639,11 @@ drawLinearLine config xScale yScale sortedData =
         m =
             c.margin
 
-        lineGenerator : PointLinear -> Maybe ( Float, Float )
+        lineGenerator : PointContinuous -> Maybe ( Float, Float )
         lineGenerator ( x, y ) =
             Just ( Scale.convert xScale x, Scale.convert yScale y )
 
-        line : DataGroupLinear -> Path
+        line : DataGroupContinuous -> Path
         line dataGroup =
             dataGroup.points
                 |> List.map lineGenerator
@@ -659,7 +659,7 @@ drawLinearLine config xScale yScale sortedData =
                 |> Helpers.mergeStyles c.coreStyle
                 |> style
 
-        label : Int -> Maybe String -> List PointLinear -> Svg msg
+        label : Int -> Maybe String -> List PointContinuous -> Svg msg
         label i s d =
             d
                 |> List.reverse
@@ -725,7 +725,7 @@ horizontalLabel :
     -> ContinuousScale Float
     -> Int
     -> Maybe String
-    -> PointLinear
+    -> PointContinuous
     -> Svg msg
 horizontalLabel config xScale yScale idx groupLabel point =
     case groupLabel of
@@ -786,8 +786,8 @@ labelGap =
 -- HELPERS
 
 
-timeDomainToLinearDomain : DomainTimeStruct -> DomainLinearStruct
-timeDomainToLinearDomain timeDomain =
+timeDomainToContinuousDomain : DomainTimeStruct -> DomainContinuousStruct
+timeDomainToContinuousDomain timeDomain =
     timeDomain
         |> (\{ x, y } ->
                 { x =

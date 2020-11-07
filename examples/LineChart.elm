@@ -45,7 +45,7 @@ icons prefix =
 
 xAxisTicks : List Float
 xAxisTicks =
-    dataLinear
+    dataContinuous
         |> List.map .x
         |> Set.fromList
         |> Set.toList
@@ -101,7 +101,7 @@ sharedGroupedLineConfig =
     Line.init requiredConfig
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withYAxis yAxis
-        |> Line.withXAxisLinear xAxis
+        |> Line.withXAxisContinuous xAxis
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withLabels Line.xGroupLabel
         |> Line.withGroupedLayout
@@ -146,17 +146,17 @@ timeData =
     ]
 
 
-type alias DataLinear =
+type alias DataContinuous =
     { x : Float, y : Float, groupLabel : String }
 
 
-accessorLinear : Line.Accessor DataLinear
-accessorLinear =
-    Line.linear (Line.AccessorLinear (.groupLabel >> Just) .x .y)
+accessorContinuous : Line.Accessor DataContinuous
+accessorContinuous =
+    Line.continuous (Line.AccessorContinuous (.groupLabel >> Just) .x .y)
 
 
-dataLinear : List DataLinear
-dataLinear =
+dataContinuous : List DataContinuous
+dataContinuous =
     [ { groupLabel = "A"
       , x = 1991
       , y = 10
@@ -194,8 +194,8 @@ groupedTimeLine =
 groupedLine : Html msg
 groupedLine =
     sharedGroupedLineConfig
-        |> Line.withXAxisLinear xAxis
-        |> Line.render ( dataLinear, accessorLinear )
+        |> Line.withXAxisContinuous xAxis
+        |> Line.render ( dataContinuous, accessorContinuous )
 
 
 stackedTimeLine : Html msg
@@ -208,8 +208,8 @@ stackedTimeLine =
 stackedLine : Html msg
 stackedLine =
     sharedStackedLineConfig
-        |> Line.withXAxisLinear xAxis
-        |> Line.render ( dataLinear, accessorLinear )
+        |> Line.withXAxisContinuous xAxis
+        |> Line.render ( dataContinuous, accessorContinuous )
 
 
 width : Float

@@ -91,7 +91,7 @@ xAxisTicks =
 
 accessor : Line.Accessor Data.SmokeStats
 accessor =
-    Line.linear (Line.AccessorLinear (.regionPerGender >> Just) .year .percentage)
+    Line.continuous (Line.AccessorContinuous (.regionPerGender >> Just) .year .percentage)
 
 
 xAxis : Line.XAxis Float
@@ -113,7 +113,7 @@ line =
         , width = 700
         , height = 400
         }
-        |> Line.withXAxisLinear xAxis
+        |> Line.withXAxisContinuous xAxis
         |> Line.withYAxis yAxis
         |> Line.withCurve Shape.basisCurve
         |> Line.withYDomain ( 0, 50 )

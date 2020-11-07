@@ -1,8 +1,8 @@
 module Chart.Internal.TableHelpers exposing
     ( dataBandToTableData
     , dataBandToTableHeadings
-    , dataLinearGroupToTableData
-    , dataLinearGroupToTableHeadings
+    , dataContinuousGroupToTableData
+    , dataContinuousGroupToTableHeadings
     )
 
 import Chart.Internal.Helpers as Helpers
@@ -25,8 +25,8 @@ dataBandToTableData data =
             )
 
 
-dataLinearGroupToTableData : Type.DataLinearGroup -> List (List String)
-dataLinearGroupToTableData data =
+dataContinuousGroupToTableData : Type.DataContinuousGroup -> List (List String)
+dataContinuousGroupToTableData data =
     case data of
         Type.DataTime data_ ->
             data_
@@ -44,7 +44,7 @@ dataLinearGroupToTableData data =
                             |> List.concat
                     )
 
-        Type.DataLinear data_ ->
+        Type.DataContinuous data_ ->
             data_
                 |> List.map .points
                 |> List.Extra.transpose
@@ -71,8 +71,8 @@ dataBandToTableHeadings data =
             )
 
 
-dataLinearGroupToTableHeadings : Type.DataLinearGroup -> List Table.ComplexHeading
-dataLinearGroupToTableHeadings data =
+dataContinuousGroupToTableHeadings : Type.DataContinuousGroup -> List Table.ComplexHeading
+dataContinuousGroupToTableHeadings data =
     let
         toHeading d =
             Table.HeadingAndSubHeadings (Maybe.withDefault "" d.groupLabel) [ "x", "y" ]
@@ -82,6 +82,6 @@ dataLinearGroupToTableHeadings data =
             data_
                 |> List.map toHeading
 
-        Type.DataLinear data_ ->
+        Type.DataContinuous data_ ->
             data_
                 |> List.map toHeading

@@ -351,7 +351,7 @@ hideXAxis config =
 -}
 withXAxis : ChartAxis.XAxis Float -> Config -> Config
 withXAxis =
-    Type.setXAxisLinear
+    Type.setXAxisContinuous
 
 
 {-| Customise the yAxis
@@ -363,4 +363,4 @@ withXAxis =
 -}
 withYAxis : ChartAxis.YAxis Float -> Config -> Config
 withYAxis =
-    Type.setYAxisLinear
+    Type.setYAxisContinuous

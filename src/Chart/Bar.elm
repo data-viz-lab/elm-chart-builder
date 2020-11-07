@@ -10,7 +10,7 @@ module Chart.Bar exposing
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
 
-The Bar module expects the X axis to plot ordinal data and the Y axis to plot linear data. The data can be grouped by passing an `xGroup` accessor, or it can be flat by making the accessor `always Nothing`.
+The Bar module expects the X axis to plot ordinal data and the Y axis to plot continuous data. The data can be grouped by passing an `xGroup` accessor, or it can be flat by making the accessor `always Nothing`.
 
 The X and Y axis are determined by the default vertical orientation. If the orientatin changes, X and Y also change.
 
@@ -294,7 +294,7 @@ withXDomain value config =
     Type.setDomainBandBandSingle value config
 
 
-{-| Sets the linear domain explicitly. The data relates to the `yValue` accessor.
+{-| Sets the continuous domain explicitly. The data relates to the `yValue` accessor.
 
     Bar.init requiredConfig
         |> Bar.withYDomain ( 0, 0.55 )
@@ -303,7 +303,7 @@ withXDomain value config =
 -}
 withYDomain : ( Float, Float ) -> Config -> Config
 withYDomain value config =
-    Type.setDomainBandLinear value config
+    Type.setDomainBandContinuous value config
 
 
 {-| Pass a list of symbols to be rendered at the end of the bars.
@@ -661,4 +661,4 @@ withXAxis =
 -}
 withYAxis : ChartAxis.YAxis Float -> Config -> Config
 withYAxis =
-    Type.setYAxisLinear
+    Type.setYAxisContinuous
