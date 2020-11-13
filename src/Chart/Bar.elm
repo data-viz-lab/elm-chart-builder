@@ -2,15 +2,15 @@ module Chart.Bar exposing
     ( Accessor
     , init
     , render
-    , RequiredConfig
-    , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withoutTable, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
+    , Config, RequiredConfig
+    , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
     , XAxis, YAxis, axisBottom, axisGrid, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
     , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
     )
 
 {-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
 
-The Bar module expects the X axis to plot ordinal data and the Y axis to plot linear data. The data can be grouped by passing an `xGroup` accessor, or it can be flat by making the accessor `always Nothing`.
+The Bar module expects the X axis to plot ordinal data and the Y axis to plot continuous data. The data can be grouped by passing an `xGroup` accessor, or it can be flat by making the accessor `always Nothing`.
 
 The X and Y axis are determined by the default vertical orientation. If the orientatin changes, X and Y also change.
 
@@ -30,14 +30,14 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 @docs render
 
 
-# Required Configuration
+# Configuration
 
-@docs RequiredConfig
+@docs Config, RequiredConfig
 
 
 # Optional Configuration Setters
 
-@docs withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withLabels, withGroupedLayout, withOrientation, withoutTable, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
+@docs withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
 
 
 # Axis
@@ -62,29 +62,21 @@ import Chart.Internal.Bar
         )
 import Chart.Internal.Symbol exposing (Symbol(..))
 import Chart.Internal.Type as Type
-    exposing
-        ( AccessibilityContent(..)
-        , ColorResource(..)
-        , ColumnTitle(..)
-        , Config
-        , Direction(..)
-        , Label(..)
-        , Layout(..)
-        , Orientation(..)
-        , RenderContext(..)
-        , defaultConfig
-        , fromConfig
-        , setColorResource
-        , setCoreStyles
-        , setDimensions
-        , setSvgDesc
-        , setSvgTitle
-        , setXAxis
-        , setYAxis
-        )
 import Color exposing (Color)
 import Html exposing (Html)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
+
+
+{-| The Config opaque type
+-}
+type alias Config =
+    Type.Config
+
+
+{-| The required config, passed as an argument to the `init` function
+-}
+type alias RequiredConfig =
+    Type.RequiredConfig
 
 
 {-| The data accessors
@@ -93,20 +85,6 @@ type alias Accessor data =
     { xGroup : data -> Maybe String
     , xValue : data -> String
     , yValue : data -> Float
-    }
-
-
-{-| The required config, passed as an argument to the `init` function
--}
-type alias RequiredConfig =
-    { margin :
-        { top : Float
-        , right : Float
-        , bottom : Float
-        , left : Float
-        }
-    , width : Float
-    , height : Float
     }
 
 
@@ -153,8 +131,8 @@ type alias RequiredConfig =
 -}
 init : RequiredConfig -> Config
 init c =
-    defaultConfig
-        |> setDimensions { margin = c.margin, width = c.width, height = c.height }
+    Type.defaultConfig
+        |> Type.setDimensions { margin = c.margin, width = c.width, height = c.height }
 
 
 {-| Renders the bar chart, after initialisation and optional customisations.
@@ -167,16 +145,16 @@ render : ( List data, Accessor data ) -> Config -> Html msg
 render ( externalData, accessor ) config =
     let
         c =
-            fromConfig config
+            Type.fromConfig config
 
         data =
             Type.externalToDataBand (Type.toExternalData externalData) accessor
     in
     case c.layout of
-        GroupedBar ->
+        Type.GroupedBar ->
             renderBandGrouped ( data, config )
 
-        StackedBar _ ->
+        Type.StackedBar _ ->
             renderBandStacked ( data, config )
 
         _ ->
@@ -194,9 +172,9 @@ It takes a direction: `diverging` or `noDirection`.
         |> Bar.render ( data, accessor )
 
 -}
-withStackedLayout : Direction -> Config -> Config
+withStackedLayout : Type.Direction -> Config -> Config
 withStackedLayout direction config =
-    Type.setLayout (StackedBar direction) config
+    Type.setLayout (Type.StackedBar direction) config
 
 
 {-| Creates a grouped bar chart.
@@ -208,7 +186,7 @@ withStackedLayout direction config =
 -}
 withGroupedLayout : Config -> Config
 withGroupedLayout config =
-    Type.setLayout GroupedBar config
+    Type.setLayout Type.GroupedBar config
 
 
 {-| Sets the orientation value.
@@ -221,7 +199,7 @@ Default value: `vertical`.
         |> Bar.render ( data, accessor )
 
 -}
-withOrientation : Orientation -> Config -> Config
+withOrientation : Type.Orientation -> Config -> Config
 withOrientation value config =
     Type.setOrientation value config
 
@@ -253,7 +231,7 @@ If the bars in a group are more then the colours in the palette, the colours wil
 -}
 withColorPalette : List Color -> Config -> Config
 withColorPalette palette config =
-    Type.setColorResource (ColorPalette palette) config
+    Type.setColorResource (Type.ColorPalette palette) config
 
 
 {-| Sets the color interpolator for the chart.
@@ -267,7 +245,7 @@ This option is not supported for stacked bar charts and will have no effect on t
 -}
 withColorInterpolator : (Float -> Color) -> Config -> Config
 withColorInterpolator interpolator config =
-    Type.setColorResource (ColorInterpolator interpolator) config
+    Type.setColorResource (Type.ColorInterpolator interpolator) config
 
 
 {-| Sets the group band domain explicitly. The group data relates to the `xGoup` accessor.
@@ -294,7 +272,7 @@ withXDomain value config =
     Type.setDomainBandBandSingle value config
 
 
-{-| Sets the linear domain explicitly. The data relates to the `yValue` accessor.
+{-| Sets the continuous domain explicitly. The data relates to the `yValue` accessor.
 
     Bar.init requiredConfig
         |> Bar.withYDomain ( 0, 0.55 )
@@ -303,7 +281,7 @@ withXDomain value config =
 -}
 withYDomain : ( Float, Float ) -> Config -> Config
 withYDomain value config =
-    Type.setDomainBandLinear value config
+    Type.setDomainBandContinuous value config
 
 
 {-| Pass a list of symbols to be rendered at the end of the bars.
@@ -338,21 +316,6 @@ withXLabels =
     Type.showXOrdinalLabel
 
 
-{-| Build an alternative table content for accessibility
-
-&#9888; By default an alternative table is always being rendered.
-Use this option to explicitly pass a tuple with x and y labels.
-
-    Bar.init requiredConfig
-        |> Bar.withTable ( "xLabel", "yLabel" )
-        |> Bar.render ( data, accessor )
-
--}
-withTable : ( String, String ) -> Config -> Config
-withTable labels =
-    Type.setAccessibilityContent (AccessibilityTable labels)
-
-
 {-| Do **not** build an alternative table content for accessibility
 
 &#9888; By default an alternative table is always being rendered.
@@ -365,7 +328,7 @@ Use this option to not build the table.
 -}
 withoutTable : Config -> Config
 withoutTable =
-    Type.setAccessibilityContent AccessibilityNone
+    Type.setAccessibilityContent Type.AccessibilityNone
 
 
 {-| Show a label at the end of the bars.
@@ -380,16 +343,16 @@ If used together with symbols, the label will be drawn after the symbol.
         |> Bar.withLabels (Bar.yLabel String.fromFloat)
 
 -}
-withLabels : Label -> Config -> Config
+withLabels : Type.Label -> Config -> Config
 withLabels label =
     case label of
-        YLabel formatter ->
+        Type.YLabel formatter ->
             Type.showYLabel formatter
 
-        XOrdinalLabel ->
+        Type.XOrdinalLabel ->
             Type.showXOrdinalLabel
 
-        XGroupLabel ->
+        Type.XGroupLabel ->
             Type.showXGroupLabel
 
         _ ->
@@ -404,19 +367,19 @@ It takes one of: stackedColumnTitle, xOrdinalColumnTitle, yColumnTitle
         |> Bar.withColumnTitle (Bar.yColumnTitle String.fromFloat)
 
 -}
-withColumnTitle : ColumnTitle -> Config -> Config
+withColumnTitle : Type.ColumnTitle -> Config -> Config
 withColumnTitle title config =
     case title of
-        YColumnTitle formatter ->
+        Type.YColumnTitle formatter ->
             Type.showYColumnTitle formatter config
 
-        XOrdinalColumnTitle ->
+        Type.XOrdinalColumnTitle ->
             Type.showXOrdinalColumnTitle config
 
-        StackedColumnTitle formatter ->
+        Type.StackedColumnTitle formatter ->
             Type.showStackedColumnTitle formatter config
 
-        NoColumnTitle ->
+        Type.NoColumnTitle ->
             config
 
 
@@ -459,9 +422,9 @@ Used as argument to `Bar.withOrientation`.
         |> Bar.render ( data, accessor )
 
 -}
-horizontal : Orientation
+horizontal : Type.Orientation
 horizontal =
-    Horizontal
+    Type.Horizontal
 
 
 {-| Vertical layout type.
@@ -474,9 +437,9 @@ This is the default layout.
         |> Bar.render ( data, accessor )
 
 -}
-vertical : Orientation
+vertical : Type.Orientation
 vertical =
-    Vertical
+    Type.Vertical
 
 
 {-| Diverging layout for stacked bar charts.
@@ -488,7 +451,7 @@ An example can be a population pyramid chart.
         |> Bar.render ( data, accessor )
 
 -}
-diverging : Direction
+diverging : Type.Direction
 diverging =
     Type.Diverging
 
@@ -501,45 +464,45 @@ one upon another.
         |> Bar.render ( data, accessor )
 
 -}
-noDirection : Direction
+noDirection : Type.Direction
 noDirection =
     Type.NoDirection
 
 
 {-| -}
-xOrdinalColumnTitle : ColumnTitle
+xOrdinalColumnTitle : Type.ColumnTitle
 xOrdinalColumnTitle =
-    XOrdinalColumnTitle
+    Type.XOrdinalColumnTitle
 
 
 {-| -}
-stackedColumnTitle : (Float -> String) -> ColumnTitle
+stackedColumnTitle : (Float -> String) -> Type.ColumnTitle
 stackedColumnTitle =
-    StackedColumnTitle
+    Type.StackedColumnTitle
 
 
 {-| -}
-yColumnTitle : (Float -> String) -> ColumnTitle
+yColumnTitle : (Float -> String) -> Type.ColumnTitle
 yColumnTitle =
-    YColumnTitle
+    Type.YColumnTitle
 
 
 {-| -}
-yLabel : (Float -> String) -> Label
+yLabel : (Float -> String) -> Type.Label
 yLabel =
-    YLabel
+    Type.YLabel
 
 
 {-| -}
-xLabel : Label
+xLabel : Type.Label
 xLabel =
-    XOrdinalLabel
+    Type.XOrdinalLabel
 
 
 {-| -}
-xGroupLabel : Label
+xGroupLabel : Type.Label
 xGroupLabel =
-    XGroupLabel
+    Type.XGroupLabel
 
 
 
@@ -676,4 +639,16 @@ withXAxis =
 -}
 withYAxis : ChartAxis.YAxis Float -> Config -> Config
 withYAxis =
-    Type.setYAxisLinear
+    Type.setYAxisContinuous
+
+
+{-| Set the Y scale to logaritmic, passing a base
+
+    Bar.init requiredConfig
+        |> Bar.withLogYScale 10
+        |> Bar.render ( data, accessor )
+
+-}
+withLogYScale : Float -> Config -> Config
+withLogYScale base =
+    Type.setYScale (Type.LogScale base)

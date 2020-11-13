@@ -31,14 +31,14 @@ import Chart.Internal.Type
         , Direction(..)
         , DomainBand(..)
         , DomainBandStruct
-        , DomainLinear(..)
+        , DomainContinuous(..)
         , Label(..)
         , Layout(..)
         , Orientation(..)
         , PointBand
         , RenderContext(..)
         , StackedValues
-        , adjustLinearRange
+        , adjustContinuousRange
         , ariaLabelledby
         , ariaLabelledbyContent
         , bottomGap
@@ -50,9 +50,9 @@ import Chart.Internal.Type
         , fromDataBand
         , getBandGroupRange
         , getBandSingleRange
+        , getContinuousRange
         , getDataBandDepth
         , getDomainBandFromData
-        , getLinearRange
         , getOffset
         , getStackedValuesAndGroupes
         , leftGap
@@ -149,12 +149,12 @@ renderBandStacked ( data, config ) =
         domain =
             getDomainBandFromData data config
 
-        linearDomain : Maybe Chart.Internal.Type.LinearDomain
-        linearDomain =
-            domain |> .linear
+        continuousDomain : Maybe Chart.Internal.Type.ContinuousDomain
+        continuousDomain =
+            domain |> .continuous
 
-        linearExtent =
-            case linearDomain of
+        continuousExtent =
+            case continuousDomain of
                 Just ld ->
                     case c.layout of
                         StackedBar direction ->
@@ -187,24 +187,24 @@ renderBandStacked ( data, config ) =
                 bandSingleRange
                 (Maybe.withDefault [] domain.bandSingle)
 
-        linearRange =
-            getLinearRange config RenderChart w h bandSingleScale
-                |> adjustLinearRange config stackDepth
+        continuousRange =
+            getContinuousRange config RenderChart w h bandSingleScale
+                |> adjustContinuousRange config stackDepth
 
-        linearRangeAxis =
-            getLinearRange config RenderAxis w h bandSingleScale
+        continuousRangeAxis =
+            getContinuousRange config RenderAxis w h bandSingleScale
 
-        linearScale : ContinuousScale Float
-        linearScale =
+        continuousScale : ContinuousScale Float
+        continuousScale =
             -- For stacked scales
             -- |> Scale.nice 4
-            Scale.linear linearRange linearExtent
+            Scale.linear continuousRange continuousExtent
 
-        linearScaleAxis : ContinuousScale Float
-        linearScaleAxis =
+        continuousScaleAxis : ContinuousScale Float
+        continuousScaleAxis =
             -- For stacked scales
             -- |> Scale.nice 4
-            Scale.linear linearRangeAxis linearExtent
+            Scale.linear continuousRangeAxis continuousExtent
 
         ( columnValues, columnGroupes ) =
             getStackedValuesAndGroupes values data
@@ -221,8 +221,8 @@ renderBandStacked ( data, config ) =
                             in
                             { vals
                                 | stackedValue =
-                                    ( Scale.convert linearScale a1
-                                    , Scale.convert linearScale a2
+                                    ( Scale.convert continuousScale a1
+                                    , Scale.convert continuousScale a2
                                     )
                             }
                         )
@@ -244,7 +244,7 @@ renderBandStacked ( data, config ) =
             svg svgElAttrs
                 (descAndTitle c
                     ++ bandXAxis c axisBandScale
-                    ++ bandGroupedYAxis c 0 linearScaleAxis
+                    ++ bandGroupedYAxis c 0 continuousScaleAxis
                     ++ [ g
                             [ transform [ stackedContainerTranslate c m.left m.top (toFloat stackDepth) ]
                             , class [ "series" ]
@@ -399,8 +399,8 @@ renderBandGrouped ( data, config ) =
         bandSingleRange =
             getBandSingleRange config (Scale.bandwidth bandGroupScale)
 
-        linearRange =
-            getLinearRange config RenderChart w h bandSingleScale
+        continuousRange =
+            getContinuousRange config RenderChart w h bandSingleScale
 
         dataLength =
             data |> fromDataBand |> List.length
@@ -431,13 +431,13 @@ renderBandGrouped ( data, config ) =
                 bandSingleRange
                 (Maybe.withDefault [] domain.bandSingle)
 
-        linearScale : ContinuousScale Float
-        linearScale =
-            Scale.linear linearRange (Maybe.withDefault ( 0, 0 ) domain.linear)
+        continuousScale : ContinuousScale Float
+        continuousScale =
+            Scale.linear continuousRange (Maybe.withDefault ( 0, 0 ) domain.continuous)
 
         colorScale : ContinuousScale Float
         colorScale =
-            Scale.linear ( 0, 1 ) (Maybe.withDefault ( 0, 0 ) domain.linear)
+            Scale.linear ( 0, 1 ) (Maybe.withDefault ( 0, 0 ) domain.continuous)
 
         iconOffset : Float
         iconOffset =
@@ -474,7 +474,7 @@ renderBandGrouped ( data, config ) =
         svgEl =
             svg svgElAttrs <|
                 descAndTitle c
-                    ++ bandGroupedYAxis c iconOffset linearScale
+                    ++ bandGroupedYAxis c iconOffset continuousScale
                     ++ bandXAxis c axisBandScale
                     ++ [ g
                             [ transform [ Translate m.left m.top ]
@@ -482,7 +482,7 @@ renderBandGrouped ( data, config ) =
                             ]
                          <|
                             List.map
-                                (columns config iconOffset bandGroupScale bandSingleScale linearScale colorScale)
+                                (columns config iconOffset bandGroupScale bandSingleScale continuousScale colorScale)
                                 (fromDataBand data)
                        ]
                     --TODO: the symbol elements could be extrapolated outside the svg element
@@ -511,7 +511,7 @@ columns :
     -> ContinuousScale Float
     -> DataGroupBand
     -> Svg msg
-columns config iconOffset bandGroupScale bandSingleScale linearScale colorScale dataGroup =
+columns config iconOffset bandGroupScale bandSingleScale continuousScale colorScale dataGroup =
     let
         tr =
             case config |> fromConfig |> .orientation of
@@ -528,7 +528,7 @@ columns config iconOffset bandGroupScale bandSingleScale linearScale colorScale 
         , class [ "data-group" ]
         ]
     <|
-        List.indexedMap (column config iconOffset bandSingleScale linearScale colorScale) dataGroup.points
+        List.indexedMap (column config iconOffset bandSingleScale continuousScale colorScale) dataGroup.points
 
 
 column :
@@ -540,15 +540,15 @@ column :
     -> Int
     -> PointBand
     -> Svg msg
-column config iconOffset bandSingleScale linearScale colorScale idx point =
+column config iconOffset bandSingleScale continuousScale colorScale idx point =
     let
         rectangle =
             case config |> fromConfig |> .orientation of
                 Vertical ->
-                    verticalRect config iconOffset bandSingleScale linearScale colorScale idx point
+                    verticalRect config iconOffset bandSingleScale continuousScale colorScale idx point
 
                 Horizontal ->
-                    horizontalRect config bandSingleScale linearScale colorScale idx point
+                    horizontalRect config bandSingleScale continuousScale colorScale idx point
     in
     g [ class [ "column", "column-" ++ String.fromInt idx ] ] rectangle
 
@@ -562,7 +562,7 @@ verticalRect :
     -> Int
     -> PointBand
     -> List (Svg msg)
-verticalRect config iconOffset bandSingleScale linearScale colorScale idx point =
+verticalRect config iconOffset bandSingleScale continuousScale colorScale idx point =
     let
         ( x__, y__ ) =
             point
@@ -589,7 +589,7 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
 
         h =
             c.height
-                - Scale.convert linearScale y__
+                - Scale.convert continuousScale y__
                 - iconOffset
 
         label =
@@ -599,7 +599,7 @@ verticalRect config iconOffset bandSingleScale linearScale colorScale idx point 
             Scale.convert bandSingleScale x__
 
         y_ =
-            Scale.convert linearScale y__
+            Scale.convert continuousScale y__
                 + iconOffset
 
         symbol : List (Svg msg)
@@ -630,7 +630,7 @@ horizontalRect :
     -> Int
     -> PointBand
     -> List (Svg msg)
-horizontalRect config bandSingleScale linearScale colorScale idx point =
+horizontalRect config bandSingleScale continuousScale colorScale idx point =
     let
         c =
             fromConfig config
@@ -642,7 +642,7 @@ horizontalRect config bandSingleScale linearScale colorScale idx point =
             Scale.bandwidth bandSingleScale
 
         w =
-            Scale.convert linearScale y__
+            Scale.convert continuousScale y__
 
         y_ =
             Scale.convert bandSingleScale x__
@@ -926,9 +926,9 @@ bandXAxis c bandScale =
 
 
 bandGroupedYAxis : ConfigStruct -> Float -> ContinuousScale Float -> List (Svg msg)
-bandGroupedYAxis c iconOffset linearScale =
+bandGroupedYAxis c iconOffset continuousScale =
     if c.showYAxis == True then
-        case ( c.orientation, c.axisYLinear ) of
+        case ( c.orientation, c.axisYContinuous ) of
             ( Vertical, ChartAxis.Left attributes ) ->
                 [ g
                     [ transform
@@ -937,7 +937,7 @@ bandGroupedYAxis c iconOffset linearScale =
                         ]
                     , class [ "axis", "axis--vertical" ]
                     ]
-                    [ Axis.left attributes linearScale ]
+                    [ Axis.left attributes continuousScale ]
                 ]
 
             ( Vertical, ChartAxis.Right attributes ) ->
@@ -949,7 +949,7 @@ bandGroupedYAxis c iconOffset linearScale =
                         ]
                     , class [ "axis", "axis--vertical" ]
                     ]
-                    [ Axis.right attributes linearScale ]
+                    [ Axis.right attributes continuousScale ]
                 ]
 
             ( Vertical, ChartAxis.Grid attributes ) ->
@@ -973,12 +973,12 @@ bandGroupedYAxis c iconOffset linearScale =
                         ]
                     , class [ "axis", "axis--vertical" ]
                     ]
-                    [ Axis.left leftAttrs linearScale ]
+                    [ Axis.left leftAttrs continuousScale ]
                 , g
                     [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
                     , class [ "axis", "axis--y", "axis--y-right" ]
                     ]
-                    [ Axis.right rightAttrs linearScale ]
+                    [ Axis.right rightAttrs continuousScale ]
                 ]
 
             ( Horizontal, ChartAxis.Left attributes ) ->
@@ -986,7 +986,7 @@ bandGroupedYAxis c iconOffset linearScale =
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
                     , class [ "axis", "axis--horizontal" ]
                     ]
-                    [ Axis.bottom attributes linearScale ]
+                    [ Axis.bottom attributes continuousScale ]
                 ]
 
             ( Horizontal, ChartAxis.Right attributes ) ->
@@ -994,7 +994,7 @@ bandGroupedYAxis c iconOffset linearScale =
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
                     , class [ "axis", "axis--horizontal" ]
                     ]
-                    [ Axis.bottom attributes linearScale ]
+                    [ Axis.bottom attributes continuousScale ]
                 ]
 
             ( Horizontal, ChartAxis.Grid attributes ) ->
@@ -1015,12 +1015,12 @@ bandGroupedYAxis c iconOffset linearScale =
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
                     , class [ "axis", "axis--horizontal" ]
                     ]
-                    [ Axis.bottom bottomAttrs linearScale ]
+                    [ Axis.bottom bottomAttrs continuousScale ]
                 , g
                     [ transform [ Translate c.margin.left c.margin.top ]
                     , class [ "axis", "axis--y", "axis--y-right" ]
                     ]
-                    [ Axis.bottom topAttrs linearScale ]
+                    [ Axis.bottom topAttrs continuousScale ]
                 ]
 
     else
@@ -1086,12 +1086,12 @@ renderHistogram ( histogram, config ) =
                 [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
                 , class [ "axis", "axis--horizontal" ]
                 ]
-                [ Axis.bottom (ChartAxis.xAxisAttributes c.axisXLinear) xScale ]
+                [ Axis.bottom (ChartAxis.xAxisAttributes c.axisXContinuous) xScale ]
             ]
 
         yAxis : List (Bin Float Float) -> List (Svg msg)
         yAxis bins =
-            case c.axisYLinear of
+            case c.axisYContinuous of
                 ChartAxis.Left attributes ->
                     [ g
                         [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]

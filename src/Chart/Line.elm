@@ -1,22 +1,22 @@
 module Chart.Line exposing
-    ( Accessor, AccessorLinear, AccessorTime, linear, time
+    ( Accessor, AccessorContinuous, AccessorTime, continuous, time
     , init
     , render
-    , RequiredConfig
-    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withoutTable, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
-    , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisLinear, withXAxisTime, withYAxis
+    , RequiredConfig, Config
+    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain
+    , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisContinuous, withXAxisTime, withYAxis
     , withSymbols
     , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
 
-It expects the X axis to plot time or linear data and the Y axis to plot linear data.
+It expects the X axis to plot time or continuous data and the Y axis to plot continuous data.
 
 
 # Chart Data Format
 
-@docs Accessor, AccessorLinear, AccessorTime, linear, time
+@docs Accessor, AccessorContinuous, AccessorTime, continuous, time
 
 
 # Chart Initialization
@@ -29,19 +29,19 @@ It expects the X axis to plot time or linear data and the Y axis to plot linear 
 @docs render
 
 
-# Required Configuration
+# Configuration
 
-@docs RequiredConfig
+@docs Config, RequiredConfig
 
 
 # Optional Configuration setters
 
-@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withoutTable, withStackedLayout, withTable, withTitle, withXLinearDomain, withXTimeDomain, withYDomain
+@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain
 
 
 # Axis
 
-@docs XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisLinear, withXAxisTime, withYAxis
+@docs XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisContinuous, withXAxisTime, withYAxis
 
 @docs withSymbols
 
@@ -61,22 +61,6 @@ import Chart.Internal.Line
         )
 import Chart.Internal.Symbol exposing (Symbol)
 import Chart.Internal.Type as Type
-    exposing
-        ( AccessibilityContent(..)
-        , ColorResource(..)
-        , Config
-        , Direction(..)
-        , Label(..)
-        , Layout(..)
-        , Margin
-        , RenderContext(..)
-        , defaultConfig
-        , fromConfig
-        , setDimensions
-        , setLayout
-        , setSvgDesc
-        , setSvgTitle
-        )
 import Color exposing (Color)
 import Html exposing (Html)
 import SubPath exposing (SubPath)
@@ -84,26 +68,29 @@ import Time exposing (Posix)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
+{-| The Config opaque type
+-}
+type alias Config =
+    Type.Config
+
+
 {-| The required config, passed as an argument to the `init` function
 -}
 type alias RequiredConfig =
-    { margin : Margin
-    , width : Float
-    , height : Float
-    }
+    Type.RequiredConfig
 
 
 {-| The data accessors
 
-A line chart can have the X axis as linear or time data.
+A line chart can have the X axis as continuous or time data.
 
     type Accessor data
-        = AccessorLinear (accessorLinear data)
+        = AccessorContinuous (accessorContinuous data)
         | AccessorTime (accessorTime data)
 
 -}
 type alias Accessor data =
-    Type.AccessorLinearOrTime data
+    Type.AccessorContinuousOrTime data
 
 
 {-| The accessor structure for x time lines.
@@ -125,23 +112,23 @@ time acc =
     Type.AccessorTime acc
 
 
-{-| The accessor structure for x linear lines.
+{-| The accessor structure for x continuous lines.
 -}
-type alias AccessorLinear data =
+type alias AccessorContinuous data =
     { xGroup : data -> Maybe String
     , xValue : data -> Float
     , yValue : data -> Float
     }
 
 
-{-| The accessor constructor for x linear lines.
+{-| The accessor constructor for x continuous lines.
 
-    Line.linear (Line.AccessorLinear .groupLabel .x .y)
+    Line.continuous (Line.AccessorContinuous .groupLabel .x .y)
 
 -}
-linear : Type.AccessorLinearStruct data -> Accessor data
-linear acc =
-    Type.AccessorLinear acc
+continuous : Type.AccessorContinuousStruct data -> Accessor data
+continuous acc =
+    Type.AccessorContinuous acc
 
 
 {-| Initializes the line chart with a default config
@@ -185,9 +172,9 @@ linear acc =
 -}
 init : RequiredConfig -> Config
 init c =
-    defaultConfig
+    Type.defaultConfig
         |> withGroupedLayout
-        |> setDimensions { margin = c.margin, width = c.width, height = c.height }
+        |> Type.setDimensions { margin = c.margin, width = c.width, height = c.height }
 
 
 {-| Renders the line chart, after initialisation and customisation
@@ -200,16 +187,16 @@ render : ( List data, Accessor data ) -> Config -> Html msg
 render ( externalData, accessor ) config =
     let
         c =
-            fromConfig config
+            Type.fromConfig config
 
         data =
-            Type.externalToDataLinearGroup (Type.toExternalData externalData) accessor
+            Type.externalToDataContinuousGroup (Type.toExternalData externalData) accessor
     in
     case c.layout of
-        GroupedLine ->
+        Type.GroupedLine ->
             renderLineGrouped ( data, config )
 
-        StackedLine ->
+        Type.StackedLine ->
             renderLineStacked ( data, config )
 
         _ ->
@@ -219,7 +206,7 @@ render ( externalData, accessor ) config =
 
 {-| Sets the line curve shape
 
-Defaults to `Shape.linearCurve`
+Defaults to `Shape.continuousCurve`
 
 See [elm-visualization/latest/Shape](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Shape)
 for more info.
@@ -237,7 +224,7 @@ withCurve curve config =
 {-| Sets the Y domain of a time line chart
 
 If not set, the domain is calculated from the data.
-If set on a linear line chart this setting will have no effect.
+If set on a continuous line chart this setting will have no effect.
 
     Line.init requiredConfig
         |> Line.withXTimeDomain ( Time.millisToPosix 1579275175634, 10 )
@@ -251,9 +238,9 @@ withXTimeDomain value config =
 
 {-| Sets the Y domain of a line chart
 
-This is always a linear domain, not a time domain.
+This is always a continuous domain, not a time domain.
 If not set, the domain is calculated from the data.
-If set on a linear line chart this setting will have no effect.
+If set on a continuous line chart this setting will have no effect.
 
     Line.init required
         |> Line.withYDomain ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579375175634 )
@@ -262,37 +249,22 @@ If set on a linear line chart this setting will have no effect.
 -}
 withYDomain : ( Float, Float ) -> Config -> Config
 withYDomain value config =
-    Type.setDomainLinearAndTimeY value config
+    Type.setDomainContinuousAndTimeY value config
 
 
-{-| Sets the Y domain of a linear line chart
+{-| Sets the Y domain of a continuous line chart
 
 If not set, the domain is calculated from the data.
-If set on a linear line chart this setting will have no effect.
+If set on a continuous line chart this setting will have no effect.
 
     Line.init requiredConfig
-        |> Line.withXLinearDomain ( 0, 10 )
+        |> Line.withXContinuousDomain ( 0, 10 )
         |> Line.render ( data, accessor )
 
 -}
-withXLinearDomain : ( Float, Float ) -> Config -> Config
-withXLinearDomain value config =
-    Type.setDomainLinearX value config
-
-
-{-| Build an alternative table content for accessibility
-
-&#9888; By default an alternative table is always being rendered.
-Use this option to explicitly pass a tuple with x and y labels.
-
-    Line.init requiredConfig
-        |> Line.withTable ( "xLabel", "yLabel" )
-        |> Line.render ( data, accessor )
-
--}
-withTable : ( String, String ) -> Config -> Config
-withTable labels =
-    Type.setAccessibilityContent (AccessibilityTable labels)
+withXContinuousDomain : ( Float, Float ) -> Config -> Config
+withXContinuousDomain value config =
+    Type.setDomainContinuousX value config
 
 
 {-| Do **not** build an alternative table content for accessibility
@@ -307,7 +279,7 @@ Use this option to not build the table.
 -}
 withoutTable : Config -> Config
 withoutTable =
-    Type.setAccessibilityContent AccessibilityNone
+    Type.setAccessibilityContent Type.AccessibilityNone
 
 
 {-| Sets an accessible, long-text description for the svg chart.
@@ -353,7 +325,7 @@ withTitle value config =
 -}
 withColorPalette : List Color -> Config -> Config
 withColorPalette palette config =
-    Type.setColorResource (ColorPalette palette) config
+    Type.setColorResource (Type.ColorPalette palette) config
 
 
 {-| Creates a stacked line chart.
@@ -379,7 +351,7 @@ withStackedLayout config =
 -}
 withGroupedLayout : Config -> Config
 withGroupedLayout config =
-    Type.setLayout GroupedLine config
+    Type.setLayout Type.GroupedLine config
 
 
 {-| Show a label at the end of the lines.
@@ -392,10 +364,10 @@ It takes one of: xGroupLabel
         |> Line.withLabels Line.xGroupLabel
 
 -}
-withLabels : Label -> Config -> Config
+withLabels : Type.Label -> Config -> Config
 withLabels label =
     case label of
-        XGroupLabel ->
+        Type.XGroupLabel ->
             Type.showXGroupLabel
 
         _ ->
@@ -532,16 +504,16 @@ withXAxisTime =
     Type.setXAxisTime
 
 
-{-| Customise the linear xAxis
+{-| Customise the continuous xAxis
 
     Line.init requiredConfig
-        |> Line.withXAxisLinear (Line.axisBottom [ Axis.tickCount 5 ])
+        |> Line.withXAxisContinuous (Line.axisBottom [ Axis.tickCount 5 ])
         |> Line.render ( data, accessor )
 
 -}
-withXAxisLinear : ChartAxis.XAxis Float -> Config -> Config
-withXAxisLinear =
-    Type.setXAxisLinear
+withXAxisContinuous : ChartAxis.XAxis Float -> Config -> Config
+withXAxisContinuous =
+    Type.setXAxisContinuous
 
 
 {-| Customise the yAxis
@@ -553,7 +525,19 @@ withXAxisLinear =
 -}
 withYAxis : ChartAxis.YAxis Float -> Config -> Config
 withYAxis =
-    Type.setYAxisLinear
+    Type.setYAxisContinuous
+
+
+{-| Set the Y scale to logaritmic, passing a base
+
+    Line.init requiredConfig
+        |> Line.withLogYScale 10
+        |> Line.render ( data, accessor )
+
+-}
+withLogYScale : Float -> Config -> Config
+withLogYScale base =
+    Type.setYScale (Type.LogScale base)
 
 
 
@@ -579,6 +563,6 @@ withSymbols =
 
 
 {-| -}
-xGroupLabel : Label
+xGroupLabel : Type.Label
 xGroupLabel =
-    XGroupLabel
+    Type.XGroupLabel

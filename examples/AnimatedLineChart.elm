@@ -162,7 +162,7 @@ xAxisTicks =
 
 accessor : Line.Accessor Datum
 accessor =
-    Line.linear (Line.AccessorLinear (.groupLabel >> Just) .x .y)
+    Line.continuous (Line.AccessorContinuous (.groupLabel >> Just) .x .y)
 
 
 xAxis : Line.XAxis Float
@@ -178,14 +178,14 @@ yAxis =
     Line.axisLeft [ Axis.tickCount 5 ]
 
 
-lineLinear : Data -> Html msg
-lineLinear d =
+lineContinuous : Data -> Html msg
+lineContinuous d =
     Line.init
         { margin = { top = 10, right = 40, bottom = 30, left = 30 }
         , width = width
         , height = height
         }
-        |> Line.withXAxisLinear xAxis
+        |> Line.withXAxisContinuous xAxis
         |> Line.withYAxis yAxis
         |> Line.withLabels Line.xGroupLabel
         |> Line.withYDomain ( 0, 20 )
@@ -266,7 +266,7 @@ view model =
         , Html.div [ class "wrapper" ]
             [ Html.h3 [] [ Html.text "Animated Line Chart" ]
             , Html.div [] (Array.map (\g -> selector (g == model.currentGroup) g) groups |> Array.toList)
-            , Html.div attrs [ lineLinear d ]
+            , Html.div attrs [ lineContinuous d ]
             ]
         ]
 

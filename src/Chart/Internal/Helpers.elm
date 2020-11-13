@@ -5,7 +5,7 @@ module Chart.Internal.Helpers exposing
     , invisibleFigcaption
     , mergeStyles
     , sortStrings
-    , stackDataGroupLinear
+    , stackDataGroupContinuous
     , toUtcString
     )
 
@@ -15,7 +15,7 @@ import Html.Attributes
 import Time exposing (toHour, toMinute, toSecond, utc)
 
 
-type alias DataGroupLinear =
+type alias DataGroupContinuous =
     { groupLabel : Maybe String
     , points : List ( Float, Float )
     }
@@ -36,11 +36,11 @@ floorValues v =
             )
 
 
-stackDataGroupLinear :
+stackDataGroupContinuous :
     List (List ( Float, Float ))
-    -> List DataGroupLinear
-    -> List DataGroupLinear
-stackDataGroupLinear values groupData =
+    -> List DataGroupContinuous
+    -> List DataGroupContinuous
+stackDataGroupContinuous values groupData =
     List.map2
         (\vals group ->
             { groupLabel = group.groupLabel

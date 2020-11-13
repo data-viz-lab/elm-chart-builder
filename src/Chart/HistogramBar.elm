@@ -2,6 +2,7 @@ module Chart.HistogramBar exposing
     ( dataAccessor, preProcessedDataAccessor
     , init
     , render
+    , Config, RequiredConfig
     , withBarStyle, withColor, withColumnTitle, withDesc, withDomain, withoutTable, withTitle
     , XAxis, YAxis, axisBottom, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
     , yColumnTitle
@@ -27,6 +28,11 @@ The histogram bar chart can both generate the histogram data automatically or ac
 @docs render
 
 
+# Configuration
+
+@docs Config, RequiredConfig
+
+
 # Configuration setters
 
 @docs withBarStyle, withColor, withColumnTitle, withDesc, withDomain, withoutTable, withTitle
@@ -50,32 +56,22 @@ import Chart.Internal.Bar
         ( renderHistogram
         )
 import Chart.Internal.Type as Type
-    exposing
-        ( AccessibilityContent(..)
-        , AccessorHistogram(..)
-        , ColorResource(..)
-        , ColumnTitle(..)
-        , Config
-        , Margin
-        , RenderContext(..)
-        , defaultConfig
-        , setColorResource
-        , setDimensions
-        , setSvgDesc
-        , setSvgTitle
-        , setXAxis
-        , setYAxis
-        )
 import Color exposing (Color)
 import Histogram
 import Html exposing (Html)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
+{-| The Config opaque type
+-}
+type alias Config =
+    Type.Config
+
+
 {-| The required config, passed as an argument to the `init` function
 -}
 type alias RequiredConfig =
-    { margin : Margin
+    { margin : Type.Margin
     , width : Float
     , height : Float
     }
@@ -99,9 +95,9 @@ because it is only used when generating a histogram and not for bucketed pre-pro
         Histo.dataAccessor steps accessor
 
 -}
-dataAccessor : Steps -> (data -> Float) -> AccessorHistogram data
+dataAccessor : Steps -> (data -> Float) -> Type.AccessorHistogram data
 dataAccessor bins acc =
-    AccessorHistogram bins acc
+    Type.AccessorHistogram bins acc
 
 
 {-| The data accessor for generating a histogram from pre-processed data.
@@ -119,9 +115,9 @@ Meaning the data has already been bucketed and counted.
             )
 
 -}
-preProcessedDataAccessor : (data -> Histogram.Bin Float Float) -> AccessorHistogram data
+preProcessedDataAccessor : (data -> Histogram.Bin Float Float) -> Type.AccessorHistogram data
 preProcessedDataAccessor acc =
-    AccessorHistogramPreProcessed acc
+    Type.AccessorHistogramPreProcessed acc
 
 
 {-| Initializes the histogram bar chart with a default config.
@@ -132,8 +128,8 @@ preProcessedDataAccessor acc =
 -}
 init : RequiredConfig -> Config
 init c =
-    defaultConfig
-        |> setDimensions { margin = c.margin, width = c.width, height = c.height }
+    Type.defaultConfig
+        |> Type.setDimensions { margin = c.margin, width = c.width, height = c.height }
 
 
 {-| Renders the histogram
@@ -142,7 +138,7 @@ init c =
         |> Histo.render ( data, accessor )
 
 -}
-render : ( List data, AccessorHistogram data ) -> Config -> Html msg
+render : ( List data, Type.AccessorHistogram data ) -> Config -> Html msg
 render ( externalData, acc ) config =
     let
         data =
@@ -163,7 +159,7 @@ Use this option to not build the table.
 -}
 withoutTable : Config -> Config
 withoutTable =
-    Type.setAccessibilityContent AccessibilityNone
+    Type.setAccessibilityContent Type.AccessibilityNone
 
 
 {-| Set the domain for the HistogramGenerator.
@@ -188,7 +184,7 @@ withDomain domain config =
 -}
 withColor : Color -> Config -> Config
 withColor color config =
-    Type.setColorResource (Color color) config
+    Type.setColorResource (Type.Color color) config
 
 
 {-| Sets an accessible, long-text description for the svg chart.
@@ -227,13 +223,13 @@ It takes a formatter function.
         |> Bar.withColumnTitle (Bar.yColumnTitle String.fromFloat)
 
 -}
-withColumnTitle : ColumnTitle -> Config -> Config
+withColumnTitle : Type.ColumnTitle -> Config -> Config
 withColumnTitle title config =
     case title of
-        YColumnTitle formatter ->
+        Type.YColumnTitle formatter ->
             Type.showYColumnTitle formatter config
 
-        XOrdinalColumnTitle ->
+        Type.XOrdinalColumnTitle ->
             Type.showXOrdinalColumnTitle config
 
         _ ->
@@ -254,9 +250,9 @@ withBarStyle styles config =
 
 
 {-| -}
-yColumnTitle : (Float -> String) -> ColumnTitle
+yColumnTitle : (Float -> String) -> Type.ColumnTitle
 yColumnTitle =
-    YColumnTitle
+    Type.YColumnTitle
 
 
 
@@ -351,7 +347,7 @@ hideXAxis config =
 -}
 withXAxis : ChartAxis.XAxis Float -> Config -> Config
 withXAxis =
-    Type.setXAxisLinear
+    Type.setXAxisContinuous
 
 
 {-| Customise the yAxis
@@ -363,4 +359,4 @@ withXAxis =
 -}
 withYAxis : ChartAxis.YAxis Float -> Config -> Config
 withYAxis =
-    Type.setYAxisLinear
+    Type.setYAxisContinuous

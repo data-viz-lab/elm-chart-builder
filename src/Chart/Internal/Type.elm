@@ -1,41 +1,43 @@
 module Chart.Internal.Type exposing
     ( AccessibilityContent(..)
     , AccessorBand
+    , AccessorContinuousOrTime(..)
+    , AccessorContinuousStruct
     , AccessorHistogram(..)
-    , AccessorLinearOrTime(..)
-    , AccessorLinearStruct
     , AccessorTimeStruct
     , BandDomain
     , ColorResource(..)
     , ColumnTitle(..)
     , Config
     , ConfigStruct
+    , ContinuousDomain
     , DataBand
+    , DataContinuousGroup(..)
     , DataGroupBand
-    , DataGroupLinear
+    , DataGroupContinuous
     , DataGroupTime
-    , DataLinearGroup(..)
     , Direction(..)
     , DomainBand
     , DomainBandStruct
-    , DomainLinear
-    , DomainLinearStruct
+    , DomainContinuous
+    , DomainContinuousStruct
     , DomainTime
     , DomainTimeStruct
     , ExternalData
     , Label(..)
     , Layout(..)
-    , LinearDomain
     , Margin
     , Orientation(..)
     , PointBand
-    , PointLinear
+    , PointContinuous
     , PointStacked
     , PointTime
     , RenderContext(..)
+    , RequiredConfig
     , StackedValues
     , Steps
-    , adjustLinearRange
+    , YScale(..)
+    , adjustContinuousRange
     , ariaLabelledby
     , ariaLabelledbyContent
     , bottomGap
@@ -44,9 +46,9 @@ module Chart.Internal.Type exposing
     , colorCategoricalStyle
     , colorStyle
     , dataBandToDataStacked
-    , dataLinearGroupToDataLinear
-    , dataLinearGroupToDataLinearStacked
-    , dataLinearGroupToDataTime
+    , dataContinuousGroupToDataContinuous
+    , dataContinuousGroupToDataContinuousStacked
+    , dataContinuousGroupToDataTime
     , defaultConfig
     , defaultHeight
     , defaultLayout
@@ -55,24 +57,24 @@ module Chart.Internal.Type exposing
     , defaultTicksCount
     , defaultWidth
     , externalToDataBand
+    , externalToDataContinuousGroup
     , externalToDataHistogram
-    , externalToDataLinearGroup
     , fromConfig
     , fromDataBand
     , fromDomainBand
-    , fromDomainLinear
+    , fromDomainContinuous
     , fromExternalData
     , getBandGroupRange
     , getBandSingleRange
+    , getContinuousRange
     , getDataBandDepth
-    , getDataLinearDepth
+    , getDataContinuousDepth
     , getDomainBand
     , getDomainBandFromData
-    , getDomainLinear
-    , getDomainLinearFromData
+    , getDomainContinuous
+    , getDomainContinuousFromData
     , getDomainTime
     , getDomainTimeFromData
-    , getLinearRange
     , getOffset
     , getStackedValuesAndGroupes
     , leftGap
@@ -86,10 +88,10 @@ module Chart.Internal.Type exposing
     , setDomainBand
     , setDomainBandBandGroup
     , setDomainBandBandSingle
-    , setDomainBandLinear
-    , setDomainLinear
-    , setDomainLinearAndTimeY
-    , setDomainLinearX
+    , setDomainBandContinuous
+    , setDomainContinuous
+    , setDomainContinuousAndTimeY
+    , setDomainContinuousX
     , setDomainTime
     , setDomainTimeX
     , setHeight
@@ -104,14 +106,15 @@ module Chart.Internal.Type exposing
     , setWidth
     , setXAxis
     , setXAxisBand
-    , setXAxisLinear
+    , setXAxisContinuous
     , setXAxisTime
     , setYAxis
-    , setYAxisLinear
+    , setYAxisContinuous
+    , setYScale
     , showIcons
     , showStackedColumnTitle
+    , showXContinuousLabel
     , showXGroupLabel
-    , showXLinearLabel
     , showXOrdinalColumnTitle
     , showXOrdinalLabel
     , showYColumnTitle
@@ -120,6 +123,7 @@ module Chart.Internal.Type exposing
     , symbolCustomSpace
     , symbolSpace
     , toConfig
+    , toContinousScale
     , toDataBand
     , toExternalData
     )
@@ -132,7 +136,7 @@ import Histogram
 import Html
 import Html.Attributes
 import List.Extra
-import Scale exposing (BandScale)
+import Scale exposing (BandScale, ContinuousScale)
 import Shape
 import Statistics
 import SubPath exposing (SubPath)
@@ -174,12 +178,12 @@ type AccessorHistogram data
     | AccessorHistogramPreProcessed (data -> Histogram.Bin Float Float)
 
 
-type AccessorLinearOrTime data
-    = AccessorLinear (AccessorLinearStruct data)
+type AccessorContinuousOrTime data
+    = AccessorContinuous (AccessorContinuousStruct data)
     | AccessorTime (AccessorTimeStruct data)
 
 
-type alias AccessorLinearStruct data =
+type alias AccessorContinuousStruct data =
     { xGroup : data -> Maybe String
     , xValue : data -> Float
     , yValue : data -> Float
@@ -202,16 +206,16 @@ toDataBand dataBand =
     DataBand dataBand
 
 
-type DataLinearGroup
+type DataContinuousGroup
     = DataTime (List DataGroupTime)
-    | DataLinear (List DataGroupLinear)
+    | DataContinuous (List DataGroupContinuous)
 
 
 type alias PointBand =
     ( String, Float )
 
 
-type alias PointLinear =
+type alias PointContinuous =
     ( Float, Float )
 
 
@@ -229,9 +233,9 @@ type alias DataGroupBand =
     }
 
 
-type alias DataGroupLinear =
+type alias DataGroupContinuous =
     { groupLabel : Maybe String
-    , points : List PointLinear
+    , points : List PointContinuous
     }
 
 
@@ -262,7 +266,11 @@ type Direction
     | NoDirection
 
 
-type alias LinearDomain =
+type alias ContinuousDomain =
+    ( Float, Float )
+
+
+type alias Range =
     ( Float, Float )
 
 
@@ -277,7 +285,7 @@ type alias BandDomain =
 type alias DomainBandStruct =
     { bandGroup : Maybe BandDomain
     , bandSingle : Maybe BandDomain
-    , linear : Maybe LinearDomain
+    , continuous : Maybe ContinuousDomain
     }
 
 
@@ -285,18 +293,18 @@ initialDomainBandStruct : DomainBandStruct
 initialDomainBandStruct =
     { bandGroup = Nothing
     , bandSingle = Nothing
-    , linear = Nothing
+    , continuous = Nothing
     }
 
 
-type alias DomainLinearStruct =
-    { x : Maybe LinearDomain
-    , y : Maybe LinearDomain
+type alias DomainContinuousStruct =
+    { x : Maybe ContinuousDomain
+    , y : Maybe ContinuousDomain
     }
 
 
-initialDomainLinearStruct : DomainLinearStruct
-initialDomainLinearStruct =
+initialDomainContinuousStruct : DomainContinuousStruct
+initialDomainContinuousStruct =
     { x = Nothing
     , y = Nothing
     }
@@ -304,7 +312,7 @@ initialDomainLinearStruct =
 
 type alias DomainTimeStruct =
     { x : Maybe TimeDomain
-    , y : Maybe LinearDomain
+    , y : Maybe ContinuousDomain
     }
 
 
@@ -319,8 +327,8 @@ type DomainBand
     = DomainBand DomainBandStruct
 
 
-type DomainLinear
-    = DomainLinear DomainLinearStruct
+type DomainContinuous
+    = DomainContinuous DomainContinuousStruct
 
 
 type DomainTime
@@ -333,6 +341,11 @@ type alias Margin =
     , bottom : Float
     , left : Float
     }
+
+
+type YScale
+    = LinearScale
+    | LogScale Float
 
 
 
@@ -358,17 +371,24 @@ type
 -- CONFIG
 
 
+type alias RequiredConfig =
+    { margin : Margin
+    , width : Float
+    , height : Float
+    }
+
+
 type alias ConfigStruct =
     { accessibilityContent : AccessibilityContent
-    , axisXLinear : ChartAxis.XAxis Float
+    , axisXContinuous : ChartAxis.XAxis Float
     , axisXTime : ChartAxis.XAxis Posix
     , axisXBand : ChartAxis.XAxis String
-    , axisYLinear : ChartAxis.YAxis Float
+    , axisYContinuous : ChartAxis.YAxis Float
     , colorResource : ColorResource
     , coreStyle : List ( String, String )
     , curve : List ( Float, Float ) -> SubPath
     , domainBand : DomainBand
-    , domainLinear : DomainLinear
+    , domainContinuous : DomainContinuous
     , domainTime : DomainTime
     , height : Float
     , histogramDomain : Maybe ( Float, Float )
@@ -385,6 +405,7 @@ type alias ConfigStruct =
     , svgDesc : String
     , svgTitle : String
     , width : Float
+    , yScale : YScale
     , zone : Zone
     }
 
@@ -393,15 +414,15 @@ defaultConfig : Config
 defaultConfig =
     toConfig
         { accessibilityContent = AccessibilityTableNoLabels
-        , axisXLinear = ChartAxis.Bottom []
+        , axisXContinuous = ChartAxis.Bottom []
         , axisXTime = ChartAxis.Bottom []
         , axisXBand = ChartAxis.Bottom []
-        , axisYLinear = ChartAxis.Left []
+        , axisYContinuous = ChartAxis.Left []
         , colorResource = ColorNone
         , coreStyle = []
         , curve = \d -> Shape.linearCurve d
         , domainBand = DomainBand initialDomainBandStruct
-        , domainLinear = DomainLinear initialDomainLinearStruct
+        , domainContinuous = DomainContinuous initialDomainContinuousStruct
         , domainTime = DomainTime initialDomainTimeStruct
         , height = defaultHeight
         , histogramDomain = Nothing
@@ -418,6 +439,7 @@ defaultConfig =
         , svgDesc = ""
         , svgTitle = ""
         , width = defaultWidth
+        , yScale = LinearScale
         , zone = Time.utc
         }
 
@@ -551,9 +573,9 @@ setXAxisTime orientation (Config c) =
     toConfig { c | axisXTime = orientation }
 
 
-setXAxisLinear : ChartAxis.XAxis Float -> Config -> Config
-setXAxisLinear orientation (Config c) =
-    toConfig { c | axisXLinear = orientation }
+setXAxisContinuous : ChartAxis.XAxis Float -> Config -> Config
+setXAxisContinuous orientation (Config c) =
+    toConfig { c | axisXContinuous = orientation }
 
 
 setXAxisBand : ChartAxis.XAxis String -> Config -> Config
@@ -561,9 +583,9 @@ setXAxisBand orientation (Config c) =
     toConfig { c | axisXBand = orientation }
 
 
-setYAxisLinear : ChartAxis.YAxis Float -> Config -> Config
-setYAxisLinear orientation (Config c) =
-    toConfig { c | axisYLinear = orientation }
+setYAxisContinuous : ChartAxis.YAxis Float -> Config -> Config
+setYAxisContinuous orientation (Config c) =
+    toConfig { c | axisYContinuous = orientation }
 
 
 setColorResource : ColorResource -> Config -> Config
@@ -633,9 +655,9 @@ setDimensions { margin, width, height } (Config c) =
         }
 
 
-setDomainLinear : DomainLinear -> Config -> Config
-setDomainLinear domain (Config c) =
-    toConfig { c | domainLinear = domain }
+setDomainContinuous : DomainContinuous -> Config -> Config
+setDomainContinuous domain (Config c) =
+    toConfig { c | domainContinuous = domain }
 
 
 setDomainTime : DomainTime -> Config -> Config
@@ -674,15 +696,15 @@ setDomainBandBandSingle bandDomain (Config c) =
     toConfig { c | domainBand = DomainBand newDomain }
 
 
-setDomainBandLinear : LinearDomain -> Config -> Config
-setDomainBandLinear linearDomain (Config c) =
+setDomainBandContinuous : ContinuousDomain -> Config -> Config
+setDomainBandContinuous continuousDomain (Config c) =
     let
         domain =
             c.domainBand
                 |> fromDomainBand
 
         newDomain =
-            { domain | linear = Just linearDomain }
+            { domain | continuous = Just continuousDomain }
     in
     toConfig { c | domainBand = DomainBand newDomain }
 
@@ -700,37 +722,37 @@ setDomainTimeX timeDomain (Config c) =
     toConfig { c | domainTime = DomainTime newDomain }
 
 
-setDomainLinearX : LinearDomain -> Config -> Config
-setDomainLinearX linearDomain (Config c) =
+setDomainContinuousX : ContinuousDomain -> Config -> Config
+setDomainContinuousX continuousDomain (Config c) =
     let
         domain =
-            c.domainLinear
-                |> fromDomainLinear
+            c.domainContinuous
+                |> fromDomainContinuous
 
         newDomain =
-            { domain | x = Just linearDomain }
+            { domain | x = Just continuousDomain }
     in
-    toConfig { c | domainLinear = DomainLinear newDomain }
+    toConfig { c | domainContinuous = DomainContinuous newDomain }
 
 
-setDomainLinearAndTimeY : LinearDomain -> Config -> Config
-setDomainLinearAndTimeY linearDomain (Config c) =
+setDomainContinuousAndTimeY : ContinuousDomain -> Config -> Config
+setDomainContinuousAndTimeY continuousDomain (Config c) =
     let
         domain =
-            c.domainLinear
-                |> fromDomainLinear
+            c.domainContinuous
+                |> fromDomainContinuous
 
         newDomain =
-            { domain | y = Just linearDomain }
+            { domain | y = Just continuousDomain }
 
         domainTime =
             c.domainTime
                 |> fromDomainTime
 
         newDomainTime =
-            { domainTime | y = Just linearDomain }
+            { domainTime | y = Just continuousDomain }
     in
-    toConfig { c | domainLinear = DomainLinear newDomain, domainTime = DomainTime newDomainTime }
+    toConfig { c | domainContinuous = DomainContinuous newDomain, domainTime = DomainTime newDomainTime }
 
 
 setXAxis : Bool -> Config -> Config
@@ -753,13 +775,18 @@ setAccessibilityContent content (Config c) =
     toConfig { c | accessibilityContent = content }
 
 
+setYScale : YScale -> Config -> Config
+setYScale scale (Config c) =
+    toConfig { c | yScale = scale }
+
+
 
 -- LABELS
 
 
 type Label
     = YLabel (Float -> String)
-    | XLinearLabel (Float -> String)
+    | XContinuousLabel (Float -> String)
     | XOrdinalLabel
     | XGroupLabel
     | NoLabel
@@ -770,9 +797,9 @@ showXOrdinalLabel (Config c) =
     toConfig { c | showLabels = XOrdinalLabel }
 
 
-showXLinearLabel : (Float -> String) -> Config -> Config
-showXLinearLabel formatter (Config c) =
-    toConfig { c | showLabels = XLinearLabel formatter }
+showXContinuousLabel : (Float -> String) -> Config -> Config
+showXContinuousLabel formatter (Config c) =
+    toConfig { c | showLabels = XContinuousLabel formatter }
 
 
 showYLabel : (Float -> String) -> Config -> Config
@@ -831,12 +858,12 @@ getDomainBand config =
         |> fromDomainBand
 
 
-getDomainLinear : Config -> DomainLinearStruct
-getDomainLinear config =
+getDomainContinuous : Config -> DomainContinuousStruct
+getDomainContinuous config =
     config
         |> fromConfig
-        |> .domainLinear
-        |> fromDomainLinear
+        |> .domainContinuous
+        |> fromDomainContinuous
 
 
 getDomainTime : Config -> DomainTimeStruct
@@ -891,10 +918,10 @@ getDomainBandFromData data config =
                             )
                             []
                         |> Just
-        , linear =
-            case domain.linear of
-                Just linear ->
-                    Just linear
+        , continuous =
+            case domain.continuous of
+                Just continuous ->
+                    Just continuous
 
                 Nothing ->
                     d
@@ -907,16 +934,16 @@ getDomainBandFromData data config =
         |> fromDomainBand
 
 
-getDomainLinearFromData : Config -> List DataGroupLinear -> DomainLinearStruct
-getDomainLinearFromData config data =
+getDomainContinuousFromData : Config -> List DataGroupContinuous -> DomainContinuousStruct
+getDomainContinuousFromData config data =
     let
         -- get the domain from config first
         -- and use it!
-        domain : DomainLinearStruct
+        domain : DomainContinuousStruct
         domain =
-            getDomainLinear config
+            getDomainContinuous config
     in
-    DomainLinear
+    DomainContinuous
         { x =
             case domain.x of
                 Just _ ->
@@ -942,7 +969,7 @@ getDomainLinearFromData config data =
                         |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
                         |> Just
         }
-        |> fromDomainLinear
+        |> fromDomainContinuous
 
 
 getDomainTimeFromData : Config -> List DataGroupTime -> DomainTimeStruct
@@ -993,8 +1020,8 @@ fromDomainBand (DomainBand d) =
     d
 
 
-fromDomainLinear : DomainLinear -> DomainLinearStruct
-fromDomainLinear (DomainLinear d) =
+fromDomainContinuous : DomainContinuous -> DomainContinuousStruct
+fromDomainContinuous (DomainContinuous d) =
     d
 
 
@@ -1018,8 +1045,8 @@ getDataBandDepth data =
         |> List.length
 
 
-getDataLinearDepth : List DataGroupLinear -> Int
-getDataLinearDepth data =
+getDataContinuousDepth : List DataGroupContinuous -> Int
+getDataContinuousDepth data =
     data
         |> List.map .points
         |> List.head
@@ -1060,8 +1087,8 @@ type RenderContext
     | RenderAxis
 
 
-getLinearRange : Config -> RenderContext -> Float -> Float -> BandScale String -> ( Float, Float )
-getLinearRange config renderContext width height bandScale =
+getContinuousRange : Config -> RenderContext -> Float -> Float -> BandScale String -> ( Float, Float )
+getContinuousRange config renderContext width height bandScale =
     let
         c =
             fromConfig config
@@ -1107,8 +1134,8 @@ getLinearRange config renderContext width height bandScale =
                     ( height, 0 )
 
 
-adjustLinearRange : Config -> Int -> ( Float, Float ) -> ( Float, Float )
-adjustLinearRange config stackedDepth ( a, b ) =
+adjustContinuousRange : Config -> Int -> ( Float, Float ) -> ( Float, Float )
+adjustContinuousRange config stackedDepth ( a, b ) =
     -- small adjustments related to the whitespace between stacked items?
     let
         c =
@@ -1315,14 +1342,14 @@ externalToDataBand externalData accessor =
         |> DataBand
 
 
-externalToDataLinearGroup : ExternalData data -> AccessorLinearOrTime data -> DataLinearGroup
-externalToDataLinearGroup externalData accessorGroup =
+externalToDataContinuousGroup : ExternalData data -> AccessorContinuousOrTime data -> DataContinuousGroup
+externalToDataContinuousGroup externalData accessorGroup =
     let
         data =
             fromExternalData externalData
     in
     case accessorGroup of
-        AccessorLinear accessor ->
+        AccessorContinuous accessor ->
             data
                 |> List.sortBy (accessor.xGroup >> Maybe.withDefault "")
                 |> List.Extra.groupWhile
@@ -1350,7 +1377,7 @@ externalToDataLinearGroup externalData accessorGroup =
                         , points = points
                         }
                     )
-                |> DataLinear
+                |> DataContinuous
 
         AccessorTime accessor ->
             data
@@ -1383,8 +1410,8 @@ externalToDataLinearGroup externalData accessorGroup =
                 |> DataTime
 
 
-dataLinearGroupToDataLinear : DataLinearGroup -> List DataGroupLinear
-dataLinearGroupToDataLinear data =
+dataContinuousGroupToDataContinuous : DataContinuousGroup -> List DataGroupContinuous
+dataContinuousGroupToDataContinuous data =
     case data of
         DataTime d ->
             d
@@ -1408,12 +1435,12 @@ dataLinearGroupToDataLinear data =
                         }
                     )
 
-        DataLinear d ->
+        DataContinuous d ->
             d
 
 
-dataLinearGroupToDataTime : DataLinearGroup -> List DataGroupTime
-dataLinearGroupToDataTime data =
+dataContinuousGroupToDataTime : DataContinuousGroup -> List DataGroupTime
+dataContinuousGroupToDataTime data =
     case data of
         DataTime d ->
             d
@@ -1442,8 +1469,8 @@ getStackedValuesAndGroupes values data =
     )
 
 
-dataLinearGroupToDataLinearStacked : List DataGroupLinear -> List ( String, List Float )
-dataLinearGroupToDataLinearStacked data =
+dataContinuousGroupToDataContinuousStacked : List DataGroupContinuous -> List ( String, List Float )
+dataContinuousGroupToDataContinuousStacked data =
     data
         |> List.indexedMap
             (\i d ->
@@ -1552,3 +1579,25 @@ noGroups data =
     data
         |> List.map .groupLabel
         |> List.all (\d -> d == Nothing)
+
+
+toContinousScale : Range -> ContinuousDomain -> YScale -> ContinuousScale Float
+toContinousScale range domain scale =
+    case scale of
+        LogScale base ->
+            Scale.log base range (domain |> adjustDomainToLogScale)
+
+        LinearScale ->
+            Scale.linear range domain
+
+
+adjustDomainToLogScale : ContinuousDomain -> ContinuousDomain
+adjustDomainToLogScale ( a, b ) =
+    if a == 0 then
+        ( 1, b )
+
+    else if b == 0 then
+        ( a, -1 )
+
+    else
+        ( a, b )

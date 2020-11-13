@@ -29,7 +29,7 @@ suite =
                         expected =
                             { bandGroup = Just [ "CA", "TX" ]
                             , bandSingle = Just [ "a", "b" ]
-                            , linear = Just ( 0, 21 )
+                            , continuous = Just ( 0, 21 )
                             }
                     in
                     Expect.equal (getDomainBandFromData data defaultConfig) expected
@@ -75,39 +75,39 @@ suite =
                                     , "three times per week"
                                     , "five times per week"
                                     ]
-                            , linear = Just ( 0, 21.9 )
+                            , continuous = Just ( 0, 21.9 )
                             }
                     in
                     Expect.equal (getDomainBandFromData data defaultConfig) expected
             ]
-        , describe "getDomainLinearFromData"
+        , describe "getDomainContinuousFromData"
             [ test "with default domain" <|
                 \_ ->
                     let
-                        data : List DataGroupLinear
+                        data : List DataGroupContinuous
                         data =
                             [ { groupLabel = Just "CA", points = [ ( 5, 10 ), ( 6, 20 ) ] }
                             , { groupLabel = Just "TX", points = [ ( 5, 11 ), ( 6, 21 ) ] }
                             ]
 
-                        expected : DomainLinearStruct
+                        expected : DomainContinuousStruct
                         expected =
                             { x = Just ( 5, 6 ), y = Just ( 0, 21 ) }
                     in
-                    Expect.equal (getDomainLinearFromData defaultConfig data) expected
+                    Expect.equal (getDomainContinuousFromData defaultConfig data) expected
             , test "with Y domain manually set" <|
                 \_ ->
                     let
-                        linearDomain : LinearDomain
-                        linearDomain =
+                        continuousDomain : ContinuousDomain
+                        continuousDomain =
                             ( 0, 30 )
 
                         config : Config
                         config =
                             defaultConfig
-                                |> setDomainLinearAndTimeY linearDomain
+                                |> setDomainContinuousAndTimeY continuousDomain
 
-                        data : List DataGroupLinear
+                        data : List DataGroupContinuous
                         data =
                             [ { groupLabel = Just "CA"
                               , points =
@@ -123,13 +123,13 @@ suite =
                               }
                             ]
 
-                        expected : DomainLinearStruct
+                        expected : DomainContinuousStruct
                         expected =
                             { x = Just ( 1, 2 )
                             , y = Just ( 0, 30 )
                             }
                     in
-                    Expect.equal (getDomainLinearFromData config data) expected
+                    Expect.equal (getDomainContinuousFromData config data) expected
             ]
         , describe "getDomainTimeFromData"
             [ test "with default domain" <|
@@ -161,14 +161,14 @@ suite =
             , test "with Y domain manually set" <|
                 \_ ->
                     let
-                        linearDomain : LinearDomain
-                        linearDomain =
+                        continuousDomain : ContinuousDomain
+                        continuousDomain =
                             ( 0, 30 )
 
                         config : Config
                         config =
                             defaultConfig
-                                |> setDomainLinearAndTimeY linearDomain
+                                |> setDomainContinuousAndTimeY continuousDomain
 
                         data : List DataGroupTime
                         data =
@@ -322,7 +322,7 @@ suite =
                         (symbolCustomSpace orientation localDimension customSymbolConf)
                         expected
             ]
-        , describe "externalToDataLinearGroup"
+        , describe "externalToDataContinuousGroup"
             [ test "with time data" <|
                 \_ ->
                     let
@@ -353,11 +353,11 @@ suite =
                             ]
                                 |> toExternalData
 
-                        accessor : AccessorLinearOrTime Data
+                        accessor : AccessorContinuousOrTime Data
                         accessor =
                             AccessorTime (AccessorTimeStruct (.groupLabel >> Just) .x .y)
 
-                        expected : DataLinearGroup
+                        expected : DataContinuousGroup
                         expected =
                             DataTime
                                 [ { groupLabel = Just "A"
@@ -368,9 +368,9 @@ suite =
                                   }
                                 ]
 
-                        result : DataLinearGroup
+                        result : DataContinuousGroup
                         result =
-                            externalToDataLinearGroup data accessor
+                            externalToDataContinuousGroup data accessor
                     in
                     Expect.equal result expected
             ]

@@ -169,7 +169,10 @@ verticalGroupedWithIcons =
         , width = width
         , height = height
         }
+<<<<<<< HEAD
         |> Bar.withTable ( "xLabel", "yLabel" )
+=======
+>>>>>>> master
         |> Bar.withBarStyle [ ( "fill", "#fff" ), ( "stroke-width", "2" ) ]
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withColumnTitle (Bar.yColumnTitle valueFormatter)

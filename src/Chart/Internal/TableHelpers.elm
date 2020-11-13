@@ -1,9 +1,9 @@
 module Chart.Internal.TableHelpers exposing
     ( dataBandToTableData
     , dataBandToTableHeadings
-    , dataLinearGroupToRowHeadings
-    , dataLinearGroupToTableData
-    , dataLinearGroupToTableHeadings
+    , dataContinuousGroupToRowHeadings
+    , dataContinuousGroupToTableData
+    , dataContinuousGroupToTableHeadings
     )
 
 import Chart.Internal.Helpers as Helpers
@@ -23,8 +23,8 @@ dataThreshold data =
         |> floor
 
 
-downsampleDataLinear : List ( Float, Float ) -> List ( Float, Float )
-downsampleDataLinear data =
+downsampleDataContinuous : List ( Float, Float ) -> List ( Float, Float )
+downsampleDataContinuous data =
     LTTB.downsample
         { data = data
         , threshold = dataThreshold data
@@ -57,8 +57,8 @@ dataBandToTableData data =
             )
 
 
-dataLinearGroupToTableData : Type.DataLinearGroup -> List (List String)
-dataLinearGroupToTableData data =
+dataContinuousGroupToTableData : Type.DataContinuousGroup -> List (List String)
+dataContinuousGroupToTableData data =
     case data of
         Type.DataTime data_ ->
             data_
@@ -77,10 +77,10 @@ dataLinearGroupToTableData data =
                             |> List.concat
                     )
 
-        Type.DataLinear data_ ->
+        Type.DataContinuous data_ ->
             data_
                 |> List.map .points
-                |> List.map downsampleDataLinear
+                |> List.map downsampleDataContinuous
                 |> List.Extra.transpose
                 |> List.map
                     (\points ->
@@ -115,8 +115,8 @@ dataBandToTableHeadings data content =
            )
 
 
-dataLinearGroupToTableHeadings : Type.DataLinearGroup -> Type.AccessibilityContent -> Table.Headings
-dataLinearGroupToTableHeadings data content =
+dataContinuousGroupToTableHeadings : Type.DataContinuousGroup -> Type.AccessibilityContent -> Table.Headings
+dataContinuousGroupToTableHeadings data content =
     let
         toHeading d =
             Table.HeadingAndSubHeadings (Maybe.withDefault "" d.groupLabel)
@@ -136,7 +136,7 @@ dataLinearGroupToTableHeadings data content =
         Type.DataTime data_ ->
             toHeadings data_
 
-        Type.DataLinear data_ ->
+        Type.DataContinuous data_ ->
             toHeadings data_
 
 
@@ -160,8 +160,8 @@ getRowLabelsFromContent content =
             [ "x" ]
 
 
-dataLinearGroupToRowHeadings : Type.DataLinearGroup -> Type.AccessibilityContent -> Table.Headings
-dataLinearGroupToRowHeadings data content =
+dataContinuousGroupToRowHeadings : Type.DataContinuousGroup -> Type.AccessibilityContent -> Table.Headings
+dataContinuousGroupToRowHeadings data content =
     --TODO: this is controvertial and needs more thoughts
     let
         toHeadings dd =
@@ -172,7 +172,7 @@ dataLinearGroupToRowHeadings data content =
             else
                 dd
                     |> List.map .points
-                    |> List.map downsampleDataLinear
+                    |> List.map downsampleDataContinuous
                     |> List.head
                     |> Maybe.withDefault []
                     |> List.map (Tuple.first >> String.fromFloat)
@@ -182,5 +182,6 @@ dataLinearGroupToRowHeadings data content =
         Type.DataTime data_ ->
             Table.Headings []
 
-        Type.DataLinear data_ ->
-            toHeadings data_
+        Type.DataContinuous data_ ->
+            data_
+                |> toHeadings

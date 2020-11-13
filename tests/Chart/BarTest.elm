@@ -22,7 +22,7 @@ suite =
     Test.describe "The public Bar module"
         [ withBandGroupDomainTest
         , withBandSingleDomainTest
-        , withLinearDomainTest
+        , withContinuousDomainTest
         ]
 
 
@@ -74,24 +74,24 @@ withBandSingleDomainTest =
         ]
 
 
-withLinearDomainTest : Test
-withLinearDomainTest =
-    describe "withLinearDomain"
-        [ test "it should set the linear value in the domain" <|
+withContinuousDomainTest : Test
+withContinuousDomainTest =
+    describe "withContinuousDomain"
+        [ test "it should set the continuous value in the domain" <|
             \_ ->
                 let
-                    linearDomain =
+                    continuousDomain =
                         ( 0, 30 )
 
                     config : Type.Config
                     config =
                         Bar.init requiredConfig
-                            |> Bar.withYDomain linearDomain
+                            |> Bar.withYDomain continuousDomain
 
-                    newLinearDomain =
+                    newContinuousDomain =
                         config
                             |> Type.getDomainBand
-                            |> .linear
+                            |> .continuous
                 in
-                Expect.equal (Just linearDomain) newLinearDomain
+                Expect.equal (Just continuousDomain) newContinuousDomain
         ]
