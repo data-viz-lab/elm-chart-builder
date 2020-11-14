@@ -3,6 +3,7 @@ module Data exposing
     , FertilityStats
     , SmokeStats
     , coronaStats
+    , coronaStatsSubset
     , fertilityStats
     , smokeStats
     )
@@ -567,14 +568,22 @@ type alias CoronaData =
     ( String, String, Float )
 
 
+coronaStatsSubset : List CoronaData
+coronaStatsSubset =
+    [ ( "2020-01-25", "World", 15 )
+    , ( "2020-01-26", "World", 15 )
+    , ( "2020-01-27", "World", 25 )
+    , ( "2020-01-28", "World", 25 )
+    , ( "2020-01-25", "United Kingdom", 19 )
+    , ( "2020-01-26", "United Kingdom", 14 )
+    , ( "2020-01-27", "United Kingdom", 22 )
+    , ( "2020-01-28", "United Kingdom", 17 )
+    ]
+
+
 coronaStats : List CoronaData
 coronaStats =
-    [ ( "2019-12-31", "World", 0 )
-    , ( "2020-01-01", "World", 0 )
-    , ( "2020-01-02", "World", 0 )
-    , ( "2020-01-03", "World", 0 )
-    , ( "2020-01-04", "World", 0 )
-    , ( "2020-01-05", "World", 0 )
+    [ ( "2020-01-05", "World", 0 )
     , ( "2020-01-06", "World", 0 )
     , ( "2020-01-07", "World", 0 )
     , ( "2020-01-08", "World", 0 )
@@ -868,10 +877,6 @@ coronaStats =
     , ( "2020-10-22", "World", 6740 )
     , ( "2020-10-23", "World", 6349 )
     , ( "2020-10-24", "World", 6250 )
-    , ( "2019-12-31", "United Kingdom", 0 )
-    , ( "2020-01-01", "United Kingdom", 0 )
-    , ( "2020-01-03", "United Kingdom", 0 )
-    , ( "2020-01-04", "United Kingdom", 0 )
     , ( "2020-01-05", "United Kingdom", 0 )
     , ( "2020-01-06", "United Kingdom", 0 )
     , ( "2020-01-07", "United Kingdom", 0 )

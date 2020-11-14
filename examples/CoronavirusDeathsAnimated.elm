@@ -31,6 +31,7 @@ import List.Extra
 import Numeral
 import Process
 import Scale.Color
+import Set exposing (Set)
 import Task
 import Time exposing (Posix)
 import Transition exposing (Transition)
@@ -68,18 +69,32 @@ figure {
 """
 
 
+removeZeros : Float -> Float
+removeZeros val =
+    -- Needed for the log scale
+    if val == 0 then
+        1
+
+    else
+        val
+
+
 type alias DatumTime =
-    -- (date, country, newDeaths)
-    ( Posix, String, Float )
-
-
-type alias Datum =
-    -- (dateString, country, newDeaths)
-    ( Float, String, Float )
+    { country : String
+    , date : Posix
+    , dead : Float
+    }
 
 
 type alias DataTime =
     List DatumTime
+
+
+type alias Datum =
+    { country : String
+    , date : Float
+    , dead : Float
+    }
 
 
 type alias Data =
@@ -87,13 +102,16 @@ type alias Data =
 
 
 type alias Frame =
-    -- List of (dateAsFloat, newDeaths)
+    -- List (x, y)
     List ( Float, Float )
 
 
 type alias Model =
-    { transitions : List ( String, Transition Frame )
-    , currentTimeInFloat : Float
+    { transition : Transition Data
+    , currentTimestamp : Float
+    , currentIdx : Int
+
+    --data up to prev transition
     , data : Data
     }
 
@@ -108,27 +126,27 @@ stats =
     coronaStats
         |> List.map
             (\( timeStr, country, dead ) ->
-                ( Iso8601.toTime timeStr
-                    |> Result.withDefault (Time.millisToPosix 0)
-                    |> Time.posixToMillis
-                    |> toFloat
-                , country
-                , dead
-                )
+                { date =
+                    Iso8601.toTime timeStr
+                        |> Result.withDefault (Time.millisToPosix 0)
+                        |> Time.posixToMillis
+                        |> toFloat
+                , dead = dead
+                , country = country
+                }
             )
 
 
-pointsInTime : Array Float
-pointsInTime =
-    Array.fromList
-        (stats
-            |> List.map (\( t, _, _ ) -> t)
-        )
+timestamps : Array Float
+timestamps =
+    stats
+        |> Array.fromList
+        |> Array.map .date
 
 
 lastIdx : Int
 lastIdx =
-    Array.length pointsInTime
+    Array.length timestamps
         - 1
 
 
@@ -136,61 +154,43 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick tick ->
-            ( { model | transitions = tickTransitions model tick }
+            ( { model
+                | transition = Transition.step tick model.transition
+              }
             , Cmd.none
             )
 
         StartAnimation ->
             let
-                prevIdx : Int
-                prevIdx =
-                    stats
-                        |> List.Extra.findIndex (\( t, _, _ ) -> t == model.currentTimeInFloat)
+                nextIdx =
+                    model.currentIdx + 1
+
+                nextTimestamp =
+                    timestamps
+                        |> Array.get nextIdx
                         |> Maybe.withDefault 0
 
-                currentTimeInFloat =
-                    stats
-                        |> List.Extra.getAt (prevIdx + 1)
-                        |> Maybe.map (\( t, _, _ ) -> floor t)
-                        |> Maybe.withDefault 0
-
-                data =
-                    getDataByCurrentTime (prevIdx + 1)
-
-                currentTimeData country =
-                    getDataByCurrentTime (prevIdx + 1)
-                        |> dataForTransitions
-                        |> List.filter (\( c, _ ) -> c == country)
-                        |> List.reverse
-                        |> List.head
-                        |> Maybe.map List.singleton
-                        |> Maybe.withDefault []
-
-                transitions =
+                from =
                     model.data
-                        |> dataForTransitions
-                        |> List.map
-                            (\( country, frame ) ->
-                                let
-                                    from =
-                                        frame
 
-                                    to =
-                                        currentTimeData country
-                                in
-                                Transition.for transitionSpeed (interpolateValues from to)
-                            )
+                to =
+                    stats
+                        |> List.filter (\s -> s.date == nextTimestamp)
+
+                transition =
+                    Transition.for transitionSpeed (interpolateValues from to)
             in
             ( { model
-                | transition = transitions
-                , currentTimeInFloat = currentTimeInFloat |> toFloat
-                , data = data
+                | transition = transition
+                , currentTimestamp = nextTimestamp
+                , currentIdx = nextIdx
+                , data = from ++ to
               }
-            , if model.currentTimeInFloat == 0 then
+            , if model.currentIdx == 0 then
                 Task.succeed StartAnimation
                     |> Task.perform identity
 
-              else if prevIdx + 1 <= lastIdx then
+              else if nextIdx <= lastIdx then
                 Process.sleep transitionStep
                     |> Task.andThen (\_ -> Task.succeed StartAnimation)
                     |> Task.perform identity
@@ -202,16 +202,35 @@ update msg model =
 
 interpolateValues : Data -> Data -> Interpolator Data
 interpolateValues from to =
-    List.map2 interpolateValue from to
+    coupleFromTo from to
+        |> Dict.map
+            (\country ( from_, to_ ) ->
+                List.map2 interpolateValue from_ to_
+                    |> Interpolation.inParallel
+                    |> Interpolation.map
+                        (\frame ->
+                            frame
+                                |> List.map
+                                    (\( date, dead ) ->
+                                        { date = date
+                                        , dead = dead
+                                        , country = country
+                                        }
+                                    )
+                        )
+            )
+        |> Dict.toList
+        |> List.map Tuple.second
         |> Interpolation.inParallel
+        |> Interpolation.map (\l -> List.concat l)
 
 
-interpolateValue : Datum -> Datum -> Interpolator Datum
+interpolateValue : ( Float, Float ) -> ( Float, Float ) -> Interpolator ( Float, Float )
 interpolateValue from to =
     interpolatePosition from to
 
 
-interpolatePosition : Datum -> Datum -> Interpolator Datum
+interpolatePosition : ( Float, Float ) -> ( Float, Float ) -> Interpolator ( Float, Float )
 interpolatePosition =
     Interpolation.tuple Interpolation.float Interpolation.float
 
@@ -223,11 +242,7 @@ interpolatePosition =
 accessor : Line.Accessor DatumTime
 accessor =
     Line.time
-        --    (Line.AccessorTime (always Nothing) Tuple.first (Tuple.second >> removeZeros))
-        { xGroup = \( _, d, _ ) -> Just d
-        , xValue = \( d, _, _ ) -> d
-        , yValue = \( _, _, d ) -> removeZeros d
-        }
+        (Line.AccessorTime (.country >> Just) .date (.dead >> removeZeros))
 
 
 valueFormatter : Float -> String
@@ -268,21 +283,41 @@ xAxis =
         ]
 
 
-chart : Data -> Html msg
-chart data =
+chart : Model -> Html msg
+chart model =
+    let
+        lastFrame =
+            model.currentIdx > lastIdx
+
+        baseLine =
+            Line.init
+                { margin = { top = 20, right = 175, bottom = 25, left = 80 }
+                , width = width
+                , height = height
+                }
+                |> Line.withColorPalette Scale.Color.tableau10
+                |> Line.withLineStyle [ ( "stroke-width", "1.5" ) ]
+                |> Line.withLogYScale 10
+                |> Line.withXAxisTime xAxis
+                |> Line.withYAxis yAxis
+                |> Line.withXTimeDomain xTimeDomain
+                |> Line.withLabels Line.xGroupLabel
+                |> Line.withYDomain ( 0, 12000 )
+    in
     Line.init
-        { margin = { top = 20, right = 10, bottom = 25, left = 80 }
+        { margin = { top = 20, right = 175, bottom = 25, left = 80 }
         , width = width
         , height = height
         }
-        |> Line.withColorPalette [ Color.rgb255 209 33 2 ]
+        |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withLineStyle [ ( "stroke-width", "1.5" ) ]
         |> Line.withLogYScale 10
         |> Line.withXAxisTime xAxis
         |> Line.withYAxis yAxis
         |> Line.withXTimeDomain xTimeDomain
+        |> Line.withLabels Line.xGroupLabel
         |> Line.withYDomain ( 0, 12000 )
-        |> Line.render ( data |> toTimeData, accessor )
+        |> Line.render ( model.data |> toTimeData, accessor )
 
 
 attrs : List (Html.Attribute msg)
@@ -321,7 +356,7 @@ view model =
             , style "color" "#444"
             , style "margin" "25px"
             ]
-            [ Html.div attrs [ chart model.data ]
+            [ Html.div attrs [ chart model ]
             ]
         , footer
         ]
@@ -334,8 +369,8 @@ view model =
 init : () -> ( Model, Cmd Msg )
 init () =
     let
-        currentTimeInFloat : Float
-        currentTimeInFloat =
+        currentTimestamp : Float
+        currentTimestamp =
             Tuple.first xTimeDomain |> Time.posixToMillis |> toFloat
 
         initialData : Data
@@ -343,7 +378,8 @@ init () =
             []
     in
     ( { transition = Transition.constant <| initialData
-      , currentTimeInFloat = currentTimeInFloat
+      , currentTimestamp = 0
+      , currentIdx = 0
       , data = initialData
       }
     , Task.perform identity (Task.succeed StartAnimation)
@@ -372,29 +408,23 @@ main =
 -- HELPERS
 
 
-getDataByCurrentTime : Int -> Data
-getDataByCurrentTime upTo =
-    stats
-        |> List.take upTo
-
-
 toTimeData : Data -> DataTime
 toTimeData data =
     data
-        |> List.map (\( t, c, v ) -> ( t |> floor |> Time.millisToPosix, c, v ))
+        |> List.map
+            (\{ date, country, dead } ->
+                { date =
+                    date |> floor |> Time.millisToPosix
+                , dead = dead
+                , country = country
+                }
+            )
 
 
 toXDomain : DataTime -> ( Posix, Posix )
 toXDomain data =
-    ( data
-        |> List.head
-        |> Maybe.map (\( t, _, _ ) -> t)
-        |> Maybe.withDefault (Time.millisToPosix 0)
-    , data
-        |> List.reverse
-        |> List.head
-        |> Maybe.map (\( t, _, _ ) -> t)
-        |> Maybe.withDefault (Time.millisToPosix 0)
+    ( data |> List.head |> Maybe.map .date |> Maybe.withDefault (Time.millisToPosix 0)
+    , data |> List.reverse |> List.head |> Maybe.map .date |> Maybe.withDefault (Time.millisToPosix 0)
     )
 
 
@@ -405,34 +435,11 @@ xTimeDomain =
         |> toXDomain
 
 
-
--- HELPERS
-
-
-removeZeros : Float -> Float
-removeZeros val =
-    -- Needed for the log scale
-    if val == 0 then
-        1
-
-    else
-        val
-
-
-tickTransitions : Model -> Int -> List ( String, Transition Frame )
-tickTransitions model tick =
-    model.transitions
-        |> List.map
-            (\( country, transition ) ->
-                ( country, Transition.step tick transition )
-            )
-
-
-dataForTransitions : Data -> List ( String, Frame )
-dataForTransitions data =
+dataToFrames : Data -> Dict String Frame
+dataToFrames data =
     data
         |> List.foldr
-            (\( time, country, value ) acc ->
+            (\{ date, country, dead } acc ->
                 let
                     member =
                         Dict.member country acc
@@ -440,12 +447,28 @@ dataForTransitions data =
                 if member then
                     Dict.update country
                         (\v ->
-                            v |> Maybe.map (\v_ -> ( time, value ) :: v_)
+                            v |> Maybe.map (\v_ -> ( date, dead ) :: v_)
                         )
                         acc
 
                 else
-                    Dict.insert country [ ( time, value ) ] acc
+                    Dict.insert country [ ( date, dead ) ] acc
             )
             Dict.empty
-        |> Dict.toList
+
+
+coupleFromTo : Data -> Data -> Dict String ( Frame, Frame )
+coupleFromTo from to =
+    let
+        fromDict =
+            dataToFrames from
+
+        toDict =
+            dataToFrames to
+    in
+    Dict.foldl
+        (\country frame acc ->
+            Dict.insert country ( frame, Dict.get country toDict |> Maybe.withDefault [] ) acc
+        )
+        Dict.empty
+        fromDict
