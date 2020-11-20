@@ -42,22 +42,12 @@ figure {
 """
 
 
-removeZeros : Float -> Float
-removeZeros val =
-    -- Needed for the log scale
-    if val == 0 then
-        1
-
-    else
-        val
-
-
 accessor : Line.Accessor CoronaData
 accessor =
     Line.time
         { xGroup = always Nothing
         , xValue = \( date, _, _ ) -> Iso8601.toTime date |> Result.withDefault (Time.millisToPosix 0)
-        , yValue = \( _, _, deaths ) -> removeZeros deaths
+        , yValue = \( _, _, deaths ) -> deaths
         }
 
 
@@ -79,7 +69,7 @@ height =
 yAxis : Bar.YAxis Float
 yAxis =
     Line.axisLeft
-        [ Axis.ticks [ 10, 100, 1000, 10000 ]
+        [ Axis.tickCount 5
         , Axis.tickFormat valueFormatter
         ]
 
@@ -100,7 +90,6 @@ chart =
         }
         |> Line.withColorPalette [ Color.rgb255 209 33 2 ]
         |> Line.withLineStyle [ ( "stroke-width", "1.5" ) ]
-        |> Line.withLogYScale 10
         |> Line.withXAxisTime xAxis
         |> Line.withYAxis yAxis
         |> Line.render ( coronaStats, accessor )
@@ -133,9 +122,10 @@ main =
         [ Html.node "style" [] [ Html.text css ]
         , Html.h2
             [ style "margin" "25px"
+            , style "font-size" "20px"
             ]
             [ Html.text
-                "Coronavirus, daily number of confirmed deaths (log scale)"
+                "Coronavirus, daily number of confirmed deaths"
             ]
         , Html.div
             [ style "background-color" "#fff"

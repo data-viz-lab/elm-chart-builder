@@ -19,17 +19,21 @@ import Chart.Bar as Bar
 import Chart.Line as Line
 import Chart.Symbol as Symbol exposing (Symbol)
 import Color
-import Data exposing (CoronaData, coronaStats)
+import Csv exposing (Csv)
+import Dict exposing (Dict)
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
 import Html.Attributes exposing (class, style)
+import Http
 import Interpolation exposing (Interpolator)
 import Iso8601
 import List.Extra
 import Numeral
 import Process
+import RemoteData exposing (RemoteData, WebData)
 import Scale.Color
+import Set exposing (Set)
 import Task
 import Time exposing (Posix)
 import Transition exposing (Transition)
@@ -70,7 +74,7 @@ figure {
 removeZeros : Float -> Float
 removeZeros val =
     -- Needed for the log scale
-    if val == 0 then
+    if val < 1 then
         1
 
     else
@@ -78,7 +82,10 @@ removeZeros val =
 
 
 type alias DatumTime =
-    ( Posix, Float )
+    { country : String
+    , date : Posix
+    , value : Float
+    }
 
 
 type alias DataTime =
@@ -86,7 +93,10 @@ type alias DataTime =
 
 
 type alias Datum =
-    ( Float, Float )
+    { country : String
+    , date : Float
+    , value : Float
+    }
 
 
 type alias Data =
@@ -94,52 +104,67 @@ type alias Data =
 
 
 type alias Frame =
-    Data
+    -- List (x, y)
+    List ( Float, Float )
 
 
 type alias Model =
-    { transition : Transition Frame
-    , currentTimeInFloat : Float
+    { transition : Transition Data
+    , currentTimestamp : Float
+    , timestamps : Array Float
+    , lastIdx : Int
+    , currentIdx : Int
+    , xTimeDomain : ( Posix, Posix )
+    , yDomain : ( Float, Float )
+
+    --data up to prev transition
     , data : Data
+    , allData : Data
+    , serverData : WebData String
     }
 
 
 type Msg
     = Tick Int
     | StartAnimation
+    | DataResponse (WebData String)
 
 
-stats : Data
-stats =
-    coronaStats
-        |> List.map
-            (\( timeStr, _, dead ) ->
-                ( Iso8601.toTime timeStr
-                    |> Result.withDefault (Time.millisToPosix 0)
-                    |> Time.posixToMillis
-                    |> toFloat
-                , dead
-                )
-            )
+timestamps : Data -> Array Float
+timestamps data =
+    data
+        |> Array.fromList
+        |> Array.map .date
 
 
-pointsInTime : Array Float
-pointsInTime =
-    Array.fromList
-        (stats
-            |> List.map Tuple.first
-        )
-
-
-lastIdx : Int
-lastIdx =
-    Array.length pointsInTime
-        - 1
+lastIdx : Array Float -> Int
+lastIdx timestamps_ =
+    timestamps_
+        |> (\t -> Array.length t - 1)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        DataResponse response ->
+            let
+                data =
+                    calculateData response
+
+                timestamps_ =
+                    timestamps data
+            in
+            ( { model
+                | allData = data
+                , timestamps = timestamps_
+                , lastIdx = lastIdx timestamps_
+                , serverData = response
+                , xTimeDomain = data |> toTimeData |> toXDomain
+                , yDomain = data |> toYDomain
+              }
+            , Task.perform identity (Task.succeed StartAnimation)
+            )
+
         Tick tick ->
             ( { model
                 | transition = Transition.step tick model.transition
@@ -148,66 +173,81 @@ update msg model =
             )
 
         StartAnimation ->
-            let
-                prevIdx : Int
-                prevIdx =
-                    stats
-                        |> List.Extra.findIndex (\( t, _ ) -> t == model.currentTimeInFloat)
-                        |> Maybe.withDefault 0
+            case model.serverData of
+                RemoteData.Success _ ->
+                    let
+                        nextIdx =
+                            model.currentIdx + 1
 
-                currentTimeInFloat =
-                    stats
-                        |> List.Extra.getAt (prevIdx + 1)
-                        |> Maybe.map (Tuple.first >> floor)
-                        |> Maybe.withDefault 0
+                        nextTimestamp =
+                            model.timestamps
+                                |> Array.get nextIdx
+                                |> Maybe.withDefault 0
 
-                data =
-                    getDataByCurrentTime (prevIdx + 1)
+                        from =
+                            model.data
 
-                from =
-                    model.data
+                        to =
+                            model.allData
+                                |> List.filter (\s -> s.date == nextTimestamp)
 
-                to =
-                    data
-                        |> List.reverse
-                        |> List.head
-                        |> Maybe.map List.singleton
-                        |> Maybe.withDefault []
+                        transition =
+                            Transition.for transitionSpeed (interpolateValues from to)
+                    in
+                    ( { model
+                        | transition = transition
+                        , currentTimestamp = nextTimestamp
+                        , currentIdx = nextIdx
+                        , data = from ++ to
+                      }
+                    , if model.currentIdx == 0 then
+                        Task.succeed StartAnimation
+                            |> Task.perform identity
 
-                transition =
-                    Transition.for transitionSpeed (interpolateValues from to)
-            in
-            ( { model
-                | transition = transition
-                , currentTimeInFloat = currentTimeInFloat |> toFloat
-                , data = data
-              }
-            , if model.currentTimeInFloat == 0 then
-                Task.succeed StartAnimation
-                    |> Task.perform identity
+                      else if nextIdx <= model.lastIdx then
+                        Process.sleep transitionStep
+                            |> Task.andThen (\_ -> Task.succeed StartAnimation)
+                            |> Task.perform identity
 
-              else if prevIdx + 1 <= lastIdx then
-                Process.sleep transitionStep
-                    |> Task.andThen (\_ -> Task.succeed StartAnimation)
-                    |> Task.perform identity
+                      else
+                        Cmd.none
+                    )
 
-              else
-                Cmd.none
-            )
+                _ ->
+                    ( model, Cmd.none )
 
 
 interpolateValues : Data -> Data -> Interpolator Data
 interpolateValues from to =
-    List.map2 interpolateValue from to
+    coupleFromTo from to
+        |> Dict.map
+            (\country ( from_, to_ ) ->
+                List.map2 interpolateValue from_ to_
+                    |> Interpolation.inParallel
+                    |> Interpolation.map
+                        (\frame ->
+                            frame
+                                |> List.map
+                                    (\( date, value ) ->
+                                        { date = date
+                                        , value = value
+                                        , country = country
+                                        }
+                                    )
+                        )
+            )
+        |> Dict.toList
+        |> List.map Tuple.second
         |> Interpolation.inParallel
+        |> Interpolation.map (\l -> List.concat l)
 
 
-interpolateValue : Datum -> Datum -> Interpolator Datum
+interpolateValue : ( Float, Float ) -> ( Float, Float ) -> Interpolator ( Float, Float )
 interpolateValue from to =
     interpolatePosition from to
 
 
-interpolatePosition : Datum -> Datum -> Interpolator Datum
+interpolatePosition : ( Float, Float ) -> ( Float, Float ) -> Interpolator ( Float, Float )
 interpolatePosition =
     Interpolation.tuple Interpolation.float Interpolation.float
 
@@ -219,7 +259,7 @@ interpolatePosition =
 accessor : Line.Accessor DatumTime
 accessor =
     Line.time
-        (Line.AccessorTime (always Nothing) Tuple.first (Tuple.second >> removeZeros))
+        (Line.AccessorTime (.country >> Just) .date (.value >> removeZeros))
 
 
 valueFormatter : Float -> String
@@ -238,11 +278,11 @@ height =
 
 
 transitionSpeed =
-    80
+    50
 
 
 transitionStep =
-    85
+    50
 
 
 yAxis : Bar.YAxis Float
@@ -260,21 +300,27 @@ xAxis =
         ]
 
 
-chart : Data -> Html msg
-chart data =
-    Line.init
-        { margin = { top = 20, right = 10, bottom = 25, left = 80 }
-        , width = width
-        , height = height
-        }
-        |> Line.withColorPalette [ Color.rgb255 209 33 2 ]
-        |> Line.withLineStyle [ ( "stroke-width", "1.5" ) ]
-        |> Line.withLogYScale 10
-        |> Line.withXAxisTime xAxis
-        |> Line.withYAxis yAxis
-        |> Line.withXTimeDomain xTimeDomain
-        |> Line.withYDomain ( 0, 12000 )
-        |> Line.render ( data |> toTimeData, accessor )
+chart : Model -> Html msg
+chart model =
+    case model.serverData of
+        RemoteData.Success _ ->
+            Line.init
+                { margin = { top = 20, right = 175, bottom = 25, left = 80 }
+                , width = width
+                , height = height
+                }
+                |> Line.withColorPalette Scale.Color.tableau10
+                |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
+                |> Line.withLogYScale 10
+                |> Line.withXAxisTime xAxis
+                |> Line.withYAxis yAxis
+                |> Line.withXTimeDomain model.xTimeDomain
+                |> Line.withLabels Line.xGroupLabel
+                |> Line.withYDomain model.yDomain
+                |> Line.render ( model.data |> toTimeData, accessor )
+
+        _ ->
+            Html.text "Loading data..."
 
 
 attrs : List (Html.Attribute msg)
@@ -304,16 +350,17 @@ view model =
         [ Html.node "style" [] [ Html.text css ]
         , Html.h2
             [ style "margin" "25px"
+            , style "font-size" "20px"
             ]
             [ Html.text
-                "Coronavirus, world daily number of confirmed deaths"
+                "Coronavirus, daily number of confirmed deaths, log scale"
             ]
         , Html.div
             [ style "background-color" "#fff"
             , style "color" "#444"
             , style "margin" "25px"
             ]
-            [ Html.div attrs [ chart model.data ]
+            [ Html.div attrs [ chart model ]
             ]
         , footer
         ]
@@ -326,19 +373,22 @@ view model =
 init : () -> ( Model, Cmd Msg )
 init () =
     let
-        currentTimeInFloat : Float
-        currentTimeInFloat =
-            Tuple.first xTimeDomain |> Time.posixToMillis |> toFloat
-
         initialData : Data
         initialData =
             []
     in
     ( { transition = Transition.constant <| initialData
-      , currentTimeInFloat = currentTimeInFloat
+      , currentTimestamp = 0
+      , timestamps = Array.empty
+      , lastIdx = 0
+      , currentIdx = 0
+      , xTimeDomain = ( Time.millisToPosix 0, Time.millisToPosix 0 )
+      , yDomain = ( 0, 0 )
       , data = initialData
+      , allData = initialData
+      , serverData = RemoteData.Loading
       }
-    , Task.perform identity (Task.succeed StartAnimation)
+    , fetchData
     )
 
 
@@ -364,27 +414,150 @@ main =
 -- HELPERS
 
 
-getDataByCurrentTime : Int -> Data
-getDataByCurrentTime upTo =
-    stats
-        |> List.take upTo
-
-
 toTimeData : Data -> DataTime
 toTimeData data =
     data
-        |> List.map (\( t, v ) -> ( t |> floor |> Time.millisToPosix, v ))
+        |> List.map
+            (\{ date, country, value } ->
+                { date =
+                    date |> floor |> Time.millisToPosix
+                , value = value
+                , country = country
+                }
+            )
+
+
+toYDomain : Data -> ( Float, Float )
+toYDomain data =
+    ( 0
+    , data |> List.map .value |> List.maximum |> Maybe.withDefault 0
+    )
 
 
 toXDomain : DataTime -> ( Posix, Posix )
 toXDomain data =
-    ( data |> List.head |> Maybe.map Tuple.first |> Maybe.withDefault (Time.millisToPosix 0)
-    , data |> List.reverse |> List.head |> Maybe.map Tuple.first |> Maybe.withDefault (Time.millisToPosix 0)
+    ( data |> List.head |> Maybe.map .date |> Maybe.withDefault (Time.millisToPosix 0)
+    , data |> List.reverse |> List.head |> Maybe.map .date |> Maybe.withDefault (Time.millisToPosix 0)
     )
 
 
-xTimeDomain : ( Posix, Posix )
-xTimeDomain =
-    stats
-        |> toTimeData
-        |> toXDomain
+dataToFrames : Data -> Dict String Frame
+dataToFrames data =
+    data
+        |> List.foldr
+            (\{ date, country, value } acc ->
+                let
+                    member =
+                        Dict.member country acc
+                in
+                if member then
+                    Dict.update country
+                        (\v ->
+                            v |> Maybe.map (\v_ -> ( date, value ) :: v_)
+                        )
+                        acc
+
+                else
+                    Dict.insert country [ ( date, value ) ] acc
+            )
+            Dict.empty
+
+
+coupleFromTo : Data -> Data -> Dict String ( Frame, Frame )
+coupleFromTo from to =
+    let
+        fromDict =
+            dataToFrames from
+
+        toDict =
+            dataToFrames to
+    in
+    Dict.foldl
+        (\country frame acc ->
+            Dict.insert country ( frame, Dict.get country toDict |> Maybe.withDefault [] ) acc
+        )
+        Dict.empty
+        fromDict
+
+
+fetchData : Cmd Msg
+fetchData =
+    Http.get
+        { url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv"
+        , expect = Http.expectString (RemoteData.fromResult >> DataResponse)
+        }
+
+
+type alias CoronaData =
+    -- (date, country, newDeaths)
+    ( String, String, Float )
+
+
+stats : List CoronaData -> Data
+stats coronaStats =
+    coronaStats
+        |> List.map
+            (\( timeStr, country, value ) ->
+                { date =
+                    Iso8601.toTime timeStr
+                        |> Result.withDefault (Time.millisToPosix 0)
+                        |> Time.posixToMillis
+                        |> toFloat
+                , value = value
+                , country = country
+                }
+            )
+
+
+locations : List String
+locations =
+    --[ "World", "United Kingdom" ]
+    [ "United States", "United Kingdom" ]
+
+
+
+--[ "India", "United Kingdom" ]
+
+
+deathsIdx : Int
+deathsIdx =
+    9
+
+
+casesIdx : Int
+casesIdx =
+    5
+
+
+calculateData : WebData String -> Data
+calculateData rd =
+    rd
+        |> RemoteData.map
+            (\str ->
+                let
+                    csv =
+                        Csv.parse str
+                in
+                csv.records
+                    |> Array.fromList
+                    |> Array.map Array.fromList
+                    |> Array.filter
+                        (\r ->
+                            r
+                                |> Array.get 2
+                                |> Maybe.map (\location -> List.member location locations)
+                                |> Maybe.withDefault False
+                        )
+                    |> Array.map
+                        (\r ->
+                            ( Array.get 3 r |> Maybe.withDefault ""
+                            , Array.get 2 r |> Maybe.withDefault ""
+                            , Array.get deathsIdx r
+                                |> Maybe.andThen String.toFloat
+                                |> Maybe.withDefault 0
+                            )
+                        )
+                    |> Array.toList
+                    |> stats
+            )
+        |> RemoteData.withDefault []
