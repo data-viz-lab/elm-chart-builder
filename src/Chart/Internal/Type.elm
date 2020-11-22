@@ -15,6 +15,7 @@ module Chart.Internal.Type exposing
     , DataContinuousGroup(..)
     , DataGroupBand
     , DataGroupContinuous
+    , DataGroupContinuousWithStack
     , DataGroupTime
     , Direction(..)
     , DomainBand
@@ -26,6 +27,7 @@ module Chart.Internal.Type exposing
     , ExternalData
     , Label(..)
     , Layout(..)
+    , LineDraw(..)
     , Margin
     , Orientation(..)
     , PointBand
@@ -78,6 +80,8 @@ module Chart.Internal.Type exposing
     , getOffset
     , getStackedValuesAndGroupes
     , leftGap
+    , lineDrawArea
+    , lineDrawLine
     , noGroups
     , role
     , setAccessibilityContent
@@ -239,6 +243,12 @@ type alias DataGroupContinuous =
     }
 
 
+type alias DataGroupContinuousWithStack =
+    { groupLabel : Maybe String
+    , points : List ( ( Float, Float ), PointContinuous )
+    }
+
+
 type alias DataGroupTime =
     { groupLabel : Maybe String
     , points : List PointTime
@@ -254,9 +264,24 @@ type Orientation
     | Horizontal
 
 
+type LineDraw
+    = Line
+    | Area (List (List ( Float, Float )) -> List (List ( Float, Float )))
+
+
+lineDrawArea : (List (List ( Float, Float )) -> List (List ( Float, Float ))) -> LineDraw
+lineDrawArea =
+    Area
+
+
+lineDrawLine : LineDraw
+lineDrawLine =
+    Line
+
+
 type Layout
     = StackedBar Direction
-    | StackedLine
+    | StackedLine LineDraw
     | GroupedBar
     | GroupedLine
 

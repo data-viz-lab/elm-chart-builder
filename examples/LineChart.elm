@@ -10,6 +10,7 @@ import Html exposing (Html)
 import Html.Attributes exposing (class, style)
 import Scale.Color
 import Set
+import Shape
 import Time exposing (Posix)
 
 
@@ -35,11 +36,13 @@ icons : String -> List Symbol
 icons prefix =
     [ Symbol.triangle
         |> Symbol.withIdentifier (prefix ++ "-triangle-symbol")
+        |> Symbol.withStyle [ ( "stroke", "white" ) ]
     , Symbol.circle
         |> Symbol.withIdentifier (prefix ++ "-circle-symbol")
-        |> Symbol.withStyle [ ( "fill", "none" ) ]
+        |> Symbol.withStyle [ ( "stroke", "white" ) ]
     , Symbol.corner
         |> Symbol.withIdentifier (prefix ++ "-corner-symbol")
+        |> Symbol.withStyle [ ( "stroke", "white" ) ]
     ]
 
 
@@ -94,7 +97,8 @@ sharedStackedLineConfig =
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withLabels Line.xGroupLabel
         |> Line.withColorPalette Scale.Color.tableau10
-        |> Line.withStackedLayout
+        |> Line.withStackedLayout Line.drawLine
+        |> Line.withStackedLayout (Line.drawArea Shape.stackOffsetSilhouette)
         |> Line.withSymbols (icons "chart-b")
 
 
@@ -249,9 +253,10 @@ main =
             , style "color" "#444"
             , style "margin" "25px"
             ]
-            [ Html.div attrs [ chartTitle "grouped", groupedLine ]
-            , Html.div attrs [ chartTitle "grouped time", groupedTimeLine ]
-            , Html.div attrs [ chartTitle "stacked", stackedLine ]
-            , Html.div attrs [ chartTitle "stacked time", stackedTimeLine ]
+            [ --Html.div attrs [ chartTitle "grouped", groupedLine ]
+              --, Html.div attrs [ chartTitle "grouped time", groupedTimeLine ]
+              Html.div attrs [ chartTitle "stacked", stackedLine ]
+
+            --, Html.div attrs [ chartTitle "stacked time", stackedTimeLine ]
             ]
         ]
