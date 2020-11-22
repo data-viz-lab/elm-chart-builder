@@ -10,6 +10,7 @@ import Html exposing (Html)
 import Html.Attributes exposing (class, style)
 import Scale.Color
 import Set
+import Shape
 import Time exposing (Posix)
 
 
@@ -35,11 +36,13 @@ icons : String -> List Symbol
 icons prefix =
     [ Symbol.triangle
         |> Symbol.withIdentifier (prefix ++ "-triangle-symbol")
+        |> Symbol.withStyle [ ( "stroke", "white" ) ]
     , Symbol.circle
         |> Symbol.withIdentifier (prefix ++ "-circle-symbol")
-        |> Symbol.withStyle [ ( "fill", "none" ) ]
+        |> Symbol.withStyle [ ( "stroke", "white" ) ]
     , Symbol.corner
         |> Symbol.withIdentifier (prefix ++ "-corner-symbol")
+        |> Symbol.withStyle [ ( "stroke", "white" ) ]
     ]
 
 
@@ -94,7 +97,7 @@ sharedStackedLineConfig =
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withLabels Line.xGroupLabel
         |> Line.withColorPalette Scale.Color.tableau10
-        |> Line.withStackedLayout
+        |> Line.withStackedLayout Line.drawLine
         |> Line.withSymbols (icons "chart-b")
 
 
@@ -214,6 +217,22 @@ stackedLine =
         |> Line.render ( dataContinuous, accessorContinuous )
 
 
+stackedTimeArea : Html msg
+stackedTimeArea =
+    sharedStackedLineConfig
+        |> Line.withXAxisTime xAxisTime
+        |> Line.withStackedLayout (Line.drawArea Shape.stackOffsetNone)
+        |> Line.render ( timeData, timeAccessor )
+
+
+stackedArea : Html msg
+stackedArea =
+    sharedStackedLineConfig
+        |> Line.withXAxisContinuous xAxis
+        |> Line.withStackedLayout (Line.drawArea Shape.stackOffsetNone)
+        |> Line.render ( dataContinuous, accessorContinuous )
+
+
 width : Float
 width =
     400
@@ -253,5 +272,7 @@ main =
             , Html.div attrs [ chartTitle "grouped time", groupedTimeLine ]
             , Html.div attrs [ chartTitle "stacked", stackedLine ]
             , Html.div attrs [ chartTitle "stacked time", stackedTimeLine ]
+            , Html.div attrs [ chartTitle "stacked area", stackedArea ]
+            , Html.div attrs [ chartTitle "stacked time area", stackedTimeArea ]
             ]
         ]

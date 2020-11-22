@@ -48,7 +48,7 @@ stackDataGroupLinearTest =
                           }
                         ]
                 in
-                Expect.equal (stackDataGroupLinear values dataGroupLinear) expected
+                Expect.equal (stackDataGroupContinuous values dataGroupLinear) expected
         ]
 
 
