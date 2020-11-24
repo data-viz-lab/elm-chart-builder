@@ -649,7 +649,7 @@ drawAreas config xScale yScale stackedResult combinedData =
         toArea : DataGroupContinuousWithStack -> Path
         toArea combinedWithStack =
             List.map mapper combinedWithStack.points
-                |> Shape.area Shape.monotoneInXCurve
+                |> Shape.area c.curve
 
         styles idx =
             Helpers.mergeStyles
@@ -669,23 +669,18 @@ drawAreas config xScale yScale stackedResult combinedData =
                 , styles idx
                 ]
 
-        paths =
+        combinedDataWithStack : List DataGroupContinuousWithStack
+        combinedDataWithStack =
             List.map2
                 (\v combined ->
                     { groupLabel = combined.groupLabel, points = List.Extra.zip v combined.points }
                 )
                 values
                 combinedData
-                |> List.indexedMap (renderStream ( xScale, yScale ))
 
-        label : Int -> Maybe String -> List PointContinuous -> Svg msg
-        label i s d =
-            -- TODO: the horizonthal label needs to be centred
-            d
-                |> List.reverse
-                |> List.head
-                |> Maybe.map (horizontalLabel config xScale yScale i s)
-                |> Maybe.withDefault (text_ [] [])
+        paths =
+            combinedDataWithStack
+                |> List.indexedMap (renderStream ( xScale, yScale ))
     in
     [ g
         [ transform [ Translate m.left m.top ]
@@ -697,10 +692,10 @@ drawAreas config xScale yScale stackedResult combinedData =
         , class [ "series" ]
         ]
       <|
-        (combinedData
+        (combinedDataWithStack
             |> List.indexedMap
-                (\idx { groupLabel, points } ->
-                    label idx groupLabel points
+                (\idx combinedItem ->
+                    areaLabel config xScale yScale idx combinedItem
                 )
         )
     , symbolGroup config xScale yScale combinedData
@@ -779,6 +774,57 @@ drawContinuousLine config xScale yScale sortedData =
 
 
 -- LABEL HELPERS
+
+
+areaLabel :
+    Config
+    -> ContinuousScale Float
+    -> ContinuousScale Float
+    -> Int
+    -> DataGroupContinuousWithStack
+    -> Svg msg
+areaLabel config xScale yScale idx item =
+    case item.groupLabel of
+        Just label ->
+            let
+                conf =
+                    fromConfig config
+
+                ( xVal, yVal ) =
+                    item.points
+                        |> List.reverse
+                        |> List.head
+                        |> Maybe.map
+                            (\( stack, ( x, _ ) ) ->
+                                ( x, (Tuple.second stack - Tuple.first stack) / 2 + Tuple.first stack )
+                            )
+                        |> Maybe.withDefault ( 0, 0 )
+
+                xPos =
+                    Scale.convert xScale xVal
+                        |> Helpers.floorFloat
+
+                yPos =
+                    Scale.convert yScale yVal
+                        |> Helpers.floorFloat
+
+                txt =
+                    text_
+                        [ y yPos
+                        , x (xPos + labelGap)
+                        , textAnchor AnchorStart
+                        , dominantBaseline DominantBaselineMiddle
+                        ]
+            in
+            case conf.showLabels of
+                XGroupLabel ->
+                    txt [ text label ]
+
+                _ ->
+                    text_ [] []
+
+        Nothing ->
+            text_ [] []
 
 
 horizontalLabel :
