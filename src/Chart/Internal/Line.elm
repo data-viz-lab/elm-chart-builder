@@ -814,6 +814,7 @@ areaLabel config xScale yScale idx item =
                         , x (xPos + labelGap)
                         , textAnchor AnchorStart
                         , dominantBaseline DominantBaselineMiddle
+                        , class [ "label" ]
                         ]
             in
             case conf.showLabels of
@@ -868,6 +869,7 @@ horizontalLabel config xScale yScale idx groupLabel point =
                         , x (xPos + labelOffset)
                         , textAnchor AnchorStart
                         , dominantBaseline DominantBaselineMiddle
+                        , class [ "label" ]
                         ]
             in
             case conf.showLabels of

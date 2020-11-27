@@ -704,6 +704,7 @@ verticalLabel config xPos yPos point =
                 [ x xPos
                 , y yPos
                 , textAnchor AnchorMiddle
+                , class [ "label" ]
                 ]
     in
     case fromConfig config |> .showLabels of
@@ -1270,6 +1271,7 @@ horizontalLabel config xPos yPos point =
                 , x xPos
                 , textAnchor AnchorStart
                 , dominantBaseline DominantBaselineMiddle
+                , class [ "label" ]
                 ]
     in
     case fromConfig config |> .showLabels of
