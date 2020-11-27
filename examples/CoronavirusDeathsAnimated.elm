@@ -5,10 +5,6 @@ module CoronavirusDeathsAnimated exposing (main)
 The trick here is to transform the posix values into floats
 and then transition these float values.
 
-TODO: this is not very efficient, because it is the same thing that the
-library is doing internally to draw time lines, so the transfromation
-between posix and float is happening twice.
-
 -}
 
 import Array exposing (Array)
@@ -17,7 +13,6 @@ import Browser
 import Browser.Events
 import Chart.Bar as Bar
 import Chart.Line as Line
-import Chart.Symbol as Symbol exposing (Symbol)
 import Color
 import Csv exposing (Csv)
 import Dict exposing (Dict)
@@ -29,7 +24,6 @@ import Http
 import Interpolation exposing (Interpolator)
 import Iso8601
 import List.Extra
-import Numeral
 import Process
 import RemoteData exposing (RemoteData, WebData)
 import Scale.Color
@@ -37,6 +31,10 @@ import Set exposing (Set)
 import Task
 import Time exposing (Posix)
 import Transition exposing (Transition)
+
+
+
+-- STYLING
 
 
 css : String
@@ -68,17 +66,17 @@ text {
 figure {
   margin: 0;
 }
+
+.pre-chart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 """
 
 
-removeZeros : Float -> Float
-removeZeros val =
-    -- Needed for the log scale
-    if val < 1 then
-        1
 
-    else
-        val
+-- MODEL
 
 
 type alias DatumTime =
@@ -124,10 +122,22 @@ type alias Model =
     }
 
 
+
+-- UPDATE
+
+
 type Msg
     = Tick Int
     | StartAnimation
     | DataResponse (WebData String)
+
+
+transitionSpeed =
+    50
+
+
+transitionStep =
+    50
 
 
 timestamps : Data -> Array Float
@@ -149,7 +159,7 @@ update msg model =
         DataResponse response ->
             let
                 data =
-                    calculateData response
+                    prepareData response
 
                 timestamps_ =
                     timestamps data
@@ -253,7 +263,17 @@ interpolatePosition =
 
 
 
---
+-- CHART CONFIGURATION
+
+
+width : Float
+width =
+    1200
+
+
+height : Float
+height =
+    600
 
 
 accessor : Line.Accessor DatumTime
@@ -267,29 +287,12 @@ valueFormatter =
     FormatNumber.format { usLocale | decimals = 0 }
 
 
-width : Float
-width =
-    1200
-
-
-height : Float
-height =
-    600
-
-
-transitionSpeed =
-    50
-
-
-transitionStep =
-    50
-
-
 yAxis : Bar.YAxis Float
 yAxis =
     Line.axisGrid
         [ Axis.ticks [ 10, 100, 1000, 10000 ]
         , Axis.tickFormat valueFormatter
+        , Axis.tickSizeOuter 0
         ]
 
 
@@ -302,25 +305,26 @@ xAxis =
 
 chart : Model -> Html msg
 chart model =
-    case model.serverData of
-        RemoteData.Success _ ->
-            Line.init
-                { margin = { top = 20, right = 175, bottom = 25, left = 80 }
-                , width = width
-                , height = height
-                }
-                |> Line.withColorPalette Scale.Color.tableau10
-                |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
-                |> Line.withLogYScale 10
-                |> Line.withXAxisTime xAxis
-                |> Line.withYAxis yAxis
-                |> Line.withXTimeDomain model.xTimeDomain
-                |> Line.withLabels Line.xGroupLabel
-                |> Line.withYDomain model.yDomain
-                |> Line.render ( model.data |> toTimeData, accessor )
+    Line.init
+        { margin = { top = 20, right = 175, bottom = 25, left = 80 }
+        , width = width
+        , height = height
+        }
+        |> Line.withColorPalette Scale.Color.tableau10
+        |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
+        |> Line.withLogYScale 10
+        |> Line.withXAxisTime xAxis
+        |> Line.withYAxis yAxis
+        |> Line.withXTimeDomain model.xTimeDomain
+        |> Line.withLabels Line.xGroupLabel
+        |> Line.withYDomain model.yDomain
+        -- for performance
+        |> Line.withoutTable
+        |> Line.render ( model.data |> toTimeData, accessor )
 
-        _ ->
-            Html.text "Loading data..."
+
+
+-- VIEW
 
 
 attrs : List (Html.Attribute msg)
@@ -360,54 +364,113 @@ view model =
             , style "color" "#444"
             , style "margin" "25px"
             ]
-            [ Html.div attrs [ chart model ]
+            [ Html.div attrs
+                [ case model.serverData of
+                    RemoteData.Success _ ->
+                        chart model
+
+                    RemoteData.Loading ->
+                        Html.div ([ class "pre-chart" ] ++ attrs) [ Html.text "Loading data..." ]
+
+                    _ ->
+                        Html.div ([ class "pre-chart" ] ++ attrs) [ Html.text "Something went wrong" ]
+                ]
             ]
         , footer
         ]
 
 
 
---
+-- REMOTE CORONAVIRUS DATA
 
 
-init : () -> ( Model, Cmd Msg )
-init () =
-    let
-        initialData : Data
-        initialData =
-            []
-    in
-    ( { transition = Transition.constant <| initialData
-      , currentTimestamp = 0
-      , timestamps = Array.empty
-      , lastIdx = 0
-      , currentIdx = 0
-      , xTimeDomain = ( Time.millisToPosix 0, Time.millisToPosix 0 )
-      , yDomain = ( 0, 0 )
-      , data = initialData
-      , allData = initialData
-      , serverData = RemoteData.Loading
-      }
-    , fetchData
-    )
+fetchData : Cmd Msg
+fetchData =
+    Http.get
+        { url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv"
+        , expect = Http.expectString (RemoteData.fromResult >> DataResponse)
+        }
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    if Transition.isComplete model.transition then
-        Sub.none
+type alias CoronaData =
+    -- (date, country, newDeaths)
+    ( String, String, Float )
+
+
+locations : List String
+locations =
+    --[ "World", "United Kingdom" ]
+    --[ "India", "United Kingdom" ]
+    [ "United States", "United Kingdom" ]
+
+
+countryIdx : Int
+countryIdx =
+    2
+
+
+dateIdx : Int
+dateIdx =
+    3
+
+
+valueIdx : Int
+valueIdx =
+    -- new_deaths_smoothed_per_million
+    --15
+    -- new_deaths_smoothed
+    9
+
+
+prepareData rd =
+    rd
+        |> RemoteData.map
+            (\str ->
+                let
+                    csv =
+                        Csv.parse str
+                in
+                csv.records
+                    |> Array.fromList
+                    |> Array.map Array.fromList
+                    |> Array.filter
+                        (\r ->
+                            r
+                                |> Array.get countryIdx
+                                |> Maybe.map (\location -> List.member location locations)
+                                |> Maybe.withDefault False
+                        )
+                    |> Array.map
+                        (\r ->
+                            { date =
+                                Array.get dateIdx r
+                                    |> Maybe.withDefault ""
+                                    |> Iso8601.toTime
+                                    |> Result.withDefault (Time.millisToPosix 0)
+                                    |> Time.posixToMillis
+                                    |> toFloat
+                            , country =
+                                Array.get countryIdx r
+                                    |> Maybe.withDefault ""
+                            , value =
+                                Array.get valueIdx r
+                                    |> Maybe.andThen String.toFloat
+                                    |> Maybe.withDefault 0
+                            }
+                        )
+                    |> Array.toList
+            )
+        |> RemoteData.withDefault []
+
+
+removeZeros : Float -> Float
+removeZeros val =
+    -- Needed for the log scale
+    if val < 1 then
+        1
 
     else
-        Browser.Events.onAnimationFrameDelta (round >> Tick)
-
-
-main =
-    Browser.element
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
+        val
 
 
 
@@ -480,84 +543,53 @@ coupleFromTo from to =
         fromDict
 
 
-fetchData : Cmd Msg
-fetchData =
-    Http.get
-        { url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv"
-        , expect = Http.expectString (RemoteData.fromResult >> DataResponse)
+
+-- INIT
+
+
+init : () -> ( Model, Cmd Msg )
+init () =
+    let
+        initialData : Data
+        initialData =
+            []
+    in
+    ( { transition = Transition.constant <| initialData
+      , currentTimestamp = 0
+      , timestamps = Array.empty
+      , lastIdx = 0
+      , currentIdx = 0
+      , xTimeDomain = ( Time.millisToPosix 0, Time.millisToPosix 0 )
+      , yDomain = ( 0, 0 )
+      , data = initialData
+      , allData = initialData
+      , serverData = RemoteData.Loading
+      }
+    , fetchData
+    )
+
+
+
+-- SUSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    if Transition.isComplete model.transition then
+        Sub.none
+
+    else
+        Browser.Events.onAnimationFrameDelta (round >> Tick)
+
+
+
+-- MAIN
+
+
+main =
+    Browser.element
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
         }
-
-
-type alias CoronaData =
-    -- (date, country, newDeaths)
-    ( String, String, Float )
-
-
-stats : List CoronaData -> Data
-stats coronaStats =
-    coronaStats
-        |> List.map
-            (\( timeStr, country, value ) ->
-                { date =
-                    Iso8601.toTime timeStr
-                        |> Result.withDefault (Time.millisToPosix 0)
-                        |> Time.posixToMillis
-                        |> toFloat
-                , value = value
-                , country = country
-                }
-            )
-
-
-locations : List String
-locations =
-    --[ "World", "United Kingdom" ]
-    [ "United States", "United Kingdom" ]
-
-
-
---[ "India", "United Kingdom" ]
-
-
-deathsIdx : Int
-deathsIdx =
-    9
-
-
-casesIdx : Int
-casesIdx =
-    5
-
-
-calculateData : WebData String -> Data
-calculateData rd =
-    rd
-        |> RemoteData.map
-            (\str ->
-                let
-                    csv =
-                        Csv.parse str
-                in
-                csv.records
-                    |> Array.fromList
-                    |> Array.map Array.fromList
-                    |> Array.filter
-                        (\r ->
-                            r
-                                |> Array.get 2
-                                |> Maybe.map (\location -> List.member location locations)
-                                |> Maybe.withDefault False
-                        )
-                    |> Array.map
-                        (\r ->
-                            ( Array.get 3 r |> Maybe.withDefault ""
-                            , Array.get 2 r |> Maybe.withDefault ""
-                            , Array.get deathsIdx r
-                                |> Maybe.andThen String.toFloat
-                                |> Maybe.withDefault 0
-                            )
-                        )
-                    |> Array.toList
-                    |> stats
-            )
-        |> RemoteData.withDefault []

@@ -284,11 +284,6 @@ valueIdx =
     15
 
 
-casesIdx : Int
-casesIdx =
-    5
-
-
 prepareData : WebData String -> Data
 prepareData rd =
     rd
