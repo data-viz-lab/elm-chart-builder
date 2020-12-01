@@ -63,12 +63,12 @@ dataAccessor =
 
 width : Float
 width =
-    1000
+    800
 
 
 height : Float
 height =
-    500
+    400
 
 
 requiredConfig : Line.RequiredConfig
@@ -95,16 +95,22 @@ xAxis =
         ]
 
 
+data : List FertilityStats
+data =
+    fertilityStats
+        |> List.filter (\d -> d.country /= "Chile")
+
+
 line =
     Line.init requiredConfig
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withYAxis yAxis
         |> Line.withXAxisTime xAxis
-        |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
+        |> Line.withLineStyle [ ( "stroke-width", "1" ) ]
         |> Line.withLabels Line.xGroupLabel
         |> Line.withGroupedLayout
         |> Line.withSymbols [ symbol ]
-        |> Line.render ( fertilityStats, dataAccessor )
+        |> Line.render ( data, dataAccessor )
 
 
 attrs : List (Html.Attribute msg)
