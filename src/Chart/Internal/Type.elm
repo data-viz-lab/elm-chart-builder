@@ -879,6 +879,9 @@ getDomainBandFromData data config =
 
         d =
             fromDataBand data
+
+        c =
+            fromConfig config
     in
     DomainBand
         { bandGroup =
@@ -924,7 +927,16 @@ getDomainBandFromData data config =
                         |> List.map .points
                         |> List.concat
                         |> List.map Tuple.second
-                        |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                        |> (\dd ->
+                                case c.layout of
+                                    StackedBar Diverging ->
+                                        ( List.minimum dd |> Maybe.withDefault 0
+                                        , List.maximum dd |> Maybe.withDefault 0
+                                        )
+
+                                    _ ->
+                                        ( 0, List.maximum dd |> Maybe.withDefault 0 )
+                           )
                         |> Just
         }
         |> fromDomainBand
@@ -1133,6 +1145,7 @@ getContinuousRange config renderContext width height bandScale =
 adjustContinuousRange : Config -> Int -> ( Float, Float ) -> ( Float, Float )
 adjustContinuousRange config stackedDepth ( a, b ) =
     -- small adjustments related to the whitespace between stacked items?
+    -- FIXME: needs removing?
     let
         c =
             fromConfig config
