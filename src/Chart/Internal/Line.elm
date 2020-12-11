@@ -28,10 +28,12 @@ import Chart.Internal.Type
         , ConfigStruct
         , DataContinuousGroup(..)
         , DataGroupContinuous
+        , DataGroupContinuousWithStack
         , DomainContinuousStruct
         , DomainTimeStruct
         , Label(..)
         , Layout(..)
+        , LineDraw(..)
         , PointContinuous
         , RenderContext(..)
         , ariaLabelledby
@@ -51,15 +53,17 @@ import Chart.Internal.Type
         )
 import Html exposing (Html)
 import Html.Attributes
+import List.Extra
 import Path exposing (Path)
 import Scale exposing (ContinuousScale)
-import Shape exposing (StackConfig)
+import Shape exposing (StackConfig, StackResult)
 import Time exposing (Posix)
 import TypedSvg exposing (g, svg, text_)
 import TypedSvg.Attributes
     exposing
         ( class
         , dominantBaseline
+        , fill
         , style
         , textAnchor
         , transform
@@ -187,18 +191,6 @@ renderLineGrouped ( data, config ) =
         yScale =
             toContinousScale yRange (Maybe.withDefault ( 0, 0 ) continuousDomain.y) c.yScale
 
-        tableHeadings =
-            Helpers.dataContinuousGroupToTableHeadings data
-                |> Table.ComplexHeadings
-
-        tableData =
-            Helpers.dataContinuousGroupToTableData data
-
-        table =
-            Table.generate tableData
-                |> Table.setColumnHeadings tableHeadings
-                |> Table.view
-
         svgEl =
             svg
                 [ viewBox 0 0 outerW outerH
@@ -213,35 +205,25 @@ renderLineGrouped ( data, config ) =
                     ++ continuousYAxis c yScale
                     ++ continuousOrTimeAxisGenerator xTimeScale xContinuousScale ( data, config )
                     ++ drawContinuousLine config xContinuousScale yScale sortedContinuousData
-
-        tableEl =
-            Helpers.invisibleFigcaption
-                [ case table of
-                    Ok table_ ->
-                        Html.div [] [ table_ ]
-
-                    Err error ->
-                        Html.text (Table.errorToString error)
-                ]
     in
     case c.accessibilityContent of
-        AccessibilityTable ->
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
+
+        _ ->
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableEl ]
+                    [ svgEl, tableElement data c.accessibilityContent ]
                 ]
-
-        AccessibilityNone ->
-            Html.div [] [ svgEl ]
 
 
 
 -- STACKED
 
 
-renderLineStacked : ( DataContinuousGroup, Config ) -> Html msg
-renderLineStacked ( data, config ) =
+renderLineStacked : LineDraw -> ( DataContinuousGroup, Config ) -> Html msg
+renderLineStacked lineDraw ( data, config ) =
     let
         c =
             fromConfig config
@@ -282,17 +264,27 @@ renderLineStacked ( data, config ) =
 
         stackedConfig : StackConfig String
         stackedConfig =
-            { data = dataStacked
-            , offset = getOffset config
-            , order = identity
-            }
+            case lineDraw of
+                Line ->
+                    { data = dataStacked
+                    , offset = Shape.stackOffsetNone
+                    , order = identity
+                    }
 
-        { values, extent } =
+                Area stackingMethod ->
+                    { data = dataStacked
+                    , offset = stackingMethod
+
+                    --TODO: this might need some thinking
+                    , order = identity
+                    }
+
+        stackResult =
             Shape.stack stackedConfig
 
         combinedData : List DataGroupContinuous
         combinedData =
-            Helpers.stackDataGroupContinuous values continuousData
+            Helpers.stackDataGroupContinuous stackResult.values continuousData
 
         timeData =
             data
@@ -333,19 +325,15 @@ renderLineStacked ( data, config ) =
 
         yScale : ContinuousScale Float
         yScale =
-            toContinousScale yRange extent c.yScale
+            toContinousScale yRange stackResult.extent c.yScale
 
-        tableHeadings =
-            Helpers.dataContinuousGroupToTableHeadings data
-                |> Table.ComplexHeadings
+        draw =
+            case lineDraw of
+                Line ->
+                    drawContinuousLine config xContinuousScale yScale combinedData
 
-        tableData =
-            Helpers.dataContinuousGroupToTableData data
-
-        table =
-            Table.generate tableData
-                |> Table.setColumnHeadings tableHeadings
-                |> Table.view
+                Area _ ->
+                    drawAreas config xContinuousScale yScale stackResult combinedData
 
         svgEl =
             svg
@@ -360,28 +348,18 @@ renderLineStacked ( data, config ) =
                     ++ descAndTitle c
                     ++ continuousYAxis c yScale
                     ++ continuousOrTimeAxisGenerator xTimeScale xContinuousScale ( data, config )
-                    ++ drawContinuousLine config xContinuousScale yScale combinedData
-
-        tableEl =
-            Helpers.invisibleFigcaption
-                [ case table of
-                    Ok table_ ->
-                        Html.div [] [ table_ ]
-
-                    Err error ->
-                        Html.text (Table.errorToString error)
-                ]
+                    ++ draw
     in
     case c.accessibilityContent of
-        AccessibilityTable ->
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
+
+        _ ->
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableEl ]
+                    [ svgEl, tableElement data c.accessibilityContent ]
                 ]
-
-        AccessibilityNone ->
-            Html.div [] [ svgEl ]
 
 
 continuousXAxis : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
@@ -394,6 +372,14 @@ continuousXAxis c scale =
                     , class [ "axis", "axis--x" ]
                     ]
                     [ Axis.bottom attributes scale ]
+                ]
+
+            ChartAxis.Top attributes ->
+                [ g
+                    [ transform [ Translate c.margin.left c.margin.top ]
+                    , class [ "axis", "axis--x" ]
+                    ]
+                    [ Axis.top attributes scale ]
                 ]
 
     else
@@ -412,6 +398,15 @@ timeXAxis c scale =
                             , class [ "axis", "axis--x" ]
                             ]
                             [ Axis.bottom attributes s ]
+                        ]
+
+                    ChartAxis.Top attributes ->
+                        --FIXME
+                        [ g
+                            [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                            , class [ "axis", "axis--x" ]
+                            ]
+                            [ Axis.top attributes s ]
                         ]
 
             _ ->
@@ -603,7 +598,7 @@ symbolElements config =
             fromConfig config
     in
     case c.layout of
-        StackedLine ->
+        StackedLine _ ->
             if showIcons config then
                 symbolsToSymbolElements c.icons
 
@@ -624,6 +619,104 @@ symbolElements config =
 defaultSymbolSize : Float
 defaultSymbolSize =
     10
+
+
+drawAreas :
+    Config
+    -> ContinuousScale Float
+    -> ContinuousScale Float
+    -> StackResult String
+    -> List DataGroupContinuous
+    -> List (Svg msg)
+drawAreas config xScale yScale stackedResult combinedData =
+    let
+        c =
+            fromConfig config
+
+        m =
+            c.margin
+
+        values =
+            stackedResult.values
+
+        mapper : ( ( Float, Float ), PointContinuous ) -> Maybe ( ( Float, Float ), ( Float, Float ) )
+        mapper pointWithStack =
+            let
+                xCoord =
+                    pointWithStack
+                        |> Tuple.second
+                        |> Tuple.first
+                        |> Scale.convert xScale
+
+                ( y1, y2 ) =
+                    Tuple.first pointWithStack
+
+                ( low, high ) =
+                    if y1 < y2 then
+                        ( y1, y2 )
+
+                    else
+                        ( y2, y1 )
+            in
+            Just
+                ( ( xCoord, Scale.convert yScale low )
+                , ( xCoord, Scale.convert yScale high )
+                )
+
+        toArea : DataGroupContinuousWithStack -> Path
+        toArea combinedWithStack =
+            List.map mapper combinedWithStack.points
+                |> Shape.area c.curve
+
+        styles idx =
+            Helpers.mergeStyles
+                []
+                (colorStyle c (Just idx) Nothing)
+                |> Helpers.mergeStyles c.coreStyle
+                |> style
+
+        renderStream :
+            ( ContinuousScale Float, ContinuousScale Float )
+            -> Int
+            -> DataGroupContinuousWithStack
+            -> Svg msg
+        renderStream scales idx combinedWithStack =
+            Path.element (toArea combinedWithStack)
+                [ class [ "area", "area-" ++ String.fromInt idx ]
+                , styles idx
+                ]
+
+        combinedDataWithStack : List DataGroupContinuousWithStack
+        combinedDataWithStack =
+            List.map2
+                (\v combined ->
+                    { groupLabel = combined.groupLabel, points = List.Extra.zip v combined.points }
+                )
+                values
+                combinedData
+
+        paths =
+            combinedDataWithStack
+                |> List.indexedMap (renderStream ( xScale, yScale ))
+    in
+    [ g
+        [ transform [ Translate m.left m.top ]
+        , class [ "series" ]
+        ]
+        paths
+    , g
+        [ transform [ Translate m.left m.top ]
+        , class [ "series" ]
+        ]
+      <|
+        (combinedDataWithStack
+            |> List.indexedMap
+                (\idx combinedItem ->
+                    areaLabel config xScale yScale idx combinedItem
+                )
+        )
+    , symbolGroup config xScale yScale combinedData
+    ]
 
 
 drawContinuousLine :
@@ -692,32 +785,64 @@ drawContinuousLine config xScale yScale sortedData =
                     label idx groupLabel points
                 )
         )
-    , g
-        [ transform [ Translate m.left m.top ]
-        , class [ "series" ]
-        ]
-        (sortedData
-            |> List.indexedMap
-                (\idx d ->
-                    d.points
-                        |> List.map
-                            (\( x, y ) ->
-                                drawSymbol config
-                                    { idx = idx
-                                    , x = Scale.convert xScale x
-                                    , y = Scale.convert yScale y
-                                    , styleStr = colorSymbol idx
-                                    }
-                            )
-                )
-            |> List.concat
-            |> List.concat
-        )
+    , symbolGroup config xScale yScale sortedData
     ]
 
 
 
 -- LABEL HELPERS
+
+
+areaLabel :
+    Config
+    -> ContinuousScale Float
+    -> ContinuousScale Float
+    -> Int
+    -> DataGroupContinuousWithStack
+    -> Svg msg
+areaLabel config xScale yScale idx item =
+    case item.groupLabel of
+        Just label ->
+            let
+                conf =
+                    fromConfig config
+
+                ( xVal, yVal ) =
+                    item.points
+                        |> List.reverse
+                        |> List.head
+                        |> Maybe.map
+                            (\( stack, ( x, _ ) ) ->
+                                ( x, (Tuple.second stack - Tuple.first stack) / 2 + Tuple.first stack )
+                            )
+                        |> Maybe.withDefault ( 0, 0 )
+
+                xPos =
+                    Scale.convert xScale xVal
+                        |> Helpers.floorFloat
+
+                yPos =
+                    Scale.convert yScale yVal
+                        |> Helpers.floorFloat
+
+                txt =
+                    text_
+                        [ y yPos
+                        , x (xPos + labelGap)
+                        , textAnchor AnchorStart
+                        , dominantBaseline DominantBaselineMiddle
+                        , class [ "label" ]
+                        ]
+            in
+            case conf.showLabels of
+                XGroupLabel ->
+                    txt [ text label ]
+
+                _ ->
+                    text_ [] []
+
+        Nothing ->
+            text_ [] []
 
 
 horizontalLabel :
@@ -761,6 +886,7 @@ horizontalLabel config xScale yScale idx groupLabel point =
                         , x (xPos + labelOffset)
                         , textAnchor AnchorStart
                         , dominantBaseline DominantBaselineMiddle
+                        , class [ "label" ]
                         ]
             in
             case conf.showLabels of
@@ -772,6 +898,75 @@ horizontalLabel config xScale yScale idx groupLabel point =
 
         Nothing ->
             text_ [] []
+
+
+tableElement : DataContinuousGroup -> AccessibilityContent -> Html msg
+tableElement data accessibilityContent =
+    let
+        tableHeadings =
+            Helpers.dataContinuousGroupToTableHeadings data accessibilityContent
+
+        -- TODO
+        --tableRowHeadings =
+        --    Helpers.dataLinearGroupToRowHeadings data accessibilityContent
+        --        |> Debug.log "rowHeadings"
+        tableData =
+            Helpers.dataContinuousGroupToTableData data
+
+        table =
+            Table.generate tableData
+                |> Table.setColumnHeadings tableHeadings
+                --|> Table.setRowHeadings tableRowHeadings
+                |> Table.view
+    in
+    Helpers.invisibleFigcaption
+        [ case table of
+            Ok table_ ->
+                Html.div [] [ table_ ]
+
+            Err error ->
+                Html.text (Table.errorToString error)
+        ]
+
+
+symbolGroup :
+    Config
+    -> ContinuousScale Float
+    -> ContinuousScale Float
+    -> List DataGroupContinuous
+    -> Svg msg
+symbolGroup config xScale yScale combinedData =
+    let
+        c =
+            fromConfig config
+
+        m =
+            c.margin
+
+        colorSymbol idx =
+            colorStyle c (Just idx) Nothing
+    in
+    g
+        [ transform [ Translate m.left m.top ]
+        , class [ "series" ]
+        ]
+        (combinedData
+            |> List.indexedMap
+                (\idx d ->
+                    d.points
+                        |> List.map
+                            (\( x, y ) ->
+                                drawSymbol config
+                                    { idx = idx
+                                    , x = Scale.convert xScale x
+                                    , y = Scale.convert yScale y
+                                    , styleStr = colorSymbol idx
+                                    }
+                            )
+                )
+            |> List.concat
+            |> List.concat
+        )
 
 
 

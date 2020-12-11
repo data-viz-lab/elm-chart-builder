@@ -3,10 +3,10 @@ module Chart.Line exposing
     , init
     , render
     , Config, RequiredConfig
-    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withLogYScale, withStackedLayout, withTable, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain
+    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale
     , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisContinuous, withXAxisTime, withYAxis
     , withSymbols
-    , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel
+    , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawArea, drawLine
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -36,7 +36,7 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 # Optional Configuration setters
 
-@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withLogYScale, withStackedLayout, withTable, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain
+@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale
 
 
 # Axis
@@ -48,7 +48,7 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 # Configuration arguments
 
-@docs axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel
+@docs axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawArea, drawLine
 
 -}
 
@@ -196,8 +196,8 @@ render ( externalData, accessor ) config =
         Type.GroupedLine ->
             renderLineGrouped ( data, config )
 
-        Type.StackedLine ->
-            renderLineStacked ( data, config )
+        Type.StackedLine lineDraw ->
+            renderLineStacked lineDraw ( data, config )
 
         _ ->
             -- TODO
@@ -267,19 +267,19 @@ withXContinuousDomain value config =
     Type.setDomainContinuousX value config
 
 
-{-| Build an alternative table content for accessibility
+{-| Do **not** build an alternative table content for accessibility
 
-&#9888; This is still work in progress and only a basic table is rendered with this option.
-For now it is best to only use it with a limited number of data points.
+&#9888; By default an alternative table is always being rendered.
+Use this option to not build the table.
 
     Line.init requiredConfig
-        |> Line.withTable
+        |> Line.withoutTable
         |> Line.render ( data, accessor )
 
 -}
-withTable : Config -> Config
-withTable =
-    Type.setAccessibilityContent Type.AccessibilityTable
+withoutTable : Config -> Config
+withoutTable =
+    Type.setAccessibilityContent Type.AccessibilityNone
 
 
 {-| Sets an accessible, long-text description for the svg chart.
@@ -337,9 +337,9 @@ It takes a direction: `diverging` or `noDirection`
         |> Line.render ( data, accessor )
 
 -}
-withStackedLayout : Config -> Config
-withStackedLayout config =
-    Type.setLayout Type.StackedLine config
+withStackedLayout : Type.LineDraw -> Config -> Config
+withStackedLayout lineDraw config =
+    Type.setLayout (Type.StackedLine lineDraw) config
 
 
 {-| Creates a grouped line chart.
@@ -538,6 +538,26 @@ withYAxis =
 withLogYScale : Float -> Config -> Config
 withLogYScale base =
     Type.setYScale (Type.LogScale base)
+
+
+{-|
+
+    TODO
+
+-}
+drawArea : (List (List ( Float, Float )) -> List (List ( Float, Float ))) -> Type.LineDraw
+drawArea =
+    Type.lineDrawArea
+
+
+{-|
+
+    TODO
+
+-}
+drawLine : Type.LineDraw
+drawLine =
+    Type.lineDrawLine
 
 
 

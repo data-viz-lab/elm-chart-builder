@@ -16,6 +16,7 @@ type YAxis value
 
 type XAxis value
     = Bottom (List (VAxis.Attribute value))
+    | Top (List (VAxis.Attribute value))
 
 
 yAxisAttributes : YAxis value -> List (VAxis.Attribute value)
@@ -35,4 +36,7 @@ xAxisAttributes : XAxis value -> List (VAxis.Attribute value)
 xAxisAttributes axis =
     case axis of
         Bottom a ->
+            a
+
+        Top a ->
             a

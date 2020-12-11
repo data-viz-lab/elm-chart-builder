@@ -3,8 +3,8 @@ module Chart.Bar exposing
     , init
     , render
     , Config, RequiredConfig
-    , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
-    , XAxis, YAxis, axisBottom, axisGrid, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
+    , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
+    , XAxis, YAxis, axisBottom, axisTop, axisGrid, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
     , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
     )
 
@@ -37,14 +37,14 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
+@docs withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
 
 
 # Axis
 
 &#9888; axisLeft & axisRight apply to a vertical chart context. If you change the chart orientation to horizontal, the axis positioning will always change to bottom.
 
-@docs XAxis, YAxis, axisBottom, axisGrid, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
+@docs XAxis, YAxis, axisBottom, axisTop, axisGrid, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
 
 
 # Configuration arguments
@@ -316,19 +316,19 @@ withXLabels =
     Type.showXOrdinalLabel
 
 
-{-| Build an alternative table content for accessibility
+{-| Do **not** build an alternative table content for accessibility
 
-&#9888; This is still work in progress and only a basic table is rendered with this option.
-For now it is best to only use it with a limited number of data points.
+&#9888; By default an alternative table is always being rendered.
+Use this option to not build the table.
 
     Bar.init requiredConfig
-        |> Bar.withTable
+        |> Bar.withoutTable
         |> Bar.render ( data, accessor )
 
 -}
-withTable : Config -> Config
-withTable =
-    Type.setAccessibilityContent Type.AccessibilityTable
+withoutTable : Config -> Config
+withoutTable =
+    Type.setAccessibilityContent Type.AccessibilityNone
 
 
 {-| Show a label at the end of the bars.
@@ -563,6 +563,16 @@ axisGrid =
 axisBottom : List (Axis.Attribute value) -> ChartAxis.XAxis value
 axisBottom =
     ChartAxis.Bottom
+
+
+{-| It returns an XAxis Top type
+
+    Bar.axisTop [ Axis.tickCount 5 ]
+
+-}
+axisTop : List (Axis.Attribute value) -> ChartAxis.XAxis value
+axisTop =
+    ChartAxis.Top
 
 
 {-| Hide all axis.

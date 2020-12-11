@@ -15,6 +15,7 @@ module Chart.Internal.Type exposing
     , DataContinuousGroup(..)
     , DataGroupBand
     , DataGroupContinuous
+    , DataGroupContinuousWithStack
     , DataGroupTime
     , Direction(..)
     , DomainBand
@@ -26,6 +27,7 @@ module Chart.Internal.Type exposing
     , ExternalData
     , Label(..)
     , Layout(..)
+    , LineDraw(..)
     , Margin
     , Orientation(..)
     , PointBand
@@ -78,6 +80,9 @@ module Chart.Internal.Type exposing
     , getOffset
     , getStackedValuesAndGroupes
     , leftGap
+    , lineDrawArea
+    , lineDrawLine
+    , noGroups
     , role
     , setAccessibilityContent
     , setColorResource
@@ -238,6 +243,12 @@ type alias DataGroupContinuous =
     }
 
 
+type alias DataGroupContinuousWithStack =
+    { groupLabel : Maybe String
+    , points : List ( ( Float, Float ), PointContinuous )
+    }
+
+
 type alias DataGroupTime =
     { groupLabel : Maybe String
     , points : List PointTime
@@ -253,9 +264,24 @@ type Orientation
     | Horizontal
 
 
+type LineDraw
+    = Line
+    | Area (List (List ( Float, Float )) -> List (List ( Float, Float )))
+
+
+lineDrawArea : (List (List ( Float, Float )) -> List (List ( Float, Float ))) -> LineDraw
+lineDrawArea =
+    Area
+
+
+lineDrawLine : LineDraw
+lineDrawLine =
+    Line
+
+
 type Layout
     = StackedBar Direction
-    | StackedLine
+    | StackedLine LineDraw
     | GroupedBar
     | GroupedLine
 
@@ -358,8 +384,11 @@ type ColorResource
     | ColorNone
 
 
-type AccessibilityContent
-    = AccessibilityTable
+type
+    AccessibilityContent
+    --TODO: AccessibilitySummaryTable
+    = AccessibilityTable ( String, String )
+    | AccessibilityTableNoLabels
     | AccessibilityNone
 
 
@@ -409,7 +438,7 @@ type alias ConfigStruct =
 defaultConfig : Config
 defaultConfig =
     toConfig
-        { accessibilityContent = AccessibilityNone
+        { accessibilityContent = AccessibilityTableNoLabels
         , axisXContinuous = ChartAxis.Bottom []
         , axisXTime = ChartAxis.Bottom []
         , axisXBand = ChartAxis.Bottom []
@@ -879,6 +908,9 @@ getDomainBandFromData data config =
 
         d =
             fromDataBand data
+
+        c =
+            fromConfig config
     in
     DomainBand
         { bandGroup =
@@ -924,7 +956,16 @@ getDomainBandFromData data config =
                         |> List.map .points
                         |> List.concat
                         |> List.map Tuple.second
-                        |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                        |> (\dd ->
+                                case c.layout of
+                                    StackedBar Diverging ->
+                                        ( List.minimum dd |> Maybe.withDefault 0
+                                        , List.maximum dd |> Maybe.withDefault 0
+                                        )
+
+                                    _ ->
+                                        ( 0, List.maximum dd |> Maybe.withDefault 0 )
+                           )
                         |> Just
         }
         |> fromDomainBand
@@ -1133,6 +1174,7 @@ getContinuousRange config renderContext width height bandScale =
 adjustContinuousRange : Config -> Int -> ( Float, Float ) -> ( Float, Float )
 adjustContinuousRange config stackedDepth ( a, b ) =
     -- small adjustments related to the whitespace between stacked items?
+    -- FIXME: needs removing?
     let
         c =
             fromConfig config
@@ -1568,6 +1610,13 @@ ariaLabelledbyContent c =
 
     else
         []
+
+
+noGroups : List { a | groupLabel : Maybe String } -> Bool
+noGroups data =
+    data
+        |> List.map .groupLabel
+        |> List.all (\d -> d == Nothing)
 
 
 toContinousScale : Range -> ContinuousDomain -> YScale -> ContinuousScale Float

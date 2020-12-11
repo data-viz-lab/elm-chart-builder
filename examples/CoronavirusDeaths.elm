@@ -1,34 +1,45 @@
 module CoronavirusDeaths exposing (main)
 
-{-| This module shows how to build a simple line chart with a time scale.
+{-| This module shows how to request some remote coronavirus data and bild an area chart with it.
 -}
 
+import Array exposing (Array)
 import Axis
+import Browser
 import Chart.Bar as Bar
 import Chart.Line as Line
-import Chart.Symbol as Symbol exposing (Symbol)
-import Color
-import Data exposing (CoronaData, coronaStats)
+import Color exposing (rgb255)
+import Csv exposing (Csv)
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
 import Html.Attributes exposing (class, style)
+import Http
 import Iso8601
-import Numeral
-import Scale.Color
+import RemoteData exposing (RemoteData, WebData)
+import Shape
 import Time exposing (Posix)
+
+
+
+-- STYLING
 
 
 css : String
 css =
     """
+body {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
 .axis path,
 .axis line {
-  stroke: #b7b7b7;
+  stroke: #fff;
 }
 
 text {
-  fill: #333;
+  fill: #fff;
   font-size: 16px;
 }
 
@@ -39,21 +50,66 @@ text {
 figure {
   margin: 0;
 }
+
+.label {
+  font-size: 14px;
+}
+
+.pre-chart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 """
 
 
-accessor : Line.Accessor CoronaData
-accessor =
-    Line.time
-        { xGroup = always Nothing
-        , xValue = \( date, _, _ ) -> Iso8601.toTime date |> Result.withDefault (Time.millisToPosix 0)
-        , yValue = \( _, _, deaths ) -> deaths
-        }
+
+-- MODEL
 
 
-valueFormatter : Float -> String
-valueFormatter =
-    FormatNumber.format { usLocale | decimals = 0 }
+type alias Datum =
+    { country : String
+    , date : Posix
+    , value : Float
+    }
+
+
+type alias Data =
+    List Datum
+
+
+type alias Model =
+    { data : Data
+    , serverData : WebData String
+    }
+
+
+
+-- UPDATE
+
+
+type Msg
+    = DataResponse (WebData String)
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        DataResponse response ->
+            let
+                data =
+                    prepareData response
+            in
+            ( { model
+                | data = data
+                , serverData = response
+              }
+            , Cmd.none
+            )
+
+
+
+-- CHART CONFIGURATION
 
 
 width : Float
@@ -66,11 +122,23 @@ height =
     600
 
 
+accessor : Line.Accessor Datum
+accessor =
+    Line.time
+        (Line.AccessorTime (.country >> Just) .date .value)
+
+
+valueFormatter : Float -> String
+valueFormatter =
+    FormatNumber.format { usLocale | decimals = 0 }
+
+
 yAxis : Bar.YAxis Float
 yAxis =
     Line.axisLeft
         [ Axis.tickCount 5
-        , Axis.tickFormat valueFormatter
+        , Axis.tickSizeOuter 0
+        , Axis.tickFormat (abs >> valueFormatter)
         ]
 
 
@@ -81,18 +149,42 @@ xAxis =
         ]
 
 
-chart : Html msg
-chart =
+colorPalette =
+    [ Color.rgb255 141 211 199
+    , Color.rgb255 255 255 179
+    , Color.rgb255 190 186 218
+    , Color.rgb255 251 128 114
+    , Color.rgb255 128 177 211
+    , Color.rgb255 253 180 98
+    , Color.rgb255 179 222 105
+    , Color.rgb255 252 205 229
+    , Color.rgb255 217 217 217
+    , Color.rgb255 188 128 189
+    ]
+
+
+
+-- CHART
+
+
+chart : Data -> Html msg
+chart data =
     Line.init
-        { margin = { top = 20, right = 10, bottom = 25, left = 80 }
+        { margin = { top = 20, right = 175, bottom = 25, left = 80 }
         , width = width
         , height = height
         }
-        |> Line.withColorPalette [ Color.rgb255 209 33 2 ]
-        |> Line.withLineStyle [ ( "stroke-width", "1.5" ) ]
+        |> Line.withCurve (Shape.cardinalCurve 0.5)
+        |> Line.withStackedLayout (Line.drawArea Shape.stackOffsetSilhouette)
+        |> Line.withColorPalette colorPalette
+        |> Line.withLabels Line.xGroupLabel
         |> Line.withXAxisTime xAxis
         |> Line.withYAxis yAxis
-        |> Line.render ( coronaStats, accessor )
+        |> Line.render ( data, accessor )
+
+
+
+-- VIEW
 
 
 attrs : List (Html.Attribute msg)
@@ -100,6 +192,7 @@ attrs =
     [ style "height" (String.fromFloat (height + 20) ++ "px")
     , style "width" (String.fromFloat width ++ "px")
     , style "border" "1px solid #c4c4c4"
+    , style "background-color" "#2b2b2b"
     ]
 
 
@@ -110,14 +203,15 @@ footer =
         ]
         [ Html.a
             [ Html.Attributes.href
-                "https://ourworldindata.org/coronavirus"
+                "https://github.com/owid/covid-19-data/tree/master/public/data"
+            , style "color" "#fff"
             ]
             [ Html.text "Data source" ]
         ]
 
 
-main : Html msg
-main =
+view : Model -> Html msg
+view model =
     Html.div [ style "font-family" "Sans-Serif" ]
         [ Html.node "style" [] [ Html.text css ]
         , Html.h2
@@ -125,14 +219,132 @@ main =
             , style "font-size" "20px"
             ]
             [ Html.text
-                "Coronavirus, daily number of confirmed deaths"
+                "Coronavirus, new deaths per million"
             ]
         , Html.div
-            [ style "background-color" "#fff"
-            , style "color" "#444"
+            [ style "color" "#fff"
             , style "margin" "25px"
             ]
-            [ Html.div attrs [ chart ]
+            [ Html.div attrs
+                [ case model.serverData of
+                    RemoteData.Success _ ->
+                        chart model.data
+
+                    RemoteData.Loading ->
+                        Html.div ([ class "pre-chart" ] ++ attrs) [ Html.text "Loading data..." ]
+
+                    _ ->
+                        Html.div ([ class "pre-chart" ] ++ attrs) [ Html.text "Something went wrong" ]
+                ]
             ]
         , footer
         ]
+
+
+
+-- REMOTE CORONAVIRUS DATA
+
+
+fetchData : Cmd Msg
+fetchData =
+    Http.get
+        { url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv"
+        , expect = Http.expectString (RemoteData.fromResult >> DataResponse)
+        }
+
+
+locations : List String
+locations =
+    [ "United States"
+    , "United Kingdom"
+    , "Italy"
+    , "Germany"
+    , "Belgium"
+    , "Brazil"
+    , "France"
+    , "Sweden"
+    ]
+
+
+countryIdx : Int
+countryIdx =
+    2
+
+
+dateIdx : Int
+dateIdx =
+    3
+
+
+valueIdx : Int
+valueIdx =
+    -- new_deaths_smoothed
+    --9
+    -- new_deaths_smoothed_per_million
+    15
+
+
+prepareData : WebData String -> Data
+prepareData rd =
+    rd
+        |> RemoteData.map
+            (\str ->
+                let
+                    csv =
+                        Csv.parse str
+                in
+                csv.records
+                    |> Array.fromList
+                    |> Array.map Array.fromList
+                    |> Array.filter
+                        (\r ->
+                            r
+                                |> Array.get countryIdx
+                                |> Maybe.map (\location -> List.member location locations)
+                                |> Maybe.withDefault False
+                        )
+                    |> Array.map
+                        (\r ->
+                            { date =
+                                Array.get dateIdx r
+                                    |> Maybe.withDefault ""
+                                    |> Iso8601.toTime
+                                    |> Result.withDefault (Time.millisToPosix 0)
+                            , country =
+                                Array.get countryIdx r
+                                    |> Maybe.withDefault ""
+                            , value =
+                                Array.get valueIdx r
+                                    |> Maybe.andThen String.toFloat
+                                    |> Maybe.withDefault 0
+                            }
+                        )
+                    |> Array.toList
+            )
+        |> RemoteData.withDefault []
+
+
+
+-- INIT
+
+
+init : () -> ( Model, Cmd Msg )
+init () =
+    ( { data = []
+      , serverData = RemoteData.Loading
+      }
+    , fetchData
+    )
+
+
+
+-- MAIN
+
+
+main =
+    Browser.element
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = \_ -> Sub.none
+        }

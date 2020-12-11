@@ -151,7 +151,8 @@ renderBandStacked ( data, config ) =
 
         continuousDomain : Maybe Chart.Internal.Type.ContinuousDomain
         continuousDomain =
-            domain |> .continuous
+            domain
+                |> .continuous
 
         continuousExtent =
             case continuousDomain of
@@ -160,7 +161,10 @@ renderBandStacked ( data, config ) =
                         StackedBar direction ->
                             case direction of
                                 Diverging ->
-                                    ( Tuple.second ld * -1, Tuple.second ld )
+                                    [ Tuple.first ld |> abs, Tuple.second ld |> abs ]
+                                        |> List.maximum
+                                        |> Maybe.map (\max -> ( max * -1, max ))
+                                        |> Maybe.withDefault ( 0, 0 )
 
                                 _ ->
                                     extent
@@ -193,6 +197,7 @@ renderBandStacked ( data, config ) =
 
         continuousRangeAxis =
             getContinuousRange config RenderAxis w h bandSingleScale
+                |> adjustContinuousRange config stackDepth
 
         continuousScale : ContinuousScale Float
         continuousScale =
@@ -254,39 +259,17 @@ renderBandStacked ( data, config ) =
                                 (List.map2 (\a b -> ( a, b, labels )) columnGroupes scaledValues)
                        ]
                 )
-
-        tableHeadings =
-            Helpers.dataBandToTableHeadings data
-                |> Table.ComplexHeadings
-
-        tableData =
-            Helpers.dataBandToTableData data
-
-        table =
-            Table.generate tableData
-                |> Table.setColumnHeadings tableHeadings
-                |> Table.view
-
-        tableEl =
-            Helpers.invisibleFigcaption
-                [ case table of
-                    Ok table_ ->
-                        Html.div [] [ table_ ]
-
-                    Err error ->
-                        Html.text (Table.errorToString error)
-                ]
     in
     case c.accessibilityContent of
-        AccessibilityTable ->
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
+
+        _ ->
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableEl ]
+                    [ svgEl, tableElement data c.accessibilityContent ]
                 ]
-
-        AccessibilityNone ->
-            Html.div [] [ svgEl ]
 
 
 stackedContainerTranslate : ConfigStruct -> Float -> Float -> Float -> Transform
@@ -485,18 +468,6 @@ renderBandGrouped ( data, config ) =
             else
                 bandSingleScale
 
-        tableHeadings =
-            Helpers.dataBandToTableHeadings data
-                |> Table.ComplexHeadings
-
-        tableData =
-            Helpers.dataBandToTableData data
-
-        table =
-            Table.generate tableData
-                |> Table.setColumnHeadings tableHeadings
-                |> Table.view
-
         svgElAttrs =
             [ viewBox 0 0 outerW outerH
             , width outerW
@@ -523,27 +494,17 @@ renderBandGrouped ( data, config ) =
                     -- and eventually they could also be shared across multiple charts
                     -- see: https://css-tricks.com/svg-symbol-good-choice-icons/
                     ++ symbolElements
-
-        tableEl =
-            Helpers.invisibleFigcaption
-                [ case table of
-                    Ok table_ ->
-                        Html.div [] [ table_ ]
-
-                    Err error ->
-                        Html.text (Table.errorToString error)
-                ]
     in
     case c.accessibilityContent of
-        AccessibilityTable ->
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
+
+        _ ->
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableEl ]
+                    [ svgEl, tableElement data c.accessibilityContent ]
                 ]
-
-        AccessibilityNone ->
-            Html.div [] [ svgEl ]
 
 
 columns :
@@ -748,6 +709,7 @@ verticalLabel config xPos yPos point =
                 [ x xPos
                 , y yPos
                 , textAnchor AnchorMiddle
+                , class [ "label" ]
                 ]
     in
     case fromConfig config |> .showLabels of
@@ -947,6 +909,7 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
 
 bandXAxis : ConfigStruct -> BandScale String -> List (Svg msg)
 bandXAxis c bandScale =
+    --TODO: lots of repetitions
     if c.showXAxis == True then
         case ( c.orientation, c.axisXBand ) of
             ( Vertical, ChartAxis.Bottom attributes ) ->
@@ -957,12 +920,29 @@ bandXAxis c bandScale =
                     [ Axis.bottom attributes (Scale.toRenderable identity bandScale) ]
                 ]
 
+            ( Vertical, ChartAxis.Top attributes ) ->
+                [ g
+                    [ transform [ Translate c.margin.left c.margin.top ]
+                    , class [ "axis", "axis--horizontal" ]
+                    ]
+                    [ Axis.top attributes (Scale.toRenderable identity bandScale) ]
+                ]
+
             ( Horizontal, ChartAxis.Bottom attributes ) ->
                 [ g
                     [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
                     , class [ "axis", "axis--vertical" ]
                     ]
                     [ Axis.left attributes (Scale.toRenderable identity bandScale) ]
+                ]
+
+            ( Horizontal, ChartAxis.Top attributes ) ->
+                --FIXME
+                [ g
+                    [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
+                    , class [ "axis", "axis--vertical" ]
+                    ]
+                    [ Axis.right attributes (Scale.toRenderable identity bandScale) ]
                 ]
 
     else
@@ -1201,15 +1181,15 @@ renderHistogram ( histogram, config ) =
                        ]
     in
     case c.accessibilityContent of
-        AccessibilityTable ->
+        AccessibilityNone ->
+            Html.div [] [ svgEl ]
+
+        _ ->
             Html.div []
                 [ Html.figure
                     []
                     [ svgEl, tableEl ]
                 ]
-
-        AccessibilityNone ->
-            Html.div [] [ svgEl ]
 
 
 histogramColumn :
@@ -1314,6 +1294,7 @@ horizontalLabel config xPos yPos point =
                 , x xPos
                 , textAnchor AnchorStart
                 , dominantBaseline DominantBaselineMiddle
+                , class [ "label" ]
                 ]
     in
     case fromConfig config |> .showLabels of
@@ -1325,3 +1306,27 @@ horizontalLabel config xPos yPos point =
 
         _ ->
             []
+
+
+tableElement : DataBand -> AccessibilityContent -> Html msg
+tableElement data accessibilityContent =
+    let
+        tableHeadings =
+            Helpers.dataBandToTableHeadings data accessibilityContent
+
+        tableData =
+            Helpers.dataBandToTableData data
+
+        table =
+            Table.generate tableData
+                |> Table.setColumnHeadings tableHeadings
+                |> Table.view
+    in
+    Helpers.invisibleFigcaption
+        [ case table of
+            Ok table_ ->
+                Html.div [] [ table_ ]
+
+            Err error ->
+                Html.text (Table.errorToString error)
+        ]
