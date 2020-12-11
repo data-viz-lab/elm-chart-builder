@@ -3,7 +3,7 @@
     "name": "data-viz-lab/elm-chart-builder",
     "summary": "A high level data visualization package for Elm",
     "license": "MIT",
-    "version": "3.1.5",
+    "version": "4.0.0",
     "exposed-modules": [
         "Chart.Bar",
         "Chart.HistogramBar",
