@@ -151,7 +151,8 @@ renderBandStacked ( data, config ) =
 
         continuousDomain : Maybe Chart.Internal.Type.ContinuousDomain
         continuousDomain =
-            domain |> .continuous
+            domain
+                |> .continuous
 
         continuousExtent =
             case continuousDomain of
@@ -160,7 +161,10 @@ renderBandStacked ( data, config ) =
                         StackedBar direction ->
                             case direction of
                                 Diverging ->
-                                    ( Tuple.second ld * -1, Tuple.second ld )
+                                    [ Tuple.first ld |> abs, Tuple.second ld |> abs ]
+                                        |> List.maximum
+                                        |> Maybe.map (\max -> ( max * -1, max ))
+                                        |> Maybe.withDefault ( 0, 0 )
 
                                 _ ->
                                     extent
@@ -193,6 +197,7 @@ renderBandStacked ( data, config ) =
 
         continuousRangeAxis =
             getContinuousRange config RenderAxis w h bandSingleScale
+                |> adjustContinuousRange config stackDepth
 
         continuousScale : ContinuousScale Float
         continuousScale =
@@ -904,6 +909,7 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
 
 bandXAxis : ConfigStruct -> BandScale String -> List (Svg msg)
 bandXAxis c bandScale =
+    --TODO: lots of repetitions
     if c.showXAxis == True then
         case ( c.orientation, c.axisXBand ) of
             ( Vertical, ChartAxis.Bottom attributes ) ->
@@ -914,12 +920,29 @@ bandXAxis c bandScale =
                     [ Axis.bottom attributes (Scale.toRenderable identity bandScale) ]
                 ]
 
+            ( Vertical, ChartAxis.Top attributes ) ->
+                [ g
+                    [ transform [ Translate c.margin.left c.margin.top ]
+                    , class [ "axis", "axis--horizontal" ]
+                    ]
+                    [ Axis.top attributes (Scale.toRenderable identity bandScale) ]
+                ]
+
             ( Horizontal, ChartAxis.Bottom attributes ) ->
                 [ g
                     [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
                     , class [ "axis", "axis--vertical" ]
                     ]
                     [ Axis.left attributes (Scale.toRenderable identity bandScale) ]
+                ]
+
+            ( Horizontal, ChartAxis.Top attributes ) ->
+                --FIXME
+                [ g
+                    [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
+                    , class [ "axis", "axis--vertical" ]
+                    ]
+                    [ Axis.right attributes (Scale.toRenderable identity bandScale) ]
                 ]
 
     else

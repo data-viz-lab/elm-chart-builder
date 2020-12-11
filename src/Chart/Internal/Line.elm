@@ -374,6 +374,14 @@ continuousXAxis c scale =
                     [ Axis.bottom attributes scale ]
                 ]
 
+            ChartAxis.Top attributes ->
+                [ g
+                    [ transform [ Translate c.margin.left c.margin.top ]
+                    , class [ "axis", "axis--x" ]
+                    ]
+                    [ Axis.top attributes scale ]
+                ]
+
     else
         []
 
@@ -390,6 +398,15 @@ timeXAxis c scale =
                             , class [ "axis", "axis--x" ]
                             ]
                             [ Axis.bottom attributes s ]
+                        ]
+
+                    ChartAxis.Top attributes ->
+                        --FIXME
+                        [ g
+                            [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                            , class [ "axis", "axis--x" ]
+                            ]
+                            [ Axis.top attributes s ]
                         ]
 
             _ ->
