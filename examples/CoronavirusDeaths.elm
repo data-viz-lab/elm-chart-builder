@@ -10,6 +10,7 @@ import Chart.Bar as Bar
 import Chart.Line as Line
 import Color exposing (rgb255)
 import Csv exposing (Csv)
+import Dict
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
@@ -319,7 +320,25 @@ prepareData rd =
                                     |> Maybe.withDefault 0
                             }
                         )
-                    |> Array.toList
+                    |> Array.foldl
+                        (\r acc ->
+                            let
+                                k =
+                                    r.date |> Time.posixToMillis
+                            in
+                            case Dict.get k acc of
+                                Just v ->
+                                    Dict.insert k (r :: v) acc
+
+                                Nothing ->
+                                    Dict.insert k [ r ] acc
+                        )
+                        Dict.empty
+                    -- only keep data shared across all countries
+                    |> Dict.filter (\k v -> List.length v == List.length locations)
+                    |> Dict.toList
+                    |> List.map Tuple.second
+                    |> List.concat
             )
         |> RemoteData.withDefault []
 
