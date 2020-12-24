@@ -58,7 +58,7 @@ and open [examples](https://localhost:8000).
 
 ## Online Examples
 
-[covid-dashboard](https://data-viz-lab.github.io/covid-dashboard/) ([source](https://github.com/data-viz-lab/covid-dashboard/tree/master))
+* [covid-dashboard](https://data-viz-lab.github.io/covid-dashboard/) ([source](https://github.com/data-viz-lab/covid-dashboard/tree/master))
 
 ## Tests:
 
