@@ -23,7 +23,7 @@ dataLinearGroupToRowHeadingsTest =
             \_ ->
                 let
                     dataLinear =
-                        DataLinear
+                        DataContinuous
                             [ { groupLabel = Just "East Midlands Male"
                               , points = [ ( 1998, 30.9 ), ( 1999, 26.2 ) ]
                               }
@@ -35,7 +35,7 @@ dataLinearGroupToRowHeadingsTest =
                     rowHeadings =
                         [ "1998", "1999" ]
                 in
-                Expect.equal (dataLinearGroupToRowHeadings dataLinear AccessibilityTableNoLabels)
+                Expect.equal (dataContinuousGroupToRowHeadings dataLinear AccessibilityTableNoLabels)
                     (Table.Headings rowHeadings)
         ]
 

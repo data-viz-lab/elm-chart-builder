@@ -93,8 +93,13 @@ suite =
                         expected : DomainContinuousStruct
                         expected =
                             { x = Just ( 5, 6 ), y = Just ( 0, 21 ) }
+
+                        domain : DomainContinuousStruct
+                        domain =
+                            defaultConfig
+                                |> getDomainContinuous
                     in
-                    Expect.equal (getDomainContinuousFromData defaultConfig data) expected
+                    Expect.equal (getDomainContinuousFromData Nothing domain data) expected
             , test "with Y domain manually set" <|
                 \_ ->
                     let
@@ -102,10 +107,11 @@ suite =
                         continuousDomain =
                             ( 0, 30 )
 
-                        config : Config
-                        config =
+                        domain : DomainContinuousStruct
+                        domain =
                             defaultConfig
                                 |> setDomainContinuousAndTimeY continuousDomain
+                                |> getDomainContinuous
 
                         data : List DataGroupContinuous
                         data =
@@ -129,7 +135,7 @@ suite =
                             , y = Just ( 0, 30 )
                             }
                     in
-                    Expect.equal (getDomainContinuousFromData config data) expected
+                    Expect.equal (getDomainContinuousFromData Nothing domain data) expected
             ]
         , describe "getDomainTimeFromData"
             [ test "with default domain" <|
@@ -151,13 +157,18 @@ suite =
                               }
                             ]
 
+                        domain : DomainTimeStruct
+                        domain =
+                            defaultConfig
+                                |> getDomainTime
+
                         expected : DomainTimeStruct
                         expected =
                             { x = Just ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579285175634 )
                             , y = Just ( 0, 21 )
                             }
                     in
-                    Expect.equal (getDomainTimeFromData defaultConfig data) expected
+                    Expect.equal (getDomainTimeFromData Nothing domain data) expected
             , test "with Y domain manually set" <|
                 \_ ->
                     let
@@ -165,10 +176,11 @@ suite =
                         continuousDomain =
                             ( 0, 30 )
 
-                        config : Config
-                        config =
+                        domain : DomainTimeStruct
+                        domain =
                             defaultConfig
                                 |> setDomainContinuousAndTimeY continuousDomain
+                                |> getDomainTime
 
                         data : List DataGroupTime
                         data =
@@ -192,7 +204,78 @@ suite =
                             , y = Just ( 0, 30 )
                             }
                     in
-                    Expect.equal (getDomainTimeFromData config data) expected
+                    Expect.equal (getDomainTimeFromData Nothing domain data) expected
+            , test "with Y domain manually set and extent" <|
+                \_ ->
+                    let
+                        continuousDomain : ContinuousDomain
+                        continuousDomain =
+                            ( 0, 30 )
+
+                        domain : DomainTimeStruct
+                        domain =
+                            defaultConfig
+                                |> setDomainContinuousAndTimeY continuousDomain
+                                |> getDomainTime
+
+                        data : List DataGroupTime
+                        data =
+                            [ { groupLabel = Just "CA"
+                              , points =
+                                    [ ( Time.millisToPosix 1579275175634, 10 )
+                                    , ( Time.millisToPosix 1579285175634, 20 )
+                                    ]
+                              }
+                            , { groupLabel = Just "TX"
+                              , points =
+                                    [ ( Time.millisToPosix 1579275175634, 11 )
+                                    , ( Time.millisToPosix 1579285175634, 21 )
+                                    ]
+                              }
+                            ]
+
+                        expected : DomainTimeStruct
+                        expected =
+                            { x = Just ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579285175634 )
+                            , y = Just ( 0, 30 )
+                            }
+                    in
+                    Expect.equal (getDomainTimeFromData (Just ( 0, 100 )) domain data) expected
+            , test "with extent" <|
+                \_ ->
+                    let
+                        continuousDomain : ContinuousDomain
+                        continuousDomain =
+                            ( 0, 30 )
+
+                        domain : DomainTimeStruct
+                        domain =
+                            defaultConfig
+                                |> getDomainTime
+
+                        data : List DataGroupTime
+                        data =
+                            [ { groupLabel = Just "CA"
+                              , points =
+                                    [ ( Time.millisToPosix 1579275175634, 10 )
+                                    , ( Time.millisToPosix 1579285175634, 20 )
+                                    ]
+                              }
+                            , { groupLabel = Just "TX"
+                              , points =
+                                    [ ( Time.millisToPosix 1579275175634, 11 )
+                                    , ( Time.millisToPosix 1579285175634, 21 )
+                                    ]
+                              }
+                            ]
+
+                        expected : DomainTimeStruct
+                        expected =
+                            { x = Just ( Time.millisToPosix 1579275175634, Time.millisToPosix 1579285175634 )
+                            , y = Just ( 0, 100 )
+                            }
+                    in
+                    Expect.equal (getDomainTimeFromData (Just ( 0, 100 )) domain data) expected
             ]
         , describe "groupedLayoutConfig"
             [ test "showIcons is False" <|

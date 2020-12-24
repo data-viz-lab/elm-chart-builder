@@ -971,15 +971,12 @@ getDomainBandFromData data config =
         |> fromDomainBand
 
 
-getDomainContinuousFromData : Config -> List DataGroupContinuous -> DomainContinuousStruct
-getDomainContinuousFromData config data =
-    let
-        -- get the domain from config first
-        -- and use it!
-        domain : DomainContinuousStruct
-        domain =
-            getDomainContinuous config
-    in
+getDomainContinuousFromData :
+    Maybe ( Float, Float )
+    -> DomainContinuousStruct
+    -> List DataGroupContinuous
+    -> DomainContinuousStruct
+getDomainContinuousFromData extent domain data =
     DomainContinuous
         { x =
             case domain.x of
@@ -999,25 +996,23 @@ getDomainContinuousFromData config data =
                     domain.y
 
                 Nothing ->
-                    data
-                        |> List.map .points
-                        |> List.concat
-                        |> List.map Tuple.second
-                        |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
-                        |> Just
+                    case extent of
+                        Just _ ->
+                            extent
+
+                        Nothing ->
+                            data
+                                |> List.map .points
+                                |> List.concat
+                                |> List.map Tuple.second
+                                |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                                |> Just
         }
         |> fromDomainContinuous
 
 
-getDomainTimeFromData : Config -> List DataGroupTime -> DomainTimeStruct
-getDomainTimeFromData config data =
-    let
-        -- get the domain from config first
-        -- and use it!
-        domain : DomainTimeStruct
-        domain =
-            getDomainTime config
-    in
+getDomainTimeFromData : Maybe ( Float, Float ) -> DomainTimeStruct -> List DataGroupTime -> DomainTimeStruct
+getDomainTimeFromData extent domain data =
     DomainTime
         { x =
             case domain.x of
@@ -1042,12 +1037,17 @@ getDomainTimeFromData config data =
                     domain.y
 
                 Nothing ->
-                    data
-                        |> List.map .points
-                        |> List.concat
-                        |> List.map Tuple.second
-                        |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
-                        |> Just
+                    case extent of
+                        Just _ ->
+                            extent
+
+                        Nothing ->
+                            data
+                                |> List.map .points
+                                |> List.concat
+                                |> List.map Tuple.second
+                                |> (\dd -> ( 0, List.maximum dd |> Maybe.withDefault 0 ))
+                                |> Just
         }
         |> fromDomainTime
 

@@ -43,7 +43,9 @@ import Chart.Internal.Type
         , dataContinuousGroupToDataContinuousStacked
         , dataContinuousGroupToDataTime
         , fromConfig
+        , getDomainContinuous
         , getDomainContinuousFromData
+        , getDomainTime
         , getDomainTimeFromData
         , getOffset
         , leftGap
@@ -129,7 +131,7 @@ renderLineGrouped ( data, config ) =
         timeDomain : DomainTimeStruct
         timeDomain =
             timeData
-                |> getDomainTimeFromData config
+                |> getDomainTimeFromData Nothing (getDomainTime config)
 
         continuousDomain : DomainContinuousStruct
         continuousDomain =
@@ -139,7 +141,7 @@ renderLineGrouped ( data, config ) =
 
                 DataContinuous _ ->
                     continuousData
-                        |> getDomainContinuousFromData config
+                        |> getDomainContinuousFromData Nothing (getDomainContinuous config)
 
         timeData =
             data
@@ -256,7 +258,7 @@ renderLineStacked lineDraw ( data, config ) =
 
                 DataContinuous _ ->
                     continuousData
-                        |> getDomainContinuousFromData config
+                        |> getDomainContinuousFromData (Just stackResult.extent) (getDomainContinuous config)
 
         dataStacked : List ( String, List Float )
         dataStacked =
@@ -292,7 +294,7 @@ renderLineStacked lineDraw ( data, config ) =
 
         timeDomain =
             timeData
-                |> getDomainTimeFromData config
+                |> getDomainTimeFromData (Just stackResult.extent) (getDomainTime config)
 
         xRange =
             ( 0, w )
@@ -325,7 +327,9 @@ renderLineStacked lineDraw ( data, config ) =
 
         yScale : ContinuousScale Float
         yScale =
-            toContinousScale yRange stackResult.extent c.yScale
+            toContinousScale yRange
+                (Maybe.withDefault ( 0, 0 ) continuousDomain.y)
+                c.yScale
 
         draw =
             case lineDraw of
