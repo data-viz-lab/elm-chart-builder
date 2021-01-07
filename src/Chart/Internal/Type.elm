@@ -61,6 +61,7 @@ module Chart.Internal.Type exposing
     , externalToDataBand
     , externalToDataContinuousGroup
     , externalToDataHistogram
+    , fillGapsForStack
     , fromConfig
     , fromDataBand
     , fromDomainBand
@@ -86,6 +87,7 @@ module Chart.Internal.Type exposing
     , role
     , setAccessibilityContent
     , setColorResource
+    , setCoreStyleFromPointBandX
     , setCoreStyles
     , setCurve
     , setDimensions
@@ -141,6 +143,7 @@ import Html
 import Html.Attributes
 import List.Extra
 import Scale exposing (BandScale, ContinuousScale)
+import Set
 import Shape
 import Statistics
 import SubPath exposing (SubPath)
@@ -411,6 +414,7 @@ type alias ConfigStruct =
     , axisYContinuous : ChartAxis.YAxis Float
     , colorResource : ColorResource
     , coreStyle : List ( String, String )
+    , coreStyleFromPointBandX : String -> List ( String, String )
     , curve : List ( Float, Float ) -> SubPath
     , domainBand : DomainBand
     , domainContinuous : DomainContinuous
@@ -439,12 +443,13 @@ defaultConfig : Config
 defaultConfig =
     toConfig
         { accessibilityContent = AccessibilityTableNoLabels
+        , axisXBand = ChartAxis.Bottom []
         , axisXContinuous = ChartAxis.Bottom []
         , axisXTime = ChartAxis.Bottom []
-        , axisXBand = ChartAxis.Bottom []
         , axisYContinuous = ChartAxis.Left []
         , colorResource = ColorNone
         , coreStyle = []
+        , coreStyleFromPointBandX = always []
         , curve = \d -> Shape.linearCurve d
         , domainBand = DomainBand initialDomainBandStruct
         , domainContinuous = DomainContinuous initialDomainContinuousStruct
@@ -456,11 +461,11 @@ defaultConfig =
         , margin = defaultMargin
         , orientation = defaultOrientation
         , showColumnTitle = NoColumnTitle
+        , showDataPoints = False
+        , showGroupLabels = False
+        , showLabels = NoLabel
         , showXAxis = True
         , showYAxis = True
-        , showDataPoints = False
-        , showLabels = NoLabel
-        , showGroupLabels = False
         , svgDesc = ""
         , svgTitle = ""
         , width = defaultWidth
@@ -621,6 +626,11 @@ setColorResource resource (Config c) =
 setCoreStyles : List ( String, String ) -> Config -> Config
 setCoreStyles styles (Config c) =
     toConfig { c | coreStyle = styles }
+
+
+setCoreStyleFromPointBandX : (String -> List ( String, String )) -> Config -> Config
+setCoreStyleFromPointBandX f (Config c) =
+    toConfig { c | coreStyleFromPointBandX = f }
 
 
 setHeight : Float -> Config -> Config
@@ -1487,13 +1497,58 @@ dataContinuousGroupToDataTime data =
             []
 
 
+fillGapsForStack : DataBand -> DataBand
+fillGapsForStack data =
+    let
+        d =
+            data
+                |> fromDataBand
+
+        allStrings =
+            d
+                |> List.map (.points >> List.map Tuple.first)
+                |> List.concat
+                |> Set.fromList
+
+        fillGaps dataGroupBand =
+            let
+                points =
+                    dataGroupBand.points
+                        |> List.map Tuple.first
+
+                newPoints =
+                    allStrings
+                        |> Set.foldr
+                            (\s acc ->
+                                if List.member s points then
+                                    acc
+
+                                else
+                                    ( s, 0 ) :: acc
+                            )
+                            []
+                        |> List.append dataGroupBand.points
+                        |> List.sortBy Tuple.first
+            in
+            { dataGroupBand | points = newPoints }
+    in
+    d
+        |> List.map fillGaps
+        |> toDataBand
+
+
 getStackedValuesAndGroupes : List (List ( Float, Float )) -> DataBand -> StackedValuesAndGroupes
 getStackedValuesAndGroupes values data =
     let
         m =
             List.map2
                 (\d v ->
-                    List.map2 (\stackedValue rawValue -> { rawValue = Tuple.second rawValue, stackedValue = stackedValue })
+                    List.map2
+                        (\stackedValue rawValue ->
+                            { rawValue = Tuple.second rawValue
+                            , stackedValue = stackedValue
+                            }
+                        )
                         v
                         d.points
                 )
@@ -1516,8 +1571,8 @@ dataContinuousGroupToDataContinuousStacked data =
             )
 
 
-dataBandToDataStacked : DataBand -> Config -> List ( String, List Float )
-dataBandToDataStacked data config =
+dataBandToDataStacked : Config -> DataBand -> List ( String, List Float )
+dataBandToDataStacked config data =
     let
         seed =
             getDomainBandFromData data config

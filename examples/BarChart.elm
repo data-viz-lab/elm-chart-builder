@@ -277,6 +277,18 @@ verticalStackedDiverging =
         , width = width
         , height = height
         }
+        |> Bar.withBarStyleFrom
+            (\label ->
+                case label of
+                    "b" ->
+                        [ ( "fill", "#f28e2c" ) ]
+
+                    "a" ->
+                        [ ( "fill", "#4e79a7" ) ]
+
+                    _ ->
+                        []
+            )
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withOrientation Bar.vertical

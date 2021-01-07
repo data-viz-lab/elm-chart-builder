@@ -46,6 +46,7 @@ import Chart.Internal.Type
         , colorCategoricalStyle
         , colorStyle
         , dataBandToDataStacked
+        , fillGapsForStack
         , fromConfig
         , fromDataBand
         , getBandGroupRange
@@ -128,9 +129,15 @@ renderBandStacked ( data, config ) =
         outerH =
             h + m.top + m.bottom
 
+        noGapsData : DataBand
+        noGapsData =
+            data
+                |> fillGapsForStack
+
         dataStacked : List ( String, List Float )
         dataStacked =
-            dataBandToDataStacked data config
+            noGapsData
+                |> dataBandToDataStacked config
 
         stackedConfig : StackConfig String
         stackedConfig =
@@ -143,7 +150,7 @@ renderBandStacked ( data, config ) =
             Shape.stack stackedConfig
 
         stackDepth =
-            getDataBandDepth data
+            getDataBandDepth noGapsData
 
         domain : DomainBandStruct
         domain =
@@ -212,7 +219,7 @@ renderBandStacked ( data, config ) =
             Scale.linear continuousRangeAxis continuousExtent
 
         ( columnValues, columnGroupes ) =
-            getStackedValuesAndGroupes values data
+            getStackedValuesAndGroupes values noGapsData
 
         scaledValues : List StackedValues
         scaledValues =
@@ -268,7 +275,7 @@ renderBandStacked ( data, config ) =
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableElement data c.accessibilityContent ]
+                    [ svgEl, tableElement noGapsData c.accessibilityContent ]
                 ]
 
 
@@ -315,8 +322,14 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
                 ( upper, lower ) =
                     stackedValue
 
+                coreStyleFromX =
+                    labels
+                        |> getStackedLabel idx
+                        |> c.coreStyleFromPointBandX
+
                 coreStyle =
                     Helpers.mergeStyles c.coreStyle (colorCategoricalStyle c idx)
+                        |> Helpers.mergeStyles coreStyleFromX
                         |> style
 
                 rect_ =
@@ -585,8 +598,12 @@ verticalRect config iconOffset bandSingleScale continuousScale colorScale idx po
         colorStyles =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
 
+        coreStyleFromX =
+            c.coreStyleFromPointBandX x__
+
         coreStyle =
             Helpers.mergeStyles c.coreStyle colorStyles
+                |> Helpers.mergeStyles coreStyleFromX
                 |> style
 
         w =
@@ -655,8 +672,12 @@ horizontalRect config bandSingleScale continuousScale colorScale idx point =
         colorStyles =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
 
+        coreStyleFromX =
+            c.coreStyleFromPointBandX x__
+
         coreStyle =
             Helpers.mergeStyles c.coreStyle colorStyles
+                |> Helpers.mergeStyles coreStyleFromX
                 |> style
 
         labelOffset =

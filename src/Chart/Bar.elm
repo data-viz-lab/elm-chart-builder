@@ -3,7 +3,7 @@ module Chart.Bar exposing
     , init
     , render
     , Config, RequiredConfig
-    , withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
+    , withBarStyle, withBarStyleFrom, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
     , XAxis, YAxis, axisBottom, axisTop, axisGrid, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
     , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
     )
@@ -37,7 +37,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withBarStyle, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
+@docs withBarStyle, withBarStyleFrom, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
 
 
 # Axis
@@ -215,6 +215,26 @@ The styles set here have precedence over `withColorPalette`, `withColorInterpola
 withBarStyle : List ( String, String ) -> Config -> Config
 withBarStyle styles config =
     Type.setCoreStyles styles config
+
+
+{-| Sets the style for the bars depending on the x value
+The styles set here have precedence over `withBarStyle`, `withColorPalette`, `withColorInterpolator` and css.
+
+    Bar.init requiredConfig
+        |> Bar.withBarStyleFrom
+            (\xValue ->
+                if xValue == "X" then
+                    [ ( "fill", "none" ), ( "stroke-width", "2" ) ]
+
+                else
+                    []
+            )
+        |> Bar.render ( data, accessor )
+
+-}
+withBarStyleFrom : (String -> List ( String, String )) -> Config -> Config
+withBarStyleFrom f config =
+    Type.setCoreStyleFromPointBandX f config
 
 
 {-| Sets the color palette for the chart.
