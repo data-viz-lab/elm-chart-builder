@@ -104,12 +104,10 @@ sharedStackedLineConfig =
 sharedGroupedLineConfig : Line.Config
 sharedGroupedLineConfig =
     Line.init requiredConfig
-        |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withYAxis yAxis
         |> Line.withXAxisContinuous xAxis
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withLabels Line.xGroupLabel
-        |> Line.withGroupedLayout
         |> Line.withSymbols (icons "chart-b")
 
 
@@ -152,41 +150,17 @@ timeData =
 
 
 type alias DataContinuous =
-    { x : Float, y : Float, groupLabel : String }
+    { x : Float, y : Float }
 
 
 accessorContinuous : Line.Accessor DataContinuous
 accessorContinuous =
-    Line.continuous (Line.AccessorContinuous (.groupLabel >> Just) .x .y)
+    Line.continuous (Line.AccessorContinuous (always Nothing) .x .y)
 
 
 dataContinuous : List DataContinuous
 dataContinuous =
-    [ { groupLabel = "A"
-      , x = 1991
-      , y = 10
-      }
-    , { groupLabel = "A"
-      , x = 1992
-      , y = 16
-      }
-    , { groupLabel = "A"
-      , x = 1993
-      , y = 26
-      }
-    , { groupLabel = "B"
-      , x = 1991
-      , y = 13
-      }
-    , { groupLabel = "B"
-      , x = 1992
-      , y = 23
-      }
-    , { groupLabel = "B"
-      , x = 1993
-      , y = 16
-      }
-    ]
+    [ { x = 1613505600000, y = 97.6826515643056 }, { x = 1613502000000, y = 76.22102437707814 }, { x = 1613498400000, y = 50.18293373733884 }, { x = 1613494800000, y = 69.33929980499407 }, { x = 1613491200000, y = 66.37772354938471 }, { x = 1613487600000, y = 8.05060273867111 }, { x = 1613484000000, y = 72.78164198103998 }, { x = 1613480400000, y = 18.625941283208846 }, { x = 1613476800000, y = 19.41753926472156 }, { x = 1613473200000, y = 17.694144599068796 } ]
 
 
 groupedTimeLine : Html msg
