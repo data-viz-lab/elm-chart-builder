@@ -6,13 +6,11 @@ module Chart.Internal.Helpers exposing
     , mergeStyles
     , sortStrings
     , stackDataGroupContinuous
-    , toUtcString
     )
 
 import Color exposing (Color)
 import Html exposing (Html)
 import Html.Attributes
-import Time exposing (toHour, toMinute, toSecond, utc)
 
 
 type alias DataGroupContinuous =
@@ -109,16 +107,6 @@ invisibleFigcaption content =
         , Html.Attributes.style "width" "1px"
         ]
         content
-
-
-toUtcString : Time.Posix -> String
-toUtcString time =
-    String.fromInt (toHour utc time)
-        ++ ":"
-        ++ String.fromInt (toMinute utc time)
-        ++ ":"
-        ++ String.fromInt (toSecond utc time)
-        ++ " (UTC)"
 
 
 sortStrings : (a -> String) -> List a -> List a

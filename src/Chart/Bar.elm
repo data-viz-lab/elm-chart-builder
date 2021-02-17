@@ -3,7 +3,7 @@ module Chart.Bar exposing
     , init
     , render
     , Config, RequiredConfig
-    , withBarStyle, withBarStyleFrom, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
+    , withBarStyle, withBarStyleFrom, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withTableFloatFormat, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
     , XAxis, YAxis, axisBottom, axisTop, axisGrid, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
     , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
     )
@@ -37,7 +37,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withBarStyle, withBarStyleFrom, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
+@docs withBarStyle, withBarStyleFrom, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withTableFloatFormat, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
 
 
 # Axis
@@ -318,6 +318,20 @@ Usefull for facilitating accessibility.
 withSymbols : List Symbol -> Config -> Config
 withSymbols =
     Type.setIcons
+
+
+{-| An optional formatter for all float values in the alternative table content for accessibility.
+
+Defaults to `String.fromFloat`
+
+    Bar.init requiredConfig
+        |> Bar.withTableFloatFormat String.fromFloat
+        |> Bar.render ( data, accessor )
+
+-}
+withTableFloatFormat : (Float -> String) -> Config -> Config
+withTableFloatFormat f =
+    Type.setTableFloatFormat f
 
 
 {-| Show the X ordinal values at the end of the bars.

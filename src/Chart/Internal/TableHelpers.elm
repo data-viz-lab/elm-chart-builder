@@ -6,7 +6,6 @@ module Chart.Internal.TableHelpers exposing
     , dataContinuousGroupToTableHeadings
     )
 
-import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Table as Table
 import Chart.Internal.Type as Type
 import LTTB
@@ -43,8 +42,11 @@ downsampleDataTime data =
         }
 
 
-dataBandToTableData : Type.DataBand -> List (List String)
-dataBandToTableData data =
+dataBandToTableData :
+    { c | tableFloatFormat : Float -> String }
+    -> Type.DataBand
+    -> List (List String)
+dataBandToTableData { tableFloatFormat } data =
     data
         |> Type.fromDataBand
         |> List.map .points
@@ -52,13 +54,16 @@ dataBandToTableData data =
         |> List.map
             (\points ->
                 points
-                    |> List.map (\p -> [ Tuple.first p, Tuple.second p |> String.fromFloat ])
+                    |> List.map (\p -> [ Tuple.first p, Tuple.second p |> tableFloatFormat ])
                     |> List.concat
             )
 
 
-dataContinuousGroupToTableData : Type.DataContinuousGroup -> List (List String)
-dataContinuousGroupToTableData data =
+dataContinuousGroupToTableData :
+    { c | tableFloatFormat : Float -> String, tablePosixFormat : Posix -> String }
+    -> Type.DataContinuousGroup
+    -> List (List String)
+dataContinuousGroupToTableData c data =
     case data of
         Type.DataTime data_ ->
             data_
@@ -70,8 +75,8 @@ dataContinuousGroupToTableData data =
                         points
                             |> List.map
                                 (\p ->
-                                    [ Tuple.first p |> Helpers.toUtcString
-                                    , Tuple.second p |> String.fromFloat
+                                    [ Tuple.first p |> c.tablePosixFormat
+                                    , Tuple.second p |> c.tableFloatFormat
                                     ]
                                 )
                             |> List.concat
@@ -87,8 +92,8 @@ dataContinuousGroupToTableData data =
                         points
                             |> List.map
                                 (\p ->
-                                    [ Tuple.first p |> String.fromFloat
-                                    , Tuple.second p |> String.fromFloat
+                                    [ Tuple.first p |> c.tableFloatFormat
+                                    , Tuple.second p |> c.tableFloatFormat
                                     ]
                                 )
                             |> List.concat
@@ -153,7 +158,7 @@ getLabelsFromContent content =
 getRowLabelsFromContent : Type.AccessibilityContent -> List String
 getRowLabelsFromContent content =
     case content of
-        Type.AccessibilityTable ( xLabel, yLabel ) ->
+        Type.AccessibilityTable ( xLabel, _ ) ->
             [ xLabel ]
 
         _ ->
@@ -179,7 +184,7 @@ dataContinuousGroupToRowHeadings data content =
                     |> Table.Headings
     in
     case data of
-        Type.DataTime data_ ->
+        Type.DataTime _ ->
             Table.Headings []
 
         Type.DataContinuous data_ ->
