@@ -39,6 +39,7 @@ import Chart.Internal.Type
         , RenderContext(..)
         , StackedValues
         , adjustContinuousRange
+        , ariaHidden
         , ariaLabelledby
         , ariaLabelledbyContent
         , bottomGap
@@ -249,6 +250,7 @@ renderBandStacked ( data, config ) =
             , width outerW
             , height outerH
             , role "img"
+            , ariaHidden
             ]
                 ++ ariaLabelledbyContent c
 
@@ -486,6 +488,7 @@ renderBandGrouped ( data, config ) =
             , width outerW
             , height outerH
             , role "img"
+            , ariaHidden
             ]
                 ++ ariaLabelledbyContent c
 
@@ -1184,7 +1187,7 @@ renderHistogram ( histogram, config ) =
             , width outerW
             , height outerH
             , role "img"
-            , ariaLabelledby "title desc"
+            , ariaHidden
             ]
                 ++ ariaLabelledbyContent c
 
