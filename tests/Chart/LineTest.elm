@@ -24,7 +24,7 @@ suite =
                         continuousDomain =
                             ( 0, 10 )
 
-                        config : Type.Config
+                        config : Type.Config msg
                         config =
                             Line.init requiredConfig
                                 |> Line.withYDomain continuousDomain

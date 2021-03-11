@@ -64,8 +64,8 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 
 {-| The Config opaque type
 -}
-type alias Config =
-    Type.Config
+type alias Config msg =
+    Type.Config msg
 
 
 {-| The required config, passed as an argument to the `init` function
@@ -126,7 +126,7 @@ preProcessedDataAccessor acc =
         |> Histo.render ( data, accessor )
 
 -}
-init : RequiredConfig -> Config
+init : RequiredConfig -> Config msg
 init c =
     Type.defaultConfig
         |> Type.setDimensions { margin = c.margin, width = c.width, height = c.height }
@@ -138,7 +138,7 @@ init c =
         |> Histo.render ( data, accessor )
 
 -}
-render : ( List data, Type.AccessorHistogram data ) -> Config -> Html msg
+render : ( List data, Type.AccessorHistogram data ) -> Config msg -> Html msg
 render ( externalData, acc ) config =
     let
         data =
@@ -157,7 +157,7 @@ Use this option to not build the table.
         |> Histo.render ( data, accessor )
 
 -}
-withoutTable : Config -> Config
+withoutTable : Config msg -> Config msg
 withoutTable =
     Type.setAccessibilityContent Type.AccessibilityNone
 
@@ -170,7 +170,7 @@ All values falling outside the domain will be ignored.
         |> Histo.render ( data, accessor )
 
 -}
-withDomain : ( Float, Float ) -> Config -> Config
+withDomain : ( Float, Float ) -> Config msg -> Config msg
 withDomain domain config =
     Type.setHistogramDomain domain config
 
@@ -184,7 +184,7 @@ Defaults to `String.fromFloat`
         |> Histo.render ( data, accessor )
 
 -}
-withTableFloatFormat : (Float -> String) -> Config -> Config
+withTableFloatFormat : (Float -> String) -> Config msg -> Config msg
 withTableFloatFormat f =
     Type.setTableFloatFormat f
 
@@ -196,7 +196,7 @@ withTableFloatFormat f =
         |> Histo.render ( data, accessor )
 
 -}
-withColor : Color -> Config -> Config
+withColor : Color -> Config msg -> Config msg
 withColor color config =
     Type.setColorResource (Type.Color color) config
 
@@ -209,7 +209,7 @@ Default value: ""
         |> Histo.render ( data, accessor )
 
 -}
-withDesc : String -> Config -> Config
+withDesc : String -> Config msg -> Config msg
 withDesc value config =
     Type.setSvgDesc value config
 
@@ -222,7 +222,7 @@ Default value: ""
         |> Histo.render ( data, accessor )
 
 -}
-withTitle : String -> Config -> Config
+withTitle : String -> Config msg -> Config msg
 withTitle value config =
     Type.setSvgTitle value config
 
@@ -237,7 +237,7 @@ It takes a formatter function.
         |> Bar.withColumnTitle (Bar.yColumnTitle String.fromFloat)
 
 -}
-withColumnTitle : Type.ColumnTitle -> Config -> Config
+withColumnTitle : Type.ColumnTitle -> Config msg -> Config msg
 withColumnTitle title config =
     case title of
         Type.YColumnTitle formatter ->
@@ -258,7 +258,7 @@ The styles set here have precedence over css.
         |> Histo.render ( data, accessor )
 
 -}
-withBarStyle : List ( String, String ) -> Config -> Config
+withBarStyle : List ( String, String ) -> Config msg -> Config msg
 withBarStyle styles config =
     Type.setCoreStyles styles config
 
@@ -322,7 +322,7 @@ axisBottom =
         |> Histo.render ( data, accessor )
 
 -}
-hideAxis : Config -> Config
+hideAxis : Config msg -> Config msg
 hideAxis config =
     Type.setXAxis False config
         |> Type.setYAxis False
@@ -335,7 +335,7 @@ hideAxis config =
         |> Histo.render ( data, accessor )
 
 -}
-hideYAxis : Config -> Config
+hideYAxis : Config msg -> Config msg
 hideYAxis config =
     Type.setYAxis False config
 
@@ -347,7 +347,7 @@ hideYAxis config =
         |> Histo.render ( data, accessor )
 
 -}
-hideXAxis : Config -> Config
+hideXAxis : Config msg -> Config msg
 hideXAxis config =
     Type.setXAxis False config
 
@@ -359,7 +359,7 @@ hideXAxis config =
         |> Histo.render ( data, accessor )
 
 -}
-withXAxis : ChartAxis.XAxis Float -> Config -> Config
+withXAxis : ChartAxis.XAxis Float -> Config msg -> Config msg
 withXAxis =
     Type.setXAxisContinuous
 
@@ -371,6 +371,6 @@ withXAxis =
         |> Histo.render ( data, accessor )
 
 -}
-withYAxis : ChartAxis.YAxis Float -> Config -> Config
+withYAxis : ChartAxis.YAxis Float -> Config msg -> Config msg
 withYAxis =
     Type.setYAxisContinuous

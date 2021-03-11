@@ -69,8 +69,8 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 
 {-| The Config opaque type
 -}
-type alias Config =
-    Type.Config
+type alias Config msg =
+    Type.Config msg
 
 
 {-| The required config, passed as an argument to the `init` function
@@ -129,7 +129,7 @@ type alias Accessor data =
         |> Bar.render ( data, accessor )
 
 -}
-init : RequiredConfig -> Config
+init : RequiredConfig -> Config msg
 init c =
     Type.defaultConfig
         |> Type.setDimensions { margin = c.margin, width = c.width, height = c.height }
@@ -141,7 +141,7 @@ init c =
         |> Bar.render ( data, accessor )
 
 -}
-render : ( List data, Accessor data ) -> Config -> Html msg
+render : ( List data, Accessor data ) -> Config msg -> Html msg
 render ( externalData, accessor ) config =
     let
         c =
@@ -172,7 +172,7 @@ It takes a direction: `diverging` or `noDirection`.
         |> Bar.render ( data, accessor )
 
 -}
-withStackedLayout : Type.Direction -> Config -> Config
+withStackedLayout : Type.Direction -> Config msg -> Config msg
 withStackedLayout direction config =
     Type.setLayout (Type.StackedBar direction) config
 
@@ -184,7 +184,7 @@ withStackedLayout direction config =
         |> Bar.render ( data, accessor )
 
 -}
-withGroupedLayout : Config -> Config
+withGroupedLayout : Config msg -> Config msg
 withGroupedLayout config =
     Type.setLayout Type.GroupedBar config
 
@@ -199,7 +199,7 @@ Default value: `vertical`.
         |> Bar.render ( data, accessor )
 
 -}
-withOrientation : Type.Orientation -> Config -> Config
+withOrientation : Type.Orientation -> Config msg -> Config msg
 withOrientation value config =
     Type.setOrientation value config
 
@@ -212,7 +212,7 @@ The styles set here have precedence over `withColorPalette`, `withColorInterpola
         |> Bar.render ( data, accessor )
 
 -}
-withBarStyle : List ( String, String ) -> Config -> Config
+withBarStyle : List ( String, String ) -> Config msg -> Config msg
 withBarStyle styles config =
     Type.setCoreStyles styles config
 
@@ -232,7 +232,7 @@ The styles set here have precedence over `withBarStyle`, `withColorPalette`, `wi
         |> Bar.render ( data, accessor )
 
 -}
-withBarStyleFrom : (String -> List ( String, String )) -> Config -> Config
+withBarStyleFrom : (String -> List ( String, String )) -> Config msg -> Config msg
 withBarStyleFrom f config =
     Type.setCoreStyleFromPointBandX f config
 
@@ -249,7 +249,7 @@ If the bars in a group are more then the colours in the palette, the colours wil
         |> Bar.render (data, accessor)
 
 -}
-withColorPalette : List Color -> Config -> Config
+withColorPalette : List Color -> Config msg -> Config msg
 withColorPalette palette config =
     Type.setColorResource (Type.ColorPalette palette) config
 
@@ -263,7 +263,7 @@ This option is not supported for stacked bar charts and will have no effect on t
         |> Bar.render ( data, accessor )
 
 -}
-withColorInterpolator : (Float -> Color) -> Config -> Config
+withColorInterpolator : (Float -> Color) -> Config msg -> Config msg
 withColorInterpolator interpolator config =
     Type.setColorResource (Type.ColorInterpolator interpolator) config
 
@@ -275,7 +275,7 @@ withColorInterpolator interpolator config =
         |> Bar.render ( data, accessor )
 
 -}
-withXGroupDomain : List String -> Config -> Config
+withXGroupDomain : List String -> Config msg -> Config msg
 withXGroupDomain value config =
     Type.setDomainBandBandGroup value config
 
@@ -287,7 +287,7 @@ withXGroupDomain value config =
         |> Bar.render ( data, accessor )
 
 -}
-withXDomain : List String -> Config -> Config
+withXDomain : List String -> Config msg -> Config msg
 withXDomain value config =
     Type.setDomainBandBandSingle value config
 
@@ -299,7 +299,7 @@ withXDomain value config =
         |> Bar.render ( data, accessor )
 
 -}
-withYDomain : ( Float, Float ) -> Config -> Config
+withYDomain : ( Float, Float ) -> Config msg -> Config msg
 withYDomain value config =
     Type.setDomainBandContinuous value config
 
@@ -315,7 +315,7 @@ Usefull for facilitating accessibility.
         |> Bar.render ( data, accessor )
 
 -}
-withSymbols : List Symbol -> Config -> Config
+withSymbols : List Symbol -> Config msg -> Config msg
 withSymbols =
     Type.setIcons
 
@@ -329,7 +329,7 @@ Defaults to `String.fromFloat`
         |> Bar.render ( data, accessor )
 
 -}
-withTableFloatFormat : (Float -> String) -> Config -> Config
+withTableFloatFormat : (Float -> String) -> Config msg -> Config msg
 withTableFloatFormat f =
     Type.setTableFloatFormat f
 
@@ -345,7 +345,7 @@ If used together with symbols, the label will be drawn on top of the symbol.
         |> Bar.render ( data, accessor )
 
 -}
-withXLabels : Config -> Config
+withXLabels : Config msg -> Config msg
 withXLabels =
     Type.showXOrdinalLabel
 
@@ -360,7 +360,7 @@ Use this option to not build the table.
         |> Bar.render ( data, accessor )
 
 -}
-withoutTable : Config -> Config
+withoutTable : Config msg -> Config msg
 withoutTable =
     Type.setAccessibilityContent Type.AccessibilityNone
 
@@ -377,7 +377,7 @@ If used together with symbols, the label will be drawn after the symbol.
         |> Bar.withLabels (Bar.yLabel String.fromFloat)
 
 -}
-withLabels : Type.Label -> Config -> Config
+withLabels : Type.Label -> Config msg -> Config msg
 withLabels label =
     case label of
         Type.YLabel formatter ->
@@ -401,7 +401,7 @@ It takes one of: stackedColumnTitle, xOrdinalColumnTitle, yColumnTitle
         |> Bar.withColumnTitle (Bar.yColumnTitle String.fromFloat)
 
 -}
-withColumnTitle : Type.ColumnTitle -> Config -> Config
+withColumnTitle : Type.ColumnTitle -> Config msg -> Config msg
 withColumnTitle title config =
     case title of
         Type.YColumnTitle formatter ->
@@ -427,7 +427,7 @@ This shuld be set if no title nor description exists for the chart, for example 
         |> Bar.render ( data, accessor )
 
 -}
-withDesc : String -> Config -> Config
+withDesc : String -> Config msg -> Config msg
 withDesc value config =
     Type.setSvgDesc value config
 
@@ -442,7 +442,7 @@ This shuld be set if no title nor description exists for the chart, for example 
         |> Bar.render ( data, accessor )
 
 -}
-withTitle : String -> Config -> Config
+withTitle : String -> Config msg -> Config msg
 withTitle value config =
     Type.setSvgTitle value config
 
@@ -616,7 +616,7 @@ axisTop =
         |> Bar.render ( data, accessor )
 
 -}
-hideAxis : Config -> Config
+hideAxis : Config msg -> Config msg
 hideAxis config =
     Type.setXAxis False config
         |> Type.setYAxis False
@@ -637,7 +637,7 @@ Bar.init requiredConfig
 ```
 
 -}
-hideYAxis : Config -> Config
+hideYAxis : Config msg -> Config msg
 hideYAxis config =
     Type.setYAxis False config
 
@@ -657,7 +657,7 @@ Bar.init requiredConfig
 ```
 
 -}
-hideXAxis : Config -> Config
+hideXAxis : Config msg -> Config msg
 hideXAxis config =
     Type.setXAxis False config
 
@@ -669,7 +669,7 @@ hideXAxis config =
         |> Bar.render ( data, accessor )
 
 -}
-withXAxis : ChartAxis.XAxis String -> Config -> Config
+withXAxis : ChartAxis.XAxis String -> Config msg -> Config msg
 withXAxis =
     Type.setXAxisBand
 
@@ -681,7 +681,7 @@ withXAxis =
         |> Bar.render ( data, accessor )
 
 -}
-withYAxis : ChartAxis.YAxis Float -> Config -> Config
+withYAxis : ChartAxis.YAxis Float -> Config msg -> Config msg
 withYAxis =
     Type.setYAxisContinuous
 
@@ -693,6 +693,6 @@ withYAxis =
         |> Bar.render ( data, accessor )
 
 -}
-withLogYScale : Float -> Config -> Config
+withLogYScale : Float -> Config msg -> Config msg
 withLogYScale base =
     Type.setYScale (Type.LogScale base)

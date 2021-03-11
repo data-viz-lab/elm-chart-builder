@@ -7,6 +7,7 @@ module Chart.Line exposing
     , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisContinuous, withXAxisTime, withYAxis
     , withSymbols
     , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawArea, drawLine
+    , hoverOne, withEvent
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -54,6 +55,7 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 import Axis
 import Chart.Internal.Axis as ChartAxis
+import Chart.Internal.Event as Event exposing (Event(..))
 import Chart.Internal.Line
     exposing
         ( renderLineGrouped
@@ -70,8 +72,8 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 
 {-| The Config opaque type
 -}
-type alias Config =
-    Type.Config
+type alias Config msg =
+    Type.Config msg
 
 
 {-| The required config, passed as an argument to the `init` function
@@ -170,7 +172,7 @@ continuous acc =
         |> Line.render (data, accessor)
 
 -}
-init : RequiredConfig -> Config
+init : RequiredConfig -> Config msg
 init c =
     Type.defaultConfig
         |> withGroupedLayout
@@ -183,7 +185,7 @@ init c =
         |> Line.render ( data, accessor )
 
 -}
-render : ( List data, Accessor data ) -> Config -> Html msg
+render : ( List data, Accessor data ) -> Config msg -> Html msg
 render ( externalData, accessor ) config =
     let
         c =
@@ -216,7 +218,7 @@ for more info.
         |> Line.render ( data, accessor )
 
 -}
-withCurve : (List ( Float, Float ) -> SubPath) -> Config -> Config
+withCurve : (List ( Float, Float ) -> SubPath) -> Config msg -> Config msg
 withCurve curve config =
     Type.setCurve curve config
 
@@ -231,7 +233,7 @@ If set on a continuous line chart this setting will have no effect.
         |> Line.render ( data, accessor )
 
 -}
-withXTimeDomain : ( Posix, Posix ) -> Config -> Config
+withXTimeDomain : ( Posix, Posix ) -> Config msg -> Config msg
 withXTimeDomain value config =
     Type.setDomainTimeX value config
 
@@ -247,7 +249,7 @@ If set on a continuous line chart this setting will have no effect.
         |> Line.render ( data, accessor )
 
 -}
-withYDomain : ( Float, Float ) -> Config -> Config
+withYDomain : ( Float, Float ) -> Config msg -> Config msg
 withYDomain value config =
     Type.setDomainContinuousAndTimeY value config
 
@@ -262,7 +264,7 @@ If set on a continuous line chart this setting will have no effect.
         |> Line.render ( data, accessor )
 
 -}
-withXContinuousDomain : ( Float, Float ) -> Config -> Config
+withXContinuousDomain : ( Float, Float ) -> Config msg -> Config msg
 withXContinuousDomain value config =
     Type.setDomainContinuousX value config
 
@@ -277,7 +279,7 @@ Use this option to not build the table.
         |> Line.render ( data, accessor )
 
 -}
-withoutTable : Config -> Config
+withoutTable : Config msg -> Config msg
 withoutTable =
     Type.setAccessibilityContent Type.AccessibilityNone
 
@@ -291,7 +293,7 @@ Defaults to `String.fromFloat`
         |> Line.render ( data, accessor )
 
 -}
-withTableFloatFormat : (Float -> String) -> Config -> Config
+withTableFloatFormat : (Float -> String) -> Config msg -> Config msg
 withTableFloatFormat f =
     Type.setTableFloatFormat f
 
@@ -305,7 +307,7 @@ Defaults to `Time.posixToMillis >> String.fromInt`
         |> Line.render ( data, accessor )
 
 -}
-withTablePosixFormat : (Posix -> String) -> Config -> Config
+withTablePosixFormat : (Posix -> String) -> Config msg -> Config msg
 withTablePosixFormat f =
     Type.setTablePosixFormat f
 
@@ -320,7 +322,7 @@ This shuld be set if no title nor description exists for the chart, for example 
         |> Line.render ( data, accessor )
 
 -}
-withDesc : String -> Config -> Config
+withDesc : String -> Config msg -> Config msg
 withDesc value config =
     Type.setSvgDesc value config
 
@@ -335,7 +337,7 @@ This shuld be set if no title nor description exists for the chart, for example 
         |> Line.render ( data, accessor )
 
 -}
-withTitle : String -> Config -> Config
+withTitle : String -> Config msg -> Config msg
 withTitle value config =
     Type.setSvgTitle value config
 
@@ -351,7 +353,7 @@ withTitle value config =
         |> Line.render (data, accessor)
 
 -}
-withColorPalette : List Color -> Config -> Config
+withColorPalette : List Color -> Config msg -> Config msg
 withColorPalette palette config =
     Type.setColorResource (Type.ColorPalette palette) config
 
@@ -365,7 +367,7 @@ It takes a direction: `diverging` or `noDirection`
         |> Line.render ( data, accessor )
 
 -}
-withStackedLayout : Type.LineDraw -> Config -> Config
+withStackedLayout : Type.LineDraw -> Config msg -> Config msg
 withStackedLayout lineDraw config =
     Type.setLayout (Type.StackedLine lineDraw) config
 
@@ -377,7 +379,7 @@ withStackedLayout lineDraw config =
         |> Line.render ( data, accessor )
 
 -}
-withGroupedLayout : Config -> Config
+withGroupedLayout : Config msg -> Config msg
 withGroupedLayout config =
     Type.setLayout Type.GroupedLine config
 
@@ -392,7 +394,7 @@ It takes one of: xGroupLabel
         |> Line.withLabels Line.xGroupLabel
 
 -}
-withLabels : Type.Label -> Config -> Config
+withLabels : Type.Label -> Config msg -> Config msg
 withLabels label =
     case label of
         Type.XGroupLabel ->
@@ -410,7 +412,7 @@ The styles set here have precedence over `withColorPalette` and css.
         |> Line.render ( data, accessor )
 
 -}
-withLineStyle : List ( String, String ) -> Config -> Config
+withLineStyle : List ( String, String ) -> Config msg -> Config msg
 withLineStyle styles config =
     Type.setCoreStyles styles config
 
@@ -486,7 +488,7 @@ With a horizontal layout the Y axis is the horizontal axis.
         |> Line.render ( data, accessor )
 
 -}
-hideYAxis : Config -> Config
+hideYAxis : Config msg -> Config msg
 hideYAxis config =
     Type.setYAxis False config
 
@@ -502,7 +504,7 @@ With a horizontal layout the X axis is the vertical axis.
         |> Line.render ( data, accessor )
 
 -}
-hideXAxis : Config -> Config
+hideXAxis : Config msg -> Config msg
 hideXAxis config =
     Type.setXAxis False config
 
@@ -514,7 +516,7 @@ hideXAxis config =
         |> Line.render ( data, accessor )
 
 -}
-hideAxis : Config -> Config
+hideAxis : Config msg -> Config msg
 hideAxis config =
     Type.setXAxis False config
         |> Type.setYAxis False
@@ -527,7 +529,7 @@ hideAxis config =
         |> Line.render ( data, accessor )
 
 -}
-withXAxisTime : ChartAxis.XAxis Posix -> Config -> Config
+withXAxisTime : ChartAxis.XAxis Posix -> Config msg -> Config msg
 withXAxisTime =
     Type.setXAxisTime
 
@@ -539,7 +541,7 @@ withXAxisTime =
         |> Line.render ( data, accessor )
 
 -}
-withXAxisContinuous : ChartAxis.XAxis Float -> Config -> Config
+withXAxisContinuous : ChartAxis.XAxis Float -> Config msg -> Config msg
 withXAxisContinuous =
     Type.setXAxisContinuous
 
@@ -551,7 +553,7 @@ withXAxisContinuous =
         |> Line.render ( data, accessor )
 
 -}
-withYAxis : ChartAxis.YAxis Float -> Config -> Config
+withYAxis : ChartAxis.YAxis Float -> Config msg -> Config msg
 withYAxis =
     Type.setYAxisContinuous
 
@@ -563,9 +565,28 @@ withYAxis =
         |> Line.render ( data, accessor )
 
 -}
-withLogYScale : Float -> Config -> Config
+withLogYScale : Float -> Config msg -> Config msg
 withLogYScale base =
     Type.setYScale (Type.LogScale base)
+
+
+hoverOne : (Maybe ( Float, Float ) -> msg) -> Event.Event msg
+hoverOne msg =
+    Event.HoverOne msg
+
+
+{-| Add an event
+
+    Line.init requiredConfig
+        |> Line.withEvent (Line.HoverOne OnHover)
+        |> Line.render ( data, accessor )
+
+-}
+withEvent : Event msg -> Config msg -> Config msg
+withEvent event =
+    case event of
+        HoverOne msg ->
+            Type.addEvent (Event.HoverOne msg)
 
 
 {-|
@@ -601,7 +622,7 @@ Default value: []
         |> withSymbols [ Circle, Corner, Triangle ]
 
 -}
-withSymbols : List Symbol -> Config -> Config
+withSymbols : List Symbol -> Config msg -> Config msg
 withSymbols =
     Type.setIcons
 
