@@ -40,6 +40,7 @@ module Chart.Internal.Type exposing
     , Steps
     , YScale(..)
     , adjustContinuousRange
+    , ariaHidden
     , ariaLabelledby
     , ariaLabelledbyContent
     , bottomGap
@@ -504,6 +505,11 @@ role name =
 ariaLabelledby : String -> Html.Attribute msg
 ariaLabelledby label =
     Html.Attributes.attribute "aria-labelledby" label
+
+
+ariaHidden : Html.Attribute msg
+ariaHidden =
+    Html.Attributes.attribute "aria-hidden" "true"
 
 
 
@@ -1675,7 +1681,10 @@ colorCategoricalStyle c idx =
 
 ariaLabelledbyContent : ConfigStruct -> List (TypedSvg.Core.Attribute msg)
 ariaLabelledbyContent c =
-    if c.svgDesc /= "" then
+    if c.svgDesc /= "" && c.svgTitle /= "" then
+        [ ariaLabelledby (c.svgDesc ++ " " ++ c.svgTitle) ]
+
+    else if c.svgDesc /= "" then
         [ ariaLabelledby c.svgDesc ]
 
     else if c.svgTitle /= "" then
