@@ -1,16 +1,17 @@
 module Chart.Internal.SquarePie exposing (renderPie)
 
-import Array
+import Array exposing (Array)
 import Chart.Internal.Type as Type
     exposing
         ( fromConfig
         , getDomainBandFromData
         )
+import Color
 import Html exposing (Html)
 import Html.Attributes exposing (class, style)
 
 
-renderPie : ( Type.DataBand, Type.Config ) -> Html msg
+renderPie : ( List Type.PointBand, Type.Config ) -> Html msg
 renderPie ( data, config ) =
     let
         c =
@@ -22,9 +23,14 @@ renderPie ( data, config ) =
         h =
             c.height
 
+        dataBand : Type.DataBand
+        dataBand =
+            [ { groupLabel = Nothing, points = data } ]
+                |> Type.toDataBand
+
         domain : Type.DomainBandStruct
         domain =
-            getDomainBandFromData data config
+            getDomainBandFromData dataBand config
 
         _ =
             Debug.log "data" data
@@ -44,35 +50,76 @@ renderPie ( data, config ) =
                 ]
 
 
-tableElement : Type.DataBand -> Type.AccessibilityContent -> Html msg
+tableElement : List Type.PointBand -> Type.AccessibilityContent -> Html msg
 tableElement data accessibilityContent =
     Html.text ""
 
 
-square : ( Type.DataBand, Type.ConfigStruct ) -> Html msg
+square : ( List Type.PointBand, Type.ConfigStruct ) -> Html msg
 square ( data, c ) =
-    List.range 0 9
-        |> List.map
+    let
+        size =
+            10
+    in
+    Html.div
+        [ style "display" "grid"
+        , style "grid-template-rows" ("repeat(" ++ String.fromInt size ++ ", 1fr)")
+        , style "grid-template-columns" ("repeat(" ++ String.fromInt size ++ ", 1fr)")
+        , style "grid-gap" "1px"
+        , style "width" ((c.width |> String.fromFloat) ++ "px")
+        , style "height" ((c.height |> String.fromFloat) ++ "px")
+        ]
+        (initializeGrid size
+            |> Array.toList
+            |> List.map
+                (\item ->
+                    let
+                        cssClass =
+                            String.fromInt item.idx0 ++ "--" ++ String.fromInt item.idx1
+
+                        luminosity =
+                            ((item.idx0 + 1 |> toFloat) * (item.idx1 + 1 |> toFloat)) / (size * size)
+
+                        color =
+                            Color.hsl 0.9 1.0 luminosity
+                    in
+                    Html.div
+                        [ class cssClass
+
+                        --, style "background-color" (Color.toCssString color)
+                        , style "background-color" "white"
+                        ]
+                        --[]
+                        [ Html.text cssClass ]
+                )
+        )
+
+
+
+-- GRID
+
+
+type alias GridItem =
+    { idx0 : Int
+    , idx1 : Int
+    , xValue : String
+    , yValue : Float
+    }
+
+
+initializeGrid : Int -> Array GridItem
+initializeGrid size =
+    Array.initialize size (\n -> n + 1)
+        |> Array.map
             (\idx0 ->
-                List.range 0 9
-                    |> List.map
+                Array.initialize size (\n -> n + 1)
+                    |> Array.map
                         (\idx1 ->
-                            Html.div
-                                [ class (String.fromInt idx0 ++ "--" ++ String.fromInt idx1)
-                                , style "background-color" "teal"
-                                ]
-                                []
+                            { idx0 = idx0 - 1
+                            , idx1 = idx1 - 1
+                            , xValue = ""
+                            , yValue = 0
+                            }
                         )
             )
-        |> List.concat
-        |> (\rows ->
-                Html.div
-                    [ style "display" "grid"
-                    , style "grid-template-rows" "repeat(10, 1fr)"
-                    , style "grid-template-columns" "repeat(10, 1fr)"
-                    , style "grid-gap" "1px"
-                    , style "width" ((c.width |> String.fromFloat) ++ "px")
-                    , style "height" ((c.height |> String.fromFloat) ++ "px")
-                    ]
-                    rows
-           )
+        |> Array.foldl (\arr acc -> Array.append acc arr) Array.empty

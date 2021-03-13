@@ -37,8 +37,7 @@ type alias RequiredConfig =
 {-| The data accessors
 -}
 type alias Accessor data =
-    { xGroup : data -> Maybe String
-    , xValue : data -> String
+    { xValue : data -> String
     , yValue : data -> Float
     }
 
@@ -47,8 +46,7 @@ type alias Accessor data =
 
     data :
         List
-            { groupLabel : String
-            , x : String
+            { x : String
             , y : Float
             }
     data =
@@ -64,8 +62,7 @@ type alias Accessor data =
 
     accessor :
         Pie.Accessor
-            { groupLabel : String
-            , x : String
+            { x : String
             , y : Float
             }
     accessor =
@@ -94,13 +91,13 @@ init c =
 
 -}
 render : ( List data, Accessor data ) -> Config -> Html msg
-render ( externalData, accessor ) config =
+render x config =
     let
         c =
             Type.fromConfig config
 
         data =
-            Type.externalToDataBand (Type.toExternalData externalData) accessor
+            externalToDataBand x
     in
     renderPie ( data, config )
 
@@ -165,3 +162,22 @@ This shuld be set if no title nor description exists for the chart, for example 
 withTitle : String -> Config -> Config
 withTitle value config =
     Type.setSvgTitle value config
+
+
+
+-- HELPERS
+
+
+externalToDataBand : ( List data, Accessor data ) -> List Type.PointBand
+externalToDataBand ( externalData, accessor ) =
+    let
+        accessorBand =
+            { xGroup = always Nothing
+            , xValue = accessor.xValue
+            , yValue = accessor.yValue
+            }
+    in
+    Type.externalToDataBand (Type.toExternalData externalData) accessorBand
+        |> Type.fromDataBand
+        |> List.map .points
+        |> List.concat

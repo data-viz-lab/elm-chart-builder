@@ -38,7 +38,7 @@ data =
 
 accessor : Pie.Accessor Data
 accessor =
-    Pie.Accessor (always Nothing) .x .y
+    Pie.Accessor .x .y
 
 
 chart : Html msg
