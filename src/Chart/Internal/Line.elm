@@ -42,12 +42,12 @@ import Chart.Internal.Type
         , dataContinuousGroupToDataContinuous
         , dataContinuousGroupToDataContinuousStacked
         , dataContinuousGroupToDataTime
+        , descAndTitle
         , fromConfig
         , getDomainContinuous
         , getDomainContinuousFromData
         , getDomainTime
         , getDomainTimeFromData
-        , getOffset
         , leftGap
         , role
         , showIcons
@@ -65,7 +65,6 @@ import TypedSvg.Attributes
     exposing
         ( class
         , dominantBaseline
-        , fill
         , style
         , textAnchor
         , transform
@@ -84,18 +83,6 @@ import TypedSvg.Types
         , ShapeRendering(..)
         , Transform(..)
         )
-
-
-
--- INTERNALS
-
-
-descAndTitle : ConfigStruct -> List (Svg msg)
-descAndTitle c =
-    -- https://developer.paciellogroup.com/blog/2013/12/using-aria-enhance-svg-accessibility/
-    [ TypedSvg.title [] [ text c.svgTitle ]
-    , TypedSvg.desc [] [ text c.svgDesc ]
-    ]
 
 
 
@@ -216,7 +203,7 @@ renderLineGrouped ( data, config ) =
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableElement data c.accessibilityContent ]
+                    [ svgEl, tableElement config data ]
                 ]
 
 
@@ -362,7 +349,7 @@ renderLineStacked lineDraw ( data, config ) =
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableElement data c.accessibilityContent ]
+                    [ svgEl, tableElement config data ]
                 ]
 
 
@@ -673,18 +660,13 @@ drawAreas config xScale yScale stackedResult combinedData =
                 |> Shape.area c.curve
 
         styles idx =
-            Helpers.mergeStyles
-                []
-                (colorStyle c (Just idx) Nothing)
+            colorStyle c (Just idx) Nothing
+                |> Helpers.mergeStyles []
                 |> Helpers.mergeStyles c.coreStyle
                 |> style
 
-        renderStream :
-            ( ContinuousScale Float, ContinuousScale Float )
-            -> Int
-            -> DataGroupContinuousWithStack
-            -> Svg msg
-        renderStream scales idx combinedWithStack =
+        renderStream : Int -> DataGroupContinuousWithStack -> Svg msg
+        renderStream idx combinedWithStack =
             Path.element (toArea combinedWithStack)
                 [ class [ "area", "area-" ++ String.fromInt idx ]
                 , styles idx
@@ -701,7 +683,7 @@ drawAreas config xScale yScale stackedResult combinedData =
 
         paths =
             combinedDataWithStack
-                |> List.indexedMap (renderStream ( xScale, yScale ))
+                |> List.indexedMap renderStream
     in
     [ g
         [ transform [ Translate m.left m.top ]
@@ -747,13 +729,9 @@ drawContinuousLine config xScale yScale sortedData =
                 |> List.map lineGenerator
                 |> Shape.line c.curve
 
-        colorSymbol idx =
-            colorStyle c (Just idx) Nothing
-
         styles idx =
-            Helpers.mergeStyles
-                [ ( "fill", "none" ) ]
-                (colorStyle c (Just idx) Nothing)
+            colorStyle c (Just idx) Nothing
+                |> Helpers.mergeStyles [ ( "fill", "none" ) ]
                 |> Helpers.mergeStyles c.coreStyle
                 |> style
 
@@ -804,7 +782,7 @@ areaLabel :
     -> Int
     -> DataGroupContinuousWithStack
     -> Svg msg
-areaLabel config xScale yScale idx item =
+areaLabel config xScale yScale _ item =
     case item.groupLabel of
         Just label ->
             let
@@ -904,23 +882,21 @@ horizontalLabel config xScale yScale idx groupLabel point =
             text_ [] []
 
 
-tableElement : DataContinuousGroup -> AccessibilityContent -> Html msg
-tableElement data accessibilityContent =
+tableElement : Config -> DataContinuousGroup -> Html msg
+tableElement config data =
     let
-        tableHeadings =
-            Helpers.dataContinuousGroupToTableHeadings data accessibilityContent
+        c =
+            fromConfig config
 
-        -- TODO
-        --tableRowHeadings =
-        --    Helpers.dataLinearGroupToRowHeadings data accessibilityContent
-        --        |> Debug.log "rowHeadings"
+        tableHeadings =
+            Helpers.dataContinuousGroupToTableHeadings data c.accessibilityContent
+
         tableData =
-            Helpers.dataContinuousGroupToTableData data
+            Helpers.dataContinuousGroupToTableData c data
 
         table =
             Table.generate tableData
                 |> Table.setColumnHeadings tableHeadings
-                --|> Table.setRowHeadings tableRowHeadings
                 |> Table.view
     in
     Helpers.invisibleFigcaption

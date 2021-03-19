@@ -59,6 +59,7 @@ module Chart.Internal.Type exposing
     , defaultOrientation
     , defaultTicksCount
     , defaultWidth
+    , descAndTitle
     , externalToDataBand
     , externalToDataContinuousGroup
     , externalToDataHistogram
@@ -110,6 +111,8 @@ module Chart.Internal.Type exposing
     , setShowDataPoints
     , setSvgDesc
     , setSvgTitle
+    , setTableFloatFormat
+    , setTablePosixFormat
     , setWidth
     , setXAxis
     , setXAxisBand
@@ -149,7 +152,8 @@ import Shape
 import Statistics
 import SubPath exposing (SubPath)
 import Time exposing (Posix, Zone)
-import TypedSvg.Core
+import TypedSvg
+import TypedSvg.Core exposing (Svg, text)
 
 
 
@@ -409,9 +413,9 @@ type alias RequiredConfig =
 
 type alias ConfigStruct =
     { accessibilityContent : AccessibilityContent
+    , axisXBand : ChartAxis.XAxis String
     , axisXContinuous : ChartAxis.XAxis Float
     , axisXTime : ChartAxis.XAxis Posix
-    , axisXBand : ChartAxis.XAxis String
     , axisYContinuous : ChartAxis.YAxis Float
     , colorResource : ColorResource
     , coreStyle : List ( String, String )
@@ -434,6 +438,8 @@ type alias ConfigStruct =
     , showYAxis : Bool
     , svgDesc : String
     , svgTitle : String
+    , tableFloatFormat : Float -> String
+    , tablePosixFormat : Posix -> String
     , width : Float
     , yScale : YScale
     , zone : Zone
@@ -469,6 +475,8 @@ defaultConfig =
         , showYAxis = True
         , svgDesc = ""
         , svgTitle = ""
+        , tableFloatFormat = String.fromFloat
+        , tablePosixFormat = Time.posixToMillis >> String.fromInt
         , width = defaultWidth
         , yScale = LinearScale
         , zone = Time.utc
@@ -602,6 +610,16 @@ setSvgDesc desc (Config c) =
 setSvgTitle : String -> Config -> Config
 setSvgTitle title (Config c) =
     toConfig { c | svgTitle = title }
+
+
+setTableFloatFormat : (Float -> String) -> Config -> Config
+setTableFloatFormat f (Config c) =
+    toConfig { c | tableFloatFormat = f }
+
+
+setTablePosixFormat : (Posix -> String) -> Config -> Config
+setTablePosixFormat f (Config c) =
+    toConfig { c | tablePosixFormat = f }
 
 
 setXAxisTime : ChartAxis.XAxis Posix -> Config -> Config
@@ -1646,7 +1664,7 @@ colorStyle c idx interpolatorInput =
                 ++ Color.toCssString color
 
         _ ->
-            ""
+            "stroke:grey"
 
 
 {-| Only categorical styles
@@ -1703,3 +1721,20 @@ adjustDomainToLogScale ( a, b ) =
 
     else
         ( a, b )
+
+
+descAndTitle : ConfigStruct -> List (Svg msg)
+descAndTitle c =
+    -- https://developer.paciellogroup.com/blog/2013/12/using-aria-enhance-svg-accessibility/
+    [ ( TypedSvg.title [], c.svgTitle )
+    , ( TypedSvg.desc [], c.svgDesc )
+    ]
+        |> List.foldr
+            (\( el, str ) acc ->
+                if str == "" then
+                    acc
+
+                else
+                    el [ text str ] :: acc
+            )
+            []

@@ -3,7 +3,7 @@ module Chart.Line exposing
     , init
     , render
     , Config, RequiredConfig
-    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale
+    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale
     , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisContinuous, withXAxisTime, withYAxis
     , withSymbols
     , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawArea, drawLine
@@ -36,7 +36,7 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 # Optional Configuration setters
 
-@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale
+@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale
 
 
 # Axis
@@ -280,6 +280,34 @@ Use this option to not build the table.
 withoutTable : Config -> Config
 withoutTable =
     Type.setAccessibilityContent Type.AccessibilityNone
+
+
+{-| An optional formatter for all float values in the alternative table content for accessibility.
+
+Defaults to `String.fromFloat`
+
+    Line.init requiredConfig
+        |> Line.withTableFloatFormat String.fromFloat
+        |> Line.render ( data, accessor )
+
+-}
+withTableFloatFormat : (Float -> String) -> Config -> Config
+withTableFloatFormat f =
+    Type.setTableFloatFormat f
+
+
+{-| An optional formatter for all posix values in the alternative table content for accessibility.
+
+Defaults to `Time.posixToMillis >> String.fromInt`
+
+    Line.init requiredConfig
+        |> Line.withTablePosixFormat (Time.posixToMillis >> String.fromInt)
+        |> Line.render ( data, accessor )
+
+-}
+withTablePosixFormat : (Posix -> String) -> Config -> Config
+withTablePosixFormat f =
+    Type.setTablePosixFormat f
 
 
 {-| Sets an accessible, long-text description for the svg chart.

@@ -61,6 +61,9 @@ dataBandToTableDataTest =
                         , [ "b", "1300", "b", "2300" ]
                         , [ "c", "1600", "c", "1600" ]
                         ]
+
+                    config =
+                        { tableFloatFormat = String.fromFloat }
                 in
-                Expect.equal (dataBandToTableData dataBand) dataTable
+                Expect.equal (dataBandToTableData config dataBand) dataTable
         ]

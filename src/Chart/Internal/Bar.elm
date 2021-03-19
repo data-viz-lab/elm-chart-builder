@@ -47,6 +47,7 @@ import Chart.Internal.Type
         , colorCategoricalStyle
         , colorStyle
         , dataBandToDataStacked
+        , descAndTitle
         , fillGapsForStack
         , fromConfig
         , fromDataBand
@@ -93,15 +94,6 @@ import TypedSvg.Types
         , ShapeRendering(..)
         , Transform(..)
         )
-
-
-descAndTitle : ConfigStruct -> List (Svg msg)
-descAndTitle c =
-    -- TODO, return empty list if no options
-    -- https://developer.paciellogroup.com/blog/2013/12/using-aria-enhance-svg-accessibility/
-    [ TypedSvg.title [] [ text c.svgTitle ]
-    , TypedSvg.desc [] [ text c.svgDesc ]
-    ]
 
 
 
@@ -277,7 +269,7 @@ renderBandStacked ( data, config ) =
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableElement noGapsData c.accessibilityContent ]
+                    [ svgEl, tableElement config noGapsData ]
                 ]
 
 
@@ -519,7 +511,7 @@ renderBandGrouped ( data, config ) =
             Html.div []
                 [ Html.figure
                     []
-                    [ svgEl, tableElement data c.accessibilityContent ]
+                    [ svgEl, tableElement config data ]
                 ]
 
 
@@ -1162,8 +1154,8 @@ renderHistogram ( histogram, config ) =
                 |> List.map
                     (\d ->
                         [ d.length |> String.fromInt
-                        , d.x0 |> String.fromFloat
-                        , d.x1 |> String.fromFloat
+                        , d.x0 |> c.tableFloatFormat
+                        , d.x1 |> c.tableFloatFormat
                         ]
                     )
 
@@ -1332,14 +1324,17 @@ horizontalLabel config xPos yPos point =
             []
 
 
-tableElement : DataBand -> AccessibilityContent -> Html msg
-tableElement data accessibilityContent =
+tableElement : Config -> DataBand -> Html msg
+tableElement config data =
     let
+        c =
+            fromConfig config
+
         tableHeadings =
-            Helpers.dataBandToTableHeadings data accessibilityContent
+            Helpers.dataBandToTableHeadings data c.accessibilityContent
 
         tableData =
-            Helpers.dataBandToTableData data
+            Helpers.dataBandToTableData c data
 
         table =
             Table.generate tableData

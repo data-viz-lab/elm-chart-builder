@@ -3,7 +3,7 @@ module Chart.HistogramBar exposing
     , init
     , render
     , Config, RequiredConfig
-    , withBarStyle, withColor, withColumnTitle, withDesc, withDomain, withoutTable, withTitle
+    , withBarStyle, withColor, withColumnTitle, withDesc, withDomain, withTableFloatFormat, withoutTable, withTitle
     , XAxis, YAxis, axisBottom, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
     , yColumnTitle
     )
@@ -35,7 +35,7 @@ The histogram bar chart can both generate the histogram data automatically or ac
 
 # Configuration setters
 
-@docs withBarStyle, withColor, withColumnTitle, withDesc, withDomain, withoutTable, withTitle
+@docs withBarStyle, withColor, withColumnTitle, withDesc, withDomain, withTableFloatFormat, withoutTable, withTitle
 
 
 # Axis
@@ -173,6 +173,20 @@ All values falling outside the domain will be ignored.
 withDomain : ( Float, Float ) -> Config -> Config
 withDomain domain config =
     Type.setHistogramDomain domain config
+
+
+{-| An optional formatter for all float values in the alternative table content for accessibility.
+
+Defaults to `String.fromFloat`
+
+    Histo.init requiredConfig
+        |> Histo.withTableFloatFormat String.fromFloat
+        |> Histo.render ( data, accessor )
+
+-}
+withTableFloatFormat : (Float -> String) -> Config -> Config
+withTableFloatFormat f =
+    Type.setTableFloatFormat f
 
 
 {-| Set the histogram color
