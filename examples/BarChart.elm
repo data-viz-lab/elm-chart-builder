@@ -27,11 +27,15 @@ text {
 }
 
 .column text {
-  font-size: 12px;
+  font-size: 10px;
 }
 
 figure {
   margin: 0;
+}
+
+h5 {
+  font-size: 10px;
 }
 """
 
@@ -136,12 +140,12 @@ accessor =
 
 width : Float
 width =
-    250
+    187
 
 
 height : Float
 height =
-    250
+    187
 
 
 valueFormatter : Float -> String
@@ -162,10 +166,33 @@ yAxis =
         ]
 
 
+yAxisHorizontal : Bar.YAxis Float
+yAxisHorizontal =
+    Bar.axisLeft
+        [ Axis.tickCount 3
+        , Axis.tickFormat valueFormatter
+        ]
+
+
+verticalGrouped : Html msg
+verticalGrouped =
+    Bar.init
+        { margin = { top = 5, right = 10, bottom = 20, left = 40 }
+        , width = width
+        , height = height
+        }
+        |> Bar.withBarStyle [ ( "fill", "#fff" ), ( "stroke-width", "2" ) ]
+        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withColumnTitle (Bar.yColumnTitle valueFormatter)
+        |> Bar.withGroupedLayout
+        |> Bar.withYAxis yAxis
+        |> Bar.render ( data, accessor )
+
+
 verticalGroupedWithIcons : Html msg
 verticalGroupedWithIcons =
     Bar.init
-        { margin = { top = 10, right = 10, bottom = 25, left = 40 }
+        { margin = { top = 5, right = 10, bottom = 20, left = 40 }
         , width = width
         , height = height
         }
@@ -181,7 +208,7 @@ verticalGroupedWithIcons =
 verticalGroupedWithLabels : Html msg
 verticalGroupedWithLabels =
     Bar.init
-        { margin = { top = 20, right = 10, bottom = 25, left = 40 }
+        { margin = { top = 20, right = 10, bottom = 20, left = 40 }
         , width = width
         , height = height
         }
@@ -196,7 +223,7 @@ verticalGroupedWithLabels =
 horizontalGroupedWithIcons : Html msg
 horizontalGroupedWithIcons =
     Bar.init
-        { margin = { top = 10, right = 10, bottom = 32, left = 40 }
+        { margin = { top = 5, right = 10, bottom = 25, left = 40 }
         , width = width
         , height = height
         }
@@ -205,14 +232,14 @@ horizontalGroupedWithIcons =
         |> Bar.withGroupedLayout
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withSymbols (icons "chart-b")
-        |> Bar.withYAxis yAxis
+        |> Bar.withYAxis yAxisHorizontal
         |> Bar.render ( data, accessor )
 
 
 horizontalGroupedWithLabels : Html msg
 horizontalGroupedWithLabels =
     Bar.init
-        { margin = { top = 10, right = 20, bottom = 32, left = 40 }
+        { margin = { top = 5, right = 20, bottom = 25, left = 40 }
         , width = width
         , height = height
         }
@@ -221,14 +248,14 @@ horizontalGroupedWithLabels =
         |> Bar.withGroupedLayout
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withLabels Bar.xLabel
-        |> Bar.withYAxis yAxis
+        |> Bar.withYAxis yAxisHorizontal
         |> Bar.render ( data, accessor )
 
 
 verticalStacked : Html msg
 verticalStacked =
     Bar.init
-        { margin = { top = 20, right = 10, bottom = 25, left = 40 }
+        { margin = { top = 20, right = 10, bottom = 20, left = 40 }
         , width = width
         , height = height
         }
@@ -243,7 +270,7 @@ verticalStacked =
 horizontalStacked : Html msg
 horizontalStacked =
     Bar.init
-        { margin = { top = 20, right = 20, bottom = 30, left = 30 }
+        { margin = { top = 20, right = 20, bottom = 25, left = 30 }
         , width = width
         , height = height
         }
@@ -251,14 +278,14 @@ horizontalStacked =
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withStackedLayout Bar.noDirection
-        |> Bar.withYAxis yAxis
+        |> Bar.withYAxis yAxisHorizontal
         |> Bar.render ( data, accessor )
 
 
 horizontalStackedDiverging : Html msg
 horizontalStackedDiverging =
     Bar.init
-        { margin = { top = 20, right = 20, bottom = 30, left = 30 }
+        { margin = { top = 20, right = 20, bottom = 25, left = 30 }
         , width = width
         , height = height
         }
@@ -266,14 +293,14 @@ horizontalStackedDiverging =
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withStackedLayout Bar.diverging
-        |> Bar.withYAxis yAxis
+        |> Bar.withYAxis yAxisHorizontal
         |> Bar.render ( dataDiverging, accessor )
 
 
 verticalStackedDiverging : Html msg
 verticalStackedDiverging =
     Bar.init
-        { margin = { top = 20, right = 10, bottom = 30, left = 40 }
+        { margin = { top = 20, right = 10, bottom = 25, left = 40 }
         , width = width
         , height = height
         }
@@ -316,13 +343,14 @@ main =
         [ Html.node "style" [] [ Html.text css ]
         , Html.div
             [ style "display" "grid"
-            , style "grid-template-columns" "repeat(4, 250px)"
-            , style "grid-gap" "20px"
+            , style "grid-template-columns" ("repeat(3, " ++ String.fromFloat width ++ "px)")
+            , style "grid-gap" "10px"
             , style "background-color" "#fff"
             , style "color" "#444"
             , style "margin" "25px"
             ]
-            [ Html.div attrs [ chartTitle "vertical grouped with icons", verticalGroupedWithIcons ]
+            [ Html.div attrs [ chartTitle "vertical grouped", verticalGrouped ]
+            , Html.div attrs [ chartTitle "vertical grouped with icons", verticalGroupedWithIcons ]
             , Html.div attrs [ chartTitle "vertical grouped with labels", verticalGroupedWithLabels ]
             , Html.div attrs [ chartTitle "horizontal grouped with icons", horizontalGroupedWithIcons ]
             , Html.div attrs [ chartTitle "horizontal grouped with labels", horizontalGroupedWithLabels ]
