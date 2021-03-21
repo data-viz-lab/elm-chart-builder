@@ -8,7 +8,9 @@ module Chart.Bar exposing
     , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
     )
 
-{-| This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
+{-| ![barchart](https://raw.githubusercontent.com/data-viz-lab/elm-chart-builder/master/images/elm-chart-builder-barchart.png)
+
+This is the bar chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
 
 The Bar module expects the X axis to plot ordinal data and the Y axis to plot continuous data. The data can be grouped by passing an `xGroup` accessor, or it can be flat by making the accessor `always Nothing`.
 
