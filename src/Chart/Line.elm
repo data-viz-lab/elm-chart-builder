@@ -70,8 +70,8 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 
 {-| The Config opaque type
 -}
-type alias Config =
-    Type.Config
+type alias Config configState =
+    Type.Config configState
 
 
 {-| The required config, passed as an argument to the `init` function
@@ -170,7 +170,7 @@ continuous acc =
         |> Line.render (data, accessor)
 
 -}
-init : RequiredConfig -> Config
+init : RequiredConfig -> Config {}
 init c =
     Type.defaultConfig
         |> withGroupedLayout
@@ -183,7 +183,7 @@ init c =
         |> Line.render ( data, accessor )
 
 -}
-render : ( List data, Accessor data ) -> Config -> Html msg
+render : ( List data, Accessor data ) -> Config configState -> Html msg
 render ( externalData, accessor ) config =
     let
         c =
@@ -216,7 +216,7 @@ for more info.
         |> Line.render ( data, accessor )
 
 -}
-withCurve : (List ( Float, Float ) -> SubPath) -> Config -> Config
+withCurve : (List ( Float, Float ) -> SubPath) -> Config configState -> Config configState
 withCurve curve config =
     Type.setCurve curve config
 
@@ -231,7 +231,7 @@ If set on a continuous line chart this setting will have no effect.
         |> Line.render ( data, accessor )
 
 -}
-withXTimeDomain : ( Posix, Posix ) -> Config -> Config
+withXTimeDomain : ( Posix, Posix ) -> Config configState -> Config configState
 withXTimeDomain value config =
     Type.setDomainTimeX value config
 
@@ -247,7 +247,7 @@ If set on a continuous line chart this setting will have no effect.
         |> Line.render ( data, accessor )
 
 -}
-withYDomain : ( Float, Float ) -> Config -> Config
+withYDomain : ( Float, Float ) -> Config configState -> Config configState
 withYDomain value config =
     Type.setDomainContinuousAndTimeY value config
 
@@ -262,7 +262,7 @@ If set on a continuous line chart this setting will have no effect.
         |> Line.render ( data, accessor )
 
 -}
-withXContinuousDomain : ( Float, Float ) -> Config -> Config
+withXContinuousDomain : ( Float, Float ) -> Config configState -> Config configState
 withXContinuousDomain value config =
     Type.setDomainContinuousX value config
 
@@ -277,9 +277,15 @@ Use this option to not build the table.
         |> Line.render ( data, accessor )
 
 -}
-withoutTable : Config -> Config
-withoutTable =
-    Type.setAccessibilityContent Type.AccessibilityNone
+withoutTable :
+    Config configState
+    -> Config { configState | noTable : () }
+withoutTable config =
+    let
+        c =
+            Type.fromConfig config
+    in
+    Type.toConfig { c | accessibilityContent = Type.AccessibilityNone }
 
 
 {-| An optional formatter for all float values in the alternative table content for accessibility.
@@ -291,7 +297,7 @@ Defaults to `String.fromFloat`
         |> Line.render ( data, accessor )
 
 -}
-withTableFloatFormat : (Float -> String) -> Config -> Config
+withTableFloatFormat : (Float -> String) -> Config configState -> Config configState
 withTableFloatFormat f =
     Type.setTableFloatFormat f
 
@@ -305,7 +311,7 @@ Defaults to `Time.posixToMillis >> String.fromInt`
         |> Line.render ( data, accessor )
 
 -}
-withTablePosixFormat : (Posix -> String) -> Config -> Config
+withTablePosixFormat : (Posix -> String) -> Config configState -> Config configState
 withTablePosixFormat f =
     Type.setTablePosixFormat f
 
@@ -316,28 +322,45 @@ It defaults to an empty string.
 This shuld be set if no title nor description exists for the chart, for example in a sparkline.
 
     Line.init requiredConfig
+        |> Line.withoutTable
         |> Line.withDesc "This is an accessible chart"
         |> Line.render ( data, accessor )
 
 -}
-withDesc : String -> Config -> Config
+withDesc :
+    String
+    -> Config { configState | noTable : () }
+    -> Config configState
 withDesc value config =
-    Type.setSvgDesc value config
+    let
+        c =
+            Type.fromConfig config
+    in
+    Type.toConfig { c | svgDesc = value }
 
 
 {-| Sets an accessible title for the svg chart.
 
-It defaults to an empty string.
 This shuld be set if no title nor description exists for the chart, for example in a sparkline.
+To only be used in conjunctin with the `withoutTable` option,
+because with an alternative table a screen reader will ignore the svg block.
 
     Line.init required
+        |> Line.withoutTable
         |> Line.withTitle "Line chart"
         |> Line.render ( data, accessor )
 
 -}
-withTitle : String -> Config -> Config
+withTitle :
+    String
+    -> Config { configState | noTable : () }
+    -> Config { configState | noTable : () }
 withTitle value config =
-    Type.setSvgTitle value config
+    let
+        c =
+            Type.fromConfig config
+    in
+    Type.toConfig { c | svgTitle = value }
 
 
 {-| Sets the color palette for the chart.
@@ -351,7 +374,7 @@ withTitle value config =
         |> Line.render (data, accessor)
 
 -}
-withColorPalette : List Color -> Config -> Config
+withColorPalette : List Color -> Config configState -> Config configState
 withColorPalette palette config =
     Type.setColorResource (Type.ColorPalette palette) config
 
@@ -365,7 +388,7 @@ It takes a direction: `diverging` or `noDirection`
         |> Line.render ( data, accessor )
 
 -}
-withStackedLayout : Type.LineDraw -> Config -> Config
+withStackedLayout : Type.LineDraw -> Config configState -> Config configState
 withStackedLayout lineDraw config =
     Type.setLayout (Type.StackedLine lineDraw) config
 
@@ -377,7 +400,7 @@ withStackedLayout lineDraw config =
         |> Line.render ( data, accessor )
 
 -}
-withGroupedLayout : Config -> Config
+withGroupedLayout : Config configState -> Config configState
 withGroupedLayout config =
     Type.setLayout Type.GroupedLine config
 
@@ -392,7 +415,7 @@ It takes one of: xGroupLabel
         |> Line.withLabels Line.xGroupLabel
 
 -}
-withLabels : Type.Label -> Config -> Config
+withLabels : Type.Label -> Config configState -> Config configState
 withLabels label =
     case label of
         Type.XGroupLabel ->
@@ -410,7 +433,7 @@ The styles set here have precedence over `withColorPalette` and css.
         |> Line.render ( data, accessor )
 
 -}
-withLineStyle : List ( String, String ) -> Config -> Config
+withLineStyle : List ( String, String ) -> Config configState -> Config configState
 withLineStyle styles config =
     Type.setCoreStyles styles config
 
@@ -486,7 +509,7 @@ With a horizontal layout the Y axis is the horizontal axis.
         |> Line.render ( data, accessor )
 
 -}
-hideYAxis : Config -> Config
+hideYAxis : Config configState -> Config configState
 hideYAxis config =
     Type.setYAxis False config
 
@@ -502,7 +525,7 @@ With a horizontal layout the X axis is the vertical axis.
         |> Line.render ( data, accessor )
 
 -}
-hideXAxis : Config -> Config
+hideXAxis : Config configState -> Config configState
 hideXAxis config =
     Type.setXAxis False config
 
@@ -514,7 +537,7 @@ hideXAxis config =
         |> Line.render ( data, accessor )
 
 -}
-hideAxis : Config -> Config
+hideAxis : Config configState -> Config configState
 hideAxis config =
     Type.setXAxis False config
         |> Type.setYAxis False
@@ -527,7 +550,7 @@ hideAxis config =
         |> Line.render ( data, accessor )
 
 -}
-withXAxisTime : ChartAxis.XAxis Posix -> Config -> Config
+withXAxisTime : ChartAxis.XAxis Posix -> Config configState -> Config configState
 withXAxisTime =
     Type.setXAxisTime
 
@@ -539,7 +562,7 @@ withXAxisTime =
         |> Line.render ( data, accessor )
 
 -}
-withXAxisContinuous : ChartAxis.XAxis Float -> Config -> Config
+withXAxisContinuous : ChartAxis.XAxis Float -> Config configState -> Config configState
 withXAxisContinuous =
     Type.setXAxisContinuous
 
@@ -551,7 +574,7 @@ withXAxisContinuous =
         |> Line.render ( data, accessor )
 
 -}
-withYAxis : ChartAxis.YAxis Float -> Config -> Config
+withYAxis : ChartAxis.YAxis Float -> Config configState -> Config configState
 withYAxis =
     Type.setYAxisContinuous
 
@@ -563,7 +586,7 @@ withYAxis =
         |> Line.render ( data, accessor )
 
 -}
-withLogYScale : Float -> Config -> Config
+withLogYScale : Float -> Config configState -> Config configState
 withLogYScale base =
     Type.setYScale (Type.LogScale base)
 
@@ -601,7 +624,7 @@ Default value: []
         |> withSymbols [ Circle, Corner, Triangle ]
 
 -}
-withSymbols : List Symbol -> Config -> Config
+withSymbols : List Symbol -> Config configState -> Config configState
 withSymbols =
     Type.setIcons
 

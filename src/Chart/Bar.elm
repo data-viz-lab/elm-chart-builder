@@ -71,8 +71,8 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 
 {-| The Config opaque type
 -}
-type alias Config =
-    Type.Config
+type alias Config configState =
+    Type.Config configState
 
 
 {-| The required config, passed as an argument to the `init` function
@@ -131,7 +131,13 @@ type alias Accessor data =
         |> Bar.render ( data, accessor )
 
 -}
-init : RequiredConfig -> Config
+init :
+    RequiredConfig
+    ->
+        Config
+            { canHaveSymbols : ()
+            , canHaveStackedLayout : ()
+            }
 init c =
     Type.defaultConfig
         |> Type.setDimensions { margin = c.margin, width = c.width, height = c.height }
@@ -143,7 +149,7 @@ init c =
         |> Bar.render ( data, accessor )
 
 -}
-render : ( List data, Accessor data ) -> Config -> Html msg
+render : ( List data, Accessor data ) -> Config configState -> Html msg
 render ( externalData, accessor ) config =
     let
         c =
@@ -174,9 +180,16 @@ It takes a direction: `diverging` or `noDirection`.
         |> Bar.render ( data, accessor )
 
 -}
-withStackedLayout : Type.Direction -> Config -> Config
+withStackedLayout :
+    Type.Direction
+    -> Config { configState | canHaveSymbols : (), canHaveStackedLayout : () }
+    -> Config configState
 withStackedLayout direction config =
-    Type.setLayout (Type.StackedBar direction) config
+    let
+        c =
+            Type.fromConfig config
+    in
+    Type.toConfig { c | layout = Type.StackedBar direction }
 
 
 {-| Creates a grouped bar chart.
@@ -186,9 +199,37 @@ withStackedLayout direction config =
         |> Bar.render ( data, accessor )
 
 -}
-withGroupedLayout : Config -> Config
+withGroupedLayout : Config { configState | canHaveSymbols : () } -> Config { configState | canHaveSymbols : () }
 withGroupedLayout config =
-    Type.setLayout Type.GroupedBar config
+    let
+        c =
+            Type.fromConfig config
+    in
+    Type.toConfig { c | layout = Type.GroupedBar }
+
+
+{-| Pass a list of symbols to be rendered at the end of the bars.
+Symbols are not supported with a stacked layout.
+
+Default value: []
+
+Usefull for facilitating accessibility.
+
+    Bar.init requiredConfig
+        |> withSymbols [ Circle, Corner, Triangle ]
+        |> Bar.render ( data, accessor )
+
+-}
+withSymbols :
+    List Symbol
+    -> Config { configState | canHaveSymbols : (), canHaveStackedLayout : () }
+    -> Config configState
+withSymbols symbols config =
+    let
+        c =
+            Type.fromConfig config
+    in
+    Type.toConfig { c | icons = symbols }
 
 
 {-| Sets the orientation value.
@@ -201,7 +242,7 @@ Default value: `vertical`.
         |> Bar.render ( data, accessor )
 
 -}
-withOrientation : Type.Orientation -> Config -> Config
+withOrientation : Type.Orientation -> Config configState -> Config configState
 withOrientation value config =
     Type.setOrientation value config
 
@@ -214,7 +255,7 @@ The styles set here have precedence over `withColorPalette`, `withColorInterpola
         |> Bar.render ( data, accessor )
 
 -}
-withBarStyle : List ( String, String ) -> Config -> Config
+withBarStyle : List ( String, String ) -> Config configState -> Config configState
 withBarStyle styles config =
     Type.setCoreStyles styles config
 
@@ -234,7 +275,7 @@ The styles set here have precedence over `withBarStyle`, `withColorPalette`, `wi
         |> Bar.render ( data, accessor )
 
 -}
-withBarStyleFrom : (String -> List ( String, String )) -> Config -> Config
+withBarStyleFrom : (String -> List ( String, String )) -> Config configState -> Config configState
 withBarStyleFrom f config =
     Type.setCoreStyleFromPointBandX f config
 
@@ -251,7 +292,7 @@ If the bars in a group are more then the colours in the palette, the colours wil
         |> Bar.render (data, accessor)
 
 -}
-withColorPalette : List Color -> Config -> Config
+withColorPalette : List Color -> Config configState -> Config configState
 withColorPalette palette config =
     Type.setColorResource (Type.ColorPalette palette) config
 
@@ -265,7 +306,7 @@ This option is not supported for stacked bar charts and will have no effect on t
         |> Bar.render ( data, accessor )
 
 -}
-withColorInterpolator : (Float -> Color) -> Config -> Config
+withColorInterpolator : (Float -> Color) -> Config configState -> Config configState
 withColorInterpolator interpolator config =
     Type.setColorResource (Type.ColorInterpolator interpolator) config
 
@@ -277,7 +318,7 @@ withColorInterpolator interpolator config =
         |> Bar.render ( data, accessor )
 
 -}
-withXGroupDomain : List String -> Config -> Config
+withXGroupDomain : List String -> Config configState -> Config configState
 withXGroupDomain value config =
     Type.setDomainBandBandGroup value config
 
@@ -289,7 +330,7 @@ withXGroupDomain value config =
         |> Bar.render ( data, accessor )
 
 -}
-withXDomain : List String -> Config -> Config
+withXDomain : List String -> Config configState -> Config configState
 withXDomain value config =
     Type.setDomainBandBandSingle value config
 
@@ -301,25 +342,9 @@ withXDomain value config =
         |> Bar.render ( data, accessor )
 
 -}
-withYDomain : ( Float, Float ) -> Config -> Config
+withYDomain : ( Float, Float ) -> Config configState -> Config configState
 withYDomain value config =
     Type.setDomainBandContinuous value config
-
-
-{-| Pass a list of symbols to be rendered at the end of the bars.
-
-Default value: []
-
-Usefull for facilitating accessibility.
-
-    Bar.init requiredConfig
-        |> withSymbols [ Circle, Corner, Triangle ]
-        |> Bar.render ( data, accessor )
-
--}
-withSymbols : List Symbol -> Config -> Config
-withSymbols =
-    Type.setIcons
 
 
 {-| An optional formatter for all float values in the alternative table content for accessibility.
@@ -331,7 +356,7 @@ Defaults to `String.fromFloat`
         |> Bar.render ( data, accessor )
 
 -}
-withTableFloatFormat : (Float -> String) -> Config -> Config
+withTableFloatFormat : (Float -> String) -> Config configState -> Config configState
 withTableFloatFormat f =
     Type.setTableFloatFormat f
 
@@ -347,7 +372,7 @@ If used together with symbols, the label will be drawn on top of the symbol.
         |> Bar.render ( data, accessor )
 
 -}
-withXLabels : Config -> Config
+withXLabels : Config configState -> Config configState
 withXLabels =
     Type.showXOrdinalLabel
 
@@ -362,9 +387,15 @@ Use this option to not build the table.
         |> Bar.render ( data, accessor )
 
 -}
-withoutTable : Config -> Config
-withoutTable =
-    Type.setAccessibilityContent Type.AccessibilityNone
+withoutTable :
+    Config configState
+    -> Config { configState | noTable : () }
+withoutTable config =
+    let
+        c =
+            Type.fromConfig config
+    in
+    Type.toConfig { c | accessibilityContent = Type.AccessibilityNone }
 
 
 {-| Show a label at the end of the bars.
@@ -379,7 +410,7 @@ If used together with symbols, the label will be drawn after the symbol.
         |> Bar.withLabels (Bar.yLabel String.fromFloat)
 
 -}
-withLabels : Type.Label -> Config -> Config
+withLabels : Type.Label -> Config configState -> Config configState
 withLabels label =
     case label of
         Type.YLabel formatter ->
@@ -403,7 +434,7 @@ It takes one of: stackedColumnTitle, xOrdinalColumnTitle, yColumnTitle
         |> Bar.withColumnTitle (Bar.yColumnTitle String.fromFloat)
 
 -}
-withColumnTitle : Type.ColumnTitle -> Config -> Config
+withColumnTitle : Type.ColumnTitle -> Config configState -> Config configState
 withColumnTitle title config =
     case title of
         Type.YColumnTitle formatter ->
@@ -421,32 +452,50 @@ withColumnTitle title config =
 
 {-| Sets an accessible, long-text description for the svg chart.
 
-It defaults to an empty string.
 This shuld be set if no title nor description exists for the chart, for example in a sparkline.
+To only be used in conjunctin with the `withoutTable` option,
+because with an alternative table a screen reader will ignore the svg block.
 
     Bar.init requiredConfig
+        |> Bar.withoutTable
         |> Bar.withDesc "This is an accessible chart, with a desc element"
         |> Bar.render ( data, accessor )
 
 -}
-withDesc : String -> Config -> Config
+withDesc :
+    String
+    -> Config { configState | noTable : () }
+    -> Config configState
 withDesc value config =
-    Type.setSvgDesc value config
+    let
+        c =
+            Type.fromConfig config
+    in
+    Type.toConfig { c | svgDesc = value }
 
 
 {-| Sets an accessible title for the whole svg chart.
 
-It defaults to an empty string.
 This shuld be set if no title nor description exists for the chart, for example in a sparkline.
+To only be used in conjunctin with the `withoutTable` option,
+because with an alternative table a screen reader will ignore the svg block.
 
     Bar.init requiredConfig
+        |> Bar.withoutTable
         |> Bar.withTitle "This is a chart"
         |> Bar.render ( data, accessor )
 
 -}
-withTitle : String -> Config -> Config
+withTitle :
+    String
+    -> Config { configState | noTable : () }
+    -> Config configState
 withTitle value config =
-    Type.setSvgTitle value config
+    let
+        c =
+            Type.fromConfig config
+    in
+    Type.toConfig { c | svgTitle = value }
 
 
 {-| Horizontal layout type.
@@ -618,7 +667,7 @@ axisTop =
         |> Bar.render ( data, accessor )
 
 -}
-hideAxis : Config -> Config
+hideAxis : Config configState -> Config configState
 hideAxis config =
     Type.setXAxis False config
         |> Type.setYAxis False
@@ -639,7 +688,7 @@ Bar.init requiredConfig
 ```
 
 -}
-hideYAxis : Config -> Config
+hideYAxis : Config configState -> Config configState
 hideYAxis config =
     Type.setYAxis False config
 
@@ -659,7 +708,7 @@ Bar.init requiredConfig
 ```
 
 -}
-hideXAxis : Config -> Config
+hideXAxis : Config configState -> Config configState
 hideXAxis config =
     Type.setXAxis False config
 
@@ -671,7 +720,7 @@ hideXAxis config =
         |> Bar.render ( data, accessor )
 
 -}
-withXAxis : ChartAxis.XAxis String -> Config -> Config
+withXAxis : ChartAxis.XAxis String -> Config configState -> Config configState
 withXAxis =
     Type.setXAxisBand
 
@@ -683,7 +732,7 @@ withXAxis =
         |> Bar.render ( data, accessor )
 
 -}
-withYAxis : ChartAxis.YAxis Float -> Config -> Config
+withYAxis : ChartAxis.YAxis Float -> Config configState -> Config configState
 withYAxis =
     Type.setYAxisContinuous
 
@@ -695,6 +744,6 @@ withYAxis =
         |> Bar.render ( data, accessor )
 
 -}
-withLogYScale : Float -> Config -> Config
+withLogYScale : Float -> Config configState -> Config configState
 withLogYScale base =
     Type.setYScale (Type.LogScale base)

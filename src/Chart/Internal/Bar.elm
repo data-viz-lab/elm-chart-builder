@@ -99,7 +99,7 @@ import TypedSvg.Types
 -- BAND STACKED
 
 
-renderBandStacked : ( DataBand, Config ) -> Html msg
+renderBandStacked : ( DataBand, Config configState ) -> Html msg
 renderBandStacked ( data, config ) =
     -- based on https://code.gampleman.eu/elm-visualization/StackedBarChart/
     let
@@ -241,7 +241,6 @@ renderBandStacked ( data, config ) =
             , width outerW
             , height outerH
             , role "img"
-            , ariaHidden
             ]
                 ++ ariaLabelledbyContent c
 
@@ -379,7 +378,7 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
 -- BAND GROUPED
 
 
-renderBandGrouped : ( DataBand, Config ) -> Html msg
+renderBandGrouped : ( DataBand, Config configState ) -> Html msg
 renderBandGrouped ( data, config ) =
     let
         c =
@@ -479,7 +478,6 @@ renderBandGrouped ( data, config ) =
             , width outerW
             , height outerH
             , role "img"
-            , ariaHidden
             ]
                 ++ ariaLabelledbyContent c
 
@@ -515,7 +513,7 @@ renderBandGrouped ( data, config ) =
 
 
 columns :
-    Config
+    Config configState
     -> Float
     -> BandScale String
     -> BandScale String
@@ -544,7 +542,7 @@ columns config iconOffset bandGroupScale bandSingleScale continuousScale colorSc
 
 
 column :
-    Config
+    Config configState
     -> Float
     -> BandScale String
     -> ContinuousScale Float
@@ -566,7 +564,7 @@ column config iconOffset bandSingleScale continuousScale colorScale idx point =
 
 
 verticalRect :
-    Config
+    Config configState
     -> Float
     -> BandScale String
     -> ContinuousScale Float
@@ -639,7 +637,7 @@ verticalRect config iconOffset bandSingleScale continuousScale colorScale idx po
 
 
 horizontalRect :
-    Config
+    Config configState
     -> BandScale String
     -> ContinuousScale Float
     -> ContinuousScale Float
@@ -713,7 +711,7 @@ dataGroupTranslation bandGroupScale dataGroup =
             Scale.convert bandGroupScale l
 
 
-verticalLabel : Config -> Float -> Float -> PointBand -> List (Svg msg)
+verticalLabel : Config configState -> Float -> Float -> PointBand -> List (Svg msg)
 verticalLabel config xPos yPos point =
     let
         ( xVal, yVal ) =
@@ -739,7 +737,7 @@ verticalLabel config xPos yPos point =
 
 
 horizontalSymbol :
-    Config
+    Config configState
     -> { idx : Int, w : Float, y_ : Float, h : Float, styleStr : String }
     -> List (Svg msg)
 horizontalSymbol config { idx, w, y_, styleStr } =
@@ -808,7 +806,7 @@ horizontalSymbol config { idx, w, y_, styleStr } =
 
 
 verticalSymbol :
-    Config
+    Config configState
     -> { idx : Int, w : Float, y_ : Float, x_ : Float, styleStr : String }
     -> List (Svg msg)
 verticalSymbol config { idx, w, y_, x_, styleStr } =
@@ -1070,7 +1068,7 @@ bandGroupedYAxis c iconOffset continuousScale =
 -- HISTOGRAM
 
 
-renderHistogram : ( List (Histogram.Bin Float Float), Config ) -> Html msg
+renderHistogram : ( List (Histogram.Bin Float Float), Config configState ) -> Html msg
 renderHistogram ( histogram, config ) =
     let
         c =
@@ -1178,7 +1176,6 @@ renderHistogram ( histogram, config ) =
             , width outerW
             , height outerH
             , role "img"
-            , ariaHidden
             ]
                 ++ ariaLabelledbyContent c
 
@@ -1208,7 +1205,7 @@ renderHistogram ( histogram, config ) =
 
 
 histogramColumn :
-    Config
+    Config configState
     -> Float
     -> ContinuousScale Float
     -> ContinuousScale Float
@@ -1280,7 +1277,7 @@ stackedColumnTitleText c idx labels value =
             []
 
 
-columnTitleText : Config -> PointBand -> List (Svg msg)
+columnTitleText : Config configState -> PointBand -> List (Svg msg)
 columnTitleText config point =
     let
         ( xVal, yVal ) =
@@ -1297,7 +1294,7 @@ columnTitleText config point =
             []
 
 
-horizontalLabel : Config -> Float -> Float -> PointBand -> List (Svg msg)
+horizontalLabel : Config configState -> Float -> Float -> PointBand -> List (Svg msg)
 horizontalLabel config xPos yPos point =
     let
         ( xVal, yVal ) =
@@ -1323,7 +1320,7 @@ horizontalLabel config xPos yPos point =
             []
 
 
-tableElement : Config -> DataBand -> Html msg
+tableElement : Config configState -> DataBand -> Html msg
 tableElement config data =
     let
         c =

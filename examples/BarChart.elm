@@ -217,6 +217,7 @@ verticalGroupedWithLabels =
         |> Bar.withGroupedLayout
         |> Bar.withLabels (Bar.yLabel yLabelFormatter)
         |> Bar.withYAxis yAxis
+        --|> Bar.withTitle "cuccu"
         |> Bar.render ( data, accessor )
 
 
@@ -262,8 +263,9 @@ verticalStacked =
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withStackedLayout Bar.noDirection
-        |> Bar.withSymbols (icons "chart-b")
         |> Bar.withYAxis yAxis
+        --|> Bar.withoutTable
+        |> Bar.withTitle "bar vertical stacked"
         |> Bar.render ( data, accessor )
 
 
