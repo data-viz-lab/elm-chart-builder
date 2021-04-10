@@ -1,17 +1,22 @@
-module BarChart exposing (data, main)
+module Homepage exposing (data, main)
 
-{-| This module shows how to build a simple bar chart.
+{-| This module is used to generate the image that appears on the README page
 -}
 
 import Axis
 import Chart.Bar as Bar
+import Chart.HistogramBar as Histo
+import Chart.Line as Line
 import Chart.Symbol as Symbol exposing (Symbol)
+import Color
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
 import Html.Attributes exposing (class, style)
 import Numeral
 import Scale.Color
+import Set
+import Shape
 
 
 css : String
@@ -23,6 +28,10 @@ css =
 }
 
 text {
+  fill: #333;
+}
+
+.axis text {
   fill: #333;
 }
 
@@ -38,6 +47,29 @@ h5 {
   font-size: 10px;
 }
 """
+
+
+chartTitle : String -> Html msg
+chartTitle label =
+    Html.div [] [ Html.h5 [ style "margin" "2px" ] [ Html.text label ] ]
+
+
+attrs : List (Html.Attribute msg)
+attrs =
+    [ style "border" "1px solid #c4c4c4"
+    ]
+
+
+twoColumn : List (Html.Attribute msg)
+twoColumn =
+    [ style "grid-column-start" "2"
+    , style "grid-column-end" "4"
+    ]
+        ++ attrs
+
+
+
+-- BAR CHART EXAMPLES
 
 
 bicycleSymbol : String
@@ -76,6 +108,17 @@ icons prefix =
         |> Symbol.withStyle [ ( "fill", "none" ) ]
     , Symbol.corner
         |> Symbol.withIdentifier (prefix ++ "-corner-symbol")
+    ]
+
+
+iconsLine : String -> List Symbol
+iconsLine prefix =
+    [ Symbol.triangle
+        |> Symbol.withIdentifier (prefix ++ "-triangle-symbol")
+        |> Symbol.withStyle [ ( "stroke", "white" ) ]
+    , Symbol.circle
+        |> Symbol.withIdentifier (prefix ++ "-circle-symbol")
+        |> Symbol.withStyle [ ( "stroke", "white" ) ]
     ]
 
 
@@ -153,16 +196,16 @@ valueFormatter =
     FormatNumber.format { usLocale | decimals = 0 }
 
 
-yLabelFormatter : Float -> String
-yLabelFormatter =
-    Numeral.format "0.0a"
+thousandsFormatter : Float -> String
+thousandsFormatter =
+    Numeral.format "0 a"
 
 
 yAxis : Bar.YAxis Float
 yAxis =
     Bar.axisLeft
-        [ Axis.tickCount 5
-        , Axis.tickFormat valueFormatter
+        [ Axis.tickCount 3
+        , Axis.tickFormat thousandsFormatter
         ]
 
 
@@ -174,25 +217,10 @@ yAxisHorizontal =
         ]
 
 
-verticalGrouped : Html msg
-verticalGrouped =
-    Bar.init
-        { margin = { top = 5, right = 10, bottom = 20, left = 40 }
-        , width = width
-        , height = height
-        }
-        |> Bar.withBarStyle [ ( "fill", "#fff" ), ( "stroke-width", "2" ) ]
-        |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withColumnTitle (Bar.yColumnTitle valueFormatter)
-        |> Bar.withGroupedLayout
-        |> Bar.withYAxis yAxis
-        |> Bar.render ( data, accessor )
-
-
 verticalGroupedWithIcons : Html msg
 verticalGroupedWithIcons =
     Bar.init
-        { margin = { top = 5, right = 10, bottom = 20, left = 40 }
+        { margin = { top = 5, right = 10, bottom = 20, left = 30 }
         , width = width
         , height = height
         }
@@ -205,41 +233,10 @@ verticalGroupedWithIcons =
         |> Bar.render ( data, accessor )
 
 
-verticalGroupedWithLabels : Html msg
-verticalGroupedWithLabels =
-    Bar.init
-        { margin = { top = 20, right = 10, bottom = 20, left = 40 }
-        , width = width
-        , height = height
-        }
-        |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withColumnTitle (Bar.yColumnTitle valueFormatter)
-        |> Bar.withGroupedLayout
-        |> Bar.withLabels (Bar.yLabel yLabelFormatter)
-        |> Bar.withYAxis yAxis
-        |> Bar.render ( data, accessor )
-
-
-horizontalGroupedWithIcons : Html msg
-horizontalGroupedWithIcons =
-    Bar.init
-        { margin = { top = 5, right = 10, bottom = 25, left = 40 }
-        , width = width
-        , height = height
-        }
-        |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withColumnTitle (Bar.yColumnTitle valueFormatter)
-        |> Bar.withGroupedLayout
-        |> Bar.withOrientation Bar.horizontal
-        |> Bar.withSymbols (icons "chart-b")
-        |> Bar.withYAxis yAxisHorizontal
-        |> Bar.render ( data, accessor )
-
-
 horizontalGroupedWithLabels : Html msg
 horizontalGroupedWithLabels =
     Bar.init
-        { margin = { top = 5, right = 20, bottom = 25, left = 40 }
+        { margin = { top = 5, right = 20, bottom = 20, left = 20 }
         , width = width
         , height = height
         }
@@ -252,54 +249,10 @@ horizontalGroupedWithLabels =
         |> Bar.render ( data, accessor )
 
 
-verticalStacked : Html msg
-verticalStacked =
-    Bar.init
-        { margin = { top = 20, right = 10, bottom = 20, left = 40 }
-        , width = width
-        , height = height
-        }
-        |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
-        |> Bar.withStackedLayout Bar.noDirection
-        |> Bar.withYAxis yAxis
-        |> Bar.render ( data, accessor )
-
-
-horizontalStacked : Html msg
-horizontalStacked =
-    Bar.init
-        { margin = { top = 20, right = 20, bottom = 25, left = 30 }
-        , width = width
-        , height = height
-        }
-        |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
-        |> Bar.withOrientation Bar.horizontal
-        |> Bar.withStackedLayout Bar.noDirection
-        |> Bar.withYAxis yAxisHorizontal
-        |> Bar.render ( data, accessor )
-
-
-horizontalStackedDiverging : Html msg
-horizontalStackedDiverging =
-    Bar.init
-        { margin = { top = 20, right = 20, bottom = 25, left = 30 }
-        , width = width
-        , height = height
-        }
-        |> Bar.withColorPalette Scale.Color.tableau10
-        |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
-        |> Bar.withOrientation Bar.horizontal
-        |> Bar.withStackedLayout Bar.diverging
-        |> Bar.withYAxis yAxisHorizontal
-        |> Bar.render ( dataDiverging, accessor )
-
-
 verticalStackedDiverging : Html msg
 verticalStackedDiverging =
     Bar.init
-        { margin = { top = 20, right = 10, bottom = 25, left = 40 }
+        { margin = { top = 20, right = 10, bottom = 20, left = 35 }
         , width = width
         , height = height
         }
@@ -319,21 +272,174 @@ verticalStackedDiverging =
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withOrientation Bar.vertical
         |> Bar.withStackedLayout Bar.diverging
-        |> Bar.withYAxis (Bar.axisLeft [ Axis.tickFormat valueFormatter ])
+        |> Bar.withYAxis (Bar.axisLeft [ Axis.tickFormat valueFormatter, Axis.tickCount 3 ])
         |> Bar.render ( dataDiverging, accessor )
 
 
-chartTitle : String -> Html msg
-chartTitle label =
-    Html.div [] [ Html.h5 [ style "margin" "2px" ] [ Html.text label ] ]
+
+-- LINE CHART EXAMPLE
 
 
-attrs : List (Html.Attribute msg)
-attrs =
-    [ style "height" (String.fromFloat (height + 20) ++ "px")
-    , style "width" (String.fromFloat width ++ "px")
-    , style "border" "1px solid #c4c4c4"
+requiredLineConfig : Line.RequiredConfig
+requiredLineConfig =
+    { margin = { top = 10, right = 15, bottom = 20, left = 30 }
+    , width = width * 2
+    , height = height
+    }
+
+
+type alias DataContinuous =
+    { x : Float, y : Float, groupLabel : String }
+
+
+accessorContinuous : Line.Accessor DataContinuous
+accessorContinuous =
+    Line.continuous (Line.AccessorContinuous (.groupLabel >> Just) .x .y)
+
+
+dataContinuous : List DataContinuous
+dataContinuous =
+    [ { groupLabel = "A"
+      , x = 1991
+      , y = 10
+      }
+    , { groupLabel = "A"
+      , x = 1992
+      , y = 16
+      }
+    , { groupLabel = "A"
+      , x = 1993
+      , y = 26
+      }
+    , { groupLabel = "A"
+      , x = 1994
+      , y = 19
+      }
+    , { groupLabel = "B"
+      , x = 1991
+      , y = 13
+      }
+    , { groupLabel = "B"
+      , x = 1992
+      , y = 23
+      }
+    , { groupLabel = "B"
+      , x = 1993
+      , y = 16
+      }
+    , { groupLabel = "B"
+      , x = 1994
+      , y = 21
+      }
     ]
+
+
+xAxisTicks : List Float
+xAxisTicks =
+    dataContinuous
+        |> List.map .x
+        |> Set.fromList
+        |> Set.toList
+        |> List.sort
+
+
+sharedAttributes : List (Axis.Attribute value)
+sharedAttributes =
+    [ Axis.tickSizeOuter 0
+    , Axis.tickSizeInner 3
+    ]
+
+
+xAxis : Line.XAxis Float
+xAxis =
+    Line.axisBottom
+        ([ Axis.ticks xAxisTicks
+         , Axis.tickFormat (round >> String.fromInt)
+         ]
+            ++ sharedAttributes
+        )
+
+
+stackedArea : Html msg
+stackedArea =
+    Line.init requiredLineConfig
+        |> Line.withYAxis yAxis
+        |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
+        |> Line.withLabels Line.xGroupLabel
+        |> Line.withColorPalette Scale.Color.tableau10
+        |> Line.withStackedLayout Line.drawLine
+        |> Line.withSymbols (iconsLine "chart-b")
+        |> Line.withXAxisContinuous xAxis
+        |> Line.withStackedLayout (Line.drawArea Shape.stackOffsetNone)
+        |> Line.render ( dataContinuous, accessorContinuous )
+
+
+
+-- HISTOGRAM CHART EXAMPLE
+
+
+type alias HistoData =
+    Float
+
+
+histoData : List HistoData
+histoData =
+    [ 0.01
+    , 0.02
+    , 0.09
+    , 0.1
+    , 0.12
+    , 0.15
+    , 0.21
+    , 0.3
+    , 0.31
+    , 0.35
+    , 0.5
+    , 0.55
+    , 0.55
+    , 0.56
+    , 0.61
+    , 0.62
+    , 0.63
+    , 0.65
+    , 0.75
+    , 0.81
+    , 0.9
+    , 0.91
+    , 0.99
+    ]
+
+
+steps : List Float
+steps =
+    [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
+
+
+histoDataAccessor =
+    Histo.dataAccessor steps identity
+
+
+histoXAxis : Histo.XAxis Float
+histoXAxis =
+    Bar.axisBottom
+        [ Axis.tickCount 6
+        ]
+
+
+histo : Html msg
+histo =
+    Histo.init
+        { margin = { top = 10, left = 25, bottom = 20, right = 15 }
+        , width = width
+        , height = height
+        }
+        |> Histo.withDomain ( 0, 1 )
+        |> Histo.withYAxis yAxis
+        |> Histo.withXAxis histoXAxis
+        |> Histo.withColor (Color.rgb255 254 178 76)
+        |> Histo.withColumnTitle (Histo.yColumnTitle String.fromFloat)
+        |> Histo.withBarStyle [ ( "stroke-color", "#fff" ), ( "stroke-width", "1" ) ]
+        |> Histo.render ( histoData, histoDataAccessor )
 
 
 main : Html msg
@@ -348,14 +454,10 @@ main =
             , style "color" "#444"
             , style "margin" "25px"
             ]
-            [ Html.div attrs [ chartTitle "vertical grouped", verticalGrouped ]
-            , Html.div attrs [ chartTitle "vertical grouped with icons", verticalGroupedWithIcons ]
-            , Html.div attrs [ chartTitle "vertical grouped with labels", verticalGroupedWithLabels ]
-            , Html.div attrs [ chartTitle "horizontal grouped with icons", horizontalGroupedWithIcons ]
+            [ Html.div attrs [ chartTitle "vertical grouped with icons", verticalGroupedWithIcons ]
             , Html.div attrs [ chartTitle "horizontal grouped with labels", horizontalGroupedWithLabels ]
-            , Html.div attrs [ chartTitle "vertical stacked", verticalStacked ]
-            , Html.div attrs [ chartTitle "horizontal stacked", horizontalStacked ]
-            , Html.div attrs [ chartTitle "horizontal stacked diverging", horizontalStackedDiverging ]
             , Html.div attrs [ chartTitle "vertical stacked diverging", verticalStackedDiverging ]
+            , Html.div attrs [ chartTitle "histogram", histo ]
+            , Html.div twoColumn [ chartTitle "stacked grouped area", stackedArea ]
             ]
         ]

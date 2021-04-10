@@ -42,7 +42,6 @@ module Chart.Internal.Type exposing
     , addEvent
     , adjustContinuousRange
     , ariaHidden
-    , ariaLabelledby
     , ariaLabelledbyContent
     , bottomGap
     , calculateHistogramDomain
@@ -1694,17 +1693,22 @@ colorCategoricalStyle c idx =
 
 ariaLabelledbyContent : ConfigStruct msg -> List (TypedSvg.Core.Attribute msg)
 ariaLabelledbyContent c =
-    if c.svgDesc /= "" && c.svgTitle /= "" then
-        [ ariaLabelledby (c.svgDesc ++ " " ++ c.svgTitle) ]
+    case c.accessibilityContent of
+        AccessibilityNone ->
+            if c.svgDesc /= "" && c.svgTitle /= "" then
+                [ ariaLabelledby (c.svgDesc ++ " " ++ c.svgTitle) ]
 
-    else if c.svgDesc /= "" then
-        [ ariaLabelledby c.svgDesc ]
+            else if c.svgDesc /= "" then
+                [ ariaLabelledby c.svgDesc ]
 
-    else if c.svgTitle /= "" then
-        [ ariaLabelledby c.svgTitle ]
+            else if c.svgTitle /= "" then
+                [ ariaLabelledby c.svgTitle ]
 
-    else
-        []
+            else
+                []
+
+        _ ->
+            [ ariaHidden ]
 
 
 noGroups : List { a | groupLabel : Maybe String } -> Bool

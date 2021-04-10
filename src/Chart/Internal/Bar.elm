@@ -40,7 +40,6 @@ import Chart.Internal.Type
         , StackedValues
         , adjustContinuousRange
         , ariaHidden
-        , ariaLabelledby
         , ariaLabelledbyContent
         , bottomGap
         , calculateHistogramDomain

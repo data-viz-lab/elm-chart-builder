@@ -37,7 +37,7 @@ import Chart.Internal.Type
         , LineDraw(..)
         , PointContinuous
         , RenderContext(..)
-        , ariaLabelledby
+        , ariaLabelledbyContent
         , bottomGap
         , colorStyle
         , dataContinuousGroupToDataContinuous
@@ -198,8 +198,8 @@ renderLineGrouped ( data, config ) =
                  , width outerW
                  , height outerH
                  , role "img"
-                 , ariaLabelledby "title desc"
                  ]
+                    ++ ariaLabelledbyContent c
                     ++ events
                 )
             <|
@@ -342,12 +342,13 @@ renderLineStacked lineDraw ( data, config ) =
 
         svgEl =
             svg
-                [ viewBox 0 0 outerW outerH
-                , width outerW
-                , height outerH
-                , role "img"
-                , ariaLabelledby "title desc"
-                ]
+                ([ viewBox 0 0 outerW outerH
+                 , width outerW
+                 , height outerH
+                 , role "img"
+                 ]
+                    ++ ariaLabelledbyContent c
+                )
             <|
                 symbolElements config
                     ++ descAndTitle c
