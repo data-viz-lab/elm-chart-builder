@@ -72,8 +72,8 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 
 {-| The Config opaque type
 -}
-type alias Config msg =
-    Type.Config msg
+type alias Config msg validation =
+    Type.Config msg validation
 
 
 {-| The required config, passed as an argument to the `init` function
@@ -172,7 +172,7 @@ continuous acc =
         |> Line.render (data, accessor)
 
 -}
-init : RequiredConfig -> Config msg
+init : RequiredConfig -> Config msg validation
 init c =
     Type.defaultConfig
         |> withGroupedLayout
@@ -185,7 +185,7 @@ init c =
         |> Line.render ( data, accessor )
 
 -}
-render : ( List data, Accessor data ) -> Config msg -> Html msg
+render : ( List data, Accessor data ) -> Config msg validation -> Html msg
 render ( externalData, accessor ) config =
     let
         c =
@@ -218,7 +218,7 @@ for more info.
         |> Line.render ( data, accessor )
 
 -}
-withCurve : (List ( Float, Float ) -> SubPath) -> Config msg -> Config msg
+withCurve : (List ( Float, Float ) -> SubPath) -> Config msg validation -> Config msg validation
 withCurve curve config =
     Type.setCurve curve config
 
@@ -233,7 +233,7 @@ If set on a continuous line chart this setting will have no effect.
         |> Line.render ( data, accessor )
 
 -}
-withXTimeDomain : ( Posix, Posix ) -> Config msg -> Config msg
+withXTimeDomain : ( Posix, Posix ) -> Config msg validation -> Config msg validation
 withXTimeDomain value config =
     Type.setDomainTimeX value config
 
@@ -249,7 +249,7 @@ If set on a continuous line chart this setting will have no effect.
         |> Line.render ( data, accessor )
 
 -}
-withYDomain : ( Float, Float ) -> Config msg -> Config msg
+withYDomain : ( Float, Float ) -> Config msg validation -> Config msg validation
 withYDomain value config =
     Type.setDomainContinuousAndTimeY value config
 
@@ -264,7 +264,7 @@ If set on a continuous line chart this setting will have no effect.
         |> Line.render ( data, accessor )
 
 -}
-withXContinuousDomain : ( Float, Float ) -> Config msg -> Config msg
+withXContinuousDomain : ( Float, Float ) -> Config msg validation -> Config msg validation
 withXContinuousDomain value config =
     Type.setDomainContinuousX value config
 
@@ -279,7 +279,7 @@ Use this option to not build the table.
         |> Line.render ( data, accessor )
 
 -}
-withoutTable : Config msg -> Config msg
+withoutTable : Config msg validation -> Config msg validation
 withoutTable =
     Type.setAccessibilityContent Type.AccessibilityNone
 
@@ -293,7 +293,7 @@ Defaults to `String.fromFloat`
         |> Line.render ( data, accessor )
 
 -}
-withTableFloatFormat : (Float -> String) -> Config msg -> Config msg
+withTableFloatFormat : (Float -> String) -> Config msg validation -> Config msg validation
 withTableFloatFormat f =
     Type.setTableFloatFormat f
 
@@ -307,7 +307,7 @@ Defaults to `Time.posixToMillis >> String.fromInt`
         |> Line.render ( data, accessor )
 
 -}
-withTablePosixFormat : (Posix -> String) -> Config msg -> Config msg
+withTablePosixFormat : (Posix -> String) -> Config msg validation -> Config msg validation
 withTablePosixFormat f =
     Type.setTablePosixFormat f
 
@@ -322,7 +322,7 @@ This shuld be set if no title nor description exists for the chart, for example 
         |> Line.render ( data, accessor )
 
 -}
-withDesc : String -> Config msg -> Config msg
+withDesc : String -> Config msg validation -> Config msg validation
 withDesc value config =
     Type.setSvgDesc value config
 
@@ -337,7 +337,7 @@ This shuld be set if no title nor description exists for the chart, for example 
         |> Line.render ( data, accessor )
 
 -}
-withTitle : String -> Config msg -> Config msg
+withTitle : String -> Config msg validation -> Config msg validation
 withTitle value config =
     Type.setSvgTitle value config
 
@@ -353,7 +353,7 @@ withTitle value config =
         |> Line.render (data, accessor)
 
 -}
-withColorPalette : List Color -> Config msg -> Config msg
+withColorPalette : List Color -> Config msg validation -> Config msg validation
 withColorPalette palette config =
     Type.setColorResource (Type.ColorPalette palette) config
 
@@ -367,7 +367,7 @@ It takes a direction: `diverging` or `noDirection`
         |> Line.render ( data, accessor )
 
 -}
-withStackedLayout : Type.LineDraw -> Config msg -> Config msg
+withStackedLayout : Type.LineDraw -> Config msg validation -> Config msg validation
 withStackedLayout lineDraw config =
     Type.setLayout (Type.StackedLine lineDraw) config
 
@@ -379,7 +379,7 @@ withStackedLayout lineDraw config =
         |> Line.render ( data, accessor )
 
 -}
-withGroupedLayout : Config msg -> Config msg
+withGroupedLayout : Config msg validation -> Config msg validation
 withGroupedLayout config =
     Type.setLayout Type.GroupedLine config
 
@@ -394,7 +394,7 @@ It takes one of: xGroupLabel
         |> Line.withLabels Line.xGroupLabel
 
 -}
-withLabels : Type.Label -> Config msg -> Config msg
+withLabels : Type.Label -> Config msg validation -> Config msg validation
 withLabels label =
     case label of
         Type.XGroupLabel ->
@@ -412,7 +412,7 @@ The styles set here have precedence over `withColorPalette` and css.
         |> Line.render ( data, accessor )
 
 -}
-withLineStyle : List ( String, String ) -> Config msg -> Config msg
+withLineStyle : List ( String, String ) -> Config msg validation -> Config msg validation
 withLineStyle styles config =
     Type.setCoreStyles styles config
 
@@ -488,7 +488,7 @@ With a horizontal layout the Y axis is the horizontal axis.
         |> Line.render ( data, accessor )
 
 -}
-hideYAxis : Config msg -> Config msg
+hideYAxis : Config msg validation -> Config msg validation
 hideYAxis config =
     Type.setYAxis False config
 
@@ -504,7 +504,7 @@ With a horizontal layout the X axis is the vertical axis.
         |> Line.render ( data, accessor )
 
 -}
-hideXAxis : Config msg -> Config msg
+hideXAxis : Config msg validation -> Config msg validation
 hideXAxis config =
     Type.setXAxis False config
 
@@ -516,7 +516,7 @@ hideXAxis config =
         |> Line.render ( data, accessor )
 
 -}
-hideAxis : Config msg -> Config msg
+hideAxis : Config msg validation -> Config msg validation
 hideAxis config =
     Type.setXAxis False config
         |> Type.setYAxis False
@@ -529,7 +529,7 @@ hideAxis config =
         |> Line.render ( data, accessor )
 
 -}
-withXAxisTime : ChartAxis.XAxis Posix -> Config msg -> Config msg
+withXAxisTime : ChartAxis.XAxis Posix -> Config msg validation -> Config msg validation
 withXAxisTime =
     Type.setXAxisTime
 
@@ -541,7 +541,7 @@ withXAxisTime =
         |> Line.render ( data, accessor )
 
 -}
-withXAxisContinuous : ChartAxis.XAxis Float -> Config msg -> Config msg
+withXAxisContinuous : ChartAxis.XAxis Float -> Config msg validation -> Config msg validation
 withXAxisContinuous =
     Type.setXAxisContinuous
 
@@ -553,7 +553,7 @@ withXAxisContinuous =
         |> Line.render ( data, accessor )
 
 -}
-withYAxis : ChartAxis.YAxis Float -> Config msg -> Config msg
+withYAxis : ChartAxis.YAxis Float -> Config msg validation -> Config msg validation
 withYAxis =
     Type.setYAxisContinuous
 
@@ -565,7 +565,7 @@ withYAxis =
         |> Line.render ( data, accessor )
 
 -}
-withLogYScale : Float -> Config msg -> Config msg
+withLogYScale : Float -> Config msg validation -> Config msg validation
 withLogYScale base =
     Type.setYScale (Type.LogScale base)
 
@@ -582,7 +582,7 @@ hoverOne msg =
         |> Line.render ( data, accessor )
 
 -}
-withEvent : Event msg -> Config msg -> Config msg
+withEvent : Event msg -> Config msg validation -> Config msg validation
 withEvent event =
     case event of
         HoverOne msg ->
@@ -622,7 +622,7 @@ Default value: []
         |> withSymbols [ Circle, Corner, Triangle ]
 
 -}
-withSymbols : List Symbol -> Config msg -> Config msg
+withSymbols : List Symbol -> Config msg validation -> Config msg validation
 withSymbols =
     Type.setIcons
 

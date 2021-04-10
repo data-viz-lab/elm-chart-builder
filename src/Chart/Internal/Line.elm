@@ -91,7 +91,7 @@ import TypedSvg.Types
 -- GROUPED
 
 
-renderLineGrouped : ( DataContinuousGroup, Config msg ) -> Html msg
+renderLineGrouped : ( DataContinuousGroup, Config msg validation ) -> Html msg
 renderLineGrouped ( data, config ) =
     let
         c =
@@ -225,7 +225,7 @@ renderLineGrouped ( data, config ) =
 -- STACKED
 
 
-renderLineStacked : LineDraw -> ( DataContinuousGroup, Config msg ) -> Html msg
+renderLineStacked : LineDraw -> ( DataContinuousGroup, Config msg validation ) -> Html msg
 renderLineStacked lineDraw ( data, config ) =
     let
         c =
@@ -477,7 +477,7 @@ continuousYAxis c scale =
 continuousOrTimeAxisGenerator :
     Maybe (ContinuousScale Posix)
     -> ContinuousScale Float
-    -> ( DataContinuousGroup, Config msg )
+    -> ( DataContinuousGroup, Config msg validation )
     -> List (Svg msg)
 continuousOrTimeAxisGenerator xTimeScale xContinuousScale ( data, config ) =
     let
@@ -522,7 +522,7 @@ symbolsToSymbolElements symbols =
 
 
 drawSymbol :
-    Config msg
+    Config msg validation
     -> { idx : Int, x : Float, y : Float, styleStr : String }
     -> List (Svg msg)
 drawSymbol config { idx, x, y, styleStr } =
@@ -596,7 +596,7 @@ drawSymbol config { idx, x, y, styleStr } =
 --  HELPERS
 
 
-symbolElements : Config msg -> List (Svg msg)
+symbolElements : Config msg validation -> List (Svg msg)
 symbolElements config =
     let
         c =
@@ -627,7 +627,7 @@ defaultSymbolSize =
 
 
 drawAreas :
-    Config msg
+    Config msg validation
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> StackResult String
@@ -720,7 +720,7 @@ drawAreas config xScale yScale stackedResult combinedData =
 
 
 drawContinuousLine :
-    Config msg
+    Config msg validation
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> List DataGroupContinuous
@@ -790,7 +790,7 @@ drawContinuousLine config xScale yScale sortedData =
 
 
 areaLabel :
-    Config msg
+    Config msg validation
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> Int
@@ -842,7 +842,7 @@ areaLabel config xScale yScale _ item =
 
 
 horizontalLabel :
-    Config msg
+    Config msg validation
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> Int
@@ -896,7 +896,7 @@ horizontalLabel config xScale yScale idx groupLabel point =
             text_ [] []
 
 
-tableElement : Config msg -> DataContinuousGroup -> Html msg
+tableElement : Config msg validation -> DataContinuousGroup -> Html msg
 tableElement config data =
     let
         c =
@@ -924,7 +924,7 @@ tableElement config data =
 
 
 symbolGroup :
-    Config msg
+    Config msg validation
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> List DataGroupContinuous

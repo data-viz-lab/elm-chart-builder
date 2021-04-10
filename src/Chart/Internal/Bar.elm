@@ -100,7 +100,7 @@ import TypedSvg.Types
 -- BAND STACKED
 
 
-renderBandStacked : ( DataBand, Config msg ) -> Html msg
+renderBandStacked : ( DataBand, Config msg validation ) -> Html msg
 renderBandStacked ( data, config ) =
     -- based on https://code.gampleman.eu/elm-visualization/StackedBarChart/
     let
@@ -380,7 +380,7 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
 -- BAND GROUPED
 
 
-renderBandGrouped : ( DataBand, Config msg ) -> Html msg
+renderBandGrouped : ( DataBand, Config msg validation ) -> Html msg
 renderBandGrouped ( data, config ) =
     let
         c =
@@ -516,7 +516,7 @@ renderBandGrouped ( data, config ) =
 
 
 columns :
-    Config msg
+    Config msg validation
     -> Float
     -> BandScale String
     -> BandScale String
@@ -545,7 +545,7 @@ columns config iconOffset bandGroupScale bandSingleScale continuousScale colorSc
 
 
 column :
-    Config msg
+    Config msg validation
     -> Float
     -> BandScale String
     -> ContinuousScale Float
@@ -567,7 +567,7 @@ column config iconOffset bandSingleScale continuousScale colorScale idx point =
 
 
 verticalRect :
-    Config msg
+    Config msg validation
     -> Float
     -> BandScale String
     -> ContinuousScale Float
@@ -640,7 +640,7 @@ verticalRect config iconOffset bandSingleScale continuousScale colorScale idx po
 
 
 horizontalRect :
-    Config msg
+    Config msg validation
     -> BandScale String
     -> ContinuousScale Float
     -> ContinuousScale Float
@@ -714,7 +714,7 @@ dataGroupTranslation bandGroupScale dataGroup =
             Scale.convert bandGroupScale l
 
 
-verticalLabel : Config msg -> Float -> Float -> PointBand -> List (Svg msg)
+verticalLabel : Config msg validation -> Float -> Float -> PointBand -> List (Svg msg)
 verticalLabel config xPos yPos point =
     let
         ( xVal, yVal ) =
@@ -740,7 +740,7 @@ verticalLabel config xPos yPos point =
 
 
 horizontalSymbol :
-    Config msg
+    Config msg validation
     -> { idx : Int, w : Float, y_ : Float, h : Float, styleStr : String }
     -> List (Svg msg)
 horizontalSymbol config { idx, w, y_, styleStr } =
@@ -809,7 +809,7 @@ horizontalSymbol config { idx, w, y_, styleStr } =
 
 
 verticalSymbol :
-    Config msg
+    Config msg validation
     -> { idx : Int, w : Float, y_ : Float, x_ : Float, styleStr : String }
     -> List (Svg msg)
 verticalSymbol config { idx, w, y_, x_, styleStr } =
@@ -1071,7 +1071,7 @@ bandGroupedYAxis c iconOffset continuousScale =
 -- HISTOGRAM
 
 
-renderHistogram : ( List (Histogram.Bin Float Float), Config msg ) -> Html msg
+renderHistogram : ( List (Histogram.Bin Float Float), Config msg validation ) -> Html msg
 renderHistogram ( histogram, config ) =
     let
         c =
@@ -1209,7 +1209,7 @@ renderHistogram ( histogram, config ) =
 
 
 histogramColumn :
-    Config msg
+    Config msg validation
     -> Float
     -> ContinuousScale Float
     -> ContinuousScale Float
@@ -1281,7 +1281,7 @@ stackedColumnTitleText c idx labels value =
             []
 
 
-columnTitleText : Config msg -> PointBand -> List (Svg msg)
+columnTitleText : Config msg validation -> PointBand -> List (Svg msg)
 columnTitleText config point =
     let
         ( xVal, yVal ) =
@@ -1298,7 +1298,7 @@ columnTitleText config point =
             []
 
 
-horizontalLabel : Config msg -> Float -> Float -> PointBand -> List (Svg msg)
+horizontalLabel : Config msg validation -> Float -> Float -> PointBand -> List (Svg msg)
 horizontalLabel config xPos yPos point =
     let
         ( xVal, yVal ) =
@@ -1324,7 +1324,7 @@ horizontalLabel config xPos yPos point =
             []
 
 
-tableElement : Config msg -> DataBand -> Html msg
+tableElement : Config msg validation -> DataBand -> Html msg
 tableElement config data =
     let
         c =

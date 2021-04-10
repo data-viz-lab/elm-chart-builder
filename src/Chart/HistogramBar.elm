@@ -64,8 +64,8 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 
 {-| The Config opaque type
 -}
-type alias Config msg =
-    Type.Config msg
+type alias Config msg validation =
+    Type.Config msg validation
 
 
 {-| The required config, passed as an argument to the `init` function
@@ -126,7 +126,7 @@ preProcessedDataAccessor acc =
         |> Histo.render ( data, accessor )
 
 -}
-init : RequiredConfig -> Config msg
+init : RequiredConfig -> Config msg validation
 init c =
     Type.defaultConfig
         |> Type.setDimensions { margin = c.margin, width = c.width, height = c.height }
@@ -138,7 +138,7 @@ init c =
         |> Histo.render ( data, accessor )
 
 -}
-render : ( List data, Type.AccessorHistogram data ) -> Config msg -> Html msg
+render : ( List data, Type.AccessorHistogram data ) -> Config msg validation -> Html msg
 render ( externalData, acc ) config =
     let
         data =
@@ -157,7 +157,7 @@ Use this option to not build the table.
         |> Histo.render ( data, accessor )
 
 -}
-withoutTable : Config msg -> Config msg
+withoutTable : Config msg validation -> Config msg validation
 withoutTable =
     Type.setAccessibilityContent Type.AccessibilityNone
 
@@ -170,7 +170,7 @@ All values falling outside the domain will be ignored.
         |> Histo.render ( data, accessor )
 
 -}
-withDomain : ( Float, Float ) -> Config msg -> Config msg
+withDomain : ( Float, Float ) -> Config msg validation -> Config msg validation
 withDomain domain config =
     Type.setHistogramDomain domain config
 
@@ -184,7 +184,7 @@ Defaults to `String.fromFloat`
         |> Histo.render ( data, accessor )
 
 -}
-withTableFloatFormat : (Float -> String) -> Config msg -> Config msg
+withTableFloatFormat : (Float -> String) -> Config msg validation -> Config msg validation
 withTableFloatFormat f =
     Type.setTableFloatFormat f
 
@@ -196,7 +196,7 @@ withTableFloatFormat f =
         |> Histo.render ( data, accessor )
 
 -}
-withColor : Color -> Config msg -> Config msg
+withColor : Color -> Config msg validation -> Config msg validation
 withColor color config =
     Type.setColorResource (Type.Color color) config
 
@@ -209,7 +209,7 @@ Default value: ""
         |> Histo.render ( data, accessor )
 
 -}
-withDesc : String -> Config msg -> Config msg
+withDesc : String -> Config msg validation -> Config msg validation
 withDesc value config =
     Type.setSvgDesc value config
 
@@ -222,7 +222,7 @@ Default value: ""
         |> Histo.render ( data, accessor )
 
 -}
-withTitle : String -> Config msg -> Config msg
+withTitle : String -> Config msg validation -> Config msg validation
 withTitle value config =
     Type.setSvgTitle value config
 
@@ -237,7 +237,7 @@ It takes a formatter function.
         |> Bar.withColumnTitle (Bar.yColumnTitle String.fromFloat)
 
 -}
-withColumnTitle : Type.ColumnTitle -> Config msg -> Config msg
+withColumnTitle : Type.ColumnTitle -> Config msg validation -> Config msg validation
 withColumnTitle title config =
     case title of
         Type.YColumnTitle formatter ->
@@ -258,7 +258,7 @@ The styles set here have precedence over css.
         |> Histo.render ( data, accessor )
 
 -}
-withBarStyle : List ( String, String ) -> Config msg -> Config msg
+withBarStyle : List ( String, String ) -> Config msg validation -> Config msg validation
 withBarStyle styles config =
     Type.setCoreStyles styles config
 
@@ -322,7 +322,7 @@ axisBottom =
         |> Histo.render ( data, accessor )
 
 -}
-hideAxis : Config msg -> Config msg
+hideAxis : Config msg validation -> Config msg validation
 hideAxis config =
     Type.setXAxis False config
         |> Type.setYAxis False
@@ -335,7 +335,7 @@ hideAxis config =
         |> Histo.render ( data, accessor )
 
 -}
-hideYAxis : Config msg -> Config msg
+hideYAxis : Config msg validation -> Config msg validation
 hideYAxis config =
     Type.setYAxis False config
 
@@ -347,7 +347,7 @@ hideYAxis config =
         |> Histo.render ( data, accessor )
 
 -}
-hideXAxis : Config msg -> Config msg
+hideXAxis : Config msg validation -> Config msg validation
 hideXAxis config =
     Type.setXAxis False config
 
@@ -359,7 +359,7 @@ hideXAxis config =
         |> Histo.render ( data, accessor )
 
 -}
-withXAxis : ChartAxis.XAxis Float -> Config msg -> Config msg
+withXAxis : ChartAxis.XAxis Float -> Config msg validation -> Config msg validation
 withXAxis =
     Type.setXAxisContinuous
 
@@ -371,6 +371,6 @@ withXAxis =
         |> Histo.render ( data, accessor )
 
 -}
-withYAxis : ChartAxis.YAxis Float -> Config msg -> Config msg
+withYAxis : ChartAxis.YAxis Float -> Config msg validation -> Config msg validation
 withYAxis =
     Type.setYAxisContinuous

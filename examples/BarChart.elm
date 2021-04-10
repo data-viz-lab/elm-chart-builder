@@ -235,7 +235,6 @@ verticalStacked =
         |> Bar.withColorPalette Scale.Color.tableau10
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withStackedLayout Bar.noDirection
-        |> Bar.withSymbols (icons "chart-b")
         |> Bar.withYAxis yAxis
         |> Bar.render ( data, accessor )
 
