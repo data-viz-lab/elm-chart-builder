@@ -578,7 +578,7 @@ hoverOne msg =
 {-| Add an event
 
     Line.init requiredConfig
-        |> Line.withEvent (Line.HoverOne OnHover)
+        |> Line.withEvent (Line.hoverOne OnHover)
         |> Line.render ( data, accessor )
 
 -}

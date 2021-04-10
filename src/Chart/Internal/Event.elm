@@ -34,7 +34,7 @@ type alias DataGroupContinuous =
     }
 
 
-type alias MouseEventData =
+type alias EventData =
     { pageX : Float
     , pageY : Float
     , boundingClientRect : DOM.Rectangle
@@ -61,18 +61,34 @@ hoverOne :
     -> (Maybe ( Float, Float ) -> msg)
     -> List (Attribute msg)
 hoverOne config data scales msg =
-    [ onMouseMove config data scales msg
+    [ onEvent "mousemove" 30 config data scales msg
+    , onEvent "touchstart" 100 config data scales msg
+    , onEvent "touchmove" 100 config data scales msg
+    , onMouseLeave msg
     ]
 
 
-onMouseMove : Config c -> List DataGroupContinuous -> Scales -> (Maybe ( Float, Float ) -> msg) -> Attribute msg
-onMouseMove config data scales message =
-    on "mousemove"
+onEvent :
+    String
+    -> Float
+    -> Config c
+    -> List DataGroupContinuous
+    -> Scales
+    -> (Maybe ( Float, Float ) -> msg)
+    -> Attribute msg
+onEvent stringEvent radius config data scales message =
+    on stringEvent
         (mouseEventDecoder
             |> Decode.andThen
-                (\e -> getWithin config data scales 30 e |> Decode.succeed)
+                (\e -> getWithin config data scales radius e |> Decode.succeed)
             |> Decode.map message
         )
+
+
+{-| -}
+onMouseLeave : (Maybe ( Float, Float ) -> msg) -> Attribute msg
+onMouseLeave message =
+    on "mouseleave" (Decode.succeed (message Nothing))
 
 
 decodePoint : Decode.Decoder PointContinuous
@@ -85,47 +101,47 @@ getWithin :
     -> List DataGroupContinuous
     -> Scales
     -> Float
-    -> MouseEventData
+    -> EventData
     -> Maybe PointContinuous
-getWithin { margin, width, height } data ( xScale, yScale ) radius mouseEventData =
+getWithin { margin, width, height } data ( xScale, yScale ) radius eventData =
     let
-        _ =
-            Debug.log "mouseEventData" mouseEventData
-
         xCoord =
-            mouseEventData.pageX
-                - mouseEventData.boundingClientRect.left
+            eventData.pageX
+                - eventData.boundingClientRect.left
                 - margin.left
 
         yCoord =
-            mouseEventData.pageY
-                - mouseEventData.boundingClientRect.top
+            eventData.pageY
+                - eventData.boundingClientRect.top
                 - margin.top
 
         ( valueX, valueY ) =
             ( Scale.invert xScale xCoord, Scale.invert yScale yCoord )
-
-        vectorLengths =
-            data
-                |> List.map .points
-                |> List.concat
-                |> List.map
-                    (\( x, y ) ->
-                        vectorLength
-                            { eventX = xCoord
-                            , eventY = yCoord
-                            , dataX = Scale.convert xScale x
-                            , dataY = Scale.convert yScale y
-                            }
-                    )
     in
-    Just ( 0, 0 )
+    data
+        |> List.map .points
+        |> List.concat
+        |> List.map
+            (\( x, y ) ->
+                ( ( x, y )
+                , vectorLength
+                    { eventX = xCoord
+                    , eventY = yCoord
+                    , dataX = Scale.convert xScale x
+                    , dataY = Scale.convert yScale y
+                    }
+                )
+            )
+        |> List.filter (\( point, distance ) -> distance < radius)
+        |> List.sortBy Tuple.second
+        |> List.head
+        |> Maybe.map Tuple.first
 
 
-mouseEventDecoder : Decode.Decoder MouseEventData
+mouseEventDecoder : Decode.Decoder EventData
 mouseEventDecoder =
     Decode.map3
-        MouseEventData
+        EventData
         (Decode.field "pageX" Decode.float)
         (Decode.field "pageY" Decode.float)
         (DOM.target position)

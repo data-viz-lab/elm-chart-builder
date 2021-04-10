@@ -111,7 +111,10 @@ height =
 accessor : Line.Accessor Datum
 accessor =
     Line.continuous
-        (Line.AccessorContinuous (always Nothing) .x .y)
+        { xGroup = always Nothing
+        , xValue = .x
+        , yValue = .y
+        }
 
 
 data : Data
