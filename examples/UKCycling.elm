@@ -5,9 +5,12 @@ module UKCycling exposing (main)
 
 import Axis
 import Chart.Bar as Bar
+import Color exposing (Color)
 import Html exposing (Html)
 import Html.Attributes exposing (class)
+import Interpolation exposing (Interpolator)
 import Numeral
+import Scale.Color
 
 
 css : String
@@ -40,25 +43,6 @@ ul {
   margin: 25px;
 }
 
-.column-0 rect,
-.column-0 .symbol {
-    fill: #fecc5c;
-}
-
-.column-1 rect,
-.column-1 .symbol {
-    fill: #fd8d3c;
-}
-
-.column-2 rect,
-.column-2 .symbol {
-    fill: #f03b20;
-}
-
-.column-3 rect,
-.column-3 .symbol {
-    fill: #bd0026;
-}
 
 .axis path,
 .axis line {
@@ -93,6 +77,13 @@ figure {
   margin: 0;
 }
 """
+
+
+colorScheme : List Color
+colorScheme =
+    List.range 1 5
+        |> List.map (\v -> toFloat v / 4)
+        |> List.map Scale.Color.yellowOrangeRedInterpolator
 
 
 width : Float
@@ -192,6 +183,7 @@ stackedByFrequency =
         , width = width
         , height = height
         }
+        |> Bar.withColorPalette colorScheme
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withXAxis xAxis
         |> Bar.withYDomain ( 0, 0.55 )
@@ -206,6 +198,7 @@ stackedByFrequencyGender =
         , width = 240
         , height = height
         }
+        |> Bar.withColorPalette colorScheme
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withYDomain ( 0, 0.55 )
         |> Bar.withYAxis yAxis
@@ -220,6 +213,7 @@ stackedByFrequencyLegend =
         , width = 30
         , height = 300
         }
+        |> Bar.withColorPalette colorScheme
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.hideAxis
         |> Bar.render ( dataLegend, accessor )

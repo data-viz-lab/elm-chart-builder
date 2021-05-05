@@ -6,6 +6,7 @@ module BarChart exposing (data, main)
 import Axis
 import Chart.Bar as Bar
 import Chart.Symbol as Symbol exposing (Symbol)
+import Color exposing (Color)
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
 import Html exposing (Html)
@@ -38,6 +39,11 @@ h5 {
   font-size: 10px;
 }
 """
+
+
+colorScheme : List Color
+colorScheme =
+    Scale.Color.tableau10
 
 
 bicycleSymbol : String
@@ -182,7 +188,7 @@ verticalGrouped =
         , height = height
         }
         |> Bar.withBarStyle [ ( "fill", "#fff" ), ( "stroke-width", "2" ) ]
-        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withColorPalette colorScheme
         |> Bar.withColumnTitle (Bar.yColumnTitle valueFormatter)
         |> Bar.withGroupedLayout
         |> Bar.withYAxis yAxis
@@ -197,7 +203,7 @@ verticalGroupedWithIcons =
         , height = height
         }
         |> Bar.withBarStyle [ ( "fill", "#fff" ), ( "stroke-width", "2" ) ]
-        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withColorPalette colorScheme
         |> Bar.withColumnTitle (Bar.yColumnTitle valueFormatter)
         |> Bar.withGroupedLayout
         |> Bar.withSymbols (iconsCustom "chart-a")
@@ -212,7 +218,7 @@ verticalGroupedWithLabels =
         , width = width
         , height = height
         }
-        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withColorPalette colorScheme
         |> Bar.withColumnTitle (Bar.yColumnTitle valueFormatter)
         |> Bar.withGroupedLayout
         |> Bar.withLabels (Bar.yLabel yLabelFormatter)
@@ -227,7 +233,7 @@ horizontalGroupedWithIcons =
         , width = width
         , height = height
         }
-        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withColorPalette colorScheme
         |> Bar.withColumnTitle (Bar.yColumnTitle valueFormatter)
         |> Bar.withGroupedLayout
         |> Bar.withOrientation Bar.horizontal
@@ -243,7 +249,7 @@ horizontalGroupedWithLabels =
         , width = width
         , height = height
         }
-        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withColorPalette colorScheme
         |> Bar.withColumnTitle (Bar.yColumnTitle valueFormatter)
         |> Bar.withGroupedLayout
         |> Bar.withOrientation Bar.horizontal
@@ -259,7 +265,7 @@ verticalStacked =
         , width = width
         , height = height
         }
-        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withColorPalette colorScheme
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withSymbols (icons "chart-b")
@@ -274,7 +280,7 @@ horizontalStacked =
         , width = width
         , height = height
         }
-        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withColorPalette colorScheme
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withStackedLayout Bar.noDirection
@@ -289,7 +295,7 @@ horizontalStackedDiverging =
         , width = width
         , height = height
         }
-        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withColorPalette colorScheme
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withOrientation Bar.horizontal
         |> Bar.withStackedLayout Bar.diverging
@@ -316,7 +322,7 @@ verticalStackedDiverging =
                     _ ->
                         []
             )
-        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withColorPalette colorScheme
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withOrientation Bar.vertical
         |> Bar.withStackedLayout Bar.diverging
