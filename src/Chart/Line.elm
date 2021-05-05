@@ -358,10 +358,10 @@ withColorPalette palette config =
 
 {-| Creates a stacked line chart.
 
-It takes a direction: `diverging` or `noDirection`
+It takes an option to draw stacked lines or stacked areas
 
     Line.init requiredConfig
-        |> Line.withStackedLayout
+        |> Line.withStackedLayout Line.drawLine
         |> Line.render ( data, accessor )
 
 -}
@@ -568,9 +568,13 @@ withLogYScale base =
     Type.setYScale (Type.LogScale base)
 
 
-{-|
+{-| A stacked chart with areas option.
+It takes a [Stack Offset](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Shape#stackOffsetNone) option from the elm-visualization Shape module.
 
-    TODO
+    Line.init requiredConfig
+        |> Line.withStackedLayout
+            (Line.drawArea Shape.stackOffsetNone)
+        |> Line.render ( data, accessor )
 
 -}
 drawArea : (List (List ( Float, Float )) -> List (List ( Float, Float ))) -> Type.LineDraw
@@ -578,9 +582,11 @@ drawArea =
     Type.lineDrawArea
 
 
-{-|
+{-| A stacked chart with lines option.
 
-    TODO
+    Line.init requiredConfig
+        |> Line.withStackedLayout Line.drawLine
+        |> Line.render ( data, accessor )
 
 -}
 drawLine : Type.LineDraw
