@@ -5,6 +5,7 @@ module Chart.Internal.Type exposing
     , AccessorContinuousStruct
     , AccessorHistogram(..)
     , AccessorTimeStruct
+    , Annotation(..)
     , BandDomain
     , ColorResource(..)
     , ColumnTitle(..)
@@ -17,6 +18,7 @@ module Chart.Internal.Type exposing
     , DataGroupContinuous
     , DataGroupContinuousWithStack
     , DataGroupTime
+    , DataGroupTransposed
     , Direction(..)
     , DomainBand
     , DomainBandStruct
@@ -31,6 +33,7 @@ module Chart.Internal.Type exposing
     , Margin
     , Orientation(..)
     , PointBand
+    , PointComparable
     , PointContinuous
     , PointStacked
     , PointTime
@@ -64,11 +67,14 @@ module Chart.Internal.Type exposing
     , externalToDataContinuousGroup
     , externalToDataHistogram
     , fillGapsForStack
+    , flatDataGroup
     , fromConfig
     , fromDataBand
     , fromDomainBand
     , fromDomainContinuous
     , fromExternalData
+    , getAnnotationPointHint
+    , getAnnotationVLine
     , getBandGroupRange
     , getBandSingleRange
     , getContinuousRange
@@ -82,12 +88,14 @@ module Chart.Internal.Type exposing
     , getDomainTimeFromData
     , getOffset
     , getStackedValuesAndGroupes
+    , isStackedLine
     , leftGap
     , lineDrawArea
     , lineDrawLine
     , noGroups
     , role
     , setAccessibilityContent
+    , setAnnotiation
     , setColorResource
     , setCoreStyleFromPointBandX
     , setCoreStyles
@@ -136,13 +144,20 @@ module Chart.Internal.Type exposing
     , toContinousScale
     , toDataBand
     , toExternalData
+    , transposeDataGroup
     )
 
 import Chart.Internal.Axis as ChartAxis
 import Chart.Internal.Event as Event exposing (Event)
 import Chart.Internal.Helpers as Helpers
-import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
+import Chart.Internal.Symbol as Symbol
+    exposing
+        ( Symbol(..)
+        , SymbolContext(..)
+        , symbolGap
+        )
 import Color exposing (Color)
+import Dict exposing (Dict)
 import Histogram
 import Html
 import Html.Attributes
@@ -236,20 +251,35 @@ type alias PointTime =
     ( Posix, Float )
 
 
+type alias PointComparable comparable =
+    ( comparable, Float )
+
+
 type alias PointStacked a =
     ( a, List Float )
 
 
-type alias DataGroupBand =
+type alias DataGroup x =
     { groupLabel : Maybe String
-    , points : List PointBand
+    , points : List ( x, Float )
     }
+
+
+type alias DataGroupTransposed x =
+    Dict x
+        (List
+            { groupLabel : Maybe String
+            , point : ( x, Float )
+            }
+        )
+
+
+type alias DataGroupBand =
+    DataGroup String
 
 
 type alias DataGroupContinuous =
-    { groupLabel : Maybe String
-    , points : List PointContinuous
-    }
+    DataGroup Float
 
 
 type alias DataGroupContinuousWithStack =
@@ -259,9 +289,7 @@ type alias DataGroupContinuousWithStack =
 
 
 type alias DataGroupTime =
-    { groupLabel : Maybe String
-    , points : List PointTime
-    }
+    DataGroup Posix
 
 
 
@@ -414,6 +442,7 @@ type alias RequiredConfig =
 
 type alias ConfigStruct msg =
     { accessibilityContent : AccessibilityContent
+    , annotations : List Annotation
     , axisXBand : ChartAxis.XAxis String
     , axisXContinuous : ChartAxis.XAxis Float
     , axisXTime : ChartAxis.XAxis Posix
@@ -428,7 +457,7 @@ type alias ConfigStruct msg =
     , events : List (Event msg)
     , height : Float
     , histogramDomain : Maybe ( Float, Float )
-    , icons : List Symbol
+    , symbols : List Symbol
     , layout : Layout
     , margin : Margin
     , orientation : Orientation
@@ -452,6 +481,7 @@ defaultConfig : Config msg validation
 defaultConfig =
     toConfig
         { accessibilityContent = AccessibilityTableNoLabels
+        , annotations = []
         , axisXBand = ChartAxis.Bottom []
         , axisXContinuous = ChartAxis.Bottom []
         , axisXTime = ChartAxis.Bottom []
@@ -466,7 +496,7 @@ defaultConfig =
         , events = []
         , height = defaultHeight
         , histogramDomain = Nothing
-        , icons = []
+        , symbols = []
         , layout = defaultLayout
         , margin = defaultMargin
         , orientation = defaultOrientation
@@ -606,7 +636,7 @@ setLayout layout (Config c) =
 
 setIcons : List Symbol -> Config msg validation -> Config msg validation
 setIcons all (Config c) =
-    Config { c | icons = all }
+    Config { c | symbols = all }
 
 
 setCurve : (List ( Float, Float ) -> SubPath) -> Config msg validation -> Config msg validation
@@ -841,6 +871,15 @@ setShowDataPoints bool (Config c) =
     toConfig { c | showDataPoints = bool }
 
 
+setAnnotiation : Annotation -> Config msg validation -> Config msg validation
+setAnnotiation annotation (Config c) =
+    let
+        a =
+            annotation :: c.annotations
+    in
+    toConfig { c | annotations = a }
+
+
 setAccessibilityContent : AccessibilityContent -> Config msg validation -> Config msg validation
 setAccessibilityContent content (Config c) =
     toConfig { c | accessibilityContent = content }
@@ -916,7 +955,7 @@ showStackedColumnTitle formatter (Config c) =
 showIcons : Config msg validation -> Bool
 showIcons (Config c) =
     c
-        |> .icons
+        |> .symbols
         |> List.length
         |> (\l -> l > 0)
 
@@ -1188,7 +1227,7 @@ getContinuousRange config renderContext width height bandScale =
                 GroupedBar ->
                     if showIcons config then
                         -- Here we are leaving space for the symbol
-                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale c.icons )
+                        ( 0, width - symbolGap - symbolSpace c.orientation bandScale c.symbols )
 
                     else
                         ( 0, width )
@@ -1206,7 +1245,7 @@ getContinuousRange config renderContext width height bandScale =
                 GroupedBar ->
                     if showIcons config then
                         -- Here we are leaving space for the symbol
-                        ( height - symbolGap - symbolSpace c.orientation bandScale c.icons
+                        ( height - symbolGap - symbolSpace c.orientation bandScale c.symbols
                         , 0
                         )
 
@@ -1755,3 +1794,129 @@ descAndTitle c =
                     el [ text str ] :: acc
             )
             []
+
+
+type alias Style =
+    List ( String, String )
+
+
+type Annotation
+    = AnnotationPointHint ( Event.Hint, Style )
+    | AnnotationXBarHint ( Event.Hint, Style )
+
+
+getAnnotationPointHint : List Annotation -> Maybe ( Event.Hint, Style )
+getAnnotationPointHint annotations =
+    --FIXME: this assumes only one point annotation hint per list of annotations.
+    -- If this is the case, it should be enforced and not assumed.
+    annotations
+        |> List.filterMap
+            (\annotation ->
+                case annotation of
+                    AnnotationPointHint p ->
+                        Just p
+
+                    _ ->
+                        Nothing
+            )
+        |> List.head
+
+
+getAnnotationVLine : List Annotation -> Maybe ( Event.Hint, Style )
+getAnnotationVLine annotations =
+    --FIXME: this assumes only one x-bar annotation hint per list of annotations.
+    -- If this is the case, it should be enforced and not assumed.
+    annotations
+        |> List.filterMap
+            (\annotation ->
+                case annotation of
+                    AnnotationXBarHint p ->
+                        Just p
+
+                    _ ->
+                        Nothing
+            )
+        |> List.head
+
+
+isStackedLine : ConfigStruct msg -> Bool
+isStackedLine c =
+    case c.layout of
+        StackedLine _ ->
+            True
+
+        _ ->
+            False
+
+
+
+--transposeDataGroup : ExternalData data -> AccessorContinuousOrTime data -> DataGroupTransposed comparable
+--transposeDataGroup externalData accessorGroup =
+--    externalData
+--        |> fromExternalData
+--        |> List.foldl
+--            (\d dict ->
+--                let
+--                    ( x, y, label ) =
+--                        case accessorGroup of
+--                            AccessorContinuous accessor ->
+--                                ( accessor.xValue d
+--                                , accessor.yValue d
+--                                , accessor.xGroup d
+--                                )
+--
+--                            AccessorTime accessor ->
+--                                ( accessor.xValue d |> Time.posixToMillis |> toFloat
+--                                , accessor.yValue d
+--                                , accessor.xGroup d
+--                                )
+--                in
+--                dict
+--            )
+--            Dict.empty
+
+
+flatDataGroup :
+    List (DataGroup comparable)
+    -> List { groupLabel : Maybe String, point : PointComparable comparable }
+flatDataGroup dataGroup =
+    dataGroup
+        |> List.map
+            (\d ->
+                d.points
+                    |> List.map
+                        (\p ->
+                            { groupLabel = d.groupLabel, point = p }
+                        )
+            )
+        |> List.concat
+
+
+transposeDataGroup : List (DataGroup comparable) -> DataGroupTransposed comparable
+transposeDataGroup dataGroup =
+    -- TODO: this feels all very inefficient,
+    -- especially with a stateless componet
+    -- where on every event this needs recalculating
+    dataGroup
+        |> flatDataGroup
+        |> List.foldr
+            (\{ groupLabel, point } acc ->
+                let
+                    k =
+                        Tuple.first point
+                in
+                if Dict.member k acc then
+                    Dict.update k
+                        (\values ->
+                            values
+                                |> Maybe.map
+                                    (\v ->
+                                        { groupLabel = groupLabel, point = point } :: v
+                                    )
+                        )
+                        acc
+
+                else
+                    Dict.insert k [ { groupLabel = groupLabel, point = point } ] acc
+            )
+            Dict.empty

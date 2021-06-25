@@ -17,14 +17,16 @@ suite =
         [ colorPaletteToColorTest
         , mergeStylesTest
         , sortStringsTest
-        , stackDataGroupLinearTest
+        , stackDataGroupContinuousTest
+        , unstackTest
+        , stackDeltasTest
         ]
 
 
-stackDataGroupLinearTest : Test
-stackDataGroupLinearTest =
+stackDataGroupContinuousTest : Test
+stackDataGroupContinuousTest =
     describe "combineStakedValuesWithXValuesTest"
-        [ test "It should combine the stacked values into dataGroupLinear" <|
+        [ test "It should combine the stacked values into dataGroupContinous" <|
             \_ ->
                 let
                     values =
@@ -161,4 +163,46 @@ mergeStylesTest =
                         mergeStyles new existing
                 in
                 Expect.equal "fill:none" expected
+        ]
+
+
+unstackTest : Test
+unstackTest =
+    describe "unstack a list of stacked values"
+        [ test "most simple case" <|
+            \_ ->
+                let
+                    input =
+                        [ 1, 2, 3 ]
+
+                    expected =
+                        [ 1, 1, 1 ]
+                in
+                Expect.equal (unstack input) expected
+        , test "another simple case" <|
+            \_ ->
+                let
+                    input =
+                        [ 10, 24 ]
+
+                    expected =
+                        [ 10, 14 ]
+                in
+                Expect.equal (unstack input) expected
+        ]
+
+
+stackDeltasTest : Test
+stackDeltasTest =
+    describe "unstack a list of stacked values and get the deltas"
+        [ test "a simple case" <|
+            \_ ->
+                let
+                    input =
+                        [ 10, 24 ]
+
+                    expected =
+                        [ 0, 14 ]
+                in
+                Expect.equal (stackDeltas input) expected
         ]

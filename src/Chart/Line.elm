@@ -3,11 +3,11 @@ module Chart.Line exposing
     , init
     , render
     , Config, RequiredConfig
-    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale
+    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale, withPointAnnotation, withVLineAnnotation, withEvent
+    , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawArea, drawLine
     , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisContinuous, withXAxisTime, withYAxis
     , withSymbols
-    , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawArea, drawLine
-    , hoverOne, withEvent
+    , Hint, hoverAll, hoverOne
     )
 
 {-| This is the line chart module from [elm-chart-builder](https://github.com/data-viz-lab/elm-chart-builder).
@@ -37,7 +37,12 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 # Optional Configuration setters
 
-@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale
+@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale, withPointAnnotation, withVLineAnnotation, withEvent
+
+
+# Configuration arguments
+
+@docs axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawArea, drawLine
 
 
 # Axis
@@ -47,13 +52,14 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 @docs withSymbols
 
 
-# Configuration arguments
+# Events
 
-@docs axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawArea, drawLine
+@docs Hint, hoverAll, hoverOne
 
 -}
 
 import Axis
+import Chart.Annotation as Annotation
 import Chart.Internal.Axis as ChartAxis
 import Chart.Internal.Event as Event exposing (Event(..))
 import Chart.Internal.Line
@@ -570,13 +576,54 @@ withLogYScale base =
     Type.setYScale (Type.LogScale base)
 
 
-{-| -}
-hoverOne : (Maybe ( Float, Float ) -> msg) -> Event.Event msg
+
+-- Events
+
+
+{-| The data format returned by an event.
+Internaly defined as:
+
+    type alias Hint =
+        { groupLabel : Maybe String
+        , xChart : Float
+        , xData : Float
+        , yChart : List Float
+        , yData : List Float
+        }
+
+For a `hoverOne` event the yChart will always have one value.
+
+-}
+type alias Hint =
+    Event.Hint
+
+
+{-| An event listener for a single element at a time.
+
+    Line.init requiredConfig
+        |> Line.withEvent (Line.hoverOne OnHover)
+        |> Line.render ( data, accessor )
+
+-}
+hoverOne : (Maybe Event.Hint -> msg) -> Event.Event msg
 hoverOne msg =
     Event.HoverOne msg
 
 
-{-| Add an event
+{-| An event listener for all elements along the same x-value.
+
+    Line.init requiredConfig
+        |> Line.withEvent (Line.hoverAll OnHover)
+        |> Line.render ( data, accessor )
+
+-}
+hoverAll : (Maybe Event.Hint -> msg) -> Event.Event msg
+hoverAll msg =
+    Event.HoverAll msg
+
+
+{-| Add an event with a msg to handle the returned Hint data.
+One of: hoverOne, hoverAll.
 
     Line.init requiredConfig
         |> Line.withEvent (Line.hoverOne OnHover)
@@ -588,6 +635,47 @@ withEvent event =
     case event of
         HoverOne msg ->
             Type.addEvent (Event.HoverOne msg)
+
+        HoverAll msg ->
+            Type.addEvent (Event.HoverAll msg)
+
+
+{-| A predefined point annotation, in the format of `Chart.Annotation.Point`
+Typically used to draw points on hover.
+
+    Line.init requiredConfig
+        |> Line.withEvent (Line.hoverOne OnHover)
+        |> Line.withPointAnnotation annotations
+        |> Line.render ( data, accessor )
+
+-}
+withPointAnnotation : Maybe Annotation.Hint -> Config msg validation -> Config msg validation
+withPointAnnotation annotation config =
+    case annotation of
+        Just a ->
+            Type.setAnnotiation (Type.AnnotationPointHint a) config
+
+        Nothing ->
+            config
+
+
+{-| A predefined x-bar annotation, in the format of `Chart.Annotation.Point`
+Typically used to draw a vertical bar on hover.
+
+    Line.init requiredConfig
+        |> Line.withEvent (Line.hoverOne OnHover)
+        |> Line.VerticalLine annotations
+        |> Line.render ( data, accessor )
+
+-}
+withVLineAnnotation : Maybe Annotation.Hint -> Config msg validation -> Config msg validation
+withVLineAnnotation annotation config =
+    case annotation of
+        Just a ->
+            Type.setAnnotiation (Type.AnnotationXBarHint a) config
+
+        Nothing ->
+            config
 
 
 {-| A stacked chart with areas option.

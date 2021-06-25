@@ -452,13 +452,13 @@ renderBandGrouped ( data, config ) =
 
         iconOffset : Float
         iconOffset =
-            symbolSpace Vertical bandSingleScale c.icons + symbolGap
+            symbolSpace Vertical bandSingleScale c.symbols + symbolGap
 
         symbolElements =
             case c.layout of
                 GroupedBar ->
                     if showIcons config then
-                        symbolsToSymbolElements c.orientation bandSingleScale c.icons
+                        symbolsToSymbolElements c.orientation bandSingleScale c.symbols
 
                     else
                         []
@@ -583,7 +583,7 @@ verticalRect config iconOffset bandSingleScale continuousScale colorScale idx po
             fromConfig config
 
         labelOffset =
-            if List.isEmpty c.icons then
+            if List.isEmpty c.symbols then
                 0
 
             else
@@ -675,7 +675,7 @@ horizontalRect config bandSingleScale continuousScale colorScale idx point =
                 |> style
 
         labelOffset =
-            if List.isEmpty c.icons then
+            if List.isEmpty c.symbols then
                 0
 
             else
@@ -745,7 +745,7 @@ horizontalSymbol :
 horizontalSymbol config { idx, w, y_, styleStr } =
     let
         symbol =
-            getSymbolByIndex (fromConfig config |> .icons) idx
+            getSymbolByIndex (fromConfig config |> .symbols) idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
@@ -815,7 +815,7 @@ verticalSymbol config { idx, w, y_, x_, styleStr } =
     --TODO: merge styles
     let
         symbol =
-            getSymbolByIndex (fromConfig config |> .icons) idx
+            getSymbolByIndex (fromConfig config |> .symbols) idx
 
         symbolRef =
             [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]

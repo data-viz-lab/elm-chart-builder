@@ -2,6 +2,7 @@ module Chart.Internal.TypeTest exposing (suite)
 
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..))
 import Chart.Internal.Type exposing (..)
+import Dict exposing (Dict)
 import Expect exposing (Expectation)
 import Test exposing (..)
 import Time exposing (Posix)

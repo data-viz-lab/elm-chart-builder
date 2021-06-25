@@ -341,7 +341,7 @@ withSymbols symbols config =
         c =
             Type.fromConfig config
     in
-    Type.toConfig { c | icons = symbols }
+    Type.toConfig { c | symbols = symbols }
 
 
 {-| An optional formatter for all float values in the alternative table content for accessibility.

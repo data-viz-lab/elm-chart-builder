@@ -7,9 +7,10 @@ import Axis
 import Chart.Internal.Axis as ChartAxis
 import Chart.Internal.Event as Event
 import Chart.Internal.Helpers as Helpers
-import Chart.Internal.Symbol
+import Chart.Internal.Symbol as Symbol
     exposing
         ( Symbol(..)
+        , SymbolContext(..)
         , circle_
         , corner
         , custom
@@ -24,6 +25,7 @@ import Chart.Internal.Type
     exposing
         ( AccessibilityContent(..)
         , AccessorContinuousOrTime(..)
+        , Annotation(..)
         , ColorResource(..)
         , Config
         , ConfigStruct
@@ -45,15 +47,19 @@ import Chart.Internal.Type
         , dataContinuousGroupToDataTime
         , descAndTitle
         , fromConfig
+        , getAnnotationPointHint
+        , getAnnotationVLine
         , getDomainContinuous
         , getDomainContinuousFromData
         , getDomainTime
         , getDomainTimeFromData
+        , isStackedLine
         , leftGap
         , role
         , showIcons
         , toContinousScale
         )
+import Color
 import Html exposing (Html)
 import Html.Attributes
 import List.Extra
@@ -61,18 +67,31 @@ import Path exposing (Path)
 import Scale exposing (ContinuousScale)
 import Shape exposing (StackConfig, StackResult)
 import Time exposing (Posix)
-import TypedSvg exposing (g, svg, text_)
+import TypedSvg exposing (g, line, svg, text_)
 import TypedSvg.Attributes
     exposing
         ( class
         , dominantBaseline
+        , opacity
+        , stroke
         , style
         , textAnchor
         , transform
         , viewBox
         , xlinkHref
         )
-import TypedSvg.Attributes.InPx exposing (height, width, x, y)
+import TypedSvg.Attributes.InPx
+    exposing
+        ( height
+        , strokeWidth
+        , width
+        , x
+        , x1
+        , x2
+        , y
+        , y1
+        , y2
+        )
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Events exposing (onMouseMove)
 import TypedSvg.Types
@@ -189,6 +208,9 @@ renderLineGrouped ( data, config ) =
                         case e of
                             Event.HoverOne f ->
                                 Event.hoverOne c continuousData ( xContinuousScale, yScale ) f
+
+                            Event.HoverAll f ->
+                                Event.hoverAll c continuousData ( xContinuousScale, yScale ) f
                     )
                 |> List.concat
 
@@ -203,7 +225,8 @@ renderLineGrouped ( data, config ) =
                     ++ events
                 )
             <|
-                symbolElements config
+                vLineAnnotation c
+                    ++ symbolElements config
                     ++ descAndTitle c
                     ++ continuousYAxis c yScale
                     ++ continuousOrTimeAxisGenerator xTimeScale xContinuousScale ( data, config )
@@ -340,6 +363,19 @@ renderLineStacked lineDraw ( data, config ) =
                 Area _ ->
                     drawAreas config xContinuousScale yScale stackResult combinedData
 
+        events =
+            c.events
+                |> List.map
+                    (\e ->
+                        case e of
+                            Event.HoverOne f ->
+                                Event.hoverOne c continuousData ( xContinuousScale, yScale ) f
+
+                            Event.HoverAll f ->
+                                Event.hoverAll c continuousData ( xContinuousScale, yScale ) f
+                    )
+                |> List.concat
+
         svgEl =
             svg
                 ([ viewBox 0 0 outerW outerH
@@ -348,9 +384,11 @@ renderLineStacked lineDraw ( data, config ) =
                  , role "img"
                  ]
                     ++ ariaLabelledbyContent c
+                    ++ events
                 )
             <|
-                symbolElements config
+                vLineAnnotation c
+                    ++ symbolElements config
                     ++ descAndTitle c
                     ++ continuousYAxis c yScale
                     ++ continuousOrTimeAxisGenerator xTimeScale xContinuousScale ( data, config )
@@ -493,8 +531,15 @@ continuousOrTimeAxisGenerator xTimeScale xContinuousScale ( data, config ) =
             continuousXAxis c xContinuousScale
 
 
-symbolsToSymbolElements : List Symbol -> List (Svg msg)
-symbolsToSymbolElements symbols =
+{-| It takes a list of symbols, as defined in the Symbol module and
+depending on the symbol context will:
+
+  - Create an svg symbol containing a symbol shape to be referenced at (For a chart symbol)
+  - Only create a symbol shape to be drawn directly and not referenced (For an annotatin symbol)
+
+-}
+symbolsToSymbolElements : SymbolContext -> List Symbol -> List (Svg msg)
+symbolsToSymbolElements symbolContext symbols =
     symbols
         |> List.map
             (\symbol ->
@@ -502,20 +547,47 @@ symbolsToSymbolElements symbols =
                     s =
                         TypedSvg.symbol
                             [ Html.Attributes.id (symbolToId symbol) ]
+
+                    ( scaler, isAnnotationSymbol ) =
+                        case symbolContext of
+                            AnnotationSymbol scaler_ ->
+                                ( scaler_, True )
+
+                            ChartSymbol ->
+                                ( 1, False )
+
+                    size c =
+                        c.size |> Maybe.withDefault defaultSymbolSize |> (*) scaler
                 in
                 case symbol of
                     Circle c ->
-                        s [ circle_ (c.size |> Maybe.withDefault defaultSymbolSize) ]
+                        if isAnnotationSymbol then
+                            circle_ (size c)
+
+                        else
+                            s [ circle_ (size c) ]
 
                     Custom c ->
-                        --TODO
-                        s [ custom 1 c ]
+                        if isAnnotationSymbol then
+                            --TODO
+                            custom scaler c
+
+                        else
+                            s [ custom 1 c ]
 
                     Corner c ->
-                        s [ corner (c.size |> Maybe.withDefault defaultSymbolSize) ]
+                        if isAnnotationSymbol then
+                            corner (size c)
+
+                        else
+                            s [ corner (size c) ]
 
                     Triangle c ->
-                        s [ triangle (c.size |> Maybe.withDefault defaultSymbolSize) ]
+                        if isAnnotationSymbol then
+                            triangle (size c)
+
+                        else
+                            s [ triangle (size c) ]
 
                     NoSymbol ->
                         s []
@@ -524,28 +596,63 @@ symbolsToSymbolElements symbols =
 
 drawSymbol :
     Config msg validation
-    -> { idx : Int, x : Float, y : Float, styleStr : String }
+    -> { idx : Int, x : Float, y : Float, styleStr : String, symbolContext : SymbolContext }
     -> List (Svg msg)
-drawSymbol config { idx, x, y, styleStr } =
+drawSymbol config { idx, x, y, styleStr, symbolContext } =
     let
         conf =
             fromConfig config
 
         symbol =
-            getSymbolByIndex conf.icons idx
+            getSymbolByIndex conf.symbols idx
 
-        symbolRef =
-            [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
+        ( scaler, isAnnotationSymbol ) =
+            case symbolContext of
+                AnnotationSymbol scaler_ ->
+                    ( scaler_, True )
 
+                ChartSymbol ->
+                    ( 1, False )
+
+        --The size here is used to appropriately transform the symbol shape
         size c =
-            c.size |> Maybe.withDefault defaultSymbolSize
+            c.size
+                |> Maybe.withDefault defaultSymbolSize
+                |> (*) scaler
 
+        --The size here is used to appropriately transform the symbol shape
         circleSize c =
-            c.size |> Maybe.withDefault defaultSymbolSize
+            c.size
+                |> Maybe.withDefault defaultSymbolSize
+                |> (*) scaler
+
+        annotationPointHint =
+            getAnnotationPointHint conf.annotations
+
+        annotationPointStyle =
+            annotationPointHint
+                |> Maybe.map Tuple.second
+                |> Maybe.withDefault []
 
         st styles =
             Helpers.mergeStyles styles styleStr
+                |> (\s ->
+                        if isAnnotationSymbol then
+                            Helpers.mergeStyles annotationPointStyle s
+
+                        else
+                            s
+                   )
                 |> style
+
+        symbolEl s =
+            if isAnnotationSymbol then
+                symbolsToSymbolElements symbolContext [ s ]
+
+            else
+                -- if not an annotation symbol we do not build a symbol element,
+                -- but we reference one
+                [ TypedSvg.use [ xlinkHref <| "#" ++ symbolToId symbol ] [] ]
     in
     if showIcons config then
         case symbol of
@@ -556,7 +663,7 @@ drawSymbol config { idx, x, y, styleStr } =
                     , class [ "symbol" ]
                     , st c.styles
                     ]
-                    symbolRef
+                    (symbolEl symbol)
                 ]
 
             Circle c ->
@@ -565,7 +672,7 @@ drawSymbol config { idx, x, y, styleStr } =
                     , class [ "symbol" ]
                     , st c.styles
                     ]
-                    symbolRef
+                    (symbolEl symbol)
                 ]
 
             Corner c ->
@@ -574,7 +681,7 @@ drawSymbol config { idx, x, y, styleStr } =
                     , class [ "symbol" ]
                     , st c.styles
                     ]
-                    symbolRef
+                    (symbolEl symbol)
                 ]
 
             Custom c ->
@@ -583,11 +690,24 @@ drawSymbol config { idx, x, y, styleStr } =
                     , class [ "symbol" ]
                     , st c.styles
                     ]
-                    symbolRef
+                    (symbolEl symbol)
                 ]
 
             NoSymbol ->
                 []
+
+    else if isAnnotationSymbol then
+        [ g
+            [ transform
+                [ Translate (x - (defaultSymbolSize * scaler) / 2)
+                    (y - (defaultSymbolSize * scaler) / 2)
+                ]
+            , class [ "symbol" ]
+            , Helpers.mergeStyles annotationPointStyle ""
+                |> style
+            ]
+            (symbolEl (Circle Symbol.initialConf))
+        ]
 
     else
         []
@@ -597,6 +717,16 @@ drawSymbol config { idx, x, y, styleStr } =
 --  HELPERS
 
 
+annotationSymbols : Config msg validation -> List (Svg msg)
+annotationSymbols _ =
+    [ TypedSvg.symbol
+        [ Html.Attributes.id "annotation-symbol" ]
+        [ circle_ (defaultSymbolSize + 5) ]
+    ]
+
+
+{-| Creates the list of symbol elements to be referenced in the chart.
+-}
 symbolElements : Config msg validation -> List (Svg msg)
 symbolElements config =
     let
@@ -606,14 +736,14 @@ symbolElements config =
     case c.layout of
         StackedLine _ ->
             if showIcons config then
-                symbolsToSymbolElements c.icons
+                symbolsToSymbolElements ChartSymbol c.symbols
 
             else
                 []
 
         GroupedLine ->
             if showIcons config then
-                symbolsToSymbolElements c.icons
+                symbolsToSymbolElements ChartSymbol c.symbols
 
             else
                 []
@@ -869,7 +999,7 @@ horizontalLabel config xScale yScale idx groupLabel point =
                         |> Helpers.floorFloat
 
                 symbol =
-                    getSymbolByIndex conf.icons idx
+                    getSymbolByIndex conf.symbols idx
 
                 labelOffset =
                     symbol
@@ -940,6 +1070,23 @@ symbolGroup config xScale yScale combinedData =
 
         colorSymbol idx =
             colorStyle c (Just idx) Nothing
+
+        annotationPointHint =
+            getAnnotationPointHint c.annotations
+                |> Maybe.map Tuple.first
+
+        xMatch val =
+            annotationPointHint
+                |> Maybe.map (\a -> a.selection.x == val)
+                |> Maybe.withDefault False
+
+        yMatch val =
+            annotationPointHint
+                |> Maybe.map (\a -> List.member val (a.selection.y |> List.map .value))
+                |> Maybe.withDefault False
+
+        stackDeltas =
+            getStackDeltas c combinedData
     in
     g
         [ transform [ Translate m.left m.top ]
@@ -948,20 +1095,87 @@ symbolGroup config xScale yScale combinedData =
         (combinedData
             |> List.indexedMap
                 (\idx d ->
+                    let
+                        deltas =
+                            stackDeltas
+                                |> List.Extra.getAt idx
+                                |> Maybe.withDefault
+                                    (d.points
+                                        |> List.map (always ( 0, 0 ))
+                                    )
+                    in
                     d.points
-                        |> List.map
-                            (\( x, y ) ->
-                                drawSymbol config
-                                    { idx = idx
-                                    , x = Scale.convert xScale x
-                                    , y = Scale.convert yScale y
-                                    , styleStr = colorSymbol idx
-                                    }
+                        |> List.map2
+                            (\( _, delta ) ( x, y ) ->
+                                let
+                                    params =
+                                        { idx = idx
+                                        , x = Scale.convert xScale x
+                                        , y = Scale.convert yScale y
+                                        , styleStr = colorSymbol idx
+                                        , symbolContext = ChartSymbol
+                                        }
+                                in
+                                case annotationPointHint of
+                                    Just hint ->
+                                        if xMatch x && yMatch (y - delta) then
+                                            drawSymbol config
+                                                { params
+                                                    | symbolContext =
+                                                        AnnotationSymbol Symbol.annotationScaler
+                                                }
+
+                                        else
+                                            drawSymbol config params
+
+                                    Nothing ->
+                                        drawSymbol config params
                             )
+                            deltas
                 )
             |> List.concat
             |> List.concat
         )
+
+
+vLineAnnotation : ConfigStruct msg -> List (Svg msg)
+vLineAnnotation c =
+    --FIXME
+    let
+        annotation =
+            getAnnotationVLine c.annotations
+                |> Maybe.map Tuple.first
+
+        style =
+            getAnnotationVLine c.annotations
+                |> Maybe.map Tuple.second
+                |> Maybe.withDefault []
+    in
+    case annotation of
+        Just a ->
+            [ g
+                [ transform [ Translate c.margin.left c.margin.top ]
+                , class [ "v-line-annotation" ]
+                ]
+                [ line
+                    ((Helpers.mergeStyles style ""
+                        |> TypedSvg.Attributes.style
+                     )
+                        :: [ x1 a.xPosition
+                           , x2 a.xPosition
+                           , y1 0
+                           , y2 c.height
+                           , strokeWidth 1
+                           , opacity <| Opacity 0.7
+                           , stroke <| Paint Color.black
+                           ]
+                    )
+                    []
+                ]
+            ]
+
+        Nothing ->
+            []
 
 
 
@@ -992,3 +1206,18 @@ timeDomainToContinuousDomain timeDomain =
                 , y = y
                 }
            )
+
+
+getStackDeltas : ConfigStruct msg -> List DataGroupContinuous -> List (List ( Float, Float ))
+getStackDeltas c data =
+    if isStackedLine c then
+        data
+            |> List.map (.points >> List.map Tuple.second)
+            |> List.Extra.transpose
+            |> List.map Helpers.stackDeltas
+            |> List.Extra.transpose
+            |> List.map (\d -> List.map (\dd -> ( 0, dd )) d)
+
+    else
+        data
+            |> List.map (.points >> List.map (always ( 0, 0 )))

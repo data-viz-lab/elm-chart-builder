@@ -6,6 +6,8 @@ module Chart.Internal.Helpers exposing
     , mergeStyles
     , sortStrings
     , stackDataGroupContinuous
+    , stackDeltas
+    , unstack
     )
 
 import Color exposing (Color)
@@ -128,3 +130,31 @@ sortStrings accessor strings =
                     compare a b
         )
         strings
+
+
+{-| Given a stacked list of floats (from a stacked layout)
+un-stack the list
+-}
+unstack : List Float -> List Float
+unstack vals =
+    vals
+        |> List.foldl
+            (\val ( prev, acc ) ->
+                case prev of
+                    Nothing ->
+                        ( Just val, val :: acc )
+
+                    Just p ->
+                        ( Just val, (val - p) :: acc )
+            )
+            ( Nothing, [] )
+        |> Tuple.second
+        |> List.reverse
+
+
+stackDeltas : List Float -> List Float
+stackDeltas vals =
+    vals
+        |> unstack
+        |> List.drop 1
+        |> (::) 0

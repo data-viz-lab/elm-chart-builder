@@ -1,7 +1,10 @@
 module Chart.Internal.Symbol exposing
     ( CustomSymbolConf
+    , Scaler
     , Symbol(..)
     , SymbolConf
+    , SymbolContext(..)
+    , annotationScaler
     , circle_
     , corner
     , custom
@@ -28,6 +31,20 @@ type Symbol
     | Corner SymbolConf
     | Triangle SymbolConf
     | NoSymbol
+
+
+type SymbolContext
+    = AnnotationSymbol Scaler
+    | ChartSymbol
+
+
+type alias Scaler =
+    Float
+
+
+annotationScaler : Scaler
+annotationScaler =
+    1.25
 
 
 

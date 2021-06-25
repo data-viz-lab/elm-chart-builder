@@ -36,7 +36,7 @@ withBandGroupDomainTest =
                     bandGroup =
                         [ "CA", "TX", "NY" ]
 
-                    config : Type.Config msg
+                    config : Type.Config msg { canHaveStackedLayout : (), canHaveSymbols : () }
                     config =
                         Bar.init requiredConfig
                             |> Bar.withXGroupDomain bandGroup
@@ -60,7 +60,7 @@ withBandSingleDomainTest =
                     bandSingle =
                         [ "a", "b", "c" ]
 
-                    config : Type.Config msg
+                    config : Type.Config msg { canHaveStackedLayout : (), canHaveSymbols : () }
                     config =
                         Bar.init requiredConfig
                             |> Bar.withXDomain bandSingle
@@ -83,7 +83,7 @@ withContinuousDomainTest =
                     continuousDomain =
                         ( 0, 30 )
 
-                    config : Type.Config msg
+                    config : Type.Config msg { canHaveStackedLayout : (), canHaveSymbols : () }
                     config =
                         Bar.init requiredConfig
                             |> Bar.withYDomain continuousDomain
