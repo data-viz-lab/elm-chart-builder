@@ -99,7 +99,7 @@ import TypedSvg.Types
 -- BAND STACKED
 
 
-renderBandStacked : ( DataBand, Config ) -> Html msg
+renderBandStacked : ( DataBand, Config msg validation ) -> Html msg
 renderBandStacked ( data, config ) =
     -- based on https://code.gampleman.eu/elm-visualization/StackedBarChart/
     let
@@ -272,7 +272,7 @@ renderBandStacked ( data, config ) =
                 ]
 
 
-stackedContainerTranslate : ConfigStruct -> Float -> Float -> Float -> Transform
+stackedContainerTranslate : ConfigStruct msg -> Float -> Float -> Float -> Transform
 stackedContainerTranslate config a b offset =
     let
         orientation =
@@ -286,7 +286,7 @@ stackedContainerTranslate config a b offset =
             Translate a (b + offset)
 
 
-stackedColumns : ConfigStruct -> BandScale String -> ( String, StackedValues, List String ) -> Svg msg
+stackedColumns : ConfigStruct msg -> BandScale String -> ( String, StackedValues, List String ) -> Svg msg
 stackedColumns config bandGroupScale payload =
     let
         rects =
@@ -301,7 +301,7 @@ stackedColumns config bandGroupScale payload =
 
 
 verticalRectsStacked :
-    ConfigStruct
+    ConfigStruct msg
     -> BandScale String
     -> ( String, StackedValues, List String )
     -> List (Svg msg)
@@ -342,7 +342,7 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
 
 
 horizontalRectsStacked :
-    ConfigStruct
+    ConfigStruct msg
     -> BandScale String
     -> ( String, StackedValues, List String )
     -> List (Svg msg)
@@ -379,7 +379,7 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
 -- BAND GROUPED
 
 
-renderBandGrouped : ( DataBand, Config ) -> Html msg
+renderBandGrouped : ( DataBand, Config msg validation ) -> Html msg
 renderBandGrouped ( data, config ) =
     let
         c =
@@ -515,7 +515,7 @@ renderBandGrouped ( data, config ) =
 
 
 columns :
-    Config
+    Config msg validation
     -> Float
     -> BandScale String
     -> BandScale String
@@ -544,7 +544,7 @@ columns config iconOffset bandGroupScale bandSingleScale continuousScale colorSc
 
 
 column :
-    Config
+    Config msg validation
     -> Float
     -> BandScale String
     -> ContinuousScale Float
@@ -566,7 +566,7 @@ column config iconOffset bandSingleScale continuousScale colorScale idx point =
 
 
 verticalRect :
-    Config
+    Config msg validation
     -> Float
     -> BandScale String
     -> ContinuousScale Float
@@ -639,7 +639,7 @@ verticalRect config iconOffset bandSingleScale continuousScale colorScale idx po
 
 
 horizontalRect :
-    Config
+    Config msg validation
     -> BandScale String
     -> ContinuousScale Float
     -> ContinuousScale Float
@@ -713,7 +713,7 @@ dataGroupTranslation bandGroupScale dataGroup =
             Scale.convert bandGroupScale l
 
 
-verticalLabel : Config -> Float -> Float -> PointBand -> List (Svg msg)
+verticalLabel : Config msg validation -> Float -> Float -> PointBand -> List (Svg msg)
 verticalLabel config xPos yPos point =
     let
         ( xVal, yVal ) =
@@ -739,7 +739,7 @@ verticalLabel config xPos yPos point =
 
 
 horizontalSymbol :
-    Config
+    Config msg validation
     -> { idx : Int, w : Float, y_ : Float, h : Float, styleStr : String }
     -> List (Svg msg)
 horizontalSymbol config { idx, w, y_, styleStr } =
@@ -808,7 +808,7 @@ horizontalSymbol config { idx, w, y_, styleStr } =
 
 
 verticalSymbol :
-    Config
+    Config msg validation
     -> { idx : Int, w : Float, y_ : Float, x_ : Float, styleStr : String }
     -> List (Svg msg)
 verticalSymbol config { idx, w, y_, x_, styleStr } =
@@ -922,7 +922,7 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
             )
 
 
-bandXAxis : ConfigStruct -> BandScale String -> List (Svg msg)
+bandXAxis : ConfigStruct msg -> BandScale String -> List (Svg msg)
 bandXAxis c bandScale =
     --TODO: lots of repetitions
     if c.showXAxis == True then
@@ -964,7 +964,7 @@ bandXAxis c bandScale =
         []
 
 
-bandGroupedYAxis : ConfigStruct -> Float -> ContinuousScale Float -> List (Svg msg)
+bandGroupedYAxis : ConfigStruct msg -> Float -> ContinuousScale Float -> List (Svg msg)
 bandGroupedYAxis c iconOffset continuousScale =
     if c.showYAxis == True then
         case ( c.orientation, c.axisYContinuous ) of
@@ -1070,7 +1070,7 @@ bandGroupedYAxis c iconOffset continuousScale =
 -- HISTOGRAM
 
 
-renderHistogram : ( List (Histogram.Bin Float Float), Config ) -> Html msg
+renderHistogram : ( List (Histogram.Bin Float Float), Config msg validation ) -> Html msg
 renderHistogram ( histogram, config ) =
     let
         c =
@@ -1208,7 +1208,7 @@ renderHistogram ( histogram, config ) =
 
 
 histogramColumn :
-    Config
+    Config msg validation
     -> Float
     -> ContinuousScale Float
     -> ContinuousScale Float
@@ -1260,7 +1260,7 @@ getStackedLabel idx l =
         |> Maybe.withDefault ""
 
 
-stackedColumnTitleText : ConfigStruct -> Int -> List String -> Float -> List (Svg msg)
+stackedColumnTitleText : ConfigStruct msg -> Int -> List String -> Float -> List (Svg msg)
 stackedColumnTitleText c idx labels value =
     let
         ordinalValue =
@@ -1280,7 +1280,7 @@ stackedColumnTitleText c idx labels value =
             []
 
 
-columnTitleText : Config -> PointBand -> List (Svg msg)
+columnTitleText : Config msg validation -> PointBand -> List (Svg msg)
 columnTitleText config point =
     let
         ( xVal, yVal ) =
@@ -1297,7 +1297,7 @@ columnTitleText config point =
             []
 
 
-horizontalLabel : Config -> Float -> Float -> PointBand -> List (Svg msg)
+horizontalLabel : Config msg validation -> Float -> Float -> PointBand -> List (Svg msg)
 horizontalLabel config xPos yPos point =
     let
         ( xVal, yVal ) =
@@ -1323,7 +1323,7 @@ horizontalLabel config xPos yPos point =
             []
 
 
-tableElement : Config -> DataBand -> Html msg
+tableElement : Config msg validation -> DataBand -> Html msg
 tableElement config data =
     let
         c =

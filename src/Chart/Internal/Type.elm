@@ -39,6 +39,7 @@ module Chart.Internal.Type exposing
     , StackedValues
     , Steps
     , YScale(..)
+    , addEvent
     , adjustContinuousRange
     , ariaHidden
     , ariaLabelledbyContent
@@ -138,6 +139,7 @@ module Chart.Internal.Type exposing
     )
 
 import Chart.Internal.Axis as ChartAxis
+import Chart.Internal.Event as Event exposing (Event)
 import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..), symbolGap)
 import Color exposing (Color)
@@ -410,7 +412,7 @@ type alias RequiredConfig =
     }
 
 
-type alias ConfigStruct =
+type alias ConfigStruct msg =
     { accessibilityContent : AccessibilityContent
     , axisXBand : ChartAxis.XAxis String
     , axisXContinuous : ChartAxis.XAxis Float
@@ -423,6 +425,7 @@ type alias ConfigStruct =
     , domainBand : DomainBand
     , domainContinuous : DomainContinuous
     , domainTime : DomainTime
+    , events : List (Event msg)
     , height : Float
     , histogramDomain : Maybe ( Float, Float )
     , icons : List Symbol
@@ -445,7 +448,7 @@ type alias ConfigStruct =
     }
 
 
-defaultConfig : Config
+defaultConfig : Config msg validation
 defaultConfig =
     toConfig
         { accessibilityContent = AccessibilityTableNoLabels
@@ -460,6 +463,7 @@ defaultConfig =
         , domainBand = DomainBand initialDomainBandStruct
         , domainContinuous = DomainContinuous initialDomainContinuousStruct
         , domainTime = DomainTime initialDomainTimeStruct
+        , events = []
         , height = defaultHeight
         , histogramDomain = Nothing
         , icons = []
@@ -482,16 +486,16 @@ defaultConfig =
         }
 
 
-type Config
-    = Config ConfigStruct
+type Config msg validation
+    = Config (ConfigStruct msg)
 
 
-toConfig : ConfigStruct -> Config
+toConfig : ConfigStruct msg -> Config msg validation
 toConfig config =
     Config config
 
 
-fromConfig : Config -> ConfigStruct
+fromConfig : Config msg validation -> ConfigStruct msg
 fromConfig (Config config) =
     config
 
@@ -586,77 +590,86 @@ type alias StackedValuesAndGroupes =
 -- SETTERS
 
 
-setLayout : Layout -> Config -> Config
+addEvent : Event msg -> Config msg validation -> Config msg validation
+addEvent event (Config c) =
+    let
+        updatedEvents =
+            event :: c.events
+    in
+    toConfig { c | events = updatedEvents }
+
+
+setLayout : Layout -> Config msg validation -> Config msg validation
 setLayout layout (Config c) =
     toConfig { c | layout = layout }
 
 
-setIcons : List Symbol -> Config -> Config
+setIcons : List Symbol -> Config msg validation -> Config msg validation
 setIcons all (Config c) =
     Config { c | icons = all }
 
 
-setCurve : (List ( Float, Float ) -> SubPath) -> Config -> Config
+setCurve : (List ( Float, Float ) -> SubPath) -> Config msg validation -> Config msg validation
 setCurve curve (Config c) =
     toConfig { c | curve = curve }
 
 
-setSvgDesc : String -> Config -> Config
+setSvgDesc : String -> Config msg validation -> Config msg validation
 setSvgDesc desc (Config c) =
     toConfig { c | svgDesc = desc }
 
 
-setSvgTitle : String -> Config -> Config
+setSvgTitle : String -> Config msg validation -> Config msg validation
 setSvgTitle title (Config c) =
     toConfig { c | svgTitle = title }
 
 
-setTableFloatFormat : (Float -> String) -> Config -> Config
+setTableFloatFormat : (Float -> String) -> Config msg validation -> Config msg validation
 setTableFloatFormat f (Config c) =
     toConfig { c | tableFloatFormat = f }
 
 
-setTablePosixFormat : (Posix -> String) -> Config -> Config
+setTablePosixFormat : (Posix -> String) -> Config msg validation -> Config msg validation
 setTablePosixFormat f (Config c) =
     toConfig { c | tablePosixFormat = f }
 
 
-setXAxisTime : ChartAxis.XAxis Posix -> Config -> Config
+setXAxisTime : ChartAxis.XAxis Posix -> Config msg validation -> Config msg validation
 setXAxisTime orientation (Config c) =
     toConfig { c | axisXTime = orientation }
 
 
-setXAxisContinuous : ChartAxis.XAxis Float -> Config -> Config
+setXAxisContinuous : ChartAxis.XAxis Float -> Config msg validation -> Config msg validation
 setXAxisContinuous orientation (Config c) =
     toConfig { c | axisXContinuous = orientation }
 
 
-setXAxisBand : ChartAxis.XAxis String -> Config -> Config
+setXAxisBand : ChartAxis.XAxis String -> Config msg validation -> Config msg validation
 setXAxisBand orientation (Config c) =
     toConfig { c | axisXBand = orientation }
 
 
-setYAxisContinuous : ChartAxis.YAxis Float -> Config -> Config
+setYAxisContinuous : ChartAxis.YAxis Float -> Config msg validation -> Config msg validation
 setYAxisContinuous orientation (Config c) =
     toConfig { c | axisYContinuous = orientation }
 
 
-setColorResource : ColorResource -> Config -> Config
+setColorResource : ColorResource -> Config msg validation -> Config msg validation
 setColorResource resource (Config c) =
     toConfig { c | colorResource = resource }
 
 
-setCoreStyles : List ( String, String ) -> Config -> Config
+setCoreStyles : List ( String, String ) -> Config msg validation -> Config msg validation
 setCoreStyles styles (Config c) =
     toConfig { c | coreStyle = styles }
 
 
-setCoreStyleFromPointBandX : (String -> List ( String, String )) -> Config -> Config
+setCoreStyleFromPointBandX : (String -> List ( String, String )) -> Config msg validation -> Config msg validation
 setCoreStyleFromPointBandX f (Config c) =
     toConfig { c | coreStyleFromPointBandX = f }
 
 
-setHeight : Float -> Config -> Config
+setHeight : Float -> Config msg validation -> Config msg validation
 setHeight height (Config c) =
     let
         m =
@@ -665,17 +678,17 @@ setHeight height (Config c) =
     toConfig { c | height = height - m.top - m.bottom }
 
 
-setHistogramDomain : ( Float, Float ) -> Config -> Config
+setHistogramDomain : ( Float, Float ) -> Config msg validation -> Config msg validation
 setHistogramDomain domain (Config c) =
     toConfig { c | histogramDomain = Just domain }
 
 
-setOrientation : Orientation -> Config -> Config
+setOrientation : Orientation -> Config msg validation -> Config msg validation
 setOrientation orientation (Config c) =
     toConfig { c | orientation = orientation }
 
 
-setWidth : Float -> Config -> Config
+setWidth : Float -> Config msg validation -> Config msg validation
 setWidth width (Config c) =
     let
         m =
@@ -684,7 +697,7 @@ setWidth width (Config c) =
     toConfig { c | width = width - m.left - m.right }
 
 
-setMargin : Margin -> Config -> Config
+setMargin : Margin -> Config msg validation -> Config msg validation
 setMargin margin (Config c) =
     let
         left =
@@ -696,7 +709,7 @@ setMargin margin (Config c) =
     toConfig { c | margin = { margin | left = left, bottom = bottom } }
 
 
-setDimensions : { margin : Margin, width : Float, height : Float } -> Config -> Config
+setDimensions : { margin : Margin, width : Float, height : Float } -> Config msg validation -> Config msg validation
 setDimensions { margin, width, height } (Config c) =
     let
         left =
@@ -713,22 +726,22 @@ setDimensions { margin, width, height } (Config c) =
         }
 
 
-setDomainContinuous : DomainContinuous -> Config -> Config
+setDomainContinuous : DomainContinuous -> Config msg validation -> Config msg validation
 setDomainContinuous domain (Config c) =
     toConfig { c | domainContinuous = domain }
 
 
-setDomainTime : DomainTime -> Config -> Config
+setDomainTime : DomainTime -> Config msg validation -> Config msg validation
 setDomainTime domain (Config c) =
     toConfig { c | domainTime = domain }
 
 
-setDomainBand : DomainBand -> Config -> Config
+setDomainBand : DomainBand -> Config msg validation -> Config msg validation
 setDomainBand domain (Config c) =
     toConfig { c | domainBand = domain }
 
 
-setDomainBandBandGroup : BandDomain -> Config -> Config
+setDomainBandBandGroup : BandDomain -> Config msg validation -> Config msg validation
 setDomainBandBandGroup bandDomain (Config c) =
     let
         domain =
@@ -741,7 +754,7 @@ setDomainBandBandGroup bandDomain (Config c) =
     toConfig { c | domainBand = DomainBand newDomain }
 
 
-setDomainBandBandSingle : BandDomain -> Config -> Config
+setDomainBandBandSingle : BandDomain -> Config msg validation -> Config msg validation
 setDomainBandBandSingle bandDomain (Config c) =
     let
         domain =
@@ -754,7 +767,7 @@ setDomainBandBandSingle bandDomain (Config c) =
     toConfig { c | domainBand = DomainBand newDomain }
 
 
-setDomainBandContinuous : ContinuousDomain -> Config -> Config
+setDomainBandContinuous : ContinuousDomain -> Config msg validation -> Config msg validation
 setDomainBandContinuous continuousDomain (Config c) =
     let
         domain =
@@ -767,7 +780,7 @@ setDomainBandContinuous continuousDomain (Config c) =
     toConfig { c | domainBand = DomainBand newDomain }
 
 
-setDomainTimeX : TimeDomain -> Config -> Config
+setDomainTimeX : TimeDomain -> Config msg validation -> Config msg validation
 setDomainTimeX timeDomain (Config c) =
     let
         domain =
@@ -780,7 +793,7 @@ setDomainTimeX timeDomain (Config c) =
     toConfig { c | domainTime = DomainTime newDomain }
 
 
-setDomainContinuousX : ContinuousDomain -> Config -> Config
+setDomainContinuousX : ContinuousDomain -> Config msg validation -> Config msg validation
 setDomainContinuousX continuousDomain (Config c) =
     let
         domain =
@@ -793,7 +806,7 @@ setDomainContinuousX continuousDomain (Config c) =
     toConfig { c | domainContinuous = DomainContinuous newDomain }
 
 
-setDomainContinuousAndTimeY : ContinuousDomain -> Config -> Config
+setDomainContinuousAndTimeY : ContinuousDomain -> Config msg validation -> Config msg validation
 setDomainContinuousAndTimeY continuousDomain (Config c) =
     let
         domain =
@@ -813,27 +826,27 @@ setDomainContinuousAndTimeY continuousDomain (Config c) =
     toConfig { c | domainContinuous = DomainContinuous newDomain, domainTime = DomainTime newDomainTime }
 
 
-setXAxis : Bool -> Config -> Config
+setXAxis : Bool -> Config msg validation -> Config msg validation
 setXAxis bool (Config c) =
     toConfig { c | showXAxis = bool }
 
 
-setYAxis : Bool -> Config -> Config
+setYAxis : Bool -> Config msg validation -> Config msg validation
 setYAxis bool (Config c) =
     toConfig { c | showYAxis = bool }
 
 
-setShowDataPoints : Bool -> Config -> Config
+setShowDataPoints : Bool -> Config msg validation -> Config msg validation
 setShowDataPoints bool (Config c) =
     toConfig { c | showDataPoints = bool }
 
 
-setAccessibilityContent : AccessibilityContent -> Config -> Config
+setAccessibilityContent : AccessibilityContent -> Config msg validation -> Config msg validation
 setAccessibilityContent content (Config c) =
     toConfig { c | accessibilityContent = content }
 
 
-setYScale : YScale -> Config -> Config
+setYScale : YScale -> Config msg validation -> Config msg validation
 setYScale scale (Config c) =
     toConfig { c | yScale = scale }
 
@@ -850,22 +863,22 @@ type Label
     | NoLabel
 
 
-showXOrdinalLabel : Config -> Config
+showXOrdinalLabel : Config msg validation -> Config msg validation
 showXOrdinalLabel (Config c) =
     toConfig { c | showLabels = XOrdinalLabel }
 
 
-showXContinuousLabel : (Float -> String) -> Config -> Config
+showXContinuousLabel : (Float -> String) -> Config msg validation -> Config msg validation
 showXContinuousLabel formatter (Config c) =
     toConfig { c | showLabels = XContinuousLabel formatter }
 
 
-showYLabel : (Float -> String) -> Config -> Config
+showYLabel : (Float -> String) -> Config msg validation -> Config msg validation
 showYLabel formatter (Config c) =
     toConfig { c | showLabels = YLabel formatter }
 
 
-showXGroupLabel : Config -> Config
+showXGroupLabel : Config msg validation -> Config msg validation
 showXGroupLabel (Config c) =
     toConfig { c | showLabels = XGroupLabel }
 
@@ -881,17 +894,17 @@ type ColumnTitle
     | NoColumnTitle
 
 
-showXOrdinalColumnTitle : Config -> Config
+showXOrdinalColumnTitle : Config msg validation -> Config msg validation
 showXOrdinalColumnTitle (Config c) =
     toConfig { c | showColumnTitle = XOrdinalColumnTitle }
 
 
-showYColumnTitle : (Float -> String) -> Config -> Config
+showYColumnTitle : (Float -> String) -> Config msg validation -> Config msg validation
 showYColumnTitle formatter (Config c) =
     toConfig { c | showColumnTitle = YColumnTitle formatter }
 
 
-showStackedColumnTitle : (Float -> String) -> Config -> Config
+showStackedColumnTitle : (Float -> String) -> Config msg validation -> Config msg validation
 showStackedColumnTitle formatter (Config c) =
     toConfig { c | showColumnTitle = StackedColumnTitle formatter }
 
@@ -900,7 +913,7 @@ showStackedColumnTitle formatter (Config c) =
 -- GETTERS
 
 
-showIcons : Config -> Bool
+showIcons : Config msg validation -> Bool
 showIcons (Config c) =
     c
         |> .icons
@@ -908,7 +921,7 @@ showIcons (Config c) =
         |> (\l -> l > 0)
 
 
-getDomainBand : Config -> DomainBandStruct
+getDomainBand : Config msg validation -> DomainBandStruct
 getDomainBand config =
     config
         |> fromConfig
@@ -916,7 +929,7 @@ getDomainBand config =
         |> fromDomainBand
 
 
-getDomainContinuous : Config -> DomainContinuousStruct
+getDomainContinuous : Config msg validation -> DomainContinuousStruct
 getDomainContinuous config =
     config
         |> fromConfig
@@ -924,7 +937,7 @@ getDomainContinuous config =
         |> fromDomainContinuous
 
 
-getDomainTime : Config -> DomainTimeStruct
+getDomainTime : Config msg validation -> DomainTimeStruct
 getDomainTime config =
     config
         |> fromConfig
@@ -932,7 +945,7 @@ getDomainTime config =
         |> fromDomainTime
 
 
-getDomainBandFromData : DataBand -> Config -> DomainBandStruct
+getDomainBandFromData : DataBand -> Config msg validation -> DomainBandStruct
 getDomainBandFromData data config =
     let
         -- get the domain from config first
@@ -1124,7 +1137,7 @@ getDataContinuousDepth data =
         |> List.length
 
 
-getBandGroupRange : Config -> Float -> Float -> ( Float, Float )
+getBandGroupRange : Config msg validation -> Float -> Float -> ( Float, Float )
 getBandGroupRange config width height =
     let
         orientation =
@@ -1138,7 +1151,7 @@ getBandGroupRange config width height =
             ( 0, width )
 
 
-getBandSingleRange : Config -> Float -> ( Float, Float )
+getBandSingleRange : Config msg validation -> Float -> ( Float, Float )
 getBandSingleRange config value =
     let
         orientation =
@@ -1157,7 +1170,7 @@ type RenderContext
     | RenderAxis
 
 
-getContinuousRange : Config -> RenderContext -> Float -> Float -> BandScale String -> ( Float, Float )
+getContinuousRange : Config msg validation -> RenderContext -> Float -> Float -> BandScale String -> ( Float, Float )
 getContinuousRange config renderContext width height bandScale =
     let
         c =
@@ -1204,7 +1217,7 @@ getContinuousRange config renderContext width height bandScale =
                     ( height, 0 )
 
 
-adjustContinuousRange : Config -> Int -> ( Float, Float ) -> ( Float, Float )
+adjustContinuousRange : Config msg validation -> Int -> ( Float, Float ) -> ( Float, Float )
 adjustContinuousRange config stackedDepth ( a, b ) =
     -- small adjustments related to the whitespace between stacked items?
     -- FIXME: needs removing?
@@ -1231,7 +1244,7 @@ adjustContinuousRange config stackedDepth ( a, b ) =
             ( a - toFloat stackedDepth, b )
 
 
-getOffset : Config -> List (List ( Float, Float )) -> List (List ( Float, Float ))
+getOffset : Config msg validation -> List (List ( Float, Float )) -> List (List ( Float, Float ))
 getOffset config =
     case fromConfig config |> .layout of
         StackedBar direction ->
@@ -1335,7 +1348,7 @@ calculateHistogramDomain histogram =
 
 
 externalToDataHistogram :
-    Config
+    Config msg validation
     -> ExternalData data
     -> AccessorHistogram data
     -> List (Histogram.Bin Float Float)
@@ -1594,7 +1607,7 @@ dataContinuousGroupToDataContinuousStacked data =
             )
 
 
-dataBandToDataStacked : Config -> DataBand -> List ( String, List Float )
+dataBandToDataStacked : Config msg validation -> DataBand -> List ( String, List Float )
 dataBandToDataStacked config data =
     let
         seed =
@@ -1641,7 +1654,7 @@ stackedValuesInverse width values =
 
 {-| All possible color styles styles
 -}
-colorStyle : ConfigStruct -> Maybe Int -> Maybe Float -> String
+colorStyle : ConfigStruct msg -> Maybe Int -> Maybe Float -> String
 colorStyle c idx interpolatorInput =
     case ( c.colorResource, idx, interpolatorInput ) of
         ( ColorPalette colors, Just i, _ ) ->
@@ -1668,7 +1681,7 @@ colorStyle c idx interpolatorInput =
 
 {-| Only categorical styles
 -}
-colorCategoricalStyle : ConfigStruct -> Int -> String
+colorCategoricalStyle : ConfigStruct msg -> Int -> String
 colorCategoricalStyle c idx =
     case c.colorResource of
         ColorPalette colors ->
@@ -1678,7 +1691,7 @@ colorCategoricalStyle c idx =
             ""
 
 
-ariaLabelledbyContent : ConfigStruct -> List (TypedSvg.Core.Attribute msg)
+ariaLabelledbyContent : ConfigStruct msg -> List (TypedSvg.Core.Attribute msg)
 ariaLabelledbyContent c =
     case c.accessibilityContent of
         AccessibilityNone ->
@@ -1727,7 +1740,7 @@ adjustDomainToLogScale ( a, b ) =
         ( a, b )
 
 
-descAndTitle : ConfigStruct -> List (Svg msg)
+descAndTitle : ConfigStruct msg -> List (Svg msg)
 descAndTitle c =
     -- https://developer.paciellogroup.com/blog/2013/12/using-aria-enhance-svg-accessibility/
     [ ( TypedSvg.title [], c.svgTitle )

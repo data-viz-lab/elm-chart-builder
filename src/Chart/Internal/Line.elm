@@ -5,6 +5,7 @@ module Chart.Internal.Line exposing
 
 import Axis
 import Chart.Internal.Axis as ChartAxis
+import Chart.Internal.Event as Event
 import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol
     exposing
@@ -73,6 +74,7 @@ import TypedSvg.Attributes
         )
 import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
+import TypedSvg.Events exposing (onMouseMove)
 import TypedSvg.Types
     exposing
         ( AlignmentBaseline(..)
@@ -89,7 +91,7 @@ import TypedSvg.Types
 -- GROUPED
 
 
-renderLineGrouped : ( DataContinuousGroup, Config ) -> Html msg
+renderLineGrouped : ( DataContinuousGroup, Config msg validation ) -> Html msg
 renderLineGrouped ( data, config ) =
     let
         c =
@@ -180,6 +182,16 @@ renderLineGrouped ( data, config ) =
         yScale =
             toContinousScale yRange (Maybe.withDefault ( 0, 0 ) continuousDomain.y) c.yScale
 
+        events =
+            c.events
+                |> List.map
+                    (\e ->
+                        case e of
+                            Event.HoverOne f ->
+                                Event.hoverOne c continuousData ( xContinuousScale, yScale ) f
+                    )
+                |> List.concat
+
         svgEl =
             svg
                 ([ viewBox 0 0 outerW outerH
@@ -188,6 +200,7 @@ renderLineGrouped ( data, config ) =
                  , role "img"
                  ]
                     ++ ariaLabelledbyContent c
+                    ++ events
                 )
             <|
                 symbolElements config
@@ -212,7 +225,7 @@ renderLineGrouped ( data, config ) =
 -- STACKED
 
 
-renderLineStacked : LineDraw -> ( DataContinuousGroup, Config ) -> Html msg
+renderLineStacked : LineDraw -> ( DataContinuousGroup, Config msg validation ) -> Html msg
 renderLineStacked lineDraw ( data, config ) =
     let
         c =
@@ -355,7 +368,7 @@ renderLineStacked lineDraw ( data, config ) =
                 ]
 
 
-continuousXAxis : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
+continuousXAxis : ConfigStruct msg -> ContinuousScale Float -> List (Svg msg)
 continuousXAxis c scale =
     if c.showXAxis == True then
         case c.axisXContinuous of
@@ -379,7 +392,7 @@ continuousXAxis c scale =
         []
 
 
-timeXAxis : ConfigStruct -> Maybe (ContinuousScale Posix) -> List (Svg msg)
+timeXAxis : ConfigStruct msg -> Maybe (ContinuousScale Posix) -> List (Svg msg)
 timeXAxis c scale =
     if c.showXAxis == True then
         case scale of
@@ -409,7 +422,7 @@ timeXAxis c scale =
         []
 
 
-continuousYAxis : ConfigStruct -> ContinuousScale Float -> List (Svg msg)
+continuousYAxis : ConfigStruct msg -> ContinuousScale Float -> List (Svg msg)
 continuousYAxis c scale =
     if c.showYAxis == True then
         case c.axisYContinuous of
@@ -465,7 +478,7 @@ continuousYAxis c scale =
 continuousOrTimeAxisGenerator :
     Maybe (ContinuousScale Posix)
     -> ContinuousScale Float
-    -> ( DataContinuousGroup, Config )
+    -> ( DataContinuousGroup, Config msg validation )
     -> List (Svg msg)
 continuousOrTimeAxisGenerator xTimeScale xContinuousScale ( data, config ) =
     let
@@ -510,7 +523,7 @@ symbolsToSymbolElements symbols =
 
 
 drawSymbol :
-    Config
+    Config msg validation
     -> { idx : Int, x : Float, y : Float, styleStr : String }
     -> List (Svg msg)
 drawSymbol config { idx, x, y, styleStr } =
@@ -584,7 +597,7 @@ drawSymbol config { idx, x, y, styleStr } =
 --  HELPERS
 
 
-symbolElements : Config -> List (Svg msg)
+symbolElements : Config msg validation -> List (Svg msg)
 symbolElements config =
     let
         c =
@@ -615,7 +628,7 @@ defaultSymbolSize =
 
 
 drawAreas :
-    Config
+    Config msg validation
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> StackResult String
@@ -708,7 +721,7 @@ drawAreas config xScale yScale stackedResult combinedData =
 
 
 drawContinuousLine :
-    Config
+    Config msg validation
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> List DataGroupContinuous
@@ -778,7 +791,7 @@ drawContinuousLine config xScale yScale sortedData =
 
 
 areaLabel :
-    Config
+    Config msg validation
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> Int
@@ -830,7 +843,7 @@ areaLabel config xScale yScale _ item =
 
 
 horizontalLabel :
-    Config
+    Config msg validation
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> Int
@@ -884,7 +897,7 @@ horizontalLabel config xScale yScale idx groupLabel point =
             text_ [] []
 
 
-tableElement : Config -> DataContinuousGroup -> Html msg
+tableElement : Config msg validation -> DataContinuousGroup -> Html msg
 tableElement config data =
     let
         c =
@@ -912,7 +925,7 @@ tableElement config data =
 
 
 symbolGroup :
-    Config
+    Config msg validation
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> List DataGroupContinuous

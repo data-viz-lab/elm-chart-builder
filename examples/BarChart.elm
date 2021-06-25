@@ -268,7 +268,6 @@ verticalStacked =
         |> Bar.withColorPalette colorScheme
         |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withStackedLayout Bar.noDirection
-        |> Bar.withSymbols (icons "chart-b")
         |> Bar.withYAxis yAxis
         |> Bar.render ( data, accessor )
 

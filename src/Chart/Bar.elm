@@ -71,8 +71,8 @@ import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Shap
 
 {-| The Config opaque type
 -}
-type alias Config =
-    Type.Config
+type alias Config msg validation =
+    Type.Config msg validation
 
 
 {-| The required config, passed as an argument to the `init` function
@@ -131,7 +131,13 @@ type alias Accessor data =
         |> Bar.render ( data, accessor )
 
 -}
-init : RequiredConfig -> Config
+init :
+    RequiredConfig
+    ->
+        Config msg
+            { canHaveSymbols : ()
+            , canHaveStackedLayout : ()
+            }
 init c =
     Type.defaultConfig
         |> Type.setDimensions { margin = c.margin, width = c.width, height = c.height }
@@ -143,7 +149,7 @@ init c =
         |> Bar.render ( data, accessor )
 
 -}
-render : ( List data, Accessor data ) -> Config -> Html msg
+render : ( List data, Accessor data ) -> Config msg validation -> Html msg
 render ( externalData, accessor ) config =
     let
         c =
@@ -174,9 +180,16 @@ It takes a direction: `diverging` or `noDirection`.
         |> Bar.render ( data, accessor )
 
 -}
-withStackedLayout : Type.Direction -> Config -> Config
+withStackedLayout :
+    Type.Direction
+    -> Config msg { validation | canHaveSymbols : (), canHaveStackedLayout : () }
+    -> Config msg validation
 withStackedLayout direction config =
-    Type.setLayout (Type.StackedBar direction) config
+    let
+        c =
+            Type.fromConfig config
+    in
+    Type.toConfig { c | layout = Type.StackedBar direction }
 
 
 {-| Creates a grouped bar chart.
@@ -186,7 +199,9 @@ withStackedLayout direction config =
         |> Bar.render ( data, accessor )
 
 -}
-withGroupedLayout : Config -> Config
+withGroupedLayout :
+    Config msg { validation | canHaveSymbols : () }
+    -> Config msg { validation | canHaveSymbols : () }
 withGroupedLayout config =
     Type.setLayout Type.GroupedBar config
 
@@ -201,7 +216,7 @@ Default value: `vertical`.
         |> Bar.render ( data, accessor )
 
 -}
-withOrientation : Type.Orientation -> Config -> Config
+withOrientation : Type.Orientation -> Config msg validation -> Config msg validation
 withOrientation value config =
     Type.setOrientation value config
 
@@ -214,7 +229,7 @@ The styles set here have precedence over `withColorPalette`, `withColorInterpola
         |> Bar.render ( data, accessor )
 
 -}
-withBarStyle : List ( String, String ) -> Config -> Config
+withBarStyle : List ( String, String ) -> Config msg validation -> Config msg validation
 withBarStyle styles config =
     Type.setCoreStyles styles config
 
@@ -234,7 +249,7 @@ The styles set here have precedence over `withBarStyle`, `withColorPalette`, `wi
         |> Bar.render ( data, accessor )
 
 -}
-withBarStyleFrom : (String -> List ( String, String )) -> Config -> Config
+withBarStyleFrom : (String -> List ( String, String )) -> Config msg validation -> Config msg validation
 withBarStyleFrom f config =
     Type.setCoreStyleFromPointBandX f config
 
@@ -251,7 +266,7 @@ If the bars in a group are more then the colours in the palette, the colours wil
         |> Bar.render (data, accessor)
 
 -}
-withColorPalette : List Color -> Config -> Config
+withColorPalette : List Color -> Config msg validation -> Config msg validation
 withColorPalette palette config =
     Type.setColorResource (Type.ColorPalette palette) config
 
@@ -265,7 +280,7 @@ This option is not supported for stacked bar charts and will have no effect on t
         |> Bar.render ( data, accessor )
 
 -}
-withColorInterpolator : (Float -> Color) -> Config -> Config
+withColorInterpolator : (Float -> Color) -> Config msg validation -> Config msg validation
 withColorInterpolator interpolator config =
     Type.setColorResource (Type.ColorInterpolator interpolator) config
 
@@ -277,7 +292,7 @@ withColorInterpolator interpolator config =
         |> Bar.render ( data, accessor )
 
 -}
-withXGroupDomain : List String -> Config -> Config
+withXGroupDomain : List String -> Config msg validation -> Config msg validation
 withXGroupDomain value config =
     Type.setDomainBandBandGroup value config
 
@@ -289,7 +304,7 @@ withXGroupDomain value config =
         |> Bar.render ( data, accessor )
 
 -}
-withXDomain : List String -> Config -> Config
+withXDomain : List String -> Config msg validation -> Config msg validation
 withXDomain value config =
     Type.setDomainBandBandSingle value config
 
@@ -301,7 +316,7 @@ withXDomain value config =
         |> Bar.render ( data, accessor )
 
 -}
-withYDomain : ( Float, Float ) -> Config -> Config
+withYDomain : ( Float, Float ) -> Config msg validation -> Config msg validation
 withYDomain value config =
     Type.setDomainBandContinuous value config
 
@@ -317,9 +332,16 @@ Usefull for facilitating accessibility.
         |> Bar.render ( data, accessor )
 
 -}
-withSymbols : List Symbol -> Config -> Config
-withSymbols =
-    Type.setIcons
+withSymbols :
+    List Symbol
+    -> Config msg { validation | canHaveSymbols : () }
+    -> Config msg validation
+withSymbols symbols config =
+    let
+        c =
+            Type.fromConfig config
+    in
+    Type.toConfig { c | icons = symbols }
 
 
 {-| An optional formatter for all float values in the alternative table content for accessibility.
@@ -331,7 +353,7 @@ Defaults to `String.fromFloat`
         |> Bar.render ( data, accessor )
 
 -}
-withTableFloatFormat : (Float -> String) -> Config -> Config
+withTableFloatFormat : (Float -> String) -> Config msg validation -> Config msg validation
 withTableFloatFormat f =
     Type.setTableFloatFormat f
 
@@ -347,7 +369,7 @@ If used together with symbols, the label will be drawn on top of the symbol.
         |> Bar.render ( data, accessor )
 
 -}
-withXLabels : Config -> Config
+withXLabels : Config msg validation -> Config msg validation
 withXLabels =
     Type.showXOrdinalLabel
 
@@ -362,7 +384,7 @@ Use this option to not build the table.
         |> Bar.render ( data, accessor )
 
 -}
-withoutTable : Config -> Config
+withoutTable : Config msg validation -> Config msg validation
 withoutTable =
     Type.setAccessibilityContent Type.AccessibilityNone
 
@@ -379,7 +401,7 @@ If used together with symbols, the label will be drawn after the symbol.
         |> Bar.withLabels (Bar.yLabel String.fromFloat)
 
 -}
-withLabels : Type.Label -> Config -> Config
+withLabels : Type.Label -> Config msg validation -> Config msg validation
 withLabels label =
     case label of
         Type.YLabel formatter ->
@@ -403,7 +425,7 @@ It takes one of: stackedColumnTitle, xOrdinalColumnTitle, yColumnTitle
         |> Bar.withColumnTitle (Bar.yColumnTitle String.fromFloat)
 
 -}
-withColumnTitle : Type.ColumnTitle -> Config -> Config
+withColumnTitle : Type.ColumnTitle -> Config msg validation -> Config msg validation
 withColumnTitle title config =
     case title of
         Type.YColumnTitle formatter ->
@@ -429,7 +451,7 @@ This shuld be set if no title nor description exists for the chart, for example 
         |> Bar.render ( data, accessor )
 
 -}
-withDesc : String -> Config -> Config
+withDesc : String -> Config msg validation -> Config msg validation
 withDesc value config =
     Type.setSvgDesc value config
 
@@ -444,7 +466,7 @@ This shuld be set if no title nor description exists for the chart, for example 
         |> Bar.render ( data, accessor )
 
 -}
-withTitle : String -> Config -> Config
+withTitle : String -> Config msg validation -> Config msg validation
 withTitle value config =
     Type.setSvgTitle value config
 
@@ -618,7 +640,7 @@ axisTop =
         |> Bar.render ( data, accessor )
 
 -}
-hideAxis : Config -> Config
+hideAxis : Config msg validation -> Config msg validation
 hideAxis config =
     Type.setXAxis False config
         |> Type.setYAxis False
@@ -639,7 +661,7 @@ Bar.init requiredConfig
 ```
 
 -}
-hideYAxis : Config -> Config
+hideYAxis : Config msg validation -> Config msg validation
 hideYAxis config =
     Type.setYAxis False config
 
@@ -659,7 +681,7 @@ Bar.init requiredConfig
 ```
 
 -}
-hideXAxis : Config -> Config
+hideXAxis : Config msg validation -> Config msg validation
 hideXAxis config =
     Type.setXAxis False config
 
@@ -671,7 +693,7 @@ hideXAxis config =
         |> Bar.render ( data, accessor )
 
 -}
-withXAxis : ChartAxis.XAxis String -> Config -> Config
+withXAxis : ChartAxis.XAxis String -> Config msg validation -> Config msg validation
 withXAxis =
     Type.setXAxisBand
 
@@ -683,7 +705,7 @@ withXAxis =
         |> Bar.render ( data, accessor )
 
 -}
-withYAxis : ChartAxis.YAxis Float -> Config -> Config
+withYAxis : ChartAxis.YAxis Float -> Config msg validation -> Config msg validation
 withYAxis =
     Type.setYAxisContinuous
 
@@ -695,6 +717,6 @@ withYAxis =
         |> Bar.render ( data, accessor )
 
 -}
-withLogYScale : Float -> Config -> Config
+withLogYScale : Float -> Config msg validation -> Config msg validation
 withLogYScale base =
     Type.setYScale (Type.LogScale base)
