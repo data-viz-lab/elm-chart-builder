@@ -40,6 +40,8 @@ Bar.init
         )
 ```
 
+## Built-in CSS classes 
+elm-chart-builder adds a number of css classes to the generated elements. These can be used to customize the charts with css.
 
 ## Documentation
 
