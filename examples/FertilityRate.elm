@@ -17,31 +17,35 @@ import Time exposing (Posix)
 css : String
 css =
     """
-.axis path,
-.axis line {
+.chart-builder__component text {
+  font-size: 12px;
+}
+
+.chart-builder__axis path,
+.chart-builder__axis line {
   stroke: #b7b7b7;
 }
 
-.axis text {
+.chart-builder__axis text {
   fill: #333;
 }
 
-.axis--x .domain ,
-.axis--y .domain {
+.chart-builder__axis--x .domain ,
+.chart-builder__axis--y .domain {
   stroke: none;
 }
 
-.axis--y-right .tick {
+.chart-builder__axis--y-right .tick {
   stroke-dasharray: 6 6;
   stroke-width: 0.5px;
 }
 
-.axis--y-left text {
-  font-size: 16px;
+.chart-builder__axis--x text {
+  font-size: 10px;
 }
 
-.series text {
-  font-size: 12px;
+.chart-builder__axis--y-left text {
+  font-size: 16px;
 }
 
 figure {

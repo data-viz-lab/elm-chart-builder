@@ -26,12 +26,12 @@ body {
     border: 1px solid #c4c4c4;
 }
 
-.column rect {
+.chart-builder__column rect {
     fill: #91DE71;
 }
 
-.axis path,
-.axis line {
+.chart-builder__axis path,
+.chart-builder__axis line {
     stroke: #b7b7b7;
 }
 

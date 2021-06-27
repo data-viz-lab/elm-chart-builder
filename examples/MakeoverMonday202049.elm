@@ -15,16 +15,16 @@ import Scale.Color
 css : String
 css =
     """
-.axis--vertical text {
+.chart-builder__axis--y text {
   font-size: 14px;
 }
 
-.axis--horizontal text {
+.chart-builder__axis--x text {
   font-size: 11px;
 }
 
-.axis path,
-.axis line {
+.chart-builder__axis path,
+.chart-builder__axis line {
  opacity : 0;
 }
 
@@ -32,7 +32,7 @@ text {
   fill: #333;
 }
 
-.column text {
+.chart-builder__label {
   font-size: 12px;
 }
 

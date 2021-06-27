@@ -34,8 +34,8 @@ body {
   color: #fff;
 }
 
-.axis path,
-.axis line {
+.chart-builder__axis path,
+.chart-builder__axis line {
   stroke: #fff;
 }
 

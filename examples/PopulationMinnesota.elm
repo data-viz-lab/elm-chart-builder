@@ -49,16 +49,16 @@ body {
     height: 500px;
 }
 
-.column-0 rect {
+.chart-builder__column-0 rect {
     fill: #355F8D;
 }
 
-.column-1 rect {
+.chart-builder__column-1 rect {
     fill: rgba(26.67%,74.9%,43.92%,1);
 }
 
-.axis path,
-.axis line {
+.chart-builder__axis path,
+.chart-builder__axis line {
     stroke: #b7b7b7;
 }
 

@@ -6,6 +6,7 @@ module Chart.Internal.Bar exposing
 
 import Axis
 import Chart.Internal.Axis as ChartAxis
+import Chart.Internal.Constants as Constants
 import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol
     exposing
@@ -252,20 +253,26 @@ renderBandStacked ( data, config ) =
                     ++ bandGroupedYAxis c 0 continuousScaleAxis
                     ++ [ g
                             [ transform [ stackedContainerTranslate c m.left m.top (toFloat stackDepth) ]
-                            , class [ "series" ]
+                            , class [ Constants.componentClassName ]
                             ]
                          <|
                             List.map (stackedColumns c bandGroupScale)
                                 (List.map2 (\a b -> ( a, b, labels )) columnGroupes scaledValues)
                        ]
                 )
+
+        classNames =
+            Html.Attributes.classList
+                [ ( Constants.rootClassName, True )
+                , ( Constants.barClassName, True )
+                ]
     in
     case c.accessibilityContent of
         AccessibilityNone ->
-            Html.div [] [ svgEl ]
+            Html.div [ classNames ] [ svgEl ]
 
         _ ->
-            Html.div []
+            Html.div [ classNames ]
                 [ Html.figure
                     []
                     [ svgEl, tableElement config noGapsData ]
@@ -297,7 +304,7 @@ stackedColumns config bandGroupScale payload =
                 Horizontal ->
                     horizontalRectsStacked config bandGroupScale payload
     in
-    g [ class [ "columns" ] ] rects
+    g [ class [ Constants.columnClassName ] ] rects
 
 
 verticalRectsStacked :
@@ -336,7 +343,13 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
                         ]
                         (stackedColumnTitleText c idx labels rawValue)
             in
-            g [ class [ "column", "column-" ++ String.fromInt idx ] ] [ rect_ ]
+            g
+                [ class
+                    [ Constants.columnClassName
+                    , Constants.columnClassName ++ "-" ++ String.fromInt idx
+                    ]
+                ]
+                [ rect_ ]
     in
     List.indexedMap (\idx -> block idx) values
 
@@ -368,7 +381,13 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
                         ]
                         (stackedColumnTitleText c idx labels rawValue)
             in
-            g [ class [ "column", "column-" ++ String.fromInt idx ] ] [ rect_ ]
+            g
+                [ class
+                    [ Constants.columnClassName
+                    , Constants.columnClassName ++ "-" ++ String.fromInt idx
+                    ]
+                ]
+                [ rect_ ]
     in
     values
         |> stackedValuesInverse c.width
@@ -490,7 +509,7 @@ renderBandGrouped ( data, config ) =
                     ++ bandXAxis c axisBandScale
                     ++ [ g
                             [ transform [ Translate m.left m.top ]
-                            , class [ "series" ]
+                            , class [ Constants.componentClassName ]
                             ]
                          <|
                             List.map
@@ -501,13 +520,19 @@ renderBandGrouped ( data, config ) =
                     -- and eventually they could also be shared across multiple charts
                     -- see: https://css-tricks.com/svg-symbol-good-choice-icons/
                     ++ symbolElements
+
+        classNames =
+            Html.Attributes.classList
+                [ ( Constants.rootClassName, True )
+                , ( Constants.barClassName, True )
+                ]
     in
     case c.accessibilityContent of
         AccessibilityNone ->
-            Html.div [] [ svgEl ]
+            Html.div [ classNames ] [ svgEl ]
 
         _ ->
-            Html.div []
+            Html.div [ classNames ]
                 [ Html.figure
                     []
                     [ svgEl, tableElement config data ]
@@ -537,7 +562,7 @@ columns config iconOffset bandGroupScale bandSingleScale continuousScale colorSc
     in
     g
         [ transform [ tr ]
-        , class [ "data-group" ]
+        , class [ Constants.dataGroupClassName ]
         ]
     <|
         List.indexedMap (column config iconOffset bandSingleScale continuousScale colorScale) dataGroup.points
@@ -562,7 +587,13 @@ column config iconOffset bandSingleScale continuousScale colorScale idx point =
                 Horizontal ->
                     horizontalRect config bandSingleScale continuousScale colorScale idx point
     in
-    g [ class [ "column", "column-" ++ String.fromInt idx ] ] rectangle
+    g
+        [ class
+            [ Constants.columnClassName
+            , Constants.columnClassName ++ "-" ++ String.fromInt idx
+            ]
+        ]
+        rectangle
 
 
 verticalRect :
@@ -724,7 +755,7 @@ verticalLabel config xPos yPos point =
                 [ x xPos
                 , y yPos
                 , textAnchor AnchorMiddle
-                , class [ "label" ]
+                , class [ Constants.labelClassName ]
                 ]
     in
     case fromConfig config |> .showLabels of
@@ -759,7 +790,7 @@ horizontalSymbol config { idx, w, y_, styleStr } =
             Triangle c ->
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
-                    , class [ "symbol" ]
+                    , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
                     symbolRef
@@ -768,7 +799,7 @@ horizontalSymbol config { idx, w, y_, styleStr } =
             Circle c ->
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
-                    , class [ "symbol" ]
+                    , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
                     symbolRef
@@ -777,7 +808,7 @@ horizontalSymbol config { idx, w, y_, styleStr } =
             Corner c ->
                 [ g
                     [ transform [ Translate (w + symbolGap) y_ ]
-                    , class [ "symbol" ]
+                    , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
                     symbolRef
@@ -794,7 +825,7 @@ horizontalSymbol config { idx, w, y_, styleStr } =
                 in
                 [ g
                     [ transform [ Translate (w + gap) y_ ]
-                    , class [ "symbol" ]
+                    , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
                     symbolRef
@@ -829,7 +860,7 @@ verticalSymbol config { idx, w, y_, x_, styleStr } =
             Triangle c ->
                 [ g
                     [ transform [ Translate x_ (y_ - w - symbolGap) ]
-                    , class [ "symbol" ]
+                    , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
                     symbolRef
@@ -838,7 +869,7 @@ verticalSymbol config { idx, w, y_, x_, styleStr } =
             Circle c ->
                 [ g
                     [ transform [ Translate x_ (y_ - w - symbolGap) ]
-                    , class [ "symbol" ]
+                    , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
                     symbolRef
@@ -847,7 +878,7 @@ verticalSymbol config { idx, w, y_, x_, styleStr } =
             Corner c ->
                 [ g
                     [ transform [ Translate x_ (y_ - w - symbolGap) ]
-                    , class [ "symbol" ]
+                    , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
                     symbolRef
@@ -867,7 +898,7 @@ verticalSymbol config { idx, w, y_, x_, styleStr } =
                 in
                 [ g
                     [ transform [ Translate x_ (y_ - space - gap) ]
-                    , class [ "symbol" ]
+                    , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
                     symbolRef
@@ -930,7 +961,11 @@ bandXAxis c bandScale =
             ( Vertical, ChartAxis.Bottom attributes ) ->
                 [ g
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                    , class [ "axis", "axis--horizontal" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisXClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.bottom attributes (Scale.toRenderable identity bandScale) ]
                 ]
@@ -938,7 +973,11 @@ bandXAxis c bandScale =
             ( Vertical, ChartAxis.Top attributes ) ->
                 [ g
                     [ transform [ Translate c.margin.left c.margin.top ]
-                    , class [ "axis", "axis--horizontal" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisXClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.top attributes (Scale.toRenderable identity bandScale) ]
                 ]
@@ -946,7 +985,11 @@ bandXAxis c bandScale =
             ( Horizontal, ChartAxis.Bottom attributes ) ->
                 [ g
                     [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
-                    , class [ "axis", "axis--vertical" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisYClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.left attributes (Scale.toRenderable identity bandScale) ]
                 ]
@@ -955,7 +998,11 @@ bandXAxis c bandScale =
                 --FIXME
                 [ g
                     [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
-                    , class [ "axis", "axis--vertical" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisYClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.right attributes (Scale.toRenderable identity bandScale) ]
                 ]
@@ -974,7 +1021,11 @@ bandGroupedYAxis c iconOffset continuousScale =
                         [ Translate (c.margin.left - leftGap)
                             (iconOffset + c.margin.top)
                         ]
-                    , class [ "axis", "axis--vertical" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisYClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.left attributes continuousScale ]
                 ]
@@ -986,7 +1037,11 @@ bandGroupedYAxis c iconOffset continuousScale =
                             (c.width + c.margin.left + leftGap)
                             (iconOffset + c.margin.top)
                         ]
-                    , class [ "axis", "axis--vertical" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisYClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.right attributes continuousScale ]
                 ]
@@ -1010,12 +1065,21 @@ bandGroupedYAxis c iconOffset continuousScale =
                         [ Translate (c.margin.left - leftGap)
                             (iconOffset + c.margin.top)
                         ]
-                    , class [ "axis", "axis--vertical" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisYClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.left leftAttrs continuousScale ]
                 , g
                     [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
-                    , class [ "axis", "axis--y", "axis--y-right" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisYClassName
+                        , Constants.axisYRightClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.right rightAttrs continuousScale ]
                 ]
@@ -1023,7 +1087,11 @@ bandGroupedYAxis c iconOffset continuousScale =
             ( Horizontal, ChartAxis.Left attributes ) ->
                 [ g
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                    , class [ "axis", "axis--horizontal" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisXClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.bottom attributes continuousScale ]
                 ]
@@ -1031,7 +1099,11 @@ bandGroupedYAxis c iconOffset continuousScale =
             ( Horizontal, ChartAxis.Right attributes ) ->
                 [ g
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                    , class [ "axis", "axis--horizontal" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisXClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.bottom attributes continuousScale ]
                 ]
@@ -1052,12 +1124,21 @@ bandGroupedYAxis c iconOffset continuousScale =
                 in
                 [ g
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                    , class [ "axis", "axis--horizontal" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisXClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.bottom bottomAttrs continuousScale ]
                 , g
                     [ transform [ Translate c.margin.left c.margin.top ]
-                    , class [ "axis", "axis--y", "axis--y-right" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisYClassName
+                        , Constants.axisYRightClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.bottom topAttrs continuousScale ]
                 ]
@@ -1123,7 +1204,11 @@ renderHistogram ( histogram, config ) =
         xAxis =
             [ g
                 [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                , class [ "axis", "axis--horizontal" ]
+                , class
+                    [ Constants.axisClassName
+                    , Constants.axisXClassName
+                    , Constants.componentClassName
+                    ]
                 ]
                 [ Axis.bottom (ChartAxis.xAxisAttributes c.axisXContinuous) xScale ]
             ]
@@ -1134,7 +1219,11 @@ renderHistogram ( histogram, config ) =
                 ChartAxis.Left attributes ->
                     [ g
                         [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
-                        , class [ "axis", "axis--vertical" ]
+                        , class
+                            [ Constants.axisClassName
+                            , Constants.axisYClassName
+                            , Constants.componentClassName
+                            ]
                         ]
                         [ Axis.left attributes (yScaleFromBins bins) ]
                     ]
@@ -1189,18 +1278,24 @@ renderHistogram ( histogram, config ) =
                     ++ yAxis histogram
                     ++ [ g
                             [ transform [ Translate m.left m.top ]
-                            , class [ "series" ]
+                            , class [ Constants.componentClassName ]
                             ]
                          <|
                             List.map (histogramColumn config h xScale (yScaleFromBins histogram)) histogram
                        ]
+
+        classNames =
+            Html.Attributes.classList
+                [ ( Constants.rootClassName, True )
+                , ( Constants.histogramClassName, True )
+                ]
     in
     case c.accessibilityContent of
         AccessibilityNone ->
-            Html.div [] [ svgEl ]
+            Html.div [ classNames ] [ svgEl ]
 
         _ ->
-            Html.div []
+            Html.div [ classNames ]
                 [ Html.figure
                     []
                     [ svgEl, tableEl ]
@@ -1309,7 +1404,7 @@ horizontalLabel config xPos yPos point =
                 , x xPos
                 , textAnchor AnchorStart
                 , dominantBaseline DominantBaselineMiddle
-                , class [ "label" ]
+                , class [ Constants.labelClassName ]
                 ]
     in
     case fromConfig config |> .showLabels of

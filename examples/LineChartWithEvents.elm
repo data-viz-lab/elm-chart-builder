@@ -25,8 +25,8 @@ import Time exposing (Posix)
 css : String
 css =
     """
-.axis path,
-.axis line {
+.chart-builder__axis path,
+.chart-builder__axis line {
   stroke: #b7b7b7;
 }
 
@@ -35,11 +35,11 @@ text {
   font-size: 16px;
 }
 
-.axis--y .domain {
+.chart-builder__axis--y .domain {
   stroke: none;
 }
 
-.axis--y-right .tick {
+.chart-builder__axis--y-right .tick {
   stroke-dasharray : 6 6;
   stroke-width: 0.5px;
 }

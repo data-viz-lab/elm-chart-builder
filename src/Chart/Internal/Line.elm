@@ -5,6 +5,7 @@ module Chart.Internal.Line exposing
 
 import Axis
 import Chart.Internal.Axis as ChartAxis
+import Chart.Internal.Constants as Constants
 import Chart.Internal.Event as Event
 import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol as Symbol
@@ -231,13 +232,19 @@ renderLineGrouped ( data, config ) =
                     ++ continuousYAxis c yScale
                     ++ continuousOrTimeAxisGenerator xTimeScale xContinuousScale ( data, config )
                     ++ drawContinuousLine config xContinuousScale yScale sortedContinuousData
+
+        classNames =
+            Html.Attributes.classList
+                [ ( Constants.rootClassName, True )
+                , ( Constants.lineClassName, True )
+                ]
     in
     case c.accessibilityContent of
         AccessibilityNone ->
-            Html.div [] [ svgEl ]
+            Html.div [ classNames ] [ svgEl ]
 
         _ ->
-            Html.div []
+            Html.div [ classNames ]
                 [ Html.figure
                     []
                     [ svgEl, tableElement config data ]
@@ -393,13 +400,19 @@ renderLineStacked lineDraw ( data, config ) =
                     ++ continuousYAxis c yScale
                     ++ continuousOrTimeAxisGenerator xTimeScale xContinuousScale ( data, config )
                     ++ draw
+
+        classNames =
+            Html.Attributes.classList
+                [ ( Constants.rootClassName, True )
+                , ( Constants.lineClassName, True )
+                ]
     in
     case c.accessibilityContent of
         AccessibilityNone ->
-            Html.div [] [ svgEl ]
+            Html.div [ classNames ] [ svgEl ]
 
         _ ->
-            Html.div []
+            Html.div [ classNames ]
                 [ Html.figure
                     []
                     [ svgEl, tableElement config data ]
@@ -413,7 +426,11 @@ continuousXAxis c scale =
             ChartAxis.Bottom attributes ->
                 [ g
                     [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                    , class [ "axis", "axis--x" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisXClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.bottom attributes scale ]
                 ]
@@ -421,7 +438,11 @@ continuousXAxis c scale =
             ChartAxis.Top attributes ->
                 [ g
                     [ transform [ Translate c.margin.left c.margin.top ]
-                    , class [ "axis", "axis--x" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisXClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.top attributes scale ]
                 ]
@@ -439,7 +460,11 @@ timeXAxis c scale =
                     ChartAxis.Bottom attributes ->
                         [ g
                             [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                            , class [ "axis", "axis--x" ]
+                            , class
+                                [ Constants.axisClassName
+                                , Constants.axisXClassName
+                                , Constants.componentClassName
+                                ]
                             ]
                             [ Axis.bottom attributes s ]
                         ]
@@ -448,7 +473,11 @@ timeXAxis c scale =
                         --FIXME
                         [ g
                             [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
-                            , class [ "axis", "axis--x" ]
+                            , class
+                                [ Constants.axisClassName
+                                , Constants.axisXClassName
+                                , Constants.componentClassName
+                                ]
                             ]
                             [ Axis.top attributes s ]
                         ]
@@ -467,7 +496,11 @@ continuousYAxis c scale =
             ChartAxis.Left attributes ->
                 [ g
                     [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
-                    , class [ "axis", "axis--y" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisYClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.left attributes scale ]
                 ]
@@ -479,7 +512,11 @@ continuousYAxis c scale =
                             (c.width + c.margin.left + leftGap |> Helpers.floorFloat)
                             c.margin.top
                         ]
-                    , class [ "axis", "axis--y" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisYClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.right attributes scale ]
                 ]
@@ -499,12 +536,22 @@ continuousYAxis c scale =
                 in
                 [ g
                     [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
-                    , class [ "axis", "axis--y", "axis--y-left" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisYClassName
+                        , Constants.axisYLeftClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.left leftAttrs scale ]
                 , g
                     [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
-                    , class [ "axis", "axis--y", "axis--y-right" ]
+                    , class
+                        [ Constants.axisClassName
+                        , Constants.axisYClassName
+                        , Constants.axisYRightClassName
+                        , Constants.componentClassName
+                        ]
                     ]
                     [ Axis.right rightAttrs scale ]
                 ]
@@ -660,7 +707,7 @@ drawSymbol config { idx, x, y, styleStr, symbolContext } =
                 [ g
                     [ transform
                         [ Translate (x - size c / 2) (y - size c / 2) ]
-                    , class [ "symbol" ]
+                    , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
                     (symbolEl symbol)
@@ -669,7 +716,7 @@ drawSymbol config { idx, x, y, styleStr, symbolContext } =
             Circle c ->
                 [ g
                     [ transform [ Translate (x - circleSize c / 2) (y - circleSize c / 2) ]
-                    , class [ "symbol" ]
+                    , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
                     (symbolEl symbol)
@@ -678,7 +725,7 @@ drawSymbol config { idx, x, y, styleStr, symbolContext } =
             Corner c ->
                 [ g
                     [ transform [ Translate (x - size c / 2) (y - size c / 2) ]
-                    , class [ "symbol" ]
+                    , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
                     (symbolEl symbol)
@@ -687,7 +734,7 @@ drawSymbol config { idx, x, y, styleStr, symbolContext } =
             Custom c ->
                 [ g
                     [ transform [ Translate x y ]
-                    , class [ "symbol" ]
+                    , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
                     (symbolEl symbol)
@@ -702,7 +749,7 @@ drawSymbol config { idx, x, y, styleStr, symbolContext } =
                 [ Translate (x - (defaultSymbolSize * scaler) / 2)
                     (y - (defaultSymbolSize * scaler) / 2)
                 ]
-            , class [ "symbol" ]
+            , class [ Constants.symbolClassName ]
             , Helpers.mergeStyles annotationPointStyle ""
                 |> style
             ]
@@ -813,7 +860,10 @@ drawAreas config xScale yScale stackedResult combinedData =
         renderStream : Int -> DataGroupContinuousWithStack -> Svg msg
         renderStream idx combinedWithStack =
             Path.element (toArea combinedWithStack)
-                [ class [ "area", "area-" ++ String.fromInt idx ]
+                [ class
+                    [ Constants.areaShapeClassName
+                    , Constants.areaShapeClassName ++ "-" ++ String.fromInt idx
+                    ]
                 , styles idx
                 ]
 
@@ -832,12 +882,12 @@ drawAreas config xScale yScale stackedResult combinedData =
     in
     [ g
         [ transform [ Translate m.left m.top ]
-        , class [ "series" ]
+        , class [ Constants.componentClassName ]
         ]
         paths
     , g
         [ transform [ Translate m.left m.top ]
-        , class [ "series" ]
+        , class [ Constants.componentClassName ]
         ]
       <|
         (combinedDataWithStack
@@ -890,20 +940,23 @@ drawContinuousLine config xScale yScale sortedData =
     in
     [ g
         [ transform [ Translate m.left m.top ]
-        , class [ "series" ]
+        , class [ Constants.componentClassName ]
         ]
       <|
         List.indexedMap
             (\idx d ->
                 Path.element (line d)
-                    [ class [ "line", "line-" ++ String.fromInt idx ]
+                    [ class
+                        [ Constants.lineShapeClassName
+                        , Constants.lineShapeClassName ++ "-" ++ String.fromInt idx
+                        ]
                     , styles idx
                     ]
             )
             sortedData
     , g
         [ transform [ Translate m.left m.top ]
-        , class [ "series" ]
+        , class [ Constants.componentClassName ]
         ]
       <|
         (sortedData
@@ -958,7 +1011,7 @@ areaLabel config xScale yScale _ item =
                         , x (xPos + labelGap)
                         , textAnchor AnchorStart
                         , dominantBaseline DominantBaselineMiddle
-                        , class [ "label" ]
+                        , class [ Constants.labelClassName ]
                         ]
             in
             case conf.showLabels of
@@ -1013,7 +1066,7 @@ horizontalLabel config xScale yScale idx groupLabel point =
                         , x (xPos + labelOffset)
                         , textAnchor AnchorStart
                         , dominantBaseline DominantBaselineMiddle
-                        , class [ "label" ]
+                        , class [ Constants.labelClassName ]
                         ]
             in
             case conf.showLabels of
@@ -1090,7 +1143,7 @@ symbolGroup config xScale yScale combinedData =
     in
     g
         [ transform [ Translate m.left m.top ]
-        , class [ "series" ]
+        , class [ Constants.componentClassName ]
         ]
         (combinedData
             |> List.indexedMap
@@ -1155,7 +1208,11 @@ vLineAnnotation c =
         Just a ->
             [ g
                 [ transform [ Translate c.margin.left c.margin.top ]
-                , class [ "v-line-annotation" ]
+                , class
+                    [ Constants.componentClassName
+                    , Constants.annotationClassName
+                    , Constants.vLineAnnotationClassName
+                    ]
                 ]
                 [ line
                     ((Helpers.mergeStyles style ""

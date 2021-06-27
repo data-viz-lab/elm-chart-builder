@@ -51,12 +51,12 @@ body {
   margin-left: 10px;
 }
 
-.axis text {
+.chart-builder__axis text {
   font-size: 14px;
 }
 
-.axis path,
-.axis line {
+.chart-builder__axis path,
+.chart-builder__axis line {
   stroke: #b7b7b7;
 }
 
