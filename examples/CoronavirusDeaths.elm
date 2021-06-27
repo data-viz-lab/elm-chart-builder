@@ -10,6 +10,7 @@ import Chart.Bar as Bar
 import Chart.Line as Line
 import Color exposing (rgb255)
 import Csv exposing (Csv)
+import DateFormat
 import Dict
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
@@ -44,8 +45,9 @@ text {
   font-size: 16px;
 }
 
-.column text {
-  font-size: 12px;
+
+.chart-builder__label {
+  font-size: 8px;
 }
 
 figure {
@@ -143,10 +145,18 @@ yAxis =
         ]
 
 
+dateFormat : Time.Posix -> String
+dateFormat =
+    DateFormat.format
+        [ DateFormat.monthNameAbbreviated ]
+        Time.utc
+
+
 xAxis : Bar.XAxis Posix
 xAxis =
     Line.axisBottom
         [ Axis.tickSizeOuter 0
+        , Axis.tickFormat dateFormat
         ]
 
 
@@ -259,11 +269,7 @@ locations =
     [ "United States"
     , "United Kingdom"
     , "Italy"
-    , "Germany"
-    , "Belgium"
     , "Brazil"
-    , "France"
-    , "Sweden"
     ]
 
 

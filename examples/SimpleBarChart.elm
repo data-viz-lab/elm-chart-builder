@@ -60,7 +60,9 @@ timeSeries =
 
 dateFormat : Time.Posix -> String
 dateFormat =
-    DateFormat.format [ DateFormat.dayOfMonthFixed, DateFormat.text " ", DateFormat.monthNameAbbreviated ] Time.utc
+    DateFormat.format
+        [ DateFormat.dayOfMonthFixed, DateFormat.text " ", DateFormat.monthNameAbbreviated ]
+        Time.utc
 
 
 accessor : Bar.Accessor ( String, Float )

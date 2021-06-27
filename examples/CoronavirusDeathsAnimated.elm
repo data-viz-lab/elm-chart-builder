@@ -15,6 +15,7 @@ import Chart.Bar as Bar
 import Chart.Line as Line
 import Color
 import Csv exposing (Csv)
+import DateFormat
 import Dict exposing (Dict)
 import FormatNumber
 import FormatNumber.Locales exposing (usLocale)
@@ -296,10 +297,18 @@ yAxis =
         ]
 
 
+dateFormat : Time.Posix -> String
+dateFormat =
+    DateFormat.format
+        [ DateFormat.monthNameAbbreviated ]
+        Time.utc
+
+
 xAxis : Bar.XAxis Posix
 xAxis =
     Line.axisBottom
         [ Axis.tickSizeOuter 0
+        , Axis.tickFormat dateFormat
         ]
 
 
