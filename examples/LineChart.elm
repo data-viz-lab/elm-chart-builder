@@ -157,7 +157,7 @@ type alias DataContinuous =
 
 accessorContinuous : Line.Accessor DataContinuous
 accessorContinuous =
-    Line.continuous (Line.AccessorContinuous (.groupLabel >> Just) .x .y)
+    Line.cont (Line.AccessorContinuous (.groupLabel >> Just) .x .y)
 
 
 dataContinuous : List DataContinuous

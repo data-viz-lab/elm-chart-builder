@@ -1,5 +1,5 @@
 module Chart.Line exposing
-    ( Accessor, AccessorContinuous, AccessorTime, continuous, time
+    ( Accessor, AccessorContinuous, AccessorTime, continuous, time, cont
     , init
     , render
     , Config, RequiredConfig
@@ -17,7 +17,7 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 # Chart Data Format
 
-@docs Accessor, AccessorContinuous, AccessorTime, continuous, time
+@docs Accessor, AccessorContinuous, AccessorTime, continuous, time, cont
 
 
 # Chart Initialization
@@ -136,6 +136,16 @@ type alias AccessorContinuous data =
 -}
 continuous : Type.AccessorContinuousStruct data -> Accessor data
 continuous acc =
+    Type.AccessorContinuous acc
+
+
+{-| An alias for Line.continuous
+
+    Line.cont (Line.AccessorContinuous .groupLabel .x .y)
+
+-}
+cont : Type.AccessorContinuousStruct data -> Accessor data
+cont acc =
     Type.AccessorContinuous acc
 
 
@@ -726,7 +736,8 @@ withSymbols =
 --
 
 
-{-| -}
+{-| The xGroup label type.
+-}
 xGroupLabel : Type.Label
 xGroupLabel =
     Type.XGroupLabel
