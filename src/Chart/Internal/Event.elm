@@ -60,7 +60,8 @@ type alias DataGroup x =
 
 
 type alias DataGroupTransposed =
-    Dict String
+    Dict
+        String
         (List
             { groupLabel : Maybe String
             , point : ( Float, Float )
