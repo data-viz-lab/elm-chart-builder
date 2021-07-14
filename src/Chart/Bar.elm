@@ -62,11 +62,10 @@ import Chart.Internal.Bar
         ( renderBandGrouped
         , renderBandStacked
         )
-import Chart.Internal.Symbol exposing (Symbol(..))
+import Chart.Internal.Symbol exposing (Symbol)
 import Chart.Internal.Type as Type
 import Color exposing (Color)
 import Html exposing (Html)
-import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
 {-| The Config opaque type
@@ -134,7 +133,8 @@ type alias Accessor data =
 init :
     RequiredConfig
     ->
-        Config msg
+        Config
+            msg
             { canHaveSymbols : ()
             , canHaveStackedLayout : ()
             }

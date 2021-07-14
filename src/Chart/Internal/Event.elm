@@ -5,7 +5,6 @@ module Chart.Internal.Event exposing
     , Hint
     , PointContinuous
     , SearchCriteria(..)
-    , decodePoint
     , flatDataGroup
     , getWithin
     , hoverAll
@@ -20,11 +19,7 @@ import Html exposing (Attribute)
 import Html.Events exposing (on)
 import Json.Decode as Decode
 import List.Extra
-import Scale exposing (BandScale, ContinuousScale)
-import Time exposing (Posix)
-import TypedSvg.Attributes
-import TypedSvg.Core
-import TypedSvg.Events
+import Scale exposing (ContinuousScale)
 
 
 
@@ -171,11 +166,6 @@ onMouseLeave message =
     on "mouseleave" (Decode.succeed (message Nothing))
 
 
-decodePoint : Decode.Decoder PointContinuous
-decodePoint =
-    Decode.map2 Tuple.pair (Decode.index 0 Decode.float) (Decode.index 1 Decode.float)
-
-
 getWithin :
     Config c
     -> List DataGroupContinuous
@@ -251,7 +241,7 @@ getWithin { margin, width, height } data ( xScale, yScale ) criteria eventData =
         HoverOneCriteria tolerance ->
             nearestGroup
                 |> List.Extra.find
-                    (\{ groupLabel, point } ->
+                    (\{ point } ->
                         case nearestPointInGroup of
                             Just ( d, p ) ->
                                 p == point && d < tolerance

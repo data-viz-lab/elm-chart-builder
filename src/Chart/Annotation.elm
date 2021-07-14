@@ -11,7 +11,7 @@ It defines the data formats that need to be passed to a chart in order to draw e
 
 -}
 
-import Chart.Internal.Event as Event exposing (Event)
+import Chart.Internal.Event as Event
 
 
 {-| A Point data structure.

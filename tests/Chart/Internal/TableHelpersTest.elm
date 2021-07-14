@@ -3,9 +3,8 @@ module Chart.Internal.TableHelpersTest exposing (suite)
 import Chart.Internal.Table as Table
 import Chart.Internal.TableHelpers exposing (..)
 import Chart.Internal.Type exposing (..)
-import Expect exposing (Expectation)
+import Expect
 import Test exposing (..)
-import Time exposing (Posix)
 
 
 suite : Test

@@ -25,9 +25,6 @@ import Chart.Internal.TableHelpers as Helpers
 import Chart.Internal.Type
     exposing
         ( AccessibilityContent(..)
-        , AccessorContinuousOrTime(..)
-        , Annotation(..)
-        , ColorResource(..)
         , Config
         , ConfigStruct
         , DataContinuousGroup(..)
@@ -39,7 +36,6 @@ import Chart.Internal.Type
         , Layout(..)
         , LineDraw(..)
         , PointContinuous
-        , RenderContext(..)
         , ariaLabelledbyContent
         , bottomGap
         , colorStyle
@@ -94,15 +90,12 @@ import TypedSvg.Attributes.InPx
         , y2
         )
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Events exposing (onMouseMove)
 import TypedSvg.Types
     exposing
-        ( AlignmentBaseline(..)
-        , AnchorAlignment(..)
+        ( AnchorAlignment(..)
         , DominantBaseline(..)
         , Opacity(..)
         , Paint(..)
-        , ShapeRendering(..)
         , Transform(..)
         )
 
@@ -764,14 +757,6 @@ drawSymbol config { idx, x, y, styleStr, symbolContext } =
 --  HELPERS
 
 
-annotationSymbols : Config msg validation -> List (Svg msg)
-annotationSymbols _ =
-    [ TypedSvg.symbol
-        [ Html.Attributes.id "annotation-symbol" ]
-        [ circle_ (defaultSymbolSize + 5) ]
-    ]
-
-
 {-| Creates the list of symbol elements to be referenced in the chart.
 -}
 symbolElements : Config msg validation -> List (Svg msg)
@@ -1170,7 +1155,7 @@ symbolGroup config xScale yScale combinedData =
                                         }
                                 in
                                 case annotationPointHint of
-                                    Just hint ->
+                                    Just _ ->
                                         if xMatch x && yMatch (y - delta) then
                                             drawSymbol config
                                                 { params

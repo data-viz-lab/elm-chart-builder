@@ -2,8 +2,7 @@ module Chart.Internal.TypeTest exposing (suite)
 
 import Chart.Internal.Symbol as Symbol exposing (Symbol(..))
 import Chart.Internal.Type exposing (..)
-import Dict exposing (Dict)
-import Expect exposing (Expectation)
+import Expect
 import Test exposing (..)
 import Time exposing (Posix)
 
@@ -269,10 +268,6 @@ getDomainTimeFromDataTest =
         , test "with extent" <|
             \_ ->
                 let
-                    continuousDomain : ContinuousDomain
-                    continuousDomain =
-                        ( 0, 30 )
-
                     domain : DomainTimeStruct
                     domain =
                         defaultConfig

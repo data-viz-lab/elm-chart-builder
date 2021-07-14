@@ -1,7 +1,6 @@
 module Chart.Internal.Helpers exposing
     ( colorPaletteToColor
     , floorFloat
-    , floorValues
     , invisibleFigcaption
     , mergeStyles
     , sortStrings
@@ -24,16 +23,6 @@ type alias DataGroupContinuous =
 floorFloat : Float -> Float
 floorFloat f =
     f |> floor |> toFloat
-
-
-floorValues : List (List ( Float, Float )) -> List (List ( Float, Float ))
-floorValues v =
-    v
-        |> List.map
-            (\d ->
-                d
-                    |> List.map (\( a, b ) -> ( floorFloat a, floorFloat b ))
-            )
 
 
 stackDataGroupContinuous :

@@ -73,7 +73,6 @@ import Color exposing (Color)
 import Html exposing (Html)
 import SubPath exposing (SubPath)
 import Time exposing (Posix)
-import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
 {-| The Config opaque type

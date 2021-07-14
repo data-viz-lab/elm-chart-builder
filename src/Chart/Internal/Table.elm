@@ -4,10 +4,7 @@ module Chart.Internal.Table exposing
     , TableError(..)
     , errorToString
     , generate
-    , hideColumnHeadings
-    , hideRowHeadings
     , setColumnHeadings
-    , setRowHeadings
     , view
     )
 
@@ -33,7 +30,6 @@ type TableError
     = NoData
     | RowLengthsDoNotMatch Int
     | ColumnHeadingMismatch
-    | RowHeadingMismatch
 
 
 type ColumnHeadings msg
@@ -58,15 +54,10 @@ type ColumnHeading msg
 
 type RowHeadings msg
     = RowHeadingsSimple (List (RowHeadingSingle msg))
-    | RowHeadingsComplex (List (RowHeadingGroup msg))
 
 
 type RowHeadingSingle msg
     = RowHeadingSingle (RowHeading msg)
-
-
-type RowHeadingGroup msg
-    = RowHeadingGroup (RowHeading msg) (List (RowHeading msg))
 
 
 type RowHeading msg
@@ -156,13 +147,6 @@ allRowsEqualLengthHelper rowLength rowNumber remainingRows =
 
             else
                 Err (RowLengthsDoNotMatch rowNumber)
-
-
-hideColumnHeadings : Result TableError (TableConfiguration msg) -> Result TableError (TableConfiguration msg)
-hideColumnHeadings config =
-    Result.map
-        (\(TableConfiguration tableConfig) -> TableConfiguration { tableConfig | columnHeadingsShown = False })
-        config
 
 
 setColumnHeadings : Headings -> Result TableError (TableConfiguration msg) -> Result TableError (TableConfiguration msg)
@@ -255,88 +239,6 @@ noOfComplexHeadings complexHeadings =
     List.foldl addHeaders 0 complexHeadings
 
 
-setRowHeadings : Headings -> Result TableError (TableConfiguration msg) -> Result TableError (TableConfiguration msg)
-setRowHeadings headings_ resultConfig =
-    --check that number equals number of rows
-    case headings_ of
-        Headings headings ->
-            resultConfig
-                |> Result.map
-                    (\(TableConfiguration tableConfig) ->
-                        TableConfiguration
-                            { tableConfig
-                                | rowHeadings =
-                                    RowHeadingsSimple
-                                        (List.map
-                                            (\label ->
-                                                RowHeadingSingle
-                                                    (RowHeading
-                                                        { label = Html.text label
-                                                        , attributes = []
-                                                        }
-                                                    )
-                                            )
-                                            headings
-                                        )
-                            }
-                    )
-                |> Result.andThen
-                    (\(TableConfiguration tableConfig) ->
-                        if List.length headings == List.length tableConfig.cells then
-                            Ok (TableConfiguration tableConfig)
-
-                        else
-                            Err RowHeadingMismatch
-                    )
-
-        ComplexHeadings complexHeadings ->
-            resultConfig
-                |> Result.map
-                    (\(TableConfiguration tableConfig) ->
-                        TableConfiguration
-                            { tableConfig
-                                | rowHeadings =
-                                    RowHeadingsComplex
-                                        (List.map
-                                            (\(HeadingAndSubHeadings mainHeading subHeadings) ->
-                                                RowHeadingGroup
-                                                    (RowHeading
-                                                        { label = Html.text mainHeading
-                                                        , attributes = []
-                                                        }
-                                                    )
-                                                    (List.map
-                                                        (\subHeading ->
-                                                            RowHeading
-                                                                { label = Html.text subHeading
-                                                                , attributes = []
-                                                                }
-                                                        )
-                                                        subHeadings
-                                                    )
-                                            )
-                                            complexHeadings
-                                        )
-                            }
-                    )
-                --check that number equals number of headings
-                |> Result.andThen
-                    (\(TableConfiguration tableConfig) ->
-                        if noOfComplexHeadings complexHeadings == (tableConfig.cells |> List.length) then
-                            Ok (TableConfiguration tableConfig)
-
-                        else
-                            Err RowHeadingMismatch
-                    )
-
-
-hideRowHeadings : Result TableError (TableConfiguration msg) -> Result TableError (TableConfiguration msg)
-hideRowHeadings config =
-    Result.map
-        (\(TableConfiguration tableConfig) -> TableConfiguration { tableConfig | rowHeadingsShown = False })
-        config
-
-
 errorToString : TableError -> String
 errorToString error =
     case error of
@@ -348,9 +250,6 @@ errorToString error =
 
         ColumnHeadingMismatch ->
             "The number of column headings does not match the number of data points in each row. "
-
-        RowHeadingMismatch ->
-            "The number of row headings does not match the number of rows of data. "
 
 
 view : Result TableError (TableConfiguration msg) -> Result TableError (Html msg)
@@ -411,7 +310,7 @@ view config =
                                     in
                                     colSpacer
                                         ++ List.map
-                                            (\(ColumnHeadingGroup (ColumnHeading _) subHeads) ->
+                                            (\(ColumnHeadingGroup _ subHeads) ->
                                                 colgroup_ (List.length subHeads)
                                             )
                                             complexHeadings
@@ -442,7 +341,7 @@ view config =
                                 subHeadings : List (Html msg)
                                 subHeadings =
                                     List.map
-                                        (\(ColumnHeadingGroup (ColumnHeading _) subHeads) ->
+                                        (\(ColumnHeadingGroup _ subHeads) ->
                                             List.map
                                                 (\(ColumnHeading colInfo) ->
                                                     th [ scope "col" ] [ colInfo.label ]
@@ -477,9 +376,6 @@ view config =
                                                 )
                                         )
                                     ]
-
-                                RowHeadingsComplex _ ->
-                                    [ tbody [] [ tr [] [ td [] [ text "not implemented" ] ] ] ]
             in
             case body of
                 [] ->

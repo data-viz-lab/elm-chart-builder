@@ -1,9 +1,8 @@
 module Chart.Internal.EventTest exposing (suite)
 
 import Chart.Internal.Event exposing (..)
-import Dict exposing (Dict)
+import Dict
 import Expect exposing (..)
-import Json.Decode as Decode
 import Scale
 import Test exposing (..)
 

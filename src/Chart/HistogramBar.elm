@@ -59,7 +59,6 @@ import Chart.Internal.Type as Type
 import Color exposing (Color)
 import Histogram
 import Html exposing (Html)
-import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), ShapeRendering(..), Transform(..))
 
 
 {-| The Config opaque type

@@ -2,7 +2,7 @@ module Chart.LineTest exposing (suite)
 
 import Chart.Internal.Type as Type
 import Chart.Line as Line
-import Expect exposing (Expectation)
+import Expect
 import Test exposing (..)
 
 

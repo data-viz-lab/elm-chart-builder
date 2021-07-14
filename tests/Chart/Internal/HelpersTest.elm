@@ -1,14 +1,12 @@
 module Chart.Internal.HelpersTest exposing (suite)
 
 import Chart.Internal.Helpers exposing (..)
-import Chart.Internal.Type exposing (..)
 import Color
-import Expect exposing (Expectation)
+import Expect
 import Fuzz
 import Scale.Color
 import Set
 import Test exposing (..)
-import Time exposing (Posix)
 
 
 suite : Test

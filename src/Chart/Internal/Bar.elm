@@ -30,9 +30,7 @@ import Chart.Internal.Type
         , DataBand
         , DataGroupBand
         , Direction(..)
-        , DomainBand(..)
         , DomainBandStruct
-        , DomainContinuous(..)
         , Label(..)
         , Layout(..)
         , Orientation(..)
@@ -79,7 +77,6 @@ import TypedSvg.Attributes
         , shapeRendering
         , style
         , textAnchor
-        , title
         , transform
         , viewBox
         , xlinkHref
@@ -88,8 +85,7 @@ import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types
     exposing
-        ( AlignmentBaseline(..)
-        , AnchorAlignment(..)
+        ( AnchorAlignment(..)
         , DominantBaseline(..)
         , ShapeRendering(..)
         , Transform(..)

@@ -18,7 +18,6 @@ module Chart.Internal.Type exposing
     , DataGroupContinuous
     , DataGroupContinuousWithStack
     , DataGroupTime
-    , DataGroupTransposed
     , Direction(..)
     , DomainBand
     , DomainBandStruct
@@ -33,10 +32,7 @@ module Chart.Internal.Type exposing
     , Margin
     , Orientation(..)
     , PointBand
-    , PointComparable
     , PointContinuous
-    , PointStacked
-    , PointTime
     , RenderContext(..)
     , RequiredConfig
     , StackedValues
@@ -48,7 +44,6 @@ module Chart.Internal.Type exposing
     , ariaLabelledbyContent
     , bottomGap
     , calculateHistogramDomain
-    , calculateHistogramValues
     , colorCategoricalStyle
     , colorStyle
     , dataBandToDataStacked
@@ -56,30 +51,19 @@ module Chart.Internal.Type exposing
     , dataContinuousGroupToDataContinuousStacked
     , dataContinuousGroupToDataTime
     , defaultConfig
-    , defaultHeight
-    , defaultLayout
-    , defaultMargin
-    , defaultOrientation
-    , defaultTicksCount
-    , defaultWidth
     , descAndTitle
     , externalToDataBand
     , externalToDataContinuousGroup
     , externalToDataHistogram
     , fillGapsForStack
-    , flatDataGroup
     , fromConfig
     , fromDataBand
-    , fromDomainBand
-    , fromDomainContinuous
-    , fromExternalData
     , getAnnotationPointHint
     , getAnnotationVLine
     , getBandGroupRange
     , getBandSingleRange
     , getContinuousRange
     , getDataBandDepth
-    , getDataContinuousDepth
     , getDomainBand
     , getDomainBandFromData
     , getDomainContinuous
@@ -101,27 +85,20 @@ module Chart.Internal.Type exposing
     , setCoreStyles
     , setCurve
     , setDimensions
-    , setDomainBand
     , setDomainBandBandGroup
     , setDomainBandBandSingle
     , setDomainBandContinuous
-    , setDomainContinuous
     , setDomainContinuousAndTimeY
     , setDomainContinuousX
-    , setDomainTime
     , setDomainTimeX
-    , setHeight
     , setHistogramDomain
     , setIcons
     , setLayout
-    , setMargin
     , setOrientation
-    , setShowDataPoints
     , setSvgDesc
     , setSvgTitle
     , setTableFloatFormat
     , setTablePosixFormat
-    , setWidth
     , setXAxis
     , setXAxisBand
     , setXAxisContinuous
@@ -131,7 +108,6 @@ module Chart.Internal.Type exposing
     , setYScale
     , showIcons
     , showStackedColumnTitle
-    , showXContinuousLabel
     , showXGroupLabel
     , showXOrdinalColumnTitle
     , showXOrdinalLabel
@@ -144,7 +120,6 @@ module Chart.Internal.Type exposing
     , toContinousScale
     , toDataBand
     , toExternalData
-    , transposeDataGroup
     )
 
 import Chart.Internal.Axis as ChartAxis
@@ -153,7 +128,6 @@ import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol as Symbol
     exposing
         ( Symbol(..)
-        , SymbolContext(..)
         , symbolGap
         )
 import Color exposing (Color)
@@ -266,7 +240,8 @@ type alias DataGroup x =
 
 
 type alias DataGroupTransposed x =
-    Dict x
+    Dict
+        x
         (List
             { groupLabel : Maybe String
             , point : ( x, Float )
@@ -578,11 +553,6 @@ defaultMargin =
     }
 
 
-defaultTicksCount : Int
-defaultTicksCount =
-    10
-
-
 
 -- CONSTANTS
 
@@ -699,15 +669,6 @@ setCoreStyleFromPointBandX f (Config c) =
     toConfig { c | coreStyleFromPointBandX = f }
 
 
-setHeight : Float -> Config msg validation -> Config msg validation
-setHeight height (Config c) =
-    let
-        m =
-            c.margin
-    in
-    toConfig { c | height = height - m.top - m.bottom }
-
-
 setHistogramDomain : ( Float, Float ) -> Config msg validation -> Config msg validation
 setHistogramDomain domain (Config c) =
     toConfig { c | histogramDomain = Just domain }
@@ -716,27 +677,6 @@ setHistogramDomain domain (Config c) =
 setOrientation : Orientation -> Config msg validation -> Config msg validation
 setOrientation orientation (Config c) =
     toConfig { c | orientation = orientation }
-
-
-setWidth : Float -> Config msg validation -> Config msg validation
-setWidth width (Config c) =
-    let
-        m =
-            c.margin
-    in
-    toConfig { c | width = width - m.left - m.right }
-
-
-setMargin : Margin -> Config msg validation -> Config msg validation
-setMargin margin (Config c) =
-    let
-        left =
-            margin.left + leftGap
-
-        bottom =
-            margin.bottom + bottomGap
-    in
-    toConfig { c | margin = { margin | left = left, bottom = bottom } }
 
 
 setDimensions : { margin : Margin, width : Float, height : Float } -> Config msg validation -> Config msg validation
@@ -754,21 +694,6 @@ setDimensions { margin, width, height } (Config c) =
             , height = height - margin.top - bottom
             , margin = { margin | left = left, bottom = bottom }
         }
-
-
-setDomainContinuous : DomainContinuous -> Config msg validation -> Config msg validation
-setDomainContinuous domain (Config c) =
-    toConfig { c | domainContinuous = domain }
-
-
-setDomainTime : DomainTime -> Config msg validation -> Config msg validation
-setDomainTime domain (Config c) =
-    toConfig { c | domainTime = domain }
-
-
-setDomainBand : DomainBand -> Config msg validation -> Config msg validation
-setDomainBand domain (Config c) =
-    toConfig { c | domainBand = domain }
 
 
 setDomainBandBandGroup : BandDomain -> Config msg validation -> Config msg validation
@@ -866,11 +791,6 @@ setYAxis bool (Config c) =
     toConfig { c | showYAxis = bool }
 
 
-setShowDataPoints : Bool -> Config msg validation -> Config msg validation
-setShowDataPoints bool (Config c) =
-    toConfig { c | showDataPoints = bool }
-
-
 setAnnotiation : Annotation -> Config msg validation -> Config msg validation
 setAnnotiation annotation (Config c) =
     let
@@ -896,7 +816,6 @@ setYScale scale (Config c) =
 
 type Label
     = YLabel (Float -> String)
-    | XContinuousLabel (Float -> String)
     | XOrdinalLabel
     | XGroupLabel
     | NoLabel
@@ -905,11 +824,6 @@ type Label
 showXOrdinalLabel : Config msg validation -> Config msg validation
 showXOrdinalLabel (Config c) =
     toConfig { c | showLabels = XOrdinalLabel }
-
-
-showXContinuousLabel : (Float -> String) -> Config msg validation -> Config msg validation
-showXContinuousLabel formatter (Config c) =
-    toConfig { c | showLabels = XContinuousLabel formatter }
 
 
 showYLabel : (Float -> String) -> Config msg validation -> Config msg validation
@@ -1167,15 +1081,6 @@ getDataBandDepth data =
         |> List.length
 
 
-getDataContinuousDepth : List DataGroupContinuous -> Int
-getDataContinuousDepth data =
-    data
-        |> List.map .points
-        |> List.head
-        |> Maybe.withDefault []
-        |> List.length
-
-
 getBandGroupRange : Config msg validation -> Float -> Float -> ( Float, Float )
 getBandGroupRange config width height =
     let
@@ -1368,13 +1273,6 @@ histogramCustomGenerator domain model threshold mapping =
     Histogram.custom threshold mapping
         |> Histogram.withDomain domain
         |> Histogram.compute model
-
-
-calculateHistogramValues : List (Histogram.Bin Float Float) -> List Float
-calculateHistogramValues histogram =
-    histogram
-        |> List.map .values
-        |> List.concat
 
 
 calculateHistogramDomain : List (Histogram.Bin Float Float) -> ( Float, Float )
@@ -1874,49 +1772,3 @@ isStackedLine c =
 --                dict
 --            )
 --            Dict.empty
-
-
-flatDataGroup :
-    List (DataGroup comparable)
-    -> List { groupLabel : Maybe String, point : PointComparable comparable }
-flatDataGroup dataGroup =
-    dataGroup
-        |> List.map
-            (\d ->
-                d.points
-                    |> List.map
-                        (\p ->
-                            { groupLabel = d.groupLabel, point = p }
-                        )
-            )
-        |> List.concat
-
-
-transposeDataGroup : List (DataGroup comparable) -> DataGroupTransposed comparable
-transposeDataGroup dataGroup =
-    -- TODO: this feels all very inefficient,
-    -- especially with a stateless componet
-    -- where on every event this needs recalculating
-    dataGroup
-        |> flatDataGroup
-        |> List.foldr
-            (\{ groupLabel, point } acc ->
-                let
-                    k =
-                        Tuple.first point
-                in
-                if Dict.member k acc then
-                    Dict.update k
-                        (\values ->
-                            values
-                                |> Maybe.map
-                                    (\v ->
-                                        { groupLabel = groupLabel, point = point } :: v
-                                    )
-                        )
-                        acc
-
-                else
-                    Dict.insert k [ { groupLabel = groupLabel, point = point } ] acc
-            )
-            Dict.empty

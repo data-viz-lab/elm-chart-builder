@@ -9,3 +9,4 @@ repl-temp-*
 elm-analyse.log
 
 screenshot-tests/node_modules
+node_modules

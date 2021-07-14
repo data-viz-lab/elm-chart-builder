@@ -2,7 +2,7 @@ module Chart.BarTest exposing (suite)
 
 import Chart.Bar as Bar
 import Chart.Internal.Type as Type
-import Expect exposing (Expectation)
+import Expect
 import Test exposing (..)
 
 
