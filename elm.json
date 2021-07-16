@@ -5,6 +5,7 @@
     "license": "MIT",
     "version": "5.0.0",
     "exposed-modules": [
+        "Chart.Annotation",
         "Chart.Bar",
         "Chart.HistogramBar",
         "Chart.Line",
