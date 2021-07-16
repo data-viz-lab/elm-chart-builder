@@ -106,7 +106,7 @@ sharedGroupedLineConfig =
     Line.init requiredConfig
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withYAxis yAxis
-        |> Line.withXAxisContinuous xAxis
+        |> Line.withXAxisCont xAxis
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withLabels Line.xGroupLabel
         |> Line.withGroupedLayout
@@ -157,7 +157,7 @@ type alias DataContinuous =
 
 accessorContinuous : Line.Accessor DataContinuous
 accessorContinuous =
-    Line.cont (Line.AccessorContinuous (.groupLabel >> Just) .x .y)
+    Line.cont (Line.AccessorCont (.groupLabel >> Just) .x .y)
 
 
 dataContinuous : List DataContinuous
@@ -199,7 +199,7 @@ groupedTimeLine =
 groupedLine : Html msg
 groupedLine =
     sharedGroupedLineConfig
-        |> Line.withXAxisContinuous xAxis
+        |> Line.withXAxisCont xAxis
         |> Line.render ( dataContinuous, accessorContinuous )
 
 
@@ -213,7 +213,7 @@ stackedTimeLine =
 stackedLine : Html msg
 stackedLine =
     sharedStackedLineConfig
-        |> Line.withXAxisContinuous xAxis
+        |> Line.withXAxisCont xAxis
         |> Line.render ( dataContinuous, accessorContinuous )
 
 
@@ -228,7 +228,7 @@ stackedTimeArea =
 stackedArea : Html msg
 stackedArea =
     sharedStackedLineConfig
-        |> Line.withXAxisContinuous xAxis
+        |> Line.withXAxisCont xAxis
         |> Line.withStackedLayout (Line.drawArea Shape.stackOffsetNone)
         |> Line.render ( dataContinuous, accessorContinuous )
 

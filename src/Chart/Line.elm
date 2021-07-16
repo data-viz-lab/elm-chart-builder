@@ -1,11 +1,11 @@
 module Chart.Line exposing
-    ( Accessor, AccessorContinuous, AccessorTime, continuous, time, cont
+    ( Accessor, AccessorCont, AccessorContinuous, AccessorTime, continuous, time, cont
     , init
     , render
     , Config, RequiredConfig
-    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale, withPointAnnotation, withVLineAnnotation, withEvent
+    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale, withPointAnnotation, withVLineAnnotation, withEvent
     , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawArea, drawLine
-    , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisContinuous, withXAxisTime, withYAxis
+    , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisCont, withXAxisContinuous, withXAxisTime, withYAxis
     , withSymbols
     , Hint, hoverAll, hoverOne
     )
@@ -17,7 +17,7 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 # Chart Data Format
 
-@docs Accessor, AccessorContinuous, AccessorTime, continuous, time, cont
+@docs Accessor, AccessorCont, AccessorContinuous, AccessorTime, continuous, time, cont
 
 
 # Chart Initialization
@@ -37,7 +37,7 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 # Optional Configuration setters
 
-@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale, withPointAnnotation, withVLineAnnotation, withEvent
+@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale, withPointAnnotation, withVLineAnnotation, withEvent
 
 
 # Configuration arguments
@@ -47,7 +47,7 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 # Axis
 
-@docs XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisContinuous, withXAxisTime, withYAxis
+@docs XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisCont, withXAxisContinuous, withXAxisTime, withYAxis
 
 @docs withSymbols
 
@@ -128,6 +128,15 @@ type alias AccessorContinuous data =
     }
 
 
+{-| An alias for AccessorContinuous
+-}
+type alias AccessorCont data =
+    { xGroup : data -> Maybe String
+    , xValue : data -> Float
+    , yValue : data -> Float
+    }
+
+
 {-| The accessor constructor for x continuous lines.
 
     Line.continuous (Line.AccessorContinuous .groupLabel .x .y)
@@ -140,7 +149,7 @@ continuous acc =
 
 {-| An alias for Line.continuous
 
-    Line.cont (Line.AccessorContinuous .groupLabel .x .y)
+    Line.cont (Line.AccessorCont .groupLabel .x .y)
 
 -}
 cont : Type.AccessorContinuousStruct data -> Accessor data
@@ -281,6 +290,21 @@ If set on a continuous line chart this setting will have no effect.
 -}
 withXContinuousDomain : ( Float, Float ) -> Config msg validation -> Config msg validation
 withXContinuousDomain value config =
+    Type.setDomainContinuousX value config
+
+
+{-| An alias for withXContinuousDomain
+
+If not set, the domain is calculated from the data.
+If set on a continuous line chart this setting will have no effect.
+
+    Line.init requiredConfig
+        |> Line.withXContDomain ( 0, 10 )
+        |> Line.render ( data, accessor )
+
+-}
+withXContDomain : ( Float, Float ) -> Config msg validation -> Config msg validation
+withXContDomain value config =
     Type.setDomainContinuousX value config
 
 
@@ -558,6 +582,18 @@ withXAxisTime =
 -}
 withXAxisContinuous : ChartAxis.XAxis Float -> Config msg validation -> Config msg validation
 withXAxisContinuous =
+    Type.setXAxisContinuous
+
+
+{-| An alias for withXAxisContinuous
+
+    Line.init requiredConfig
+        |> Line.withXAxisCont (Line.axisBottom [ Axis.tickCount 5 ])
+        |> Line.render ( data, accessor )
+
+-}
+withXAxisCont : ChartAxis.XAxis Float -> Config msg validation -> Config msg validation
+withXAxisCont =
     Type.setXAxisContinuous
 
 
