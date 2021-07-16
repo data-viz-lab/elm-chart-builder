@@ -7,14 +7,14 @@ It defines the data formats that need to be passed to a chart in order to draw e
 
 # Data Formats
 
-@docs HintAnnotation
+@docs Hint
 
 -}
 
 import Chart.Internal.Event as Event
 
 
-{-| A Point data structure.
+{-| A Hint
 Use it for example in conjuction with some event data to draw the dots on chart hover.
 
 It'a a tuple made of a Event.Hint with list of style definitions.
