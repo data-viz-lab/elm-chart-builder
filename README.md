@@ -83,8 +83,8 @@ $ elm-analyse > elm-analyse.log
 It expects the `elm reactor` server to be already running on port 8000.
 
 ```shell
-$ cd screenshot-tests
 $ npm install
+$ cd screenshot-tests
 
 # Check if a page in the examples folder has changed unexpectedly after a code change:
 $ node tests.js
