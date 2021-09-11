@@ -97,7 +97,7 @@ sharedStackedLineConfig =
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withLabels Line.xGroupLabel
         |> Line.withColorPalette Scale.Color.tableau10
-        |> Line.withStackedLayout Line.drawLine
+        |> Line.withStackedLayout Shape.stackOffsetNone
         |> Line.withSymbols (icons "chart-b")
 
 
@@ -198,7 +198,14 @@ groupedTimeLine =
 
 groupedLine : Html msg
 groupedLine =
-    sharedGroupedLineConfig
+    Line.init requiredConfig
+        |> Line.withColorPalette Scale.Color.tableau10
+        |> Line.withYAxis yAxis
+        |> Line.withXAxisCont xAxis
+        |> Line.withLineStyle [ ( "opacity", "0.7" ), ( "stroke-width", "2" ) ]
+        |> Line.withLabels Line.xGroupLabel
+        |> Line.withGroupedLayout
+        |> Line.asArea
         |> Line.withXAxisCont xAxis
         |> Line.render ( dataContinuous, accessorContinuous )
 
@@ -220,16 +227,18 @@ stackedLine =
 stackedTimeArea : Html msg
 stackedTimeArea =
     sharedStackedLineConfig
+        |> Line.asArea
         |> Line.withXAxisTime xAxisTime
-        |> Line.withStackedLayout (Line.drawArea Shape.stackOffsetNone)
+        |> Line.withStackedLayout Shape.stackOffsetNone
         |> Line.render ( timeData, timeAccessor )
 
 
 stackedArea : Html msg
 stackedArea =
     sharedStackedLineConfig
+        |> Line.asArea
         |> Line.withXAxisCont xAxis
-        |> Line.withStackedLayout (Line.drawArea Shape.stackOffsetNone)
+        |> Line.withStackedLayout Shape.stackOffsetNone
         |> Line.render ( dataContinuous, accessorContinuous )
 
 
@@ -268,7 +277,7 @@ main =
             , style "color" "#444"
             , style "margin" "25px"
             ]
-            [ Html.div attrs [ chartTitle "grouped", groupedLine ]
+            [ Html.div attrs [ chartTitle "grouped Area", groupedLine ]
             , Html.div attrs [ chartTitle "grouped time", groupedTimeLine ]
             , Html.div attrs [ chartTitle "stacked", stackedLine ]
             , Html.div attrs [ chartTitle "stacked time", stackedTimeLine ]

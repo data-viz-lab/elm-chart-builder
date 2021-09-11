@@ -36,6 +36,7 @@ import Chart.Internal.Type
         , Layout(..)
         , LineDraw(..)
         , PointContinuous
+        , StackOffset
         , ariaLabelledbyContent
         , bottomGap
         , colorStyle
@@ -248,8 +249,8 @@ renderLineGrouped ( data, config ) =
 -- STACKED
 
 
-renderLineStacked : LineDraw -> ( DataContinuousGroup, Config msg validation ) -> Html msg
-renderLineStacked lineDraw ( data, config ) =
+renderLineStacked : StackOffset -> ( DataContinuousGroup, Config msg validation ) -> Html msg
+renderLineStacked offset ( data, config ) =
     let
         c =
             fromConfig config
@@ -290,20 +291,12 @@ renderLineStacked lineDraw ( data, config ) =
 
         stackedConfig : StackConfig String
         stackedConfig =
-            case lineDraw of
-                Line ->
-                    { data = dataStacked
-                    , offset = Shape.stackOffsetNone
-                    , order = identity
-                    }
+            { data = dataStacked
+            , offset = offset
 
-                Area stackingMethod ->
-                    { data = dataStacked
-                    , offset = stackingMethod
-
-                    --TODO: this might need some thinking
-                    , order = identity
-                    }
+            --TODO: this might need some thinking
+            , order = identity
+            }
 
         stackResult =
             Shape.stack stackedConfig
@@ -356,12 +349,12 @@ renderLineStacked lineDraw ( data, config ) =
                 c.yScale
 
         draw =
-            case lineDraw of
+            case c.lineDraw of
                 Line ->
                     drawContinuousLine config xContinuousScale yScale combinedData
 
-                Area _ ->
-                    drawAreas config xContinuousScale yScale stackResult combinedData
+                Area ->
+                    drawStackedAreas config xContinuousScale yScale stackResult combinedData
 
         events =
             c.events
@@ -789,14 +782,14 @@ defaultSymbolSize =
     10
 
 
-drawAreas :
+drawStackedAreas :
     Config msg validation
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> StackResult String
     -> List DataGroupContinuous
     -> List (Svg msg)
-drawAreas config xScale yScale stackedResult combinedData =
+drawStackedAreas config xScale yScale stackedResult combinedData =
     let
         c =
             fromConfig config
@@ -807,33 +800,9 @@ drawAreas config xScale yScale stackedResult combinedData =
         values =
             stackedResult.values
 
-        mapper : ( ( Float, Float ), PointContinuous ) -> Maybe ( ( Float, Float ), ( Float, Float ) )
-        mapper pointWithStack =
-            let
-                xCoord =
-                    pointWithStack
-                        |> Tuple.second
-                        |> Tuple.first
-                        |> Scale.convert xScale
-
-                ( y1, y2 ) =
-                    Tuple.first pointWithStack
-
-                ( low, high ) =
-                    if y1 < y2 then
-                        ( y1, y2 )
-
-                    else
-                        ( y2, y1 )
-            in
-            Just
-                ( ( xCoord, Scale.convert yScale low )
-                , ( xCoord, Scale.convert yScale high )
-                )
-
         toArea : DataGroupContinuousWithStack -> Path
         toArea combinedWithStack =
-            List.map mapper combinedWithStack.points
+            List.map (areaGeneratorStacked xScale yScale) combinedWithStack.points
                 |> Shape.area c.curve
 
         styles idx =
@@ -899,19 +868,30 @@ drawContinuousLine config xScale yScale sortedData =
         m =
             c.margin
 
-        lineGenerator : PointContinuous -> Maybe ( Float, Float )
-        lineGenerator ( x, y ) =
-            Just ( Scale.convert xScale x, Scale.convert yScale y )
-
         line : DataGroupContinuous -> Path
         line dataGroup =
-            dataGroup.points
-                |> List.map lineGenerator
-                |> Shape.line c.curve
+            case c.lineDraw of
+                Line ->
+                    dataGroup.points
+                        |> List.map (lineGenerator xScale yScale)
+                        |> Shape.line c.curve
+
+                Area ->
+                    dataGroup.points
+                        |> List.map (areaGenerator xScale yScale)
+                        |> Shape.area c.curve
+
+        extraStyles =
+            case c.lineDraw of
+                Line ->
+                    [ ( "fill", "none" ) ]
+
+                Area ->
+                    []
 
         styles idx =
             colorStyle c (Just idx) Nothing
-                |> Helpers.mergeStyles [ ( "fill", "none" ) ]
+                |> Helpers.mergeStyles extraStyles
                 |> Helpers.mergeStyles c.coreStyle
                 |> style
 
@@ -1218,6 +1198,64 @@ vLineAnnotation c =
 
         Nothing ->
             []
+
+
+
+-- LINE GENERATORS
+
+
+lineGenerator :
+    ContinuousScale Float
+    -> ContinuousScale Float
+    -> PointContinuous
+    -> Maybe ( Float, Float )
+lineGenerator xScale yScale ( x, y ) =
+    Just ( Scale.convert xScale x, Scale.convert yScale y )
+
+
+areaGenerator :
+    ContinuousScale Float
+    -> ContinuousScale Float
+    -> PointContinuous
+    -> Maybe ( ( Float, Float ), ( Float, Float ) )
+areaGenerator xScale yScale ( x1, y1 ) =
+    let
+        x =
+            Scale.convert xScale x1
+    in
+    Just
+        ( ( x, Scale.convert yScale y1 )
+        , ( x, Scale.convert yScale 0 )
+        )
+
+
+areaGeneratorStacked :
+    ContinuousScale Float
+    -> ContinuousScale Float
+    -> ( ( Float, Float ), PointContinuous )
+    -> Maybe ( ( Float, Float ), ( Float, Float ) )
+areaGeneratorStacked xScale yScale pointWithStack =
+    let
+        xCoord =
+            pointWithStack
+                |> Tuple.second
+                |> Tuple.first
+                |> Scale.convert xScale
+
+        ( y1, y2 ) =
+            Tuple.first pointWithStack
+
+        ( low, high ) =
+            if y1 < y2 then
+                ( y1, y2 )
+
+            else
+                ( y2, y1 )
+    in
+    Just
+        ( ( xCoord, Scale.convert yScale low )
+        , ( xCoord, Scale.convert yScale high )
+        )
 
 
 
