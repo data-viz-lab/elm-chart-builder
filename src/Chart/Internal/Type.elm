@@ -35,6 +35,7 @@ module Chart.Internal.Type exposing
     , PointContinuous
     , RenderContext(..)
     , RequiredConfig
+    , StackOffset
     , StackedValues
     , Steps
     , YScale(..)
@@ -94,6 +95,7 @@ module Chart.Internal.Type exposing
     , setHistogramDomain
     , setIcons
     , setLayout
+    , setLineDraw
     , setOrientation
     , setSvgDesc
     , setSvgTitle
@@ -278,10 +280,14 @@ type Orientation
 
 type LineDraw
     = Line
-    | Area (List (List ( Float, Float )) -> List (List ( Float, Float )))
+    | Area
 
 
-lineDrawArea : (List (List ( Float, Float )) -> List (List ( Float, Float ))) -> LineDraw
+type alias StackOffset =
+    List (List ( Float, Float )) -> List (List ( Float, Float ))
+
+
+lineDrawArea : LineDraw
 lineDrawArea =
     Area
 
@@ -293,7 +299,7 @@ lineDrawLine =
 
 type Layout
     = StackedBar Direction
-    | StackedLine LineDraw
+    | StackedLine StackOffset
     | GroupedBar
     | GroupedLine
 
@@ -434,6 +440,7 @@ type alias ConfigStruct msg =
     , histogramDomain : Maybe ( Float, Float )
     , symbols : List Symbol
     , layout : Layout
+    , lineDraw : LineDraw
     , margin : Margin
     , orientation : Orientation
     , showColumnTitle : ColumnTitle
@@ -473,6 +480,7 @@ defaultConfig =
         , histogramDomain = Nothing
         , symbols = []
         , layout = defaultLayout
+        , lineDraw = Line
         , margin = defaultMargin
         , orientation = defaultOrientation
         , showColumnTitle = NoColumnTitle
@@ -602,6 +610,11 @@ addEvent event (Config c) =
 setLayout : Layout -> Config msg validation -> Config msg validation
 setLayout layout (Config c) =
     toConfig { c | layout = layout }
+
+
+setLineDraw : LineDraw -> Config msg validation -> Config msg validation
+setLineDraw lineDraw (Config c) =
+    toConfig { c | lineDraw = lineDraw }
 
 
 setIcons : List Symbol -> Config msg validation -> Config msg validation
