@@ -3,8 +3,8 @@ module Chart.Line exposing
     , init
     , render
     , Config, RequiredConfig
-    , withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale, withPointAnnotation, withVLineAnnotation, withEvent
-    , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawArea, drawLine
+    , asArea, withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale, withPointAnnotation, withVLineAnnotation, withEvent
+    , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawLine
     , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisCont, withXAxisContinuous, withXAxisTime, withYAxis
     , withSymbols
     , Hint, hoverAll, hoverOne
@@ -37,12 +37,12 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 # Optional Configuration setters
 
-@docs withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale, withPointAnnotation, withVLineAnnotation, withEvent
+@docs asArea, withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale, withPointAnnotation, withVLineAnnotation, withEvent
 
 
 # Configuration arguments
 
-@docs axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawArea, drawLine
+@docs axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawLine
 
 
 # Axis
@@ -222,12 +222,24 @@ render ( externalData, accessor ) config =
         Type.GroupedLine ->
             renderLineGrouped ( data, config )
 
-        Type.StackedLine lineDraw ->
-            renderLineStacked lineDraw ( data, config )
+        Type.StackedLine offset ->
+            renderLineStacked offset ( data, config )
 
         _ ->
             -- TODO
             Html.text ""
+
+
+{-| Draw the line chart as an area
+
+    Line.init requiredConfig
+        |> Line.asArea
+        |> Line.render ( data, accessor )
+
+-}
+asArea : Config msg validation -> Config msg validation
+asArea =
+    Type.setLineDraw Type.Area
 
 
 {-| Sets the line curve shape
@@ -406,9 +418,9 @@ It takes an option to draw stacked lines or stacked areas
         |> Line.render ( data, accessor )
 
 -}
-withStackedLayout : Type.LineDraw -> Config msg validation -> Config msg validation
-withStackedLayout lineDraw config =
-    Type.setLayout (Type.StackedLine lineDraw) config
+withStackedLayout : Type.StackOffset -> Config msg validation -> Config msg validation
+withStackedLayout offset config =
+    Type.setLayout (Type.StackedLine offset) config
 
 
 {-| Creates a grouped line chart.
@@ -721,20 +733,6 @@ withVLineAnnotation annotation config =
 
         Nothing ->
             config
-
-
-{-| A stacked chart with areas option.
-It takes a [Stack Offset](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Shape#stackOffsetNone) option from the elm-visualization Shape module.
-
-    Line.init requiredConfig
-        |> Line.withStackedLayout
-            (Line.drawArea Shape.stackOffsetNone)
-        |> Line.render ( data, accessor )
-
--}
-drawArea : (List (List ( Float, Float )) -> List (List ( Float, Float ))) -> Type.LineDraw
-drawArea =
-    Type.lineDrawArea
 
 
 {-| A stacked chart with lines option.
