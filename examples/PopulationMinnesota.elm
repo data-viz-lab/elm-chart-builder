@@ -49,16 +49,16 @@ body {
     height: 500px;
 }
 
-.chart-builder__column-0 rect {
+.ecb-column-0 rect {
     fill: #355F8D;
 }
 
-.chart-builder__column-1 rect {
+.ecb-column-1 rect {
     fill: rgba(26.67%,74.9%,43.92%,1);
 }
 
-.chart-builder__axis path,
-.chart-builder__axis line {
+.ecb-axis path,
+.ecb-axis line {
     stroke: #b7b7b7;
 }
 
@@ -216,7 +216,7 @@ footer =
             [ Html.li []
                 [ Html.a
                     [ Html.Attributes.href
-                        "https://github.com/data-viz-lab/elm-chart-builder/blob/master/examples/ElmVisualization/PopulationMinnesota.elm"
+                        "https://github.com/data-viz-lab/elm-ecb/blob/master/examples/ElmVisualization/PopulationMinnesota.elm"
                     ]
                     [ Html.text "Source Code" ]
                 ]

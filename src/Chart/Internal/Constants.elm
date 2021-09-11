@@ -22,89 +22,90 @@ module Chart.Internal.Constants exposing
 
 rootClassName : String
 rootClassName =
-    "chart-builder"
+    -- short for elm-chart-builder
+    "ecb"
 
 
 barClassName : String
 barClassName =
-    "chart-builder--bar"
+    "ecb-bar"
 
 
 lineClassName : String
 lineClassName =
-    "chart-builder--line"
+    "ecb-line"
 
 
 histogramClassName : String
 histogramClassName =
-    "chart-builder--histogram"
+    "ecb-histogram"
 
 
 componentClassName : String
 componentClassName =
-    "chart-builder__component"
+    "ecb-component"
 
 
 labelClassName : String
 labelClassName =
-    "chart-builder__label"
+    "ecb-label"
 
 
 symbolClassName : String
 symbolClassName =
-    "chart-builder__symbol"
+    "ecb-symbol"
 
 
 annotationClassName : String
 annotationClassName =
-    "chart-builder__annotation"
+    "ecb-annotation"
 
 
 vLineAnnotationClassName : String
 vLineAnnotationClassName =
-    "chart-builder__annotation--v-line"
+    "ecb-annotation-v-line"
 
 
 columnClassName : String
 columnClassName =
-    "chart-builder__column"
+    "ecb-column"
 
 
 dataGroupClassName : String
 dataGroupClassName =
-    "chart-builder__data-group"
+    "ecb-data-group"
 
 
 axisClassName : String
 axisClassName =
-    "chart-builder__axis"
+    "ecb-axis"
 
 
 axisYRightClassName : String
 axisYRightClassName =
-    "chart-builder__axis--y-right"
+    "ecb-axis-y-right"
 
 
 axisYLeftClassName : String
 axisYLeftClassName =
-    "chart-builder__axis--y-left"
+    "ecb-axis-y-left"
 
 
 axisYClassName : String
 axisYClassName =
-    "chart-builder__axis--y"
+    "ecb-axis-y"
 
 
 axisXClassName : String
 axisXClassName =
-    "chart-builder__axis--x"
+    "ecb-axis-x"
 
 
 areaShapeClassName : String
 areaShapeClassName =
-    "chart-builder__area"
+    "ecb-area"
 
 
 lineShapeClassName : String
 lineShapeClassName =
-    "chart-builder__line"
+    "ecb-line"

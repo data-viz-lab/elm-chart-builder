@@ -17,34 +17,34 @@ import Time exposing (Posix)
 css : String
 css =
     """
-.chart-builder__component text {
+.ecb-component text {
   font-size: 12px;
 }
 
-.chart-builder__axis path,
-.chart-builder__axis line {
+.ecb-axis path,
+.ecb-axis line {
   stroke: #b7b7b7;
 }
 
-.chart-builder__axis text {
+.ecb-axis text {
   fill: #333;
 }
 
-.chart-builder__axis--x .domain ,
-.chart-builder__axis--y .domain {
+.ecb-axis-x .domain ,
+.ecb-axis-y .domain {
   stroke: none;
 }
 
-.chart-builder__axis--y-right .tick {
+.ecb-axis-y-right .tick {
   stroke-dasharray: 6 6;
   stroke-width: 0.5px;
 }
 
-.chart-builder__axis--x text {
+.ecb-axis-x text {
   font-size: 10px;
 }
 
-.chart-builder__axis--y-left text {
+.ecb-axis-y-left text {
   font-size: 16px;
 }
 
@@ -57,7 +57,7 @@ figure {
 symbol : Symbol
 symbol =
     Symbol.circle
-        |> Symbol.withSize 5
+        |> Symbol.withSize 3
 
 
 dataAccessor : Line.Accessor FertilityStats

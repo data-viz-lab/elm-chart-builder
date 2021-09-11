@@ -34,8 +34,8 @@ body {
     border: 1px solid #c4c4c4;
 }
 
-.chart-builder__axis path,
-.chart-builder__axis line {
+.ecb-axis path,
+.ecb-axis line {
     stroke: #b7b7b7;
 }
 

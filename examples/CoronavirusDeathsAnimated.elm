@@ -41,8 +41,8 @@ import Transition exposing (Transition)
 css : String
 css =
     """
-.chart-builder__axis path,
-.chart-builder__axis line {
+.ecb-axis path,
+.ecb-axis line {
   stroke: #b7b7b7;
 }
 
@@ -51,11 +51,11 @@ text {
   font-size: 16px;
 }
 
-.chart-builder__axis--y .domain {
+.ecb-axis--y .domain {
   stroke: none;
 }
 
-.chart-builder__axis--y-right .tick {
+.ecb-axis--y-right .tick {
   stroke-dasharray : 6 6;
   stroke-width: 0.5px;
 }

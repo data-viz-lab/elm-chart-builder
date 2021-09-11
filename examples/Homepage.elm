@@ -22,8 +22,8 @@ import Shape
 css : String
 css =
     """
-.chart-builder__axis path,
-.chart-builder__axis line {
+.ecb-axis path,
+.ecb-axis line {
   stroke: #b7b7b7;
 }
 
@@ -31,11 +31,11 @@ text {
   fill: #333;
 }
 
-.chart-builder__axis text {
+.ecb-axis text {
   fill: #333;
 }
 
-.chart-builder--bar .chart-builder__label {
+.ecb--bar .ecb-label {
   font-size: 10px;
 }
 

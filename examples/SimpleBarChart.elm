@@ -26,12 +26,12 @@ body {
     border: 1px solid #c4c4c4;
 }
 
-.chart-builder__column rect {
+.ecb-column rect {
     fill: #91DE71;
 }
 
-.chart-builder__axis path,
-.chart-builder__axis line {
+.ecb-axis path,
+.ecb-axis line {
     stroke: #b7b7b7;
 }
 
@@ -98,7 +98,7 @@ footer =
             [ Html.li []
                 [ Html.a
                     [ Html.Attributes.href
-                        "https://github.com/data-viz-lab/elm-chart-builder/blob/master/examples/ElmVisualization/BarChart.elm"
+                        "https://github.com/data-viz-lab/elm-ecb/blob/master/examples/ElmVisualization/BarChart.elm"
                     ]
                     [ Html.text "Source Code" ]
                 ]

@@ -37,25 +37,25 @@ css =
     border: 1px solid #c4c4c4;
 }
 
-.chart-builder__axis path,
-.chart-builder__axis line {
+.ecb-axis path,
+.ecb-axis line {
     stroke: #b7b7b7;
 }
 
-.chart-builder__axis text {
+.ecb-axis text {
     fill: #333;
 }
 
-.chart-builder__line {
+.ecb-line {
     stroke-width: 2px;
     fill: none;
 }
 
-.chart-builder__line-0 {
+.ecb-line-0 {
     stroke: crimson;
 }
 
-.chart-builder__line-1 {
+.ecb-line-1 {
     stroke: #3949ab;
 }
 

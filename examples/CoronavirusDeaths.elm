@@ -35,8 +35,8 @@ body {
   color: #fff;
 }
 
-.chart-builder__axis path,
-.chart-builder__axis line {
+.ecb-axis path,
+.ecb-axis line {
   stroke: #fff;
 }
 
@@ -46,7 +46,7 @@ text {
 }
 
 
-.chart-builder__label {
+.ecb-label {
   font-size: 8px;
 }
 

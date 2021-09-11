@@ -17,12 +17,12 @@ import Time exposing (Posix)
 css : String
 css =
     """
-.chart-builder__axis path,
-.chart-builder__axis line {
+.ecb-axis path,
+.ecb-axis line {
   stroke: #b7b7b7;
 }
 
-.chart-builder__axis text {
+.ecb-axis text {
   fill: #333;
 }
 
