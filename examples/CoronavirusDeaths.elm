@@ -47,7 +47,7 @@ text {
 
 
 .ecb-label {
-  font-size: 8px;
+  font-size: 10px;
 }
 
 figure {
@@ -186,7 +186,8 @@ chart data =
         , height = height
         }
         |> Line.withCurve (Shape.cardinalCurve 0.5)
-        |> Line.withStackedLayout (Line.drawArea Shape.stackOffsetSilhouette)
+        |> Line.withStackedLayout Shape.stackOffsetSilhouette
+        |> Line.asArea
         |> Line.withColorPalette colorPalette
         |> Line.withLabels Line.xGroupLabel
         |> Line.withXAxisTime xAxis

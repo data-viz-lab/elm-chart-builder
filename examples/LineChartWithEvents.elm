@@ -284,7 +284,7 @@ chart model =
         |> Line.withVLineAnnotation model.vLineAnnotation
         |> Line.withSymbols symbols
         --|> Line.withCurve Shape.monotoneInXCurve
-        |> Line.withStackedLayout Line.drawLine
+        |> Line.withStackedLayout Shape.stackOffsetNone
         |> Line.render ( data, accessor )
 
 

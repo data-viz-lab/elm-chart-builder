@@ -367,10 +367,10 @@ stackedArea =
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withLabels Line.xGroupLabel
         |> Line.withColorPalette Scale.Color.tableau10
-        |> Line.withStackedLayout Line.drawLine
         |> Line.withSymbols (iconsLine "chart-b")
         |> Line.withXAxisContinuous xAxis
-        |> Line.withStackedLayout (Line.drawArea Shape.stackOffsetNone)
+        |> Line.withStackedLayout Shape.stackOffsetNone
+        |> Line.asArea
         |> Line.render ( dataContinuous, accessorContinuous )
 
 
