@@ -1,12 +1,11 @@
 module Chart.Line exposing
-    ( Accessor, AccessorCont, AccessorContinuous, AccessorTime, continuous, time, cont
+    ( Accessor, AccessorCont, AccessorContinuous, AccessorTime, continuous, cont, time
     , init
     , render
     , Config, RequiredConfig
-    , asArea, withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale, withPointAnnotation, withVLineAnnotation, withEvent
-    , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawLine
+    , asArea, withColorPalette, withCurve, withDesc, withEvent, withGroupedLayout, withLabels, withLineStyle, withLogYScale, withPointAnnotation, withStackedLayout, withSymbols, withTableFloatFormat, withTablePosixFormat, withTitle, withVLineAnnotation, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withoutTable
+    , axisBottom, axisGrid, axisLeft, axisRight, drawLine, xGroupLabel
     , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisCont, withXAxisContinuous, withXAxisTime, withYAxis
-    , withSymbols
     , Hint, hoverAll, hoverOne
     )
 
@@ -17,7 +16,7 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 # Chart Data Format
 
-@docs Accessor, AccessorCont, AccessorContinuous, AccessorTime, continuous, time, cont
+@docs Accessor, AccessorCont, AccessorContinuous, AccessorTime, continuous, cont, time
 
 
 # Chart Initialization
@@ -37,19 +36,17 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 # Optional Configuration setters
 
-@docs asArea, withColorPalette, withCurve, withDesc, withLabels, withGroupedLayout, withLineStyle, withTableFloatFormat, withTablePosixFormat, withoutTable, withStackedLayout, withTitle, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withLogYScale, withPointAnnotation, withVLineAnnotation, withEvent
+@docs asArea, withColorPalette, withCurve, withDesc, withEvent, withGroupedLayout, withLabels, withLineStyle, withLogYScale, withPointAnnotation, withStackedLayout, withSymbols, withTableFloatFormat, withTablePosixFormat, withTitle, withVLineAnnotation, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withoutTable
 
 
 # Configuration arguments
 
-@docs axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel, drawLine
+@docs axisBottom, axisGrid, axisLeft, axisRight, drawLine, xGroupLabel
 
 
 # Axis
 
 @docs XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisCont, withXAxisContinuous, withXAxisTime, withYAxis
-
-@docs withSymbols
 
 
 # Events
@@ -82,6 +79,17 @@ type alias Config msg validation =
 
 
 {-| The required config, passed as an argument to the `init` function
+
+    { margin =
+        { top = Float
+        , right = Float
+        , bottom = Float
+        , left = Float
+        }
+    , width = Float
+    , height = Float
+    }
+
 -}
 type alias RequiredConfig =
     Type.RequiredConfig
@@ -247,7 +255,7 @@ asArea =
 Defaults to `Shape.continuousCurve`
 
 See [elm-visualization/latest/Shape](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/Shape)
-for more info.
+Curves section for more info.
 
     Line.init requiredConfig
         |> Line.withCurve Shape.monotoneInXCurve
@@ -423,7 +431,7 @@ withStackedLayout offset config =
     Type.setLayout (Type.StackedLine offset) config
 
 
-{-| Creates a grouped line chart.
+{-| Creates a grouped line chart. This option is already set by default.
 
     Line.init requiredConfig
         |> Line.withGroupedLayout
@@ -437,7 +445,7 @@ withGroupedLayout config =
 
 {-| Show a label at the end of the lines.
 
-It takes one of: xGroupLabel
+Currently only takes an [xGroupLabel](#xGroupLabel)
 
 &#9888; Use with caution, there is no knowledge of text wrapping!
 
@@ -456,7 +464,7 @@ withLabels label =
 
 
 {-| Sets the style for the lines
-The styles set here have precedence over `withColorPalette` and css.
+The styles set here have precedence over [withColorPalette](#withColorPalette) and css rules.
 
     Line.init requiredConfig
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
@@ -466,6 +474,18 @@ The styles set here have precedence over `withColorPalette` and css.
 withLineStyle : List ( String, String ) -> Config msg validation -> Config msg validation
 withLineStyle styles config =
     Type.setCoreStyles styles config
+
+
+{-| Set the Y scale to logaritmic, passing a base
+
+    Line.init requiredConfig
+        |> Line.withLogYScale 10
+        |> Line.render ( data, accessor )
+
+-}
+withLogYScale : Float -> Config msg validation -> Config msg validation
+withLogYScale base =
+    Type.setYScale (Type.LogScale base)
 
 
 
@@ -527,16 +547,16 @@ axisBottom =
 {-| Hide the Y aixs
 
 The Y axis depends from the layout:
-With a vertical layout the Y axis is the vertical axis.
-With a horizontal layout the Y axis is the horizontal axis.
 
-    Line.init
-        { margin = margin
-        , width = width
-        , height = height
-        }
-        |> Line.hideYAxis
-        |> Line.render ( data, accessor )
+  - With a vertical layout the Y axis is the vertical axis.
+
+  - With a horizontal layout the Y axis is the horizontal axis.
+
+```
+Line.init requiredConfig
+    |> Line.hideYAxis
+    |> Line.render ( data, accessor )
+```
 
 -}
 hideYAxis : Config msg validation -> Config msg validation
@@ -544,15 +564,18 @@ hideYAxis config =
     Type.setYAxis False config
 
 
-{-| Hide the X aixs
+{-| Hide the X axis
 
 The X axis depends from the layout:
-With a vertical layout the X axis is the horizontal axis.
-With a horizontal layout the X axis is the vertical axis.
 
-    Line.init requiredConfig
-        |> Line.hideXAxis
-        |> Line.render ( data, accessor )
+  - With a vertical layout the X axis is the horizontal axis.
+  - With a horizontal layout the X axis is the vertical axis.
+
+```
+Line.init requiredConfig
+    |> Line.hideXAxis
+    |> Line.render ( data, accessor )
+```
 
 -}
 hideXAxis : Config msg validation -> Config msg validation
@@ -560,7 +583,7 @@ hideXAxis config =
     Type.setXAxis False config
 
 
-{-| Hide all axis
+{-| Hide all axis. Useful, for example, when drawing a sparkline.
 
     Line.init requiredConfig
         |> Line.hideAxis
@@ -621,20 +644,8 @@ withYAxis =
     Type.setYAxisContinuous
 
 
-{-| Set the Y scale to logaritmic, passing a base
 
-    Line.init requiredConfig
-        |> Line.withLogYScale 10
-        |> Line.render ( data, accessor )
-
--}
-withLogYScale : Float -> Config msg validation -> Config msg validation
-withLogYScale base =
-    Type.setYScale (Type.LogScale base)
-
-
-
--- Events
+-- EVENTS
 
 
 {-| The data format returned by an event.
@@ -643,12 +654,15 @@ Internaly defined as:
     type alias Hint =
         { groupLabel : Maybe String
         , xChart : Float
-        , xData : Float
         , yChart : List Float
+        , xData : Float
         , yData : List Float
         }
 
-For a `hoverOne` event the yChart will always have one value.
+  - xChart is the cursor's x coordinate in the chart's svg space.
+  - yChart is the cursor's y coordinate in the chart's svg space.
+  - xData is the list of all x line values within the tolerance of the xChart cursor's position.
+  - yData is the list of all y line values within the tolerance of the yChart cursor's position. For a [hoverOne](#hoverOne) event, the yChart will always only have one value.
 
 -}
 type alias Hint =
@@ -680,11 +694,17 @@ hoverAll msg =
 
 
 {-| Add an event with a msg to handle the returned Hint data.
-One of: hoverOne, hoverAll.
+One of:
 
-    Line.init requiredConfig
-        |> Line.withEvent (Line.hoverOne OnHover)
-        |> Line.render ( data, accessor )
+  - [hoverOne](#hoverOne)
+
+  - [hoverAll](#hoverAll)
+
+```
+Line.init requiredConfig
+    |> Line.withEvent (Line.hoverOne OnHover)
+    |> Line.render ( data, accessor )
+```
 
 -}
 withEvent : Event msg -> Config msg validation -> Config msg validation
@@ -752,9 +772,7 @@ drawLine =
 
 
 {-| Pass a list of symbols to the line chart, one per data group.
-If the list is empty, no symbols are rendered.
-
-Default value: []
+If the list is empty, no symbols are rendered. It defaults to empty List.
 
     defaultLayoutConfig
         |> withSymbols [ Circle, Corner, Triangle ]
