@@ -62,8 +62,7 @@ and open [examples](https://localhost:8000).
 
 ## Online Examples
 
-* [covid-dashboard](https://data-viz-lab.github.io/covid-dashboard/) ([source](https://github.com/data-viz-lab/covid-dashboard/tree/master))
-
+* [elm-chart-builder-presentation](https://data-viz-lab.github.io/elm-chart-builder-presentation/)
 ## Tests:
 
 It expects elm-test to already be installed and accessible.
