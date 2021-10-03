@@ -31,6 +31,7 @@ module Chart.Internal.Type exposing
     , LineDraw(..)
     , Margin
     , Orientation(..)
+    , Padding
     , PointBand
     , PointContinuous
     , RenderContext(..)
@@ -43,7 +44,6 @@ module Chart.Internal.Type exposing
     , adjustContinuousRange
     , ariaHidden
     , ariaLabelledbyContent
-    , bottomGap
     , calculateHistogramDomain
     , colorCategoricalStyle
     , colorStyle
@@ -74,12 +74,12 @@ module Chart.Internal.Type exposing
     , getOffset
     , getStackedValuesAndGroupes
     , isStackedLine
-    , leftGap
     , lineDrawLine
     , noGroups
     , role
     , setAccessibilityContent
     , setAnnotiation
+    , setBottomPadding
     , setColorResource
     , setCoreStyleFromPointBandX
     , setCoreStyles
@@ -94,6 +94,7 @@ module Chart.Internal.Type exposing
     , setHistogramDomain
     , setIcons
     , setLayout
+    , setLeftPadding
     , setLineDraw
     , setOrientation
     , setSvgDesc
@@ -357,6 +358,10 @@ type alias Margin =
     }
 
 
+type alias Padding =
+    Margin
+
+
 type YScale
     = LinearScale
     | LogScale Float
@@ -414,6 +419,7 @@ type alias ConfigStruct msg =
     , lineDraw : LineDraw
     , margin : Margin
     , orientation : Orientation
+    , padding : Padding
     , showColumnTitle : ColumnTitle
     , showDataPoints : Bool
     , showGroupLabels : Bool
@@ -454,6 +460,7 @@ defaultConfig =
         , lineDraw = Line
         , margin = defaultMargin
         , orientation = defaultOrientation
+        , padding = defaultPadding
         , showColumnTitle = NoColumnTitle
         , showDataPoints = False
         , showGroupLabels = False
@@ -532,22 +539,13 @@ defaultMargin =
     }
 
 
-
--- CONSTANTS
-
-
-leftGap : Float
-leftGap =
-    -- TODO: there should be some notion of padding!
-    -- TODO: pass this as an exposed option in config?
-    4
-
-
-bottomGap : Float
-bottomGap =
-    -- TODO: there should be some notion of padding!
-    -- TODO: pass this as an exposed option in config?
-    2
+defaultPadding : Padding
+defaultPadding =
+    { top = 0
+    , right = 0
+    , bottom = 2
+    , left = 2
+    }
 
 
 
@@ -663,21 +661,62 @@ setOrientation orientation (Config c) =
     toConfig { c | orientation = orientation }
 
 
-setDimensions : { margin : Margin, width : Float, height : Float } -> Config msg validation -> Config msg validation
+setDimensions :
+    { margin : Margin, width : Float, height : Float }
+    -> Config msg validation
+    -> Config msg validation
 setDimensions { margin, width, height } (Config c) =
     let
         left =
-            margin.left + leftGap
+            margin.left + c.padding.left
+
+        right =
+            margin.right + c.padding.right
 
         bottom =
-            margin.bottom + bottomGap
+            margin.bottom + c.padding.bottom
+
+        top =
+            margin.top + c.padding.top
     in
     toConfig
         { c
-            | width = width - left - margin.right
-            , height = height - margin.top - bottom
-            , margin = { margin | left = left, bottom = bottom }
+            | width = width - left - right
+            , height = height - top - bottom
+
+            --, margin = { margin | left = left, bottom = bottom }
+            , margin = margin
         }
+
+
+setLeftPadding : Float -> Config msg validation -> Config msg validation
+setLeftPadding value (Config c) =
+    let
+        padding =
+            c.padding
+
+        newPadding =
+            { padding | left = value }
+
+        newWidth =
+            c.width + padding.left - value
+    in
+    toConfig { c | padding = newPadding, width = newWidth }
+
+
+setBottomPadding : Float -> Config msg validation -> Config msg validation
+setBottomPadding value (Config c) =
+    let
+        padding =
+            c.padding
+
+        newPadding =
+            { padding | bottom = value }
+
+        newHeight =
+            c.height + padding.bottom - value
+    in
+    toConfig { c | padding = newPadding, height = newHeight }
 
 
 setDomainBandBandGroup : BandDomain -> Config msg validation -> Config msg validation

@@ -35,10 +35,11 @@ import Chart.Internal.Type
         , Label(..)
         , Layout(..)
         , LineDraw(..)
+        , Margin
+        , Padding
         , PointContinuous
         , StackOffset
         , ariaLabelledbyContent
-        , bottomGap
         , colorStyle
         , dataContinuousGroupToDataContinuous
         , dataContinuousGroupToDataContinuousStacked
@@ -52,7 +53,6 @@ import Chart.Internal.Type
         , getDomainTime
         , getDomainTimeFromData
         , isStackedLine
-        , leftGap
         , role
         , showIcons
         , toContinousScale
@@ -114,6 +114,9 @@ renderLineGrouped ( data, config ) =
         m =
             c.margin
 
+        p =
+            c.padding
+
         w =
             c.width
 
@@ -121,10 +124,10 @@ renderLineGrouped ( data, config ) =
             c.height
 
         outerW =
-            w + m.left + m.right
+            Helpers.outerWidth w m p
 
         outerH =
-            h + m.top + m.bottom
+            Helpers.outerHeight h m p
 
         continuousData : List DataGroupContinuous
         continuousData =
@@ -258,6 +261,9 @@ renderLineStacked offset ( data, config ) =
         m =
             c.margin
 
+        p =
+            c.padding
+
         w =
             c.width
 
@@ -265,10 +271,10 @@ renderLineStacked offset ( data, config ) =
             c.height
 
         outerW =
-            w + m.left + m.right
+            Helpers.outerWidth w m p
 
         outerH =
-            h + m.top + m.bottom
+            Helpers.outerHeight h m p
 
         continuousData : List DataGroupContinuous
         continuousData =
@@ -407,11 +413,22 @@ renderLineStacked offset ( data, config ) =
 
 continuousXAxis : ConfigStruct msg -> ContinuousScale Float -> List (Svg msg)
 continuousXAxis c scale =
+    let
+        m =
+            c.margin
+
+        p =
+            c.padding
+    in
     if c.showXAxis == True then
         case c.axisXContinuous of
             ChartAxis.Bottom attributes ->
                 [ g
-                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                    [ transform
+                        [ Translate
+                            (m.left + p.left)
+                            (m.top + p.top + c.height + p.bottom)
+                        ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisXClassName
@@ -423,7 +440,7 @@ continuousXAxis c scale =
 
             ChartAxis.Top attributes ->
                 [ g
-                    [ transform [ Translate c.margin.left c.margin.top ]
+                    [ transform [ Translate (m.left + p.left) m.top ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisXClassName
@@ -439,13 +456,24 @@ continuousXAxis c scale =
 
 timeXAxis : ConfigStruct msg -> Maybe (ContinuousScale Posix) -> List (Svg msg)
 timeXAxis c scale =
+    let
+        m =
+            c.margin
+
+        p =
+            c.padding
+    in
     if c.showXAxis == True then
         case scale of
             Just s ->
                 case c.axisXTime of
                     ChartAxis.Bottom attributes ->
                         [ g
-                            [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                            [ transform
+                                [ Translate
+                                    (m.left + p.left)
+                                    (m.top + p.top + c.height + p.bottom)
+                                ]
                             , class
                                 [ Constants.axisClassName
                                 , Constants.axisXClassName
@@ -456,9 +484,9 @@ timeXAxis c scale =
                         ]
 
                     ChartAxis.Top attributes ->
-                        --FIXME
+                        --FIXME?
                         [ g
-                            [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                            [ transform [ Translate (m.left + p.left) m.top ]
                             , class
                                 [ Constants.axisClassName
                                 , Constants.axisXClassName
@@ -477,11 +505,19 @@ timeXAxis c scale =
 
 continuousYAxis : ConfigStruct msg -> ContinuousScale Float -> List (Svg msg)
 continuousYAxis c scale =
+    let
+        m =
+            c.margin
+
+        p =
+            c.padding
+    in
     if c.showYAxis == True then
         case c.axisYContinuous of
             ChartAxis.Left attributes ->
                 [ g
-                    [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
+                    [ transform
+                        [ Translate (m.left |> Helpers.floorFloat) m.top ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisYClassName
@@ -494,10 +530,7 @@ continuousYAxis c scale =
             ChartAxis.Right attributes ->
                 [ g
                     [ transform
-                        [ Translate
-                            (c.width + c.margin.left + leftGap |> Helpers.floorFloat)
-                            c.margin.top
-                        ]
+                        [ Translate (m.left + c.padding.left + c.width |> Helpers.floorFloat) m.top ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisYClassName
@@ -521,7 +554,7 @@ continuousYAxis c scale =
                                ]
                 in
                 [ g
-                    [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
+                    [ transform [ Translate (m.left |> Helpers.floorFloat) m.top ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisYClassName
@@ -531,7 +564,7 @@ continuousYAxis c scale =
                     ]
                     [ Axis.left leftAttrs scale ]
                 , g
-                    [ transform [ Translate (c.margin.left - leftGap |> Helpers.floorFloat) c.margin.top ]
+                    [ transform [ Translate (m.left + p.left |> Helpers.floorFloat) m.top ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisYClassName
@@ -692,7 +725,9 @@ drawSymbol config { idx, x, y, styleStr, symbolContext } =
             Triangle c ->
                 [ g
                     [ transform
-                        [ Translate (x - size c / 2) (y - size c / 2) ]
+                        [ Translate (x - size c / 2 + conf.padding.left)
+                            (y - size c / 2 - conf.padding.top)
+                        ]
                     , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
@@ -701,7 +736,10 @@ drawSymbol config { idx, x, y, styleStr, symbolContext } =
 
             Circle c ->
                 [ g
-                    [ transform [ Translate (x - circleSize c / 2) (y - circleSize c / 2) ]
+                    [ transform
+                        [ Translate (x - circleSize c / 2 + conf.padding.left)
+                            (y - circleSize c / 2 - conf.padding.top)
+                        ]
                     , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
@@ -710,7 +748,10 @@ drawSymbol config { idx, x, y, styleStr, symbolContext } =
 
             Corner c ->
                 [ g
-                    [ transform [ Translate (x - size c / 2) (y - size c / 2) ]
+                    [ transform
+                        [ Translate (x - size c / 2 + conf.padding.left)
+                            (y - size c / 2)
+                        ]
                     , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
@@ -719,7 +760,7 @@ drawSymbol config { idx, x, y, styleStr, symbolContext } =
 
             Custom c ->
                 [ g
-                    [ transform [ Translate x y ]
+                    [ transform [ Translate (x + conf.padding.left) (y + conf.padding.top) ]
                     , class [ Constants.symbolClassName ]
                     , st c.styles
                     ]
@@ -797,6 +838,9 @@ drawStackedAreas config xScale yScale stackedResult combinedData =
         m =
             c.margin
 
+        p =
+            c.padding
+
         values =
             stackedResult.values
 
@@ -835,12 +879,12 @@ drawStackedAreas config xScale yScale stackedResult combinedData =
                 |> List.indexedMap renderStream
     in
     [ g
-        [ transform [ Translate m.left m.top ]
+        [ transform [ topLeftTranslate m p ]
         , class [ Constants.componentClassName ]
         ]
         paths
     , g
-        [ transform [ Translate m.left m.top ]
+        [ transform [ topLeftTranslate m p ]
         , class [ Constants.componentClassName ]
         ]
       <|
@@ -867,6 +911,9 @@ drawContinuousLine config xScale yScale sortedData =
 
         m =
             c.margin
+
+        p =
+            c.padding
 
         line : DataGroupContinuous -> Path
         line dataGroup =
@@ -904,7 +951,7 @@ drawContinuousLine config xScale yScale sortedData =
                 |> Maybe.withDefault (text_ [] [])
     in
     [ g
-        [ transform [ Translate m.left m.top ]
+        [ transform [ topLeftTranslate m p ]
         , class [ Constants.componentClassName ]
         ]
       <|
@@ -920,7 +967,7 @@ drawContinuousLine config xScale yScale sortedData =
             )
             sortedData
     , g
-        [ transform [ Translate m.left m.top ]
+        [ transform [ topLeftTranslate m p ]
         , class [ Constants.componentClassName ]
         ]
       <|
@@ -1172,7 +1219,7 @@ vLineAnnotation c =
     case annotation of
         Just a ->
             [ g
-                [ transform [ Translate c.margin.left c.margin.top ]
+                [ transform [ topLeftTranslate c.margin c.padding ]
                 , class
                     [ Constants.componentClassName
                     , Constants.annotationClassName
@@ -1301,3 +1348,8 @@ getStackDeltas c data =
     else
         data
             |> List.map (.points >> List.map (always ( 0, 0 )))
+
+
+topLeftTranslate : Margin -> Padding -> Transform
+topLeftTranslate margin padding =
+    Translate (margin.left + padding.left) (margin.top + padding.top)

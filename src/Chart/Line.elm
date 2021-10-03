@@ -3,7 +3,7 @@ module Chart.Line exposing
     , init
     , render
     , Config, RequiredConfig
-    , asArea, withColorPalette, withCurve, withDesc, withEvent, withGroupedLayout, withLabels, withLineStyle, withLogYScale, withPointAnnotation, withStackedLayout, withSymbols, withTableFloatFormat, withTablePosixFormat, withTitle, withVLineAnnotation, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withoutTable
+    , asArea, withBottomPadding, withColorPalette, withCurve, withDesc, withEvent, withGroupedLayout, withLabels, withLeftPadding, withLineStyle, withLogYScale, withPointAnnotation, withStackedLayout, withSymbols, withTableFloatFormat, withTablePosixFormat, withTitle, withVLineAnnotation, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withoutTable
     , axisBottom, axisGrid, axisLeft, axisRight, drawLine, xGroupLabel
     , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisCont, withXAxisContinuous, withXAxisTime, withYAxis
     , Hint, hoverAll, hoverOne
@@ -36,7 +36,7 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 # Optional Configuration setters
 
-@docs asArea, withColorPalette, withCurve, withDesc, withEvent, withGroupedLayout, withLabels, withLineStyle, withLogYScale, withPointAnnotation, withStackedLayout, withSymbols, withTableFloatFormat, withTablePosixFormat, withTitle, withVLineAnnotation, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withoutTable
+@docs asArea, withBottomPadding, withColorPalette, withCurve, withDesc, withEvent, withGroupedLayout, withLabels, withLeftPadding, withLineStyle, withLogYScale, withPointAnnotation, withStackedLayout, withSymbols, withTableFloatFormat, withTablePosixFormat, withTitle, withVLineAnnotation, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withoutTable
 
 
 # Configuration arguments
@@ -211,7 +211,7 @@ init c =
         |> Type.setDimensions { margin = c.margin, width = c.width, height = c.height }
 
 
-{-| Renders the line chart, after initialisation and customisation
+{-| Renders the line chart, after initialisation and optional customisations.
 
     Line.init requiredConfig
         |> Line.render ( data, accessor )
@@ -326,6 +326,32 @@ If set on a continuous line chart this setting will have no effect.
 withXContDomain : ( Float, Float ) -> Config msg validation -> Config msg validation
 withXContDomain value config =
     Type.setDomainContinuousX value config
+
+
+{-| Sets the left padding for the chart component.
+The higher the padding, the bigger the gap between the chart and the axis.
+
+    Line.init requiredConfig
+        |> Line.withLeftPadding 4
+        |> Line.render ( data, accessor )
+
+-}
+withLeftPadding : Float -> Config msg validation -> Config msg validation
+withLeftPadding value config =
+    Type.setLeftPadding value config
+
+
+{-| Sets the bottom padding for the chart component.
+The higher the padding, the bigger the gap between the chart and the axis.
+
+    Line.init requiredConfig
+        |> Line.withBottomPadding 4
+        |> Line.render ( data, accessor )
+
+-}
+withBottomPadding : Float -> Config msg validation -> Config msg validation
+withBottomPadding value config =
+    Type.setBottomPadding value config
 
 
 {-| Do **not** build an alternative table content for accessibility

@@ -107,6 +107,8 @@ data =
 
 line =
     Line.init requiredConfig
+        |> Line.withLeftPadding 10
+        |> Line.withBottomPadding 20
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withYAxis yAxis
         |> Line.withXAxisTime xAxis

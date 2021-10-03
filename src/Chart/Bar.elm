@@ -3,9 +3,10 @@ module Chart.Bar exposing
     , init
     , render
     , Config, RequiredConfig
-    , withBarStyle, withBarStyleFrom, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withTableFloatFormat, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
-    , XAxis, YAxis, axisBottom, axisTop, axisGrid, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
-    , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
+    , withBarStyle, withBarStyleFrom, withBottomPadding, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLeftPadding, withLogYScale, withOrientation, withStackedLayout, withSymbols, withTableFloatFormat, withTitle, withXDomain, withXGroupDomain, withXLabels
+    , XAxis, YAxis, axisBottom, axisGrid, axisLeft, axisRight, axisTop, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
+    , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel
+    , withYDomain, withoutTable, xGroupLabel, xLabel
     )
 
 {-| ![barchart](https://raw.githubusercontent.com/data-viz-lab/elm-chart-builder/master/images/elm-chart-builder-barchart.png)
@@ -39,19 +40,19 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withBarStyle, withBarStyleFrom, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLogYScale, withOrientation, withStackedLayout, withSymbols, withTableFloatFormat, withoutTable, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain
+@docs withBarStyle, withBarStyleFrom, withBottomPadding, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLeftPadding, withLogYScale, withOrientation, withStackedLayout, withSymbols, withTableFloatFormat, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain withoutTable
 
 
 # Axis
 
 &#9888; axisLeft & axisRight apply to a vertical chart context. If you change the chart orientation to horizontal, the axis positioning will always change to bottom.
 
-@docs XAxis, YAxis, axisBottom, axisTop, axisGrid, axisLeft, axisRight, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
+@docs XAxis, YAxis, axisBottom, axisGrid, axisLeft, axisRight, axisTop, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
 
 
 # Configuration arguments
 
-@docs diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel, xLabel, xGroupLabel
+@docs diverging, horizontal, noDirection, stackedColumnTitle, vertical, xGroupLabel xLabel, xOrdinalColumnTitle, yColumnTitle, yLabel
 
 -}
 
@@ -108,14 +109,8 @@ type alias Accessor data =
           }
         ]
 
-    accessor :
-        Bar.Accessor
-            { groupLabel : String
-            , x : String
-            , y : Float
-            }
     accessor =
-        Bar.Accessor .groupLabel .x .y
+        Bar.Accessor (.groupLabel >> Just) .x .y
 
     Bar.init
         { margin =
@@ -234,8 +229,34 @@ withBarStyle styles config =
     Type.setCoreStyles styles config
 
 
+{-| Sets the left padding for the chart component.
+The higher the padding, the bigger the gap between the chart and the axis.
+
+    Bar.init requiredConfig
+        |> Bar.withLeftPadding 4
+        |> Bar.render ( data, accessor )
+
+-}
+withLeftPadding : Float -> Config msg validation -> Config msg validation
+withLeftPadding value config =
+    Type.setLeftPadding value config
+
+
+{-| Sets the bottom padding for the chart component.
+The higher the padding, the bigger the gap between the chart and the axis.
+
+    Bar.init requiredConfig
+        |> Bar.withBottomPadding 4
+        |> Bar.render ( data, accessor )
+
+-}
+withBottomPadding : Float -> Config msg validation -> Config msg validation
+withBottomPadding value config =
+    Type.setBottomPadding value config
+
+
 {-| Sets the style for the bars depending on the x value
-The styles set here have precedence over `withBarStyle`, `withColorPalette`, `withColorInterpolator` and css.
+The styles set here have precedence over [withBarStyle](#withBarStyle), [withColorPalette](#withColorPalette), [withColorInterpolator](#withColorInterpolator) and css rules.
 
     Bar.init requiredConfig
         |> Bar.withBarStyleFrom

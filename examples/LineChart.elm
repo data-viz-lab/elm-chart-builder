@@ -93,6 +93,8 @@ xAxisTime =
 sharedStackedLineConfig : Line.Config msg validation
 sharedStackedLineConfig =
     Line.init requiredConfig
+        |> Line.withLeftPadding padding
+        |> Line.withBottomPadding padding
         |> Line.withYAxis yAxis
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withLabels Line.xGroupLabel
@@ -104,6 +106,8 @@ sharedStackedLineConfig =
 sharedGroupedLineConfig : Line.Config msg validation
 sharedGroupedLineConfig =
     Line.init requiredConfig
+        |> Line.withLeftPadding padding
+        |> Line.withBottomPadding padding
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withYAxis yAxis
         |> Line.withXAxisCont xAxis
@@ -199,6 +203,8 @@ groupedTimeLine =
 groupedLine : Html msg
 groupedLine =
     Line.init requiredConfig
+        |> Line.withLeftPadding padding
+        |> Line.withBottomPadding padding
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withYAxis yAxis
         |> Line.withXAxisCont xAxis
@@ -250,6 +256,11 @@ width =
 height : Float
 height =
     250
+
+
+padding : Float
+padding =
+    8
 
 
 chartTitle : String -> Html msg

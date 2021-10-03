@@ -174,6 +174,7 @@ symbols : List Symbol
 symbols =
     [ Symbol.triangle
         |> Symbol.withIdentifier "triangle-symbol"
+        |> Symbol.withSize 12
         |> Symbol.withStyle [ ( "stroke", "white" ), ( "stroke-width", "2" ) ]
     , Symbol.circle
         |> Symbol.withIdentifier "circle-symbol"
@@ -276,6 +277,8 @@ chart model =
         }
         |> Line.withXAxisTime xAxis
         |> Line.withYAxis yAxis
+        |> Line.withLeftPadding 8
+        |> Line.withBottomPadding 0
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
         |> Line.withEvent (Line.hoverAll Hint)

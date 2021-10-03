@@ -40,7 +40,6 @@ import Chart.Internal.Type
         , adjustContinuousRange
         , ariaHidden
         , ariaLabelledbyContent
-        , bottomGap
         , calculateHistogramDomain
         , colorCategoricalStyle
         , colorStyle
@@ -56,7 +55,6 @@ import Chart.Internal.Type
         , getDomainBandFromData
         , getOffset
         , getStackedValuesAndGroupes
-        , leftGap
         , role
         , showIcons
         , stackedValuesInverse
@@ -106,6 +104,9 @@ renderBandStacked ( data, config ) =
         m =
             c.margin
 
+        p =
+            c.padding
+
         w =
             c.width
 
@@ -113,10 +114,10 @@ renderBandStacked ( data, config ) =
             c.height
 
         outerW =
-            w + m.left + m.right
+            Helpers.outerWidth w m p
 
         outerH =
-            h + m.top + m.bottom
+            Helpers.outerHeight h m p
 
         noGapsData : DataBand
         noGapsData =
@@ -403,6 +404,9 @@ renderBandGrouped ( data, config ) =
         m =
             c.margin
 
+        p =
+            c.padding
+
         w =
             c.width
 
@@ -410,10 +414,10 @@ renderBandGrouped ( data, config ) =
             c.height
 
         outerW =
-            w + m.left + m.right
+            Helpers.outerWidth w m p
 
         outerH =
-            h + m.top + m.bottom
+            Helpers.outerHeight h m p
 
         domain : DomainBandStruct
         domain =
@@ -467,7 +471,11 @@ renderBandGrouped ( data, config ) =
 
         iconOffset : Float
         iconOffset =
-            symbolSpace Vertical bandSingleScale c.symbols + symbolGap
+            if List.isEmpty c.symbols then
+                0
+
+            else
+                symbolSpace Vertical bandSingleScale c.symbols + symbolGap
 
         symbolElements =
             case c.layout of
@@ -504,12 +512,19 @@ renderBandGrouped ( data, config ) =
                     ++ bandGroupedYAxis c iconOffset continuousScale
                     ++ bandXAxis c axisBandScale
                     ++ [ g
-                            [ transform [ Translate m.left m.top ]
+                            [ transform [ Translate (m.left + p.left) (m.top + p.top) ]
                             , class [ Constants.componentClassName ]
                             ]
                          <|
                             List.map
-                                (columns config iconOffset bandGroupScale bandSingleScale continuousScale colorScale)
+                                (columns
+                                    config
+                                    iconOffset
+                                    bandGroupScale
+                                    bandSingleScale
+                                    continuousScale
+                                    colorScale
+                                )
                                 (fromDataBand data)
                        ]
                     --TODO: the symbol elements could be extrapolated outside the svg element
@@ -951,12 +966,23 @@ symbolsToSymbolElements orientation bandSingleScale symbols =
 
 bandXAxis : ConfigStruct msg -> BandScale String -> List (Svg msg)
 bandXAxis c bandScale =
+    let
+        m =
+            c.margin
+
+        p =
+            c.padding
+    in
     --TODO: lots of repetitions
     if c.showXAxis == True then
         case ( c.orientation, c.axisXBand ) of
             ( Vertical, ChartAxis.Bottom attributes ) ->
                 [ g
-                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                    [ transform
+                        [ Translate
+                            (m.left + p.left)
+                            (m.top + p.top + c.height + p.bottom)
+                        ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisXClassName
@@ -968,7 +994,7 @@ bandXAxis c bandScale =
 
             ( Vertical, ChartAxis.Top attributes ) ->
                 [ g
-                    [ transform [ Translate c.margin.left c.margin.top ]
+                    [ transform [ Translate (m.left + p.left) m.top ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisXClassName
@@ -980,7 +1006,7 @@ bandXAxis c bandScale =
 
             ( Horizontal, ChartAxis.Bottom attributes ) ->
                 [ g
-                    [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
+                    [ transform [ Translate (m.left - p.left) m.top ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisYClassName
@@ -993,7 +1019,7 @@ bandXAxis c bandScale =
             ( Horizontal, ChartAxis.Top attributes ) ->
                 --FIXME
                 [ g
-                    [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
+                    [ transform [ Translate (m.left - p.left) m.top ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisYClassName
@@ -1009,14 +1035,19 @@ bandXAxis c bandScale =
 
 bandGroupedYAxis : ConfigStruct msg -> Float -> ContinuousScale Float -> List (Svg msg)
 bandGroupedYAxis c iconOffset continuousScale =
+    let
+        m =
+            c.margin
+
+        p =
+            c.padding
+    in
     if c.showYAxis == True then
         case ( c.orientation, c.axisYContinuous ) of
             ( Vertical, ChartAxis.Left attributes ) ->
                 [ g
                     [ transform
-                        [ Translate (c.margin.left - leftGap)
-                            (iconOffset + c.margin.top)
-                        ]
+                        [ Translate (m.left |> Helpers.floorFloat) (iconOffset + m.top) ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisYClassName
@@ -1030,7 +1061,7 @@ bandGroupedYAxis c iconOffset continuousScale =
                 [ g
                     [ transform
                         [ Translate
-                            (c.width + c.margin.left + leftGap)
+                            (c.width + c.margin.left + c.padding.left)
                             (iconOffset + c.margin.top)
                         ]
                     , class
@@ -1058,7 +1089,7 @@ bandGroupedYAxis c iconOffset continuousScale =
                 in
                 [ g
                     [ transform
-                        [ Translate (c.margin.left - leftGap)
+                        [ Translate (c.margin.left - c.padding.left)
                             (iconOffset + c.margin.top)
                         ]
                     , class
@@ -1069,7 +1100,7 @@ bandGroupedYAxis c iconOffset continuousScale =
                     ]
                     [ Axis.left leftAttrs continuousScale ]
                 , g
-                    [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
+                    [ transform [ Translate (c.margin.left - c.padding.left) c.margin.top ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisYClassName
@@ -1082,7 +1113,7 @@ bandGroupedYAxis c iconOffset continuousScale =
 
             ( Horizontal, ChartAxis.Left attributes ) ->
                 [ g
-                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                    [ transform [ Translate c.margin.left (c.height + c.padding.bottom + c.margin.top) ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisXClassName
@@ -1094,7 +1125,7 @@ bandGroupedYAxis c iconOffset continuousScale =
 
             ( Horizontal, ChartAxis.Right attributes ) ->
                 [ g
-                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                    [ transform [ Translate c.margin.left (c.height + c.padding.bottom + c.margin.top) ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisXClassName
@@ -1119,7 +1150,7 @@ bandGroupedYAxis c iconOffset continuousScale =
                                ]
                 in
                 [ g
-                    [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                    [ transform [ Translate c.margin.left (c.height + c.padding.bottom + c.margin.top) ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisXClassName
@@ -1156,6 +1187,9 @@ renderHistogram ( histogram, config ) =
         m =
             c.margin
 
+        p =
+            c.padding
+
         w =
             c.width
 
@@ -1163,10 +1197,10 @@ renderHistogram ( histogram, config ) =
             c.height
 
         outerW =
-            w + m.left + m.right
+            Helpers.outerWidth w m p
 
         outerH =
-            h + m.top + m.bottom
+            Helpers.outerHeight h m p
 
         domain : ( Float, Float )
         domain =
@@ -1199,7 +1233,7 @@ renderHistogram ( histogram, config ) =
         xAxis : List (Svg msg)
         xAxis =
             [ g
-                [ transform [ Translate c.margin.left (c.height + bottomGap + c.margin.top) ]
+                [ transform [ Translate c.margin.left (c.height + c.padding.bottom + c.margin.top) ]
                 , class
                     [ Constants.axisClassName
                     , Constants.axisXClassName
@@ -1214,7 +1248,7 @@ renderHistogram ( histogram, config ) =
             case c.axisYContinuous of
                 ChartAxis.Left attributes ->
                     [ g
-                        [ transform [ Translate (c.margin.left - leftGap) c.margin.top ]
+                        [ transform [ Translate (c.margin.left - c.padding.left) c.margin.top ]
                         , class
                             [ Constants.axisClassName
                             , Constants.axisYClassName

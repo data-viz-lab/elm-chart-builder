@@ -3,6 +3,8 @@ module Chart.Internal.Helpers exposing
     , floorFloat
     , invisibleFigcaption
     , mergeStyles
+    , outerHeight
+    , outerWidth
     , sortStrings
     , stackDataGroupContinuous
     , stackDeltas
@@ -147,3 +149,21 @@ stackDeltas vals =
         |> unstack
         |> List.drop 1
         |> (::) 0
+
+
+outerWidth :
+    Float
+    -> { a | left : Float, right : Float }
+    -> { a | left : Float, right : Float }
+    -> Float
+outerWidth width margin padding =
+    width + margin.left + margin.right + padding.left + padding.right
+
+
+outerHeight :
+    Float
+    -> { a | top : Float, bottom : Float }
+    -> { a | top : Float, bottom : Float }
+    -> Float
+outerHeight height margin padding =
+    height + margin.top + margin.bottom + padding.top + padding.bottom
