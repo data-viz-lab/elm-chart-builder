@@ -248,7 +248,7 @@ renderBandStacked ( data, config ) =
                     ++ bandXAxis c axisBandScale
                     ++ bandGroupedYAxis c 0 continuousScaleAxis
                     ++ [ g
-                            [ transform [ stackedContainerTranslate c m.left m.top (toFloat stackDepth) ]
+                            [ transform [ stackedContainerTranslate c m.left m.top ]
                             , class [ Constants.componentClassName ]
                             ]
                          <|
@@ -275,18 +275,18 @@ renderBandStacked ( data, config ) =
                 ]
 
 
-stackedContainerTranslate : ConfigStruct msg -> Float -> Float -> Float -> Transform
-stackedContainerTranslate config a b offset =
+stackedContainerTranslate : ConfigStruct msg -> Float -> Float -> Transform
+stackedContainerTranslate config a b =
     let
         orientation =
             config |> .orientation
     in
     case orientation of
         Horizontal ->
-            Translate (a - offset) b
+            Translate a b
 
         Vertical ->
-            Translate a (b + offset)
+            Translate a b
 
 
 stackedColumns : ConfigStruct msg -> BandScale String -> ( String, StackedValues, List String ) -> Svg msg
