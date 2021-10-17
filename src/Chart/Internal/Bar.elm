@@ -7,6 +7,8 @@ module Chart.Internal.Bar exposing
 import Axis
 import Chart.Internal.Axis as ChartAxis
 import Chart.Internal.Constants as Constants
+import Chart.Internal.Event as Event
+import Chart.Internal.GeometryHelpers as Helpers
 import Chart.Internal.Helpers as Helpers
 import Chart.Internal.Symbol
     exposing
@@ -59,6 +61,7 @@ import Chart.Internal.Type
         , showIcons
         , stackedValuesInverse
         , symbolCustomSpace
+        , symbolOffset
         , symbolSpace
         )
 import Histogram exposing (Bin)
@@ -469,14 +472,6 @@ renderBandGrouped ( data, config ) =
         colorScale =
             Scale.linear ( 0, 1 ) (Maybe.withDefault ( 0, 0 ) domain.continuous)
 
-        iconOffset : Float
-        iconOffset =
-            if List.isEmpty c.symbols then
-                0
-
-            else
-                symbolSpace Vertical bandSingleScale c.symbols + symbolGap
-
         symbolElements =
             case c.layout of
                 GroupedBar ->
@@ -497,6 +492,26 @@ renderBandGrouped ( data, config ) =
             else
                 bandSingleScale
 
+        events =
+            c.events
+                |> List.map
+                    (\e ->
+                        case e of
+                            Event.HoverAllRect f ->
+                                Event.hoverAllRect
+                                    { height = c.height
+                                    , symbolOffset = symbolOffset bandSingleScale c.symbols |> Just
+                                    , bandSingleScale = bandSingleScale
+                                    , continuousScale = continuousScale
+                                    , data = fromDataBand data
+                                    }
+                                    f
+
+                            _ ->
+                                []
+                    )
+                |> List.concat
+
         svgElAttrs =
             [ viewBox 0 0 outerW outerH
             , width outerW
@@ -505,11 +520,12 @@ renderBandGrouped ( data, config ) =
             , ariaHidden
             ]
                 ++ ariaLabelledbyContent c
+                ++ events
 
         svgEl =
             svg svgElAttrs <|
                 descAndTitle c
-                    ++ bandGroupedYAxis c iconOffset continuousScale
+                    ++ bandGroupedYAxis c (symbolOffset bandSingleScale c.symbols) continuousScale
                     ++ bandXAxis c axisBandScale
                     ++ [ g
                             [ transform [ Translate (m.left + p.left) (m.top + p.top) ]
@@ -519,7 +535,6 @@ renderBandGrouped ( data, config ) =
                             List.map
                                 (columns
                                     config
-                                    iconOffset
                                     bandGroupScale
                                     bandSingleScale
                                     continuousScale
@@ -552,14 +567,13 @@ renderBandGrouped ( data, config ) =
 
 columns :
     Config msg validation
-    -> Float
     -> BandScale String
     -> BandScale String
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> DataGroupBand
     -> Svg msg
-columns config iconOffset bandGroupScale bandSingleScale continuousScale colorScale dataGroup =
+columns config bandGroupScale bandSingleScale continuousScale colorScale dataGroup =
     let
         tr =
             case config |> fromConfig |> .orientation of
@@ -576,24 +590,23 @@ columns config iconOffset bandGroupScale bandSingleScale continuousScale colorSc
         , class [ Constants.dataGroupClassName ]
         ]
     <|
-        List.indexedMap (column config iconOffset bandSingleScale continuousScale colorScale) dataGroup.points
+        List.indexedMap (column config bandSingleScale continuousScale colorScale) dataGroup.points
 
 
 column :
     Config msg validation
-    -> Float
     -> BandScale String
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> Int
     -> PointBand
     -> Svg msg
-column config iconOffset bandSingleScale continuousScale colorScale idx point =
+column config bandSingleScale continuousScale colorScale idx point =
     let
         rectangle =
             case config |> fromConfig |> .orientation of
                 Vertical ->
-                    verticalRect config iconOffset bandSingleScale continuousScale colorScale idx point
+                    verticalRect config bandSingleScale continuousScale colorScale idx point
 
                 Horizontal ->
                     horizontalRect config bandSingleScale continuousScale colorScale idx point
@@ -609,20 +622,27 @@ column config iconOffset bandSingleScale continuousScale colorScale idx point =
 
 verticalRect :
     Config msg validation
-    -> Float
     -> BandScale String
     -> ContinuousScale Float
     -> ContinuousScale Float
     -> Int
     -> PointBand
     -> List (Svg msg)
-verticalRect config iconOffset bandSingleScale continuousScale colorScale idx point =
+verticalRect config bandSingleScale continuousScale colorScale idx point =
     let
         ( x__, y__ ) =
             point
 
         c =
             fromConfig config
+
+        { x_, y_, w, h } =
+            Helpers.verticalRect
+                c.height
+                (symbolOffset bandSingleScale c.symbols |> Just)
+                bandSingleScale
+                continuousScale
+                point
 
         labelOffset =
             if List.isEmpty c.symbols then
@@ -642,23 +662,8 @@ verticalRect config iconOffset bandSingleScale continuousScale colorScale idx po
                 |> Helpers.mergeStyles coreStyleFromX
                 |> style
 
-        w =
-            Scale.bandwidth bandSingleScale
-
-        h =
-            c.height
-                - Scale.convert continuousScale y__
-                - iconOffset
-
         label =
             verticalLabel config (x_ + w / 2) (y_ - labelGap - labelOffset) point
-
-        x_ =
-            Scale.convert bandSingleScale x__
-
-        y_ =
-            Scale.convert continuousScale y__
-                + iconOffset
 
         symbol : List (Svg msg)
         symbol =
@@ -666,10 +671,10 @@ verticalRect config iconOffset bandSingleScale continuousScale colorScale idx po
 
         rect_ =
             rect
-                [ x <| x_
-                , y <| y_
-                , width <| w
-                , height <| h
+                [ x x_
+                , y y_
+                , width w
+                , height h
                 , shapeRendering RenderCrispEdges
                 , coreStyle
                 ]
@@ -1034,7 +1039,7 @@ bandXAxis c bandScale =
 
 
 bandGroupedYAxis : ConfigStruct msg -> Float -> ContinuousScale Float -> List (Svg msg)
-bandGroupedYAxis c iconOffset continuousScale =
+bandGroupedYAxis c symbolOffset continuousScale =
     let
         m =
             c.margin
@@ -1047,7 +1052,7 @@ bandGroupedYAxis c iconOffset continuousScale =
             ( Vertical, ChartAxis.Left attributes ) ->
                 [ g
                     [ transform
-                        [ Translate (m.left |> Helpers.floorFloat) (iconOffset + m.top) ]
+                        [ Translate (m.left |> Helpers.floorFloat) (symbolOffset + m.top) ]
                     , class
                         [ Constants.axisClassName
                         , Constants.axisYClassName
@@ -1062,7 +1067,7 @@ bandGroupedYAxis c iconOffset continuousScale =
                     [ transform
                         [ Translate
                             (c.width + c.margin.left + c.padding.left)
-                            (iconOffset + c.margin.top)
+                            (symbolOffset + c.margin.top)
                         ]
                     , class
                         [ Constants.axisClassName
@@ -1090,7 +1095,7 @@ bandGroupedYAxis c iconOffset continuousScale =
                 [ g
                     [ transform
                         [ Translate (c.margin.left - c.padding.left)
-                            (iconOffset + c.margin.top)
+                            (symbolOffset + c.margin.top)
                         ]
                     , class
                         [ Constants.axisClassName

@@ -3,16 +3,23 @@ module Chart.Internal.Event exposing
     , DataGroupTransposed
     , Event(..)
     , Hint
+    , HintRect
     , PointContinuous
     , SearchCriteria(..)
+    , WithinRectArgs
     , flatDataGroup
     , getWithin
+    , getWithinRect
     , hoverAll
+    , hoverAllRect
     , hoverOne
     , nearest
     , transposeDataGroup
     )
 
+--import Chart.Internal.GeometryHelpers as Helpers
+
+import Chart.Internal.GeometryHelpers as Helpers
 import DOM
 import Dict exposing (Dict)
 import Html exposing (Attribute)
@@ -29,6 +36,7 @@ import Scale exposing (ContinuousScale)
 type Event msg
     = HoverOne (Maybe Hint -> msg)
     | HoverAll (Maybe Hint -> msg)
+    | HoverAllRect (Maybe HintRect -> msg)
 
 
 type alias Tolerance =
@@ -54,12 +62,12 @@ type alias DataGroup x =
     }
 
 
-type alias DataGroupTransposed =
+type alias DataGroupTransposed x =
     Dict
         String
         (List
             { groupLabel : Maybe String
-            , point : ( Float, Float )
+            , point : ( x, Float )
             }
         )
 
@@ -68,13 +76,17 @@ type alias DataGroupContinuous =
     DataGroup Float
 
 
+type alias DataGroupBand =
+    DataGroup String
+
+
 type alias SelectionDataY =
     { groupLabel : Maybe String
     , value : Float
     }
 
 
-type alias SelectionData =
+type alias CrossGroupData =
     { x : Float
     , y : List SelectionDataY
     }
@@ -82,7 +94,18 @@ type alias SelectionData =
 
 type alias Hint =
     { boundingClientRect : DOM.Rectangle
-    , selection : SelectionData
+    , selection : CrossGroupData
+    , xPosition : Float
+
+    --, yPosition : List Float
+    -- see Line.symbolGroup for why this should not be a list
+    , yPosition : Float
+    }
+
+
+type alias HintRect =
+    { boundingClientRect : DOM.Rectangle
+    , selection : DataGroup String
     , xPosition : Float
 
     --, yPosition : List Float
@@ -140,6 +163,52 @@ hoverAll config data scales msg =
     ]
 
 
+{-| -}
+hoverAllRect : WithinRectArgs -> (Maybe HintRect -> msg) -> List (Attribute msg)
+hoverAllRect args msg =
+    [ onEventRect "mousemove" args (HoverAllCriteria 0) msg
+    , onEventRect "touchstart" args (HoverAllCriteria 10) msg
+    , onEventRect "touchmove" args (HoverAllCriteria 10) msg
+    , onMouseLeaveRect msg
+    ]
+
+
+{-| -}
+hoverOneRect : WithinRectArgs -> (Maybe HintRect -> msg) -> List (Attribute msg)
+hoverOneRect args msg =
+    [ onEventRect "mousemove" args (HoverOneCriteria 0) msg
+    , onEventRect "touchstart" args (HoverOneCriteria 10) msg
+    , onEventRect "touchmove" args (HoverOneCriteria 10) msg
+    , onMouseLeaveRect msg
+    ]
+
+
+onEventRect :
+    String
+    -> WithinRectArgs
+    -> SearchCriteria
+    -> (Maybe HintRect -> msg)
+    -> Attribute msg
+onEventRect stringEvent args searchCriteria message =
+    on stringEvent
+        (mouseEventDecoder
+            |> Decode.andThen
+                (\e ->
+                    getWithinRect args searchCriteria e
+                        |> Maybe.map
+                            (\d ->
+                                { boundingClientRect = e.boundingClientRect
+                                , selection = d
+                                , xPosition = e.pageX
+                                , yPosition = e.pageY
+                                }
+                            )
+                        |> Decode.succeed
+                )
+            |> Decode.map message
+        )
+
+
 onEvent :
     String
     -> SearchCriteria
@@ -163,6 +232,12 @@ onEvent stringEvent searchCriteria config data scales message =
 {-| -}
 onMouseLeave : (Maybe Hint -> msg) -> Attribute msg
 onMouseLeave message =
+    on "mouseleave" (Decode.succeed (message Nothing))
+
+
+{-| -}
+onMouseLeaveRect : (Maybe HintRect -> msg) -> Attribute msg
+onMouseLeaveRect message =
     on "mouseleave" (Decode.succeed (message Nothing))
 
 
@@ -358,7 +433,19 @@ flatDataGroup dataGroup =
         |> List.concat
 
 
-transposeDataGroup : List (DataGroup Float) -> DataGroupTransposed
+updateTransposedDict :
+    { groupLabel : Maybe String, point : PointComparable comparable }
+    -> Maybe (List { groupLabel : Maybe String, point : PointComparable comparable })
+    -> Maybe (List { groupLabel : Maybe String, point : PointComparable comparable })
+updateTransposedDict { groupLabel, point } values =
+    values
+        |> Maybe.map
+            (\v ->
+                { groupLabel = groupLabel, point = point } :: v
+            )
+
+
+transposeDataGroup : List (DataGroup Float) -> DataGroupTransposed Float
 transposeDataGroup dataGroup =
     -- TODO: this feels all very inefficient,
     -- especially with a stateless componet
@@ -366,25 +453,39 @@ transposeDataGroup dataGroup =
     dataGroup
         |> flatDataGroup
         |> List.foldr
-            (\{ groupLabel, point } acc ->
+            (\d acc ->
                 let
                     k =
-                        Tuple.first point
+                        Tuple.first d.point
                             |> String.fromFloat
                 in
                 if Dict.member k acc then
-                    Dict.update k
-                        (\values ->
-                            values
-                                |> Maybe.map
-                                    (\v ->
-                                        { groupLabel = groupLabel, point = point } :: v
-                                    )
-                        )
-                        acc
+                    Dict.update k (updateTransposedDict d) acc
 
                 else
-                    Dict.insert k [ { groupLabel = groupLabel, point = point } ] acc
+                    Dict.insert k [ d ] acc
+            )
+            Dict.empty
+
+
+transposeDataGroupOrdinal : List (DataGroup String) -> DataGroupTransposed String
+transposeDataGroupOrdinal dataGroup =
+    -- TODO: this feels all very inefficient,
+    -- especially with a stateless componet
+    -- where on every event this needs recalculating
+    dataGroup
+        |> flatDataGroup
+        |> List.foldr
+            (\d acc ->
+                let
+                    k =
+                        Tuple.first d.point
+                in
+                if Dict.member k acc then
+                    Dict.update k (updateTransposedDict d) acc
+
+                else
+                    Dict.insert k [ d ] acc
             )
             Dict.empty
 
@@ -407,3 +508,64 @@ nearest numbers number =
             )
             ( 1 / 0, 0 )
         |> Tuple.second
+
+
+type alias WithinRectArgs =
+    { height : Float
+    , symbolOffset : Maybe Float
+    , data : List DataGroupBand
+    , bandSingleScale : Scale.BandScale String
+    , continuousScale : Scale.ContinuousScale Float
+
+    --, eventData : EventData
+    }
+
+
+getWithinRect : WithinRectArgs -> SearchCriteria -> EventData -> Maybe DataGroupBand
+getWithinRect { height, symbolOffset, data, bandSingleScale, continuousScale } criteria eventData =
+    --FIXME: it needs the concept of margin, padding and also bar group........
+    let
+        rect : ( String, Float ) -> { x_ : Float, y_ : Float, w : Float, h : Float }
+        rect d =
+            Helpers.verticalRect height symbolOffset bandSingleScale continuousScale d
+
+        within d =
+            d
+                |> List.map
+                    (\p ->
+                        let
+                            r =
+                                rect p
+
+                            a =
+                                eventData.pageX
+                                    > r.x_
+                                    && (eventData.pageX < r.x_ + r.w)
+
+                            b =
+                                --FIXME
+                                eventData.pageY
+                                    > r.y_
+                        in
+                        if a && b then
+                            Just p
+
+                        else
+                            Nothing
+                    )
+                |> Debug.log "fffff"
+                |> List.filterMap identity
+                |> List.head
+
+        pick : DataGroupBand -> Maybe DataGroupBand
+        pick d =
+            within d.points
+                |> Maybe.map
+                    (\p ->
+                        { groupLabel = d.groupLabel, points = [ p ] }
+                    )
+    in
+    data
+        |> List.map pick
+        |> List.filterMap identity
+        |> List.head

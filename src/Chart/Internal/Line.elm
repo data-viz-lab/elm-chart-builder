@@ -209,6 +209,9 @@ renderLineGrouped ( data, config ) =
 
                             Event.HoverAll f ->
                                 Event.hoverAll c continuousData ( xContinuousScale, yScale ) f
+
+                            _ ->
+                                []
                     )
                 |> List.concat
 
@@ -372,6 +375,9 @@ renderLineStacked offset ( data, config ) =
 
                             Event.HoverAll f ->
                                 Event.hoverAll c continuousData ( xContinuousScale, yScale ) f
+
+                            _ ->
+                                []
                     )
                 |> List.concat
 
