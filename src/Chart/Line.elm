@@ -742,6 +742,9 @@ withEvent event =
         HoverAll msg ->
             Type.addEvent (Event.HoverAll msg)
 
+        _ ->
+            identity
+
 
 {-| A predefined point annotation, in the format of `Chart.Annotation.Point`
 Typically used to draw points on hover.

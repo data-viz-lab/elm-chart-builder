@@ -7,6 +7,8 @@ The example is taken for elm-visualization.
 -}
 
 import Axis
+import Browser
+import Browser.Events
 import Chart.Bar as Bar
 import DateFormat
 import Html exposing (Html)
@@ -45,6 +47,26 @@ figure {
 """
 
 
+type alias Model =
+    { hinted : Maybe ( Float, Float )
+    }
+
+
+type Msg
+    = Hint (Maybe Bar.Hint)
+
+
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        Hint response ->
+            let
+                _ =
+                    Debug.log "response" response
+            in
+            model
+
+
 timeSeries : List ( String, Float )
 timeSeries =
     [ ( Time.millisToPosix 1448928000000, 2.5 )
@@ -70,7 +92,7 @@ accessor =
     Bar.Accessor (always Nothing) Tuple.first Tuple.second
 
 
-chart : Html msg
+chart : Html Msg
 chart =
     Bar.init
         { margin = { top = 10, right = 50, bottom = 30, left = 50 }
@@ -80,10 +102,11 @@ chart =
         |> Bar.withYDomain ( 0, 5 )
         |> Bar.withYAxis (Bar.axisLeft [ Axis.tickCount 5 ])
         |> Bar.withLabels (Bar.yLabel String.fromFloat)
+        |> Bar.withEvent (Bar.hoverAll Hint)
         |> Bar.render ( timeSeries, accessor )
 
 
-attrs : List (Html.Attribute msg)
+attrs : List (Html.Attribute Msg)
 attrs =
     [ Html.Attributes.style "height" "400px"
     , Html.Attributes.style "width" "600px"
@@ -91,7 +114,7 @@ attrs =
     ]
 
 
-footer : Html msg
+footer : Html Msg
 footer =
     Html.footer [ class "footer" ]
         [ Html.ul []
@@ -113,8 +136,8 @@ footer =
         ]
 
 
-main : Html msg
-main =
+view : Model -> Html Msg
+view model =
     Html.div []
         [ Html.node "style" [] [ Html.text css ]
         , Html.div [ class "wrapper" ]
@@ -122,3 +145,17 @@ main =
             , footer
             ]
         ]
+
+
+
+-- MAIN
+
+
+main =
+    Browser.sandbox
+        { init =
+            { hinted = Nothing
+            }
+        , view = view
+        , update = update
+        }

@@ -3,8 +3,9 @@ module Chart.Bar exposing
     , init
     , render
     , Config, RequiredConfig
-    , withBarStyle, withBarStyleFrom, withBottomPadding, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLeftPadding, withLogYScale, withOrientation, withStackedLayout, withSymbols, withTableFloatFormat, withTitle, withXDomain, withXGroupDomain, withXLabels
+    , withBarStyle, withBarStyleFrom, withBottomPadding, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withEvent, withLabels, withLeftPadding, withLogYScale, withOrientation, withStackedLayout, withSymbols, withTableFloatFormat, withTitle, withXDomain, withXGroupDomain, withXLabels
     , XAxis, YAxis, axisBottom, axisGrid, axisLeft, axisRight, axisTop, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
+    , Hint, hoverAll
     , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xOrdinalColumnTitle, yColumnTitle, yLabel
     , withYDomain, withoutTable, xGroupLabel, xLabel
     )
@@ -40,7 +41,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Optional Configuration Setters
 
-@docs withBarStyle, withBarStyleFrom, withBottomPadding, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLeftPadding, withLogYScale, withOrientation, withStackedLayout, withSymbols, withTableFloatFormat, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain withoutTable
+@docs withBarStyle, withBarStyleFrom, withBottomPadding, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withEvent, withLabels, withLeftPadding, withLogYScale, withOrientation, withStackedLayout, withSymbols, withTableFloatFormat, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain withoutTable
 
 
 # Axis
@@ -48,6 +49,11 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 &#9888; axisLeft & axisRight apply to a vertical chart context. If you change the chart orientation to horizontal, the axis positioning will always change to bottom.
 
 @docs XAxis, YAxis, axisBottom, axisGrid, axisLeft, axisRight, axisTop, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
+
+
+# Events
+
+@docs Hint, hoverAll
 
 
 # Configuration arguments
@@ -63,6 +69,7 @@ import Chart.Internal.Bar
         ( renderBandGrouped
         , renderBandStacked
         )
+import Chart.Internal.Event as Event exposing (Event(..))
 import Chart.Internal.Symbol exposing (Symbol)
 import Chart.Internal.Type as Type
 import Color exposing (Color)
@@ -741,3 +748,64 @@ withYAxis =
 withLogYScale : Float -> Config msg validation -> Config msg validation
 withLogYScale base =
     Type.setYScale (Type.LogScale base)
+
+
+
+-- EVENTS
+
+
+{-| The data format returned by an event.
+Internaly defined as:
+
+    type alias Hint =
+        { groupLabel : Maybe String
+        , xChart : Float
+        , yChart : List Float
+        , xData : Float
+        , yData : List Float
+        }
+
+  - xChart is the cursor's x coordinate in the chart's svg space.
+  - yChart is the cursor's y coordinate in the chart's svg space.
+  - xData is the list of all x line values within the tolerance of the xChart cursor's position.
+  - yData is the list of all y line values within the tolerance of the yChart cursor's position. For a [hoverOne](#hoverOne) event, the yChart will always only have one value.
+
+-}
+type alias Hint =
+    Event.HintRect
+
+
+{-| An event listener for all elements along the same x-value.
+
+    Bar.init requiredConfig
+        |> Bar.withEvent (Bar.hoverAll OnHover)
+        |> Bar.render ( data, accessor )
+
+-}
+hoverAll : (Maybe Event.HintRect -> msg) -> Event.Event msg
+hoverAll msg =
+    Event.HoverAllRect msg
+
+
+{-| Add an event with a msg to handle the returned Hint data.
+One of:
+
+  - [hoverOne](#hoverOne)
+
+  - [hoverAll](#hoverAll)
+
+```
+Bar.init requiredConfig
+    |> Bar.withEvent (Bar.hoverOne OnHover)
+    |> Bar.render ( data, accessor )
+```
+
+-}
+withEvent : Event msg -> Config msg validation -> Config msg validation
+withEvent event =
+    case event of
+        HoverAllRect msg ->
+            Type.addEvent (Event.HoverAllRect msg)
+
+        _ ->
+            identity

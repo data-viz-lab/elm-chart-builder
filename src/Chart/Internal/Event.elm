@@ -3,16 +3,23 @@ module Chart.Internal.Event exposing
     , DataGroupTransposed
     , Event(..)
     , Hint
+    , HintRect
     , PointContinuous
     , SearchCriteria(..)
+    , WithinRectArgs
     , flatDataGroup
     , getWithin
+    , getWithinRect
     , hoverAll
+    , hoverAllRect
     , hoverOne
     , nearest
     , transposeDataGroup
     )
 
+--import Chart.Internal.GeometryHelpers as Helpers
+
+import Chart.Internal.GeometryHelpers as Helpers
 import DOM
 import Dict exposing (Dict)
 import Html exposing (Attribute)
@@ -29,6 +36,7 @@ import Scale exposing (ContinuousScale)
 type Event msg
     = HoverOne (Maybe Hint -> msg)
     | HoverAll (Maybe Hint -> msg)
+    | HoverAllRect (Maybe HintRect -> msg)
 
 
 type alias Tolerance =
@@ -68,13 +76,17 @@ type alias DataGroupContinuous =
     DataGroup Float
 
 
+type alias DataGroupBand =
+    DataGroup String
+
+
 type alias SelectionDataY =
     { groupLabel : Maybe String
     , value : Float
     }
 
 
-type alias SelectionData =
+type alias CrossGroupData =
     { x : Float
     , y : List SelectionDataY
     }
@@ -82,7 +94,18 @@ type alias SelectionData =
 
 type alias Hint =
     { boundingClientRect : DOM.Rectangle
-    , selection : SelectionData
+    , selection : CrossGroupData
+    , xPosition : Float
+
+    --, yPosition : List Float
+    -- see Line.symbolGroup for why this should not be a list
+    , yPosition : Float
+    }
+
+
+type alias HintRect =
+    { boundingClientRect : DOM.Rectangle
+    , selection : DataGroup String
     , xPosition : Float
 
     --, yPosition : List Float
@@ -140,6 +163,42 @@ hoverAll config data scales msg =
     ]
 
 
+{-| -}
+hoverAllRect : WithinRectArgs -> (Maybe HintRect -> msg) -> List (Attribute msg)
+hoverAllRect args msg =
+    [ onEventRect "mousemove" args (HoverAllCriteria 0) msg
+    , onEventRect "touchstart" args (HoverAllCriteria 10) msg
+    , onEventRect "touchmove" args (HoverAllCriteria 10) msg
+    , onMouseLeaveRect msg
+    ]
+
+
+onEventRect :
+    String
+    -> WithinRectArgs
+    -> SearchCriteria
+    -> (Maybe HintRect -> msg)
+    -> Attribute msg
+onEventRect stringEvent args searchCriteria message =
+    on stringEvent
+        (mouseEventDecoder
+            |> Decode.andThen
+                (\e ->
+                    getWithinRect args searchCriteria e
+                        |> Maybe.map
+                            (\d ->
+                                { boundingClientRect = e.boundingClientRect
+                                , selection = d
+                                , xPosition = e.pageX
+                                , yPosition = e.pageY
+                                }
+                            )
+                        |> Decode.succeed
+                )
+            |> Decode.map message
+        )
+
+
 onEvent :
     String
     -> SearchCriteria
@@ -163,6 +222,12 @@ onEvent stringEvent searchCriteria config data scales message =
 {-| -}
 onMouseLeave : (Maybe Hint -> msg) -> Attribute msg
 onMouseLeave message =
+    on "mouseleave" (Decode.succeed (message Nothing))
+
+
+{-| -}
+onMouseLeaveRect : (Maybe HintRect -> msg) -> Attribute msg
+onMouseLeaveRect message =
     on "mouseleave" (Decode.succeed (message Nothing))
 
 
@@ -407,3 +472,60 @@ nearest numbers number =
             )
             ( 1 / 0, 0 )
         |> Tuple.second
+
+
+type alias WithinRectArgs =
+    { height : Float
+    , symbolOffset : Maybe Float
+    , data : List DataGroupBand
+    , bandSingleScale : Scale.BandScale String
+    , continuousScale : Scale.ContinuousScale Float
+
+    --, eventData : EventData
+    }
+
+
+getWithinRect : WithinRectArgs -> SearchCriteria -> EventData -> Maybe DataGroupBand
+getWithinRect { height, symbolOffset, data, bandSingleScale, continuousScale } criteria eventData =
+    let
+        rect : ( String, Float ) -> { x_ : Float, y_ : Float, w : Float, h : Float }
+        rect d =
+            Helpers.verticalRect height symbolOffset bandSingleScale continuousScale d
+
+        within d =
+            d
+                |> List.map
+                    (\p ->
+                        let
+                            r =
+                                rect p
+
+                            a =
+                                eventData.pageX
+                                    > r.x_
+                                    && (eventData.pageX < r.x_ + r.w)
+
+                            b =
+                                --FIXME
+                                eventData.pageY
+                                    > r.y_
+                        in
+                        a && b
+                    )
+                |> List.filter (\x -> x)
+                |> Debug.log "fffff"
+                |> List.head
+                |> Maybe.withDefault False
+
+        pick : DataGroupBand -> Maybe DataGroupBand
+        pick d =
+            if within d.points then
+                Just d
+
+            else
+                Nothing
+    in
+    data
+        |> List.map pick
+        |> List.filterMap identity
+        |> List.head

@@ -117,6 +117,7 @@ module Chart.Internal.Type exposing
     , showYLabel
     , stackedValuesInverse
     , symbolCustomSpace
+    , symbolOffset
     , symbolSpace
     , toConfig
     , toContinousScale
@@ -1273,6 +1274,15 @@ symbolCustomSpace orientation localDimension conf =
                     localDimension / conf.viewBoxWidth
             in
             scalingFactor * conf.viewBoxHeight
+
+
+symbolOffset : Scale.BandScale String -> List Symbol -> Float
+symbolOffset bandSingleScale symbols =
+    if List.isEmpty symbols then
+        0
+
+    else
+        symbolSpace Vertical bandSingleScale symbols + Symbol.symbolGap
 
 
 
