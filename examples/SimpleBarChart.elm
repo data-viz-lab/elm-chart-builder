@@ -60,10 +60,6 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Hint response ->
-            --let
-            --    _ =
-            --        Debug.log "response" response
-            --in
             model
 
 

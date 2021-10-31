@@ -547,23 +547,20 @@ getWithinRect { height, symbolOffset, data, bandSingleScale, continuousScale } c
                                 eventData.pageY
                                     > r.y_
                         in
-                        if a && b then
-                            Just p
-
-                        else
-                            Nothing
+                        a && b
                     )
+                |> List.filter (\x -> x)
                 |> Debug.log "fffff"
-                |> List.filterMap identity
                 |> List.head
+                |> Maybe.withDefault False
 
         pick : DataGroupBand -> Maybe DataGroupBand
         pick d =
-            within d.points
-                |> Maybe.map
-                    (\p ->
-                        { groupLabel = d.groupLabel, points = [ p ] }
-                    )
+            if within d.points then
+                Just d
+
+            else
+                Nothing
     in
     data
         |> List.map pick
