@@ -4,7 +4,7 @@ module Chart.Line exposing
     , render
     , Config, RequiredConfig
     , asArea, withBottomPadding, withColorPalette, withCurve, withDesc, withEvent, withGroupedLayout, withLabels, withLeftPadding, withLineStyle, withLogYScale, withPointAnnotation, withStackedLayout, withSymbols, withTableFloatFormat, withTablePosixFormat, withTitle, withVLineAnnotation, withXContDomain, withXContinuousDomain, withXTimeDomain, withYDomain, withoutTable
-    , axisBottom, axisGrid, axisLeft, axisRight, drawLine, xGroupLabel
+    , axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel
     , XAxis, YAxis, hideAxis, hideXAxis, hideYAxis, withXAxisCont, withXAxisContinuous, withXAxisTime, withYAxis
     , Hint, hoverAll, hoverOne
     )
@@ -41,7 +41,7 @@ It expects the X axis to plot time or continuous data and the Y axis to plot con
 
 # Configuration arguments
 
-@docs axisBottom, axisGrid, axisLeft, axisRight, drawLine, xGroupLabel
+@docs axisBottom, axisGrid, axisLeft, axisRight, xGroupLabel
 
 
 # Axis
@@ -448,7 +448,7 @@ withColorPalette palette config =
 It takes an option to draw stacked lines or stacked areas
 
     Line.init requiredConfig
-        |> Line.withStackedLayout Line.drawLine
+        |> Line.withStackedLayout Shape.stackOffsetSilhouette
         |> Line.render ( data, accessor )
 
 -}
@@ -779,18 +779,6 @@ withVLineAnnotation annotation config =
 
         Nothing ->
             config
-
-
-{-| A stacked chart with lines option.
-
-    Line.init requiredConfig
-        |> Line.withStackedLayout Line.drawLine
-        |> Line.render ( data, accessor )
-
--}
-drawLine : Type.LineDraw
-drawLine =
-    Type.lineDrawLine
 
 
 

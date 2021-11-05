@@ -6,7 +6,6 @@ module CoronavirusDeaths exposing (main)
 import Array exposing (Array)
 import Axis
 import Browser
-import Chart.Bar as Bar
 import Chart.Line as Line
 import Color exposing (rgb255)
 import Csv exposing (Csv)
@@ -136,7 +135,7 @@ valueFormatter =
     FormatNumber.format { usLocale | decimals = 0 }
 
 
-yAxis : Bar.YAxis Float
+yAxis : Line.YAxis Float
 yAxis =
     Line.axisLeft
         [ Axis.tickCount 5
@@ -152,7 +151,7 @@ dateFormat =
         Time.utc
 
 
-xAxis : Bar.XAxis Posix
+xAxis : Line.XAxis Posix
 xAxis =
     Line.axisBottom
         [ Axis.tickSizeOuter 0
