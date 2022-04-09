@@ -122,6 +122,7 @@ hoverOne config data scales msg =
     , onEvent "touchstart" (HoverOneCriteria 100) config data scales msg
     , onEvent "touchmove" (HoverOneCriteria 100) config data scales msg
     , onMouseLeave msg
+    , onTouchEnd msg
     ]
 
 
@@ -136,7 +137,9 @@ hoverAll config data scales msg =
     [ onEvent "mousemove" (HoverAllCriteria 30) config data scales msg
     , onEvent "touchstart" (HoverAllCriteria 100) config data scales msg
     , onEvent "touchmove" (HoverAllCriteria 100) config data scales msg
+    , onEvent "touchend" (HoverOneCriteria 100) config data scales msg
     , onMouseLeave msg
+    , onTouchEnd msg
     ]
 
 
@@ -164,6 +167,12 @@ onEvent stringEvent searchCriteria config data scales message =
 onMouseLeave : (Maybe Hint -> msg) -> Attribute msg
 onMouseLeave message =
     on "mouseleave" (Decode.succeed (message Nothing))
+
+
+{-| -}
+onTouchEnd : (Maybe Hint -> msg) -> Attribute msg
+onTouchEnd message =
+    on "touchend" (Decode.succeed (message Nothing))
 
 
 getWithin :
