@@ -138,10 +138,6 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Hint response ->
-            let
-                _ =
-                    Debug.log "response" response
-            in
             { model
                 | pointAnnotation =
                     response
@@ -428,8 +424,6 @@ tooltip model =
             annotation
                 |> Maybe.map (always "block")
                 |> Maybe.withDefault "none"
-
-        --|> Debug.log "left"
     in
     case model.annotationMode of
         InfoBox ->
