@@ -138,6 +138,10 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Hint response ->
+            let
+                _ =
+                    Debug.log "response" response
+            in
             { model
                 | pointAnnotation =
                     response
@@ -268,6 +272,10 @@ margin =
     { top = 20, right = 25, bottom = 25, left = 50 }
 
 
+leftPadding =
+    10
+
+
 chart : Model -> Html Msg
 chart model =
     Line.init
@@ -277,7 +285,7 @@ chart model =
         }
         |> Line.withXAxisTime xAxis
         |> Line.withYAxis yAxis
-        |> Line.withLeftPadding 8
+        |> Line.withLeftPadding leftPadding
         |> Line.withBottomPadding 0
         |> Line.withColorPalette Scale.Color.tableau10
         |> Line.withLineStyle [ ( "stroke-width", "2" ) ]
@@ -397,7 +405,7 @@ tooltip model =
             timeAndValues model
 
         xOffset =
-            margin.left + 20
+            margin.left + leftPadding + 20
 
         annotation =
             model.pointAnnotation

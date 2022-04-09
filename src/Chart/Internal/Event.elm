@@ -101,6 +101,7 @@ type alias EventData =
 type alias Config c =
     { c
         | margin : { top : Float, right : Float, bottom : Float, left : Float }
+        , padding : { top : Float, right : Float, bottom : Float, left : Float }
         , width : Float
         , height : Float
     }
@@ -173,19 +174,21 @@ getWithin :
     -> SearchCriteria
     -> EventData
     -> Maybe Hint
-getWithin { margin, width, height } data ( xScale, yScale ) criteria eventData =
+getWithin { padding, margin, height } data ( xScale, yScale ) criteria eventData =
     let
         xPosition =
             eventData.pageX
                 - eventData.boundingClientRect.left
                 - margin.left
+                - padding.left
 
         yPosition =
             eventData.pageY
                 - eventData.boundingClientRect.top
                 - margin.top
+                - padding.top
 
-        ( xValue, yValue ) =
+        ( xValue, _ ) =
             ( Scale.invert xScale xPosition, Scale.invert yScale yPosition )
 
         dataTransposed =
