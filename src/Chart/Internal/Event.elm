@@ -81,8 +81,7 @@ type alias SelectionData =
 
 
 type alias Hint =
-    { boundingClientRect : DOM.Rectangle
-    , selection : SelectionData
+    { selection : SelectionData
     , xPosition : Float
 
     --, yPosition : List Float
@@ -254,8 +253,7 @@ getWithin { padding, margin, height } data ( xScale, yScale ) criteria eventData
                     )
                 |> Maybe.map
                     (\{ groupLabel, point } ->
-                        { boundingClientRect = eventData.boundingClientRect
-                        , selection =
+                        { selection =
                             { x = Tuple.first point
                             , y =
                                 [ { groupLabel = groupLabel
@@ -275,8 +273,7 @@ getWithin { padding, margin, height } data ( xScale, yScale ) criteria eventData
                         case acc of
                             Nothing ->
                                 Just
-                                    { boundingClientRect = eventData.boundingClientRect
-                                    , selection =
+                                    { selection =
                                         { x = Tuple.first point
                                         , y =
                                             [ { groupLabel = groupLabel
