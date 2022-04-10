@@ -49,8 +49,15 @@ elm-chart-builder adds a number of css classes to the generated elements. These 
 
 Find the documentation on [Elm's package website](https://package.elm-lang.org/packages/data-viz-lab/elm-chart-builder/latest/).
 
-## Examples
+## Online presentation page
 
+* [elm-chart-builder-presentation](https://data-viz-lab.github.io/elm-chart-builder-presentation/)
+
+## Development
+
+### Examples
+
+You can test code changes with the existing examples.
 It expects elm to already be installed and accessible.
 
 ```shell
@@ -58,28 +65,23 @@ $ cd examples
 $ elm reactor
 ```
 
-and open [examples](https://localhost:8000).
+and then open [examples](https://localhost:8000).
 
-## Online Examples
-
-* [elm-chart-builder-presentation](https://data-viz-lab.github.io/elm-chart-builder-presentation/)
-## Tests:
-
-It expects elm-test to already be installed and accessible.
+### Unit tests:
 
 ```shell
+$ npm install
 $ elm-test
 ```
 
-## elm-anlyse:
-
-It expects elm-analyse to already be installed and accessible.
+### elm-anlyse:
 
 ```shell
+$ npm install
 $ elm-analyse > elm-analyse.log
 ```
 
-## screenshot tests:
+### Screenshot tests:
 
 It expects the `elm reactor` server to be already running on port 8000.
 
@@ -90,7 +92,11 @@ $ cd screenshot-tests
 # Check if a page in the examples folder has changed unexpectedly after a code change:
 $ node tests.js
 
-# If the change was intentional, reset the images:
+# Then if any example page has changed: 
+# you can check the diff images in the diffs folder,
+# and you can also check the current and prev images in the images folder.
+
+# If the change was intentional, you can reset all images by running:
 $ node tests.js --reset
 ```
 

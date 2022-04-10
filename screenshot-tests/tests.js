@@ -6,6 +6,10 @@ const pixelmatch = require("pixelmatch");
 
 const args = process.argv.slice(2);
 
+//These contain external data that take time to load and that can change, so
+//excluding from the screenshot tests.
+const exclude = ["CoronavirusDeaths.elm"];
+
 let problems = false;
 
 const getAllFiles = (dirPath, arrayOfFiles = []) => {
@@ -33,6 +37,7 @@ const compareImages = () => {
     const pngName = allFiles[i].replace(".elm", ".png").replace("/", "--");
     const currentName = pngName.replace(".", "--current.");
     const prevName = pngName.replace(".", "--prev.");
+    const diffName = pngName.replace(".", "--diff.");
 
     if (fs.existsSync(`images/${prevName}`)) {
       const current = PNG.sync.read(fs.readFileSync(`images/${currentName}`));
@@ -45,8 +50,11 @@ const compareImages = () => {
       });
 
       if (zz !== 0) {
-        console.warn(`Page ${allFiles[i]} has changed!`);
+        console.warn(
+          `Page ${allFiles[i]} has changed! Check the diffs folder for details.`
+        );
         problems = true;
+        fs.writeFileSync(`diffs/${diffName}`, PNG.sync.write(diff));
       }
     }
   }
@@ -66,17 +74,25 @@ const buildScreenshots = async () => {
   });
 
   for (var i = 0, len = allFiles.length - 1; i < len; i++) {
+    if (exclude.some((x) => allFiles[i] === x)) {
+      continue;
+    }
+
     const pngName = allFiles[i].replace(".elm", ".png").replace("/", "--");
     const currentName = pngName.replace(".", "--current.");
     const prevName = pngName.replace(".", "--prev.");
+    const diffName = pngName.replace(".", "--diff.");
 
     if (args[0] === "--reset") {
       const current = `images/${currentName}`;
       const prev = `images/${prevName}`;
+      const diff = `diffs/${diffName}`;
       fs.existsSync(current) &&
         fs.unlink(current, (err) => err && console.log("ERROR: " + err));
       fs.existsSync(prev) &&
         fs.unlink(prev, (err) => err && console.log("ERROR: " + err));
+      fs.existsSync(diff) &&
+        fs.unlink(diff, (err) => err && console.log("ERROR: " + err));
     } else {
       if (
         fs.existsSync(`images/${currentName}`) ||

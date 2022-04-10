@@ -8,5 +8,9 @@ repl-temp-*
 
 elm-analyse.log
 
-screenshot-tests/node_modules
 node_modules
+screenshot-tests/node_modules
+
+# we do not commit the screenshot images,
+# they are only for local development.
+screenshot-tests/**/*.png
