@@ -48,8 +48,6 @@ import Chart.Internal.Type
         , fillGapsForStack
         , fromConfig
         , fromDataBand
-        , getBandGroupRange
-        , getBandSingleRange
         , getContinuousRange
         , getDataBandDepth
         , getDomainBandFromData
@@ -172,28 +170,21 @@ renderBandStacked ( data, config ) =
                 Nothing ->
                     extent
 
-        bandGroupRange =
-            getBandGroupRange config w h
-
-        bandSingleRange =
-            getBandSingleRange config (Scale.bandwidth bandGroupScale)
-
         bandGroupScale =
-            Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.05 }
-                bandGroupRange
-                (Maybe.withDefault [] domain.bandGroup)
+            getBandGroupScale ( data, config )
 
-        bandSingleScale =
-            Scale.band defaultBandConfig
-                bandSingleRange
-                (Maybe.withDefault [] domain.bandSingle)
+        bandScale =
+            getBandScale ( data, config ) bandRange
+
+        bandRange =
+            getBandRange config (Scale.bandwidth bandGroupScale)
 
         continuousRange =
-            getContinuousRange config RenderChart w h bandSingleScale
+            getContinuousRange config RenderChart w h bandScale
                 |> adjustContinuousRange config stackDepth
 
         continuousRangeAxis =
-            getContinuousRange config RenderAxis w h bandSingleScale
+            getContinuousRange config RenderAxis w h bandScale
                 |> adjustContinuousRange config stackDepth
 
         continuousScale : ContinuousScale Float
@@ -423,43 +414,17 @@ renderBandGrouped ( data, config ) =
         domain =
             getDomainBandFromData data config
 
-        bandGroupRange =
-            getBandGroupRange config w h
-
-        bandSingleRange =
-            getBandSingleRange config (Scale.bandwidth bandGroupScale)
+        bandRange =
+            getBandRange config (Scale.bandwidth bandGroupScale)
 
         continuousRange =
-            getContinuousRange config RenderChart w h bandSingleScale
+            getContinuousRange config RenderChart w h bandScale
 
-        dataLength =
-            data |> fromDataBand |> List.length
-
-        paddingInner =
-            -- Adapt the padding to the number of bars, more bars less padding
-            -- otherwise no space would be left between bars
-            Scale.convert
-                (Scale.linear ( 0.2, 0.999 ) ( 0, 500 ) |> Scale.clamp)
-                (data |> getDataBandDepth |> toFloat)
-
-        paddingInnerGroup =
-            if dataLength == 1 then
-                0
-
-            else
-                0.1
-
-        bandGroupScale : BandScale String
         bandGroupScale =
-            Scale.band { defaultBandConfig | paddingInner = paddingInnerGroup, paddingOuter = paddingInnerGroup }
-                bandGroupRange
-                (domain.bandGroup |> Maybe.withDefault [])
+            getBandGroupScale ( data, config )
 
-        bandSingleScale : BandScale String
-        bandSingleScale =
-            Scale.band { defaultBandConfig | paddingInner = paddingInner, paddingOuter = paddingInner / 2 }
-                bandSingleRange
-                (Maybe.withDefault [] domain.bandSingle)
+        bandScale =
+            getBandScale ( data, config ) bandRange
 
         continuousScale : ContinuousScale Float
         continuousScale =
@@ -475,13 +440,13 @@ renderBandGrouped ( data, config ) =
                 0
 
             else
-                symbolSpace Vertical bandSingleScale c.symbols + symbolGap
+                symbolSpace Vertical bandScale c.symbols + symbolGap
 
         symbolElements =
             case c.layout of
                 GroupedBar ->
                     if showIcons config then
-                        symbolsToSymbolElements c.orientation bandSingleScale c.symbols
+                        symbolsToSymbolElements c.orientation bandScale c.symbols
 
                     else
                         []
@@ -495,7 +460,7 @@ renderBandGrouped ( data, config ) =
                 bandGroupScale
 
             else
-                bandSingleScale
+                bandScale
 
         svgElAttrs =
             [ viewBox 0 0 outerW outerH
@@ -521,7 +486,7 @@ renderBandGrouped ( data, config ) =
                                     config
                                     iconOffset
                                     bandGroupScale
-                                    bandSingleScale
+                                    bandScale
                                     continuousScale
                                     colorScale
                                 )
@@ -559,7 +524,7 @@ columns :
     -> ContinuousScale Float
     -> DataGroupBand
     -> Svg msg
-columns config iconOffset bandGroupScale bandSingleScale continuousScale colorScale dataGroup =
+columns config iconOffset bandGroupScale bandScale continuousScale colorScale dataGroup =
     let
         tr =
             case config |> fromConfig |> .orientation of
@@ -576,7 +541,7 @@ columns config iconOffset bandGroupScale bandSingleScale continuousScale colorSc
         , class [ Constants.dataGroupClassName ]
         ]
     <|
-        List.indexedMap (column config iconOffset bandSingleScale continuousScale colorScale) dataGroup.points
+        List.indexedMap (column config iconOffset bandScale continuousScale colorScale) dataGroup.points
 
 
 column :
@@ -588,15 +553,15 @@ column :
     -> Int
     -> PointBand
     -> Svg msg
-column config iconOffset bandSingleScale continuousScale colorScale idx point =
+column config iconOffset bandScale continuousScale colorScale idx point =
     let
         rectangle =
             case config |> fromConfig |> .orientation of
                 Vertical ->
-                    verticalRect config iconOffset bandSingleScale continuousScale colorScale idx point
+                    verticalRect config iconOffset bandScale continuousScale colorScale idx point
 
                 Horizontal ->
-                    horizontalRect config bandSingleScale continuousScale colorScale idx point
+                    horizontalRect config bandScale continuousScale colorScale idx point
     in
     g
         [ class
@@ -616,7 +581,7 @@ verticalRect :
     -> Int
     -> PointBand
     -> List (Svg msg)
-verticalRect config iconOffset bandSingleScale continuousScale colorScale idx point =
+verticalRect config iconOffset bandScale continuousScale colorScale idx point =
     let
         ( x__, y__ ) =
             point
@@ -643,7 +608,7 @@ verticalRect config iconOffset bandSingleScale continuousScale colorScale idx po
                 |> style
 
         w =
-            Scale.bandwidth bandSingleScale
+            Scale.bandwidth bandScale
 
         h =
             c.height
@@ -654,7 +619,7 @@ verticalRect config iconOffset bandSingleScale continuousScale colorScale idx po
             verticalLabel config (x_ + w / 2) (y_ - labelGap - labelOffset) point
 
         x_ =
-            Scale.convert bandSingleScale x__
+            Scale.convert bandScale x__
 
         y_ =
             Scale.convert continuousScale y__
@@ -688,7 +653,7 @@ horizontalRect :
     -> Int
     -> PointBand
     -> List (Svg msg)
-horizontalRect config bandSingleScale continuousScale colorScale idx point =
+horizontalRect config bandScale continuousScale colorScale idx point =
     let
         c =
             fromConfig config
@@ -697,13 +662,13 @@ horizontalRect config bandSingleScale continuousScale colorScale idx point =
             point
 
         h =
-            Scale.bandwidth bandSingleScale
+            Scale.bandwidth bandScale
 
         w =
             Scale.convert continuousScale y__
 
         y_ =
-            Scale.convert bandSingleScale x__
+            Scale.convert bandScale x__
 
         colorStyles =
             colorStyle c (Just idx) (Scale.convert colorScale y__ |> Just)
@@ -923,10 +888,10 @@ verticalSymbol config { idx, w, y_, x_, styleStr } =
 
 
 symbolsToSymbolElements : Orientation -> BandScale String -> List Symbol -> List (Svg msg)
-symbolsToSymbolElements orientation bandSingleScale symbols =
+symbolsToSymbolElements orientation bandScale symbols =
     let
         localDimension =
-            Scale.bandwidth bandSingleScale
+            Scale.bandwidth bandScale
     in
     symbols
         |> List.map
@@ -1038,9 +1003,6 @@ bandGroupedYAxis c iconOffset continuousScale =
     let
         m =
             c.margin
-
-        p =
-            c.padding
     in
     if c.showYAxis == True then
         case ( c.orientation, c.axisYContinuous ) of
@@ -1473,3 +1435,104 @@ tableElement config data =
             Err error ->
                 Html.text (Table.errorToString error)
         ]
+
+
+{-| Get the BandScale for the xGroup data
+-}
+getBandGroupScale : ( DataBand, Config msg validation ) -> BandScale String
+getBandGroupScale ( data, config ) =
+    let
+        c =
+            fromConfig config
+
+        domain : DomainBandStruct
+        domain =
+            getDomainBandFromData data config
+
+        bandGroupRange =
+            getBandGroupRange config c.width c.height
+
+        dataLength =
+            data |> fromDataBand |> List.length
+
+        ( paddingInner, paddingOuter ) =
+            case c.layout of
+                GroupedBar ->
+                    if dataLength == 1 then
+                        ( 0, 0 )
+
+                    else
+                        ( 0.1, 0.15 )
+
+                StackedBar _ ->
+                    ( 0.1, 0.15 )
+
+                _ ->
+                    ( 0, 0 )
+    in
+    Scale.band { defaultBandConfig | paddingInner = paddingInner, paddingOuter = paddingOuter }
+        bandGroupRange
+        (domain.bandGroup |> Maybe.withDefault [])
+
+
+{-| Get the BandScale for the x data
+-}
+getBandScale : ( DataBand, Config msg validation ) -> ( Float, Float ) -> BandScale String
+getBandScale ( data, config ) bandRange =
+    let
+        c =
+            fromConfig config
+
+        inner =
+            -- Adapt the padding to the number of bars, more bars less padding
+            -- otherwise no space would be left between bars
+            Scale.convert
+                (Scale.linear ( 0.2, 0.999 ) ( 0, 500 ) |> Scale.clamp)
+                (data |> getDataBandDepth |> toFloat)
+
+        domain : DomainBandStruct
+        domain =
+            getDomainBandFromData data config
+
+        ( paddingInner, paddingOuter ) =
+            case c.layout of
+                GroupedBar ->
+                    ( inner, inner / 2 )
+
+                StackedBar _ ->
+                    ( defaultBandConfig.paddingInner, defaultBandConfig.paddingOuter )
+
+                _ ->
+                    ( 0, 0 )
+    in
+    Scale.band { defaultBandConfig | paddingInner = paddingInner, paddingOuter = paddingOuter }
+        bandRange
+        (Maybe.withDefault [] domain.bandSingle)
+
+
+getBandRange : Config msg validation -> Float -> ( Float, Float )
+getBandRange config value =
+    let
+        orientation =
+            fromConfig config |> .orientation
+    in
+    case orientation of
+        Horizontal ->
+            ( floor value |> toFloat, 0 )
+
+        Vertical ->
+            ( 0, floor value |> toFloat )
+
+
+getBandGroupRange : Config msg validation -> Float -> Float -> ( Float, Float )
+getBandGroupRange config width height =
+    let
+        orientation =
+            fromConfig config |> .orientation
+    in
+    case orientation of
+        Horizontal ->
+            ( height, 0 )
+
+        Vertical ->
+            ( 0, width )

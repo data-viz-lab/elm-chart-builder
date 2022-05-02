@@ -78,7 +78,7 @@ $ elm-test
 
 ```shell
 $ npm install
-$ elm-analyse > elm-analyse.log
+$ npx elm-analyse > elm-analyse.log
 ```
 
 ### Screenshot tests:

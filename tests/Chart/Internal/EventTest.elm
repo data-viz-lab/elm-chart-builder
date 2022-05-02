@@ -31,6 +31,7 @@ getWithinTest =
 
                     config =
                         { margin = { top = 0, right = 0, bottom = 0, left = 0 }
+                        , padding = { top = 0, right = 0, bottom = 0, left = 0 }
                         , width = width
                         , height = height
                         }
@@ -66,8 +67,7 @@ getWithinTest =
 
                     expected =
                         Just
-                            { boundingClientRect = boundingClientRect
-                            , selection =
+                            { selection =
                                 { x = 1
                                 , y =
                                     [ { groupLabel = Just "A"
@@ -91,6 +91,7 @@ getWithinTest =
 
                     config =
                         { margin = { top = 0, right = 0, bottom = 0, left = 0 }
+                        , padding = { top = 0, right = 0, bottom = 0, left = 0 }
                         , width = width
                         , height = height
                         }
@@ -126,8 +127,7 @@ getWithinTest =
 
                     expected =
                         Just
-                            { boundingClientRect = boundingClientRect
-                            , selection =
+                            { selection =
                                 { x = 1
                                 , y =
                                     [ { groupLabel = Just "A"

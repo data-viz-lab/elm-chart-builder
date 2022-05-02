@@ -61,8 +61,6 @@ module Chart.Internal.Type exposing
     , fromDataBand
     , getAnnotationPointHint
     , getAnnotationVLine
-    , getBandGroupRange
-    , getBandSingleRange
     , getContinuousRange
     , getDataBandDepth
     , getDomainBand
@@ -1102,34 +1100,6 @@ getDataBandDepth data =
         |> List.head
         |> Maybe.withDefault []
         |> List.length
-
-
-getBandGroupRange : Config msg validation -> Float -> Float -> ( Float, Float )
-getBandGroupRange config width height =
-    let
-        orientation =
-            fromConfig config |> .orientation
-    in
-    case orientation of
-        Horizontal ->
-            ( height, 0 )
-
-        Vertical ->
-            ( 0, width )
-
-
-getBandSingleRange : Config msg validation -> Float -> ( Float, Float )
-getBandSingleRange config value =
-    let
-        orientation =
-            fromConfig config |> .orientation
-    in
-    case orientation of
-        Horizontal ->
-            ( floor value |> toFloat, 0 )
-
-        Vertical ->
-            ( 0, floor value |> toFloat )
 
 
 type RenderContext
