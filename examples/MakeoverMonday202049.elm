@@ -137,7 +137,7 @@ chart d =
         , width = width
         , height = height
         }
-        |> Bar.withColorPalette Scale.Color.tableau10
+        |> Bar.withColorPalette (Scale.Color.tableau10 |> List.take 2 |> List.reverse)
         |> Bar.withOrientation Bar.vertical
         |> Bar.withStackedLayout Bar.diverging
         |> Bar.withYDomain ( -75, 75 )
