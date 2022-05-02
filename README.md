@@ -71,10 +71,10 @@ and then open [examples](https://localhost:8000).
 
 ```shell
 $ npm install
-$ elm-test
+$ npx elm-test
 ```
 
-### elm-anlyse:
+### elm-analyse:
 
 ```shell
 $ npm install
