@@ -329,7 +329,7 @@ verticalRectsStacked c bandGroupScale ( group, values, labels ) =
                         , shapeRendering RenderCrispEdges
                         , coreStyle
                         ]
-                        (stackedColumnTitleText c idx labels rawValue)
+                        (stackedColumnTitleText c idx ( group, rawValue, labels ))
             in
             g
                 [ class
@@ -367,7 +367,7 @@ horizontalRectsStacked c bandGroupScale ( group, values, labels ) =
                         , shapeRendering RenderCrispEdges
                         , coreStyle
                         ]
-                        (stackedColumnTitleText c idx labels rawValue)
+                        (stackedColumnTitleText c idx ( group, rawValue, labels ))
             in
             g
                 [ class
@@ -1347,8 +1347,12 @@ getStackedLabel idx l =
         |> Maybe.withDefault ""
 
 
-stackedColumnTitleText : ConfigStruct msg -> Int -> List String -> Float -> List (Svg msg)
-stackedColumnTitleText c idx labels value =
+stackedColumnTitleText :
+    ConfigStruct msg
+    -> Int
+    -> ( String, Float, List String )
+    -> List (Svg msg)
+stackedColumnTitleText c idx ( group, value, labels ) =
     let
         ordinalValue =
             getStackedLabel idx labels
@@ -1362,6 +1366,9 @@ stackedColumnTitleText c idx labels value =
 
         XOrdinalColumnTitle ->
             [ TypedSvg.title [] [ text ordinalValue ] ]
+
+        CustomColumnTitle formatter ->
+            [ TypedSvg.title [] [ formatter ( group, ordinalValue, value ) |> text ] ]
 
         _ ->
             []

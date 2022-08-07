@@ -161,6 +161,15 @@ valueFormatter =
     Numeral.format "0%"
 
 
+titleFormatter : ( String, String, Float ) -> String
+titleFormatter ( xGroup, xValue, yValue ) =
+    xGroup
+        ++ ", "
+        ++ xValue
+        ++ ": "
+        ++ Numeral.format "0%" yValue
+
+
 yAxis : Bar.YAxis Float
 yAxis =
     Bar.axisLeft
@@ -184,7 +193,7 @@ stackedByFrequency =
         , height = height
         }
         |> Bar.withColorPalette colorScheme
-        |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
+        |> Bar.withColumnTitle (Bar.customColumnTitle titleFormatter)
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withXAxis xAxis
         |> Bar.withYDomain ( 0, 0.55 )
@@ -200,7 +209,7 @@ stackedByFrequencyGender =
         , height = height
         }
         |> Bar.withColorPalette colorScheme
-        |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
+        |> Bar.withColumnTitle (Bar.customColumnTitle titleFormatter)
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withYDomain ( 0, 0.55 )
         |> Bar.withYAxis yAxis

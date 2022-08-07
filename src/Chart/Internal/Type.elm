@@ -106,6 +106,7 @@ module Chart.Internal.Type exposing
     , setYAxis
     , setYAxisContinuous
     , setYScale
+    , showCustomColumnTitle
     , showIcons
     , showStackedColumnTitle
     , showXGroupLabel
@@ -865,6 +866,7 @@ type ColumnTitle
     = YColumnTitle (Float -> String)
     | XOrdinalColumnTitle
     | StackedColumnTitle (Float -> String)
+    | CustomColumnTitle (( String, String, Float ) -> String)
     | NoColumnTitle
 
 
@@ -881,6 +883,14 @@ showYColumnTitle formatter (Config c) =
 showStackedColumnTitle : (Float -> String) -> Config msg validation -> Config msg validation
 showStackedColumnTitle formatter (Config c) =
     toConfig { c | showColumnTitle = StackedColumnTitle formatter }
+
+
+showCustomColumnTitle :
+    (( String, String, Float ) -> String)
+    -> Config msg validation
+    -> Config msg validation
+showCustomColumnTitle f (Config c) =
+    toConfig { c | showColumnTitle = CustomColumnTitle f }
 
 
 

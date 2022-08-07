@@ -5,7 +5,7 @@ module Chart.Bar exposing
     , Config, RequiredConfig
     , withBarStyle, withBarStyleFrom, withBottomPadding, withColorInterpolator, withColorPalette, withColumnTitle, withDesc, withGroupedLayout, withLabels, withLeftPadding, withLogYScale, withOrientation, withStackedLayout, withSymbols, withTableFloatFormat, withTitle, withXDomain, withXGroupDomain, withXLabels, withYDomain, withoutTable
     , XAxis, YAxis, axisBottom, axisGrid, axisLeft, axisRight, axisTop, hideAxis, hideXAxis, hideYAxis, withXAxis, withYAxis
-    , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xGroupLabel, xLabel, xOrdinalColumnTitle, yColumnTitle, yLabel
+    , diverging, horizontal, noDirection, stackedColumnTitle, vertical, xGroupLabel, xLabel, xOrdinalColumnTitle, customColumnTitle, yColumnTitle, yLabel
     )
 
 {-| ![barchart](https://raw.githubusercontent.com/data-viz-lab/elm-chart-builder/master/images/elm-chart-builder-barchart.png)
@@ -51,7 +51,7 @@ The X and Y axis are determined by the default vertical orientation. If the orie
 
 # Configuration arguments
 
-@docs diverging, horizontal, noDirection, stackedColumnTitle, vertical, xGroupLabel, xLabel, xOrdinalColumnTitle, yColumnTitle, yLabel
+@docs diverging, horizontal, noDirection, stackedColumnTitle, vertical, xGroupLabel, xLabel, xOrdinalColumnTitle, customColumnTitle, yColumnTitle, yLabel
 
 -}
 
@@ -457,6 +457,9 @@ withColumnTitle title config =
         Type.StackedColumnTitle formatter ->
             Type.showStackedColumnTitle formatter config
 
+        Type.CustomColumnTitle data ->
+            Type.showCustomColumnTitle data config
+
         Type.NoColumnTitle ->
             config
 
@@ -552,6 +555,15 @@ noDirection =
 xOrdinalColumnTitle : Type.ColumnTitle
 xOrdinalColumnTitle =
     Type.XOrdinalColumnTitle
+
+
+{-| Shows whatever
+The first argument is a tuple of three elements:
+(xGroup, xValue, yValue)
+-}
+customColumnTitle : (( String, String, Float ) -> String) -> Type.ColumnTitle
+customColumnTitle f =
+    Type.CustomColumnTitle f
 
 
 {-| Shows the xGroup value with the yValue.
