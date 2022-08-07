@@ -547,19 +547,24 @@ noDirection =
     Type.NoDirection
 
 
-{-| -}
+{-| Shows the xGroup value.
+-}
 xOrdinalColumnTitle : Type.ColumnTitle
 xOrdinalColumnTitle =
     Type.XOrdinalColumnTitle
 
 
-{-| -}
+{-| Shows the xGroup value with the yValue.
+The first argument is a formatter for the yValue.
+-}
 stackedColumnTitle : (Float -> String) -> Type.ColumnTitle
 stackedColumnTitle =
     Type.StackedColumnTitle
 
 
-{-| -}
+{-| Shows the yValue value.
+The first argument is a formatter for the yValue.
+-}
 yColumnTitle : (Float -> String) -> Type.ColumnTitle
 yColumnTitle =
     Type.YColumnTitle
