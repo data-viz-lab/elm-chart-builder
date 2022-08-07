@@ -184,6 +184,7 @@ stackedByFrequency =
         , height = height
         }
         |> Bar.withColorPalette colorScheme
+        |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withXAxis xAxis
         |> Bar.withYDomain ( 0, 0.55 )
@@ -199,6 +200,7 @@ stackedByFrequencyGender =
         , height = height
         }
         |> Bar.withColorPalette colorScheme
+        |> Bar.withColumnTitle (Bar.stackedColumnTitle valueFormatter)
         |> Bar.withStackedLayout Bar.noDirection
         |> Bar.withYDomain ( 0, 0.55 )
         |> Bar.withYAxis yAxis
