@@ -7,9 +7,10 @@
   "license": "MIT",
   "devDependencies": {
     "@elm-tooling/elm-language-server": "^2.8.0",
+    "elm": "^0.19.1-6",
     "elm-analyse": "0.16.5",
     "elm-format": "0.8.8",
-    "elm-review": "2.5.3",
+    "elm-review": "2.10.1",
     "elm-test": "0.19.1-revision7",
     "pixelmatch": "5.2.1",
     "prettier": "2.3.2",
