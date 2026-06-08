@@ -13,6 +13,6 @@
     "elm-test": "0.19.1-revision7",
     "pixelmatch": "5.2.1",
     "prettier": "2.3.2",
-    "puppeteer": "13.5.2"
+    "puppeteer": "25.1.0"
   }
 }
